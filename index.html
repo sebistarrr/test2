@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Elemental Duel — arène élémentaire</title>
+<meta name="description" content="Duel d'éléments 2D (Canvas) — clone haute fidélité : Ombre, Glace, Feu, Eau, Lumière, Foudre, Vent." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231c1a26'/><circle cx='11' cy='16' r='7' fill='%23870286'/><circle cx='22' cy='16' r='7' fill='%2300eff0'/></svg>" />
+
+<!-- Polices auto-hébergées (assets/fonts) : aucune requête externe, donc un
+     rendu identique hors-ligne comme sur GitHub Pages. Le Canvas attend leur
+     chargement avant la première frame (src/core/fonts.js). -->
+<link rel="preload" href="./assets/fonts/archivo-black-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="./assets/fonts/oswald-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+<link rel="stylesheet" href="./styles/style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Toute la scène de combat (titre, arène, HUD) est dessinée dans ce canvas,
+         en coordonnées logiques 720x1280 identiques à la vidéo de référence. -->
+    <canvas id="stage" width="720" height="1280" aria-label="Arène de duel"></canvas>
+
+    <!-- Écran de sélection (DOM, superposé au canvas) -->
+    <section id="screen-select" class="screen" aria-label="Sélection des combattants">
+      <h1 class="select-title">CHOISIS TES COMBATTANTS</h1>
+
+      <div class="slots">
+        <button class="slot" id="slot-a" data-slot="a" type="button">
+          <span class="slot-tag">GAUCHE</span>
+          <span class="slot-orb" id="orb-a"></span>
+          <span class="slot-name" id="name-a">—</span>
+        </button>
+        <span class="slot-vs">VS</span>
+        <button class="slot" id="slot-b" data-slot="b" type="button">
+          <span class="slot-tag">DROITE</span>
+          <span class="slot-orb" id="orb-b"></span>
+          <span class="slot-name" id="name-b">—</span>
+        </button>
+      </div>
+
+      <p class="select-hint">Clique sur un slot puis sur un élément.</p>
+
+      <div class="roster" id="roster" role="listbox" aria-label="Éléments disponibles"></div>
+
+      <div class="element-sheet" id="element-sheet" hidden></div>
+
+      <button class="start-btn" id="btn-start" type="button">LANCER LE DUEL</button>
+    </section>
+
+    <!-- Écran de fin -->
+    <section id="screen-result" class="screen hidden" aria-label="Résultat du duel">
+      <div class="result-card">
+        <p class="result-kicker">K.O.</p>
+        <h2 class="result-winner" id="result-winner">—</h2>
+        <p class="result-detail" id="result-detail"></p>
+        <div class="result-actions">
+          <button class="start-btn" id="btn-rematch" type="button">REVANCHE</button>
+          <button class="ghost-btn" id="btn-replay" type="button">REVOIR CE DUEL</button>
+          <button class="ghost-btn export-btn" id="btn-export" type="button" hidden>EXPORTER EN SHORT</button>
+          <p class="result-note" id="result-export-note" hidden></p>
+          <button class="ghost-btn" id="btn-back" type="button">CHANGER D'ÉLÉMENT</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+  <noscript>
+    <p style="font-family:sans-serif;text-align:center">Ce duel nécessite JavaScript.</p>
+  </noscript>
+</body>
+</html>
