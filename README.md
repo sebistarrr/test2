@@ -1,26 +1,29 @@
-# Elemental Duel — sept éléments, un duel
+# Spirit Beasts Duel — huit animaux totems, un duel
 
-Clone haute fidélité des duels d'éléments de la chaîne de référence
-(*Elemental Armory League*), en **HTML + CSS + JavaScript** avec un rendu
-**Canvas 2D**. Aucune dépendance, aucun build : le dépôt se publie tel quel sur
-GitHub Pages.
+Duel d'arène 2D en **HTML + CSS + JavaScript** avec un rendu **Canvas 2D**.
+Aucune dépendance, aucun build : le dépôt se publie tel quel sur GitHub Pages.
 
-**Huit éléments jouables**, chacun relevé sur sa propre vidéo :
+Le roster **Bêtes Spirituelles** rhabille les huit combattants de l'ancien
+*Elemental Duel* : chaque bête hérite d'une mécanique déjà relevée image par
+image sur la vidéo de référence, et l'équilibrage est repris **au dixième de
+seconde près** (voir *Équilibrage* plus bas).
 
-| Élément | Arme | Signature | Ultime |
-| --- | --- | --- | --- |
-| **Ombre** | Lame du Néant | pas d'ombre + volée de traits | Lien d'essence (dôme débordant + drain) |
-| **Glace** | Hache de givre | piles de dégâts/ralentissement | Blizzard (champ + neige) |
-| **Feu** | Lame ardente (garde à gemme, flamme effilée) | brûlure qui **colore et cercle** sa victime | Rage infernale (nova + ailes) |
-| **Eau** | Trident des marées | tourbillons — **spirales en pixels** qui grandissent | Maelström (la même spirale, géante) |
-| **Lumière** | Marteau d’aube | encaisse pour devenir puissante (liseré doré qui convertit) | Piège radiant (trait doré, halo sur **elle**) |
-| **Foudre** | Lame fulgurante | **bobines** statiques + arcs en chaîne, halo bleu permanent | Surcharge (toile cyan) |
-| **Vent** | Shuriken de bourrasque (losange évidé, sans manche) | le plus rapide, rafales tournoyantes autour de lui | Salve de tempête |
-| **Plante** | Liane fouettante (crochet en escalier de pixels) | bulbes qui blessent l'un et **soignent** l'autre | Tempête de fleurs (nuée de cubes roses) |
+**Huit bêtes jouables :**
 
-![Lumière contre Feu](docs/capture-duel.png)
+| Bête | Archétype | Arme | Signature | Ultime |
+| --- | --- | --- | --- | --- |
+| **Loup** | Traqueur | Dagues-crocs | bond dans l'angle mort + volée de crocs | Lien de sang (dôme débordant + drain) |
+| **Tortue** | Forteresse | Bouclier lourd | encaisse pour devenir puissante (liseré doré qui convertit) | Chaîne de jade (trait doré, halo sur **elle**) |
+| **Faucon** | Zoner | Arc de vent | le plus rapide, rafales tournoyantes autour de lui | Salve céleste |
+| **Serpent** | Embuscade | Fouet toxique (crochet en escalier de pixels) | œufs qui blessent l'un et **soignent** l'autre | Nuée de venin (cubes acides) |
+| **Ours** | Berserker | Gantelets griffus | saignement qui **colore et cercle** sa victime | Rage sauvage (nova + crinière) |
+| **Tigre** | Combo | Katars jumeaux | marques au sol + frappes enchaînées, halo blanc permanent | Frénésie |
+| **Araignée** | Contrôle | Shurikens-toiles | piles de dégâts/entrave | Toile mère (nappe de soie) |
+| **Cerf** | Mystique | Lance lumineuse | cercles sacrés — **spirales en pixels** qui grandissent | Grand rite (la même spirale, géante) |
 
-<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png), [la brûlure du Feu](docs/capture-feu.png), [l'écran de sélection](docs/capture-selection.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
+![Loup contre Tortue](docs/capture-duel.png)
+
+<sup>Loup (bond, dagues-crocs) contre Tortue (bouclier, chaîne de jade). Voir aussi [l'écran de sélection](docs/capture-selection.png), [la nuée du Serpent](docs/capture-serpent.png), [la rage de l'Ours](docs/capture-ours.png), [la Tortue qui encaisse](docs/capture-tortue.png), [les cercles du Cerf](docs/capture-zones.png), [la planche du roster](docs/roster-beasts.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
 
 ---
 
@@ -36,7 +39,7 @@ python3 -m http.server 8080
 
 Le dépôt est configuré en *Settings → Pages → Source = GitHub Actions* : chaque
 push sur `main` déclenche `.github/workflows/pages.yml`, qui publie la racine
-telle quelle (site en ligne : <https://sebistarrr.github.io/test/>). Le workflow
+telle quelle (site en ligne : <https://sebistarrr.github.io/test2/>). Le workflow
 se lance aussi à la main depuis l'onglet *Actions*.
 
 Pour un déploiement « depuis une branche » plutôt que par Actions, choisis la
@@ -66,7 +69,7 @@ Exemple : `index.html?a=shadow&b=ice&seed=6&debug=1`
 La seed du duel est affichée sous le vainqueur : elle suffit à le refaire jouer
 plus tard avec `?seed=`.
 
-Chaque élément a sa **signature à l'écran** (`look.flair`) : ruban de couleur
+Chaque bête a sa **signature à l'écran** (`look.flair`) : ruban de couleur
 derrière la pointe de l'arme, nappe de sol à ses teintes, frémissement collé au
 corps, gerbe d'impact et éclat d'incantation. S'y ajoutent les **nombres de
 dégâts** qui s'envolent à chaque touche, les **ondes qui courent le long des
@@ -101,7 +104,7 @@ src/
 │   ├── rng.js             aléa déterministe (mulberry32) piloté par seed
 │   └── fonts.js           attente des webfonts avant la 1re frame
 ├── data/                  ← LES DONNÉES, séparées du moteur
-│   ├── elements.js        **fiches d'éléments** (gelées) : apparence, vitesse,
+│   ├── elements.js        **fiches des bêtes** (gelées) : apparence, vitesse,
 │   │                      arme, pouvoir, ultime, projectiles, HUD
 │   ├── tuning.js          géométrie de scène mesurée sur la vidéo
 │   ├── pixelmaps.js       sprites pixel-art en texte
@@ -146,11 +149,11 @@ tools/                     outillage de vérification (non chargé par la page)
 
 ### Pourquoi ce découpage
 
-- **Le moteur ne connaît aucun élément.** `fighter.js`, `physics.js` et
-  `projectiles.js` lisent la fiche. Ajouter « Feu » = une entrée dans
+- **Le moteur ne connaît aucune bête.** `fighter.js`, `physics.js` et
+  `projectiles.js` lisent la fiche. Ajouter « Ours » = une entrée dans
   `elements.js` + un module dans `abilities/`, sans toucher au reste.
 - **Les fiches sont gelées** (`deepFreeze`) et le duel travaille sur un état
-  séparé : impossible qu'une partie modifie les stats d'un élément pour la
+  séparé : impossible qu'une partie modifie les stats d'une bête pour la
   suivante. `assertFrozen()` le vérifie au lancement de chaque duel.
 - **Le décor est rasterisé une fois** dans un canvas hors écran, puis blitté :
   le fond ne bouge jamais (cahier des charges) et coûte un seul `drawImage`.
@@ -182,46 +185,44 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 (720 × 1280, 30 fps) ; elles sont regroupées dans `src/data/tuning.js` et
 `src/data/elements.js`, chacune commentée `mesuré` ou `calé`.
 
-| Élément mesuré                | Valeur relevée                    |
+| Grandeur mesurée              | Valeur relevée                    |
 | ----------------------------- | --------------------------------- |
 | Fond hors-arène               | `rgb(249,241,218)` sur la vidéo — **le site l'a remplacé par une encre sombre `#1c1a26`**, seul écart volontaire au relevé ; l'arène reste blanche |
 | Arène                         | carré 640 × 640 à (40, 320), bord noir 6 px |
 | Boule                         | rayon 41 px, contour noir 5 px    |
-| Boule Ombre / Glace           | `#870286` / `#00eff0`             |
-| Portée d'arme Ombre / Glace   | 77 px / 132 px depuis le centre   |
+| Portées d'arme                | 77 px (Loup) à 160 px (Serpent) depuis le centre |
 | Rotation d'arme               | ≈ 330 °/s (0,92 tour/s), sens inversé aux rebonds |
 | Vitesse de déplacement        | 400 → 500 px/s                    |
 | Jauges du HUD                 | 268 × 35 px, en x = 39 et x = 412, y = 965 |
 | Ligne de stat                 | ligne de base y = 1036            |
-| Dôme du Lien d'essence        | rayon ≈ 265 px, `rgb(52,46,70)`, 5,65 s, non clippé |
-| Champ de Blizzard             | rayon ≈ 130 px                    |
-| Progression « Shadow Step Cooldown » | 3 s → 0,7 s par paliers de 0,2 s |
-| Progression « Damage/Slow »   | 1 → 13 sur un duel d'une minute   |
-| Progression « Burn Damage/Duration » | 1 → 5,5 par pas de 0,5     |
-| Progression « Shield Damage » / « Knockback » | 1 → 14 / 1500 → 5400, **+1 / +300 par coup encaissé** |
-| Progression « Tornado Damage » / « Cooldown » | 10 → 24 (+2) / 4 s → 0,5 s (−0,5 s) |
-| Progression « Chain Damage »  | 1 → 4,5 par pas de 0,5            |
-| Progression « Whirlpool Damage » / « Size » | 1 → 7 / 70 → 100    |
-| Progression « Bulb Damage/Heal » | 1 → 8 (+1 par touche)        |
-| Shuriken du Vent              | losange évidé 74 px, double contour noir, 4 ergots gris, collé au corps |
-| Liane de la Plante            | arc de rayon 46,7 px sur 151°, rasterisé en blocs de 4 px |
-| Tempête de fleurs             | grappes de cubes `rgb(248,120,184)` de 11 à 26 px, aucun cerceau |
-| Tourbillon de l'Eau           | spirale en pixels, diamètre = la stat « Size » (70 → 150 px) |
-| Brûlure du Feu                | teinte du corps **et** anneau orange sur la victime |
-| Borne de la Foudre            | bobine de 34 px, halo bleu permanent sur le porteur |
+| Dôme du Lien de sang          | rayon ≈ 265 px, 5,65 s, non clippé |
+| Nappe de la Toile mère        | rayon ≈ 130 px                    |
+| Progression « Hunter’s Leap Cooldown » | 3 s → 0,7 s par paliers de 0,2 s |
+| Progression « Web Damage/Slow » | 1 → 13 sur un duel d'une minute  |
+| Progression « Bleed Damage/Duration » | 1 → 5,5 par pas de 0,5    |
+| Progression « Shell Damage » / « Knockback » | 1 → 14 / 1500 → 5400, **+1 / +300 par coup encaissé** |
+| Progression « Gale Damage » / « Cooldown » | 10 → 24 (+2) / 4 s → 0,5 s (−0,5 s) |
+| Progression « Combo Damage »  | 1 → 4,5 par pas de 0,5            |
+| Progression « Circle Damage » / « Size » | 1 → 7 / 70 → 100       |
+| Progression « Egg Damage/Heal » | 1 → 8 (+1 par touche)         |
+| Fouet du Serpent              | arc de rayon 46,7 px sur 151°, rasterisé en blocs de 4 px |
+| Nuée de venin                 | grappes de cubes acides de 11 à 26 px, aucun cerceau |
+| Cercle sacré du Cerf          | spirale en pixels, diamètre = la stat « Size » (70 → 150 px) |
+| Saignement de l'Ours          | teinte du corps **et** anneau rouge sur la victime |
+| Marque du Tigre               | masque de 34 px, halo blanc permanent sur le porteur |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les
 **36 affrontements possibles** (3 seeds chacun), un duel dure **21 à 79 s**
 (41 s en moyenne),
-la Glace finit à 12-13 piles et l'Ombre atteint son plancher de 0,7 s. Une
+l'Araignée finit à 12-13 piles et le Loup atteint son plancher de 0,7 s. Une
 **mort subite** amplifie les dégâts au-delà de 55 s pour qu'aucun duel ne
 s'éternise. Détail de l'équilibrage dans [`docs/FICHES.md`](docs/FICHES.md).
 
 ---
 
-## Ajouter un élément
+## Ajouter une bête
 
-1. **La fiche** dans `src/data/elements.js` (copie `SHADOW` et adapte).
+1. **La fiche** dans `src/data/elements.js` (copie `WOLF` et adapte).
    Tout y passe : couleurs, rayon, vitesse, arme, dégâts, pouvoir, ultime,
    projectiles, libellés du HUD.
 2. **Les sprites** dans `src/data/pixelmaps.js` (texte) ou en PNG via
@@ -243,8 +244,9 @@ pilotés par les données.
 - [`CLAUDE.md`](CLAUDE.md) — mémoire du projet : carte des fichiers,
   invariants (déterminisme, fiches gelées, matrice d'équilibrage), outils et
   pièges déjà rencontrés. C'est le point d'entrée pour reprendre le travail.
-- [`docs/FICHES.md`](docs/FICHES.md) — fiches complètes des deux éléments
-  (apparence, vitesse, pouvoirs, projectiles) et méthode de mesure.
+- [`docs/FICHES.md`](docs/FICHES.md) — fiches complètes (apparence, vitesse,
+  pouvoirs, projectiles), table de correspondance élément → bête et méthode
+  de mesure.
 - [`assets/sprites/README.md`](assets/sprites/README.md) — remplacer les
   sprites par les tiens.
 - [`assets/fonts/LICENSE.md`](assets/fonts/LICENSE.md) — polices embarquées.

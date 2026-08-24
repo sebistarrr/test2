@@ -17,8 +17,8 @@ import { ARENA } from '../../data/tuning.js';
 import { tickZones } from './zone.js';
 import { drawSpriteCentered } from '../../render/sprites.js';
 
-export const waterAbilities = {
-  id: 'water',
+export const deerAbilities = {
+  id: 'deer',
 
   init(f) {
     /** @type {Array<any>} */
@@ -54,7 +54,7 @@ export const waterAbilities = {
             ? Math.atan2(target.y - pool.y, target.x - pool.x)
             : game.rng.range(0, TAU);
         for (let i = 0; i < el.ability.spray.count; i++) {
-          this.spawnDropletFrom(f, pool, base + game.rng.spread(0.5), game);
+          this.spawnMoteFrom(f, pool, base + game.rng.spread(0.5), game);
         }
       }
     }
@@ -94,13 +94,14 @@ export const waterAbilities = {
     f.ability.timer = a.cooldown;
   },
 
-  spawnDropletFrom(f, pool, angle, game) {
-    // on décale la sortie sur le bord du tourbillon
+  spawnMoteFrom(f, pool, angle, game) {
+    // on décale la sortie sur le bord du cercle
     const sx = f.x;
     const sy = f.y;
     f.x = pool.x;
     f.y = pool.y;
-    game.projectiles.spawn(f, 'droplet', angle, pool.r * 0.5);
+    // le nom du projectile vient de la fiche : le moteur ne connaît aucune bête
+    game.projectiles.spawn(f, f.el.ability.spray.projectile, angle, pool.r * 0.5);
     f.x = sx;
     f.y = sy;
   },
@@ -145,12 +146,12 @@ export const waterAbilities = {
   },
 
   /**
-   * Tourbillons et maelström, sous les combattants.
+   * Cercles sacrés et grand rite, sous les combattants.
    *
-   * La vidéo ne montre pas un dégradé tournoyant mais une **vraie spirale en
-   * pixels, opaque** : disque bleu, bras bleu nuit enroulé sur deux tours et
-   * demi, éclats clairs sur un bord, gros contour. On blitte donc le sprite
-   * `waterWhirlpool` étiré au diamètre courant et tourné lentement — le rendu
+   * Ce n'est pas un dégradé tournoyant mais une **vraie spirale en pixels,
+   * opaque** : disque émeraude, bras sous-bois enroulé sur deux tours et demi,
+   * éclats clairs sur un bord, gros contour. On blitte donc le sprite
+   * `sacredCircle` étiré au diamètre courant et tourné lentement — le rendu
    * plus-proche-voisin conserve les blocs comme à l'écran.
    */
   drawUnder(ctx, f) {
@@ -169,7 +170,7 @@ export const waterAbilities = {
     ctx.globalAlpha = fade;
     ctx.translate(z.x, z.y);
     ctx.rotate(z.angle);
-    drawSpriteCentered(ctx, 'waterWhirlpool', 0, 0, d);
+    drawSpriteCentered(ctx, 'sacredCircle', 0, 0, d);
     ctx.restore();
   },
 

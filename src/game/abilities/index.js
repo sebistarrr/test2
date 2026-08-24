@@ -4,38 +4,38 @@
  * Un module implémente : init / update / drawUnder / drawOver / barValue,
  * plus deux crochets optionnels :
  *   • `onDamage(f, amount, source, opts, game)` → dégâts restants après
- *     absorption (bouclier de la Lumière) ;
+ *     absorption (carapace de la Tortue) ;
  *   • `onLand(f, target, hit, game)` → réaction à sa propre touche d'arme
- *     (la Foudre y plante une borne) ;
+ *     (le Tigre y laisse une marque) ;
  *   • `drawWeapon(ctx, f)` → rendu d'arme sur mesure, à la place du couple
- *     manche + sprite (la liane courbe de la Plante).
+ *     manche + sprite (le fouet courbe du Serpent).
  *
- * Ajouter un élément = ajouter sa fiche + son module ici.
+ * Ajouter une bête = ajouter sa fiche + son module ici.
  *
  * @module game/abilities
  */
 
-import { shadowAbilities } from './shadow.js';
-import { iceAbilities } from './ice.js';
-import { fireAbilities } from './fire.js';
-import { lightAbilities } from './light.js';
-import { windAbilities } from './wind.js';
-import { lightningAbilities } from './lightning.js';
-import { waterAbilities } from './water.js';
-import { plantAbilities } from './plant.js';
+import { wolfAbilities } from './wolf.js';
+import { spiderAbilities } from './spider.js';
+import { bearAbilities } from './bear.js';
+import { turtleAbilities } from './turtle.js';
+import { hawkAbilities } from './hawk.js';
+import { tigerAbilities } from './tiger.js';
+import { deerAbilities } from './deer.js';
+import { snakeAbilities } from './snake.js';
 
 const REGISTRY = {
-  shadow: shadowAbilities,
-  ice: iceAbilities,
-  fire: fireAbilities,
-  light: lightAbilities,
-  wind: windAbilities,
-  lightning: lightningAbilities,
-  water: waterAbilities,
-  plant: plantAbilities,
+  wolf: wolfAbilities,
+  spider: spiderAbilities,
+  bear: bearAbilities,
+  turtle: turtleAbilities,
+  hawk: hawkAbilities,
+  tiger: tigerAbilities,
+  deer: deerAbilities,
+  snake: snakeAbilities,
 };
 
-/** Module neutre : sert de repli pour un élément sans pouvoirs dédiés. */
+/** Module neutre : sert de repli pour une bête sans pouvoirs dédiés. */
 const NOOP = {
   id: 'noop',
   init() {},
@@ -45,6 +45,6 @@ const NOOP = {
   barValue: (f) => f.ult.charge / 100,
 };
 
-export function abilitiesFor(elementId) {
-  return REGISTRY[elementId] ?? NOOP;
+export function abilitiesFor(beastId) {
+  return REGISTRY[beastId] ?? NOOP;
 }

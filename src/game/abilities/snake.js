@@ -147,8 +147,8 @@ function buildVineSprite(w) {
   };
 }
 
-export const plantAbilities = {
-  id: 'plant',
+export const snakeAbilities = {
+  id: 'snake',
 
   init(f) {
     /** @type {Array<{x:number,y:number,life:number,shoot:number,born:number}>} */
@@ -228,10 +228,10 @@ export const plantAbilities = {
     /* ---------- semis ---------- */
     if (game.phase !== 'fight') return;
     f.ability.timer -= dt;
-    if (f.ability.timer <= 0) this.plantBulb(f, game);
+    if (f.ability.timer <= 0) this.layEgg(f, game);
   },
 
-  plantBulb(f, game) {
+  layEgg(f, game) {
     const a = f.el.ability;
     const b = a.bulb;
     f.state.bulbs.push({ x: f.x, y: f.y, life: b.life, shoot: b.shootInterval, born: game.time });
@@ -385,7 +385,7 @@ export const plantAbilities = {
       }
     }
 
-    // quelques corolles qui volent dans la nuée, chacune à son propre rythme
+    // quelques grosses gouttes qui volent dans la nuée, chacune à son rythme
     for (let i = 0; i < sw.flowers; i++) {
       const u = hash01(i * 17.3 + 2.9);
       const w = hash01(i * 41.9 + 6.2);
@@ -393,7 +393,7 @@ export const plantAbilities = {
       const rad = reach * (0.25 + 0.6 * w);
       drawSpriteCentered(
         ctx,
-        'flower',
+        'snakeProjectile',
         target.x + Math.cos(a) * rad,
         target.y + Math.sin(a) * rad,
         sw.flowerSize,

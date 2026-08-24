@@ -1132,6 +1132,24 @@ export const SPIRIT_BEASTS = deepFreeze({
 });
 
 /**
+ * CERF — cercle sacré. La spirale du Cerf reprend **exactement la géométrie**
+ * de `WATER_WHIRLPOOL` (relevée image par image sur FIRE vs WATER, deux tours
+ * et demi de bras) sous une palette émeraude : la mécanique du tourbillon est
+ * inchangée, seule l'identité change. Réutiliser les `rows` plutôt que les
+ * recopier garantit que les deux ne divergeront jamais.
+ */
+export const SACRED_CIRCLE = deepFreeze({
+  w: WATER_WHIRLPOOL.w,
+  h: WATER_WHIRLPOOL.h,
+  palette: {
+    K: '#07190f', // bras et contour, vert sous-bois
+    b: '#19b98a', // disque émeraude
+    w: '#9dffd6', // éclats de lumière
+  },
+  rows: WATER_WHIRLPOOL.rows,
+});
+
+/**
  * Adapte une entrée du roster au contrat de `render/pixelart.js`
  * (`{w, h, palette, rows}`) : le moteur ne connaît que cette forme-là.
  */
@@ -1157,6 +1175,7 @@ export const BEAST_MAPS = deepFreeze(
 /** Table des sprites : clé → description. Les clés servent aux overrides PNG. */
 export const PIXEL_MAPS = deepFreeze({
   ...BEAST_MAPS,
+  sacredCircle: SACRED_CIRCLE,
   // Ombre & Glace
   darkBlade: DARK_BLADE,
   iceAxeHead: ICE_AXE_HEAD,

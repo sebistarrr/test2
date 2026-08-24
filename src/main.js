@@ -2,7 +2,7 @@
  * Point d'entrée : chargement des ressources, câblage des écrans, boucle.
  *
  * Paramètres d'URL utiles :
- *   ?a=shadow&b=ice   duel direct, sans passer par la sélection
+ *   ?a=wolf&b=turtle  duel direct, sans passer par la sélection
  *   ?seed=1234        rejoue exactement le même duel
  *   ?lang=fr          libellés du HUD en français (par défaut : ceux de la vidéo)
  *   ?debug=1          hitboxes + compteurs
@@ -67,7 +67,7 @@ const resultScreen = createResultScreen({
 });
 
 /** @type {[string,string]} */
-let lastPair = ['shadow', 'ice'];
+let lastPair = ['wolf', 'turtle'];
 let lastSeed = 0;
 
 /**

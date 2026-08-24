@@ -25,7 +25,7 @@ export function createSelectScreen({ root, onStart }) {
   const startBtn = root.querySelector('#btn-start');
 
   /** @type {{a:string|null,b:string|null}} */
-  const picks = { a: 'shadow', b: 'ice' }; // duel par défaut : celui de la vidéo
+  const picks = { a: 'wolf', b: 'turtle' }; // duel par défaut : Traqueur contre Forteresse
   let active = 'a';
 
   // --- cartes du roster
@@ -143,10 +143,11 @@ function drawElementBadge(canvas, el) {
   ctx.strokeStyle = el.look.outline;
   ctx.stroke();
 
-  // certaines armes n'ont pas de sprite (liane courbe dessinée en tracé) :
-  // on retombe alors sur le projectile, puis sur l'icône de l'élément
+  // la vignette montre la bête elle-même quand elle a un portrait 16×16 ;
+  // sinon on retombe sur son arme, son projectile, puis son icône — le
+  // Serpent n'a pas de sprite d'arme (fouet courbe dessiné en tracé)
   const key =
-    el.weapon.head.sprite ?? Object.values(el.projectiles ?? {})[0]?.sprite ?? el.icon;
+    el.portrait ?? el.weapon.head.sprite ?? Object.values(el.projectiles ?? {})[0]?.sprite ?? el.icon;
   const sprite = compilePixelMap(PIXEL_MAPS[key], 3);
   // la tête d'arme est cadrée dans la place restante, ratio conservé
   const availW = canvas.width - (cx + r * 0.6);

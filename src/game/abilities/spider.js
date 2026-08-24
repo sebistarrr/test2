@@ -17,8 +17,8 @@
 import { TAU, clamp } from '../../core/math.js';
 import { ARENA } from '../../data/tuning.js';
 
-export const iceAbilities = {
-  id: 'ice',
+export const spiderAbilities = {
+  id: 'spider',
 
   init(f) {
     f.state.fieldTick = 0;

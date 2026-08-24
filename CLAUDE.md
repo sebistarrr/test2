@@ -1,6 +1,8 @@
 # CLAUDE.md — mémoire du projet
 
-Clone haute fidélité des duels d'éléments *Elemental Armory League*.
+Duel d'arène 2D, roster **Bêtes Spirituelles** (animaux totems).
+Le roster rhabille les huit éléments de l'ancien *Elemental Armory League*
+sans toucher à leur mécanique — voir « Roster » ci-dessous.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -15,22 +17,50 @@ Va droit au fichier concerné, en `grep` ciblé plutôt qu'en lecture intégrale
 
 | Besoin | Fichier |
 | --- | --- |
-| Stats, couleurs, armes, pouvoirs d'un élément | `src/data/elements.js` (fiches gelées) |
+| Stats, couleurs, armes, pouvoirs d'une bête | `src/data/elements.js` (fiches gelées) |
 | Géométrie de scène, phases, export vidéo | `src/data/tuning.js` |
 | Sprites pixel-art (texte) | `src/data/pixelmaps.js` |
 | Roster « Bêtes Spirituelles » (palette + sprite/projectile/icône) | `src/data/pixelmaps.js` → `SPIRIT_BEASTS` |
 | Déroulé du duel, dégâts, rendu global | `src/game/match.js` |
 | Entité combattant (état + dessin) | `src/game/fighter.js` |
-| Pouvoirs d'un élément | `src/game/abilities/<id>.js` |
+| Pouvoirs d'une bête | `src/game/abilities/<id>.js` |
 | Mise en scène (rubans, nappes, ondes, nombres) | `src/render/flair.js` + `look.flair` de chaque fiche |
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
 | Relevés vidéo détaillés, par élément | `docs/FICHES.md` |
 
-Huit éléments : `shadow ice fire water light lightning wind plant`.
+## Roster
 
-**Le moteur ne connaît aucun élément** : `fighter.js`, `physics.js` et
-`projectiles.js` lisent la fiche. Ajouter un élément = une entrée dans
+Huit bêtes : `wolf turtle hawk snake bear tiger spider deer`.
+
+Chacune **reprend telle quelle** la mécanique d'un élément de l'ancien roster —
+aucune valeur de jeu n'a bougé, seules l'identité, les couleurs et les sprites
+changent :
+
+| Bête | Archétype | Mécanique héritée de | Module |
+| --- | --- | --- | --- |
+| `wolf` Loup | Traqueur | `shadow` Ombre | `abilities/wolf.js` |
+| `turtle` Tortue | Forteresse | `light` Lumière | `abilities/turtle.js` |
+| `hawk` Faucon | Zoner | `wind` Vent | `abilities/hawk.js` |
+| `snake` Serpent | Embuscade | `plant` Plante | `abilities/snake.js` |
+| `bear` Ours | Berserker | `fire` Feu | `abilities/bear.js` |
+| `tiger` Tigre | Combo | `lightning` Foudre | `abilities/tiger.js` |
+| `spider` Araignée | Contrôle | `ice` Glace | `abilities/spider.js` |
+| `deer` Cerf | Mystique | `water` Eau | `abilities/deer.js` |
+
+**Conséquence** : les annotations `mesuré` et les noms de vidéos cités dans
+`elements.js` disent d'où vient le chiffre, **pas qui le porte aujourd'hui**.
+Un relevé fait sur l'Ombre décrit désormais le Loup. Ne jamais « corriger » un
+commentaire de relevé au prétexte qu'il cite un ancien nom d'élément.
+
+Quelques clés de fiche gardent aussi leur nom d'origine parce que le moteur les
+lit ainsi : `ability.tornado` (Faucon), `ability.whirlpool` / `ultimate.maelstrom`
+(Cerf), `ability.bulb` (Serpent), `weapon.vine` (fouet du Serpent),
+`ultimate.snow` (soie de l'Araignée), `ultimate.wings` (crinière de l'Ours).
+Chacune porte un commentaire le disant.
+
+**Le moteur ne connaît aucune bête** : `fighter.js`, `physics.js` et
+`projectiles.js` lisent la fiche. Ajouter une bête = une entrée dans
 `elements.js` + un module dans `abilities/` + une ligne dans `ROSTER`.
 
 ---
@@ -54,9 +84,17 @@ Huit éléments : `shadow ice fire water light lightning wind plant`.
      Remplir le cadre par le fond (nappe de sol), les bords (ondes de mur) ou
      l'arrière du combattant (ruban, sillage) — jamais par une nuée flottante,
      essayée puis retirée pour cette raison.
-3. **Équilibrage.** Chaque élément gagne 9 à 12 duels sur 21. Après **tout**
+3. **Équilibrage.** Chaque bête gagne 9 à 12 duels sur 21. Après **tout**
    changement, comparer la matrice (voir Outils) : un changement visuel doit
    la laisser **identique au fichier près**.
+   - **`ROSTER` ≠ ordre d'appariement.** Les paires de la matrice sont formées
+     en `[liste[i], liste[j]]` : la liste décide **qui est le combattant A**, et
+     le camp A pèse lourd. Mesuré sur ce roster : passer de l'ordre
+     d'appariement à l'ordre d'affichage fait monter la Tortue de 12 à 14
+     victoires et tomber le Serpent de 9 à 5, **sans qu'une valeur de fiche ait
+     bougé**. L'ordre d'appariement est donc figé en tête de `tools/matrix.mjs`
+     et `ROSTER` n'est plus que l'ordre d'affichage : réordonner le menu ne doit
+     jamais déplacer la référence.
 4. **Le décor ne bouge jamais** (cahier des charges) — rasterisé une fois dans
    `scene.js`, blitté en un `drawImage`.
 5. **Convention de commentaire dans les fiches** : chaque valeur porte
@@ -130,8 +168,22 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   par duel laissait des pistes de capture vivantes.
 - Le filigrane TikTok dérive sur les vidéos : binariser la zone de texte avant
   de hacher une bande de stats.
-- Écran de sélection : un élément sans `head.sprite` (la Plante) doit avoir une
-  chaîne de repli sprite → projectile → icône.
+- Écran de sélection : une bête sans `head.sprite` (le Serpent) doit avoir une
+  chaîne de repli portrait → arme → projectile → icône.
+- **Sur le fond sombre `#1c1a26`, un contour `K` ne dessine rien.** Les icônes
+  de l'Ours, du Tigre et de la Tortue ont dû être refaites pour tenir par leurs
+  seules valeurs claires — la première version disparaissait. Toute nouvelle
+  icône doit être relue sur `docs/roster-beasts.png`, qui la rend sur fond
+  sombre *et* clair.
+- **Têtes d'arme carrées.** Les armes d'origine étaient des sprites allongés
+  (28 × 9) ; celles du roster font 8 × 8. `headH = map.h × head.scale` et le
+  sprite démarre à `handle.length` : si `handle.length + 8 × scale` ne vaut pas
+  la portée, l'arme reste cachée sous la boule (rayon 41). Les deux sont
+  purement visuels — ni la portée ni la hitbox n'en dépendent.
+- **PV clairs + flash blanc.** `bodyHit` passe le corps au blanc à
+  l'encaissement : des `hpColor` clairs y deviennent invisibles. Seule
+  l'Araignée (corps noir profond) porte ses PV en clair ; toutes les autres
+  gardent `#0a0a0a`.
 
 ---
 
@@ -144,4 +196,4 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
 - Tenir `README.md` et `docs/FICHES.md` à jour ; régénérer `docs/capture-*.png`
   quand le rendu change.
 - Commits en français, corps détaillé, puis push sur `main` **et** sur
-  `claude/element-duel-game-x33b7x`, et attendre que Pages ait publié.
+  `claude/spiritual-beasts-pixelmaps-cm5put`, et attendre que Pages ait publié.

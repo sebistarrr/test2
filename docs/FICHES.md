@@ -1,9 +1,37 @@
-# Fiches d'éléments
+# Fiches des Bêtes Spirituelles
 
-Huit éléments : **Ombre**, **Glace**, **Feu**, **Eau**, **Lumière**, **Foudre**,
-**Vent**, **Plante**. Ces fiches sont la **transcription lisible** de `src/data/elements.js`. Le code
-est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
-fiche gelée correspondante.
+Huit bêtes : **Loup**, **Tortue**, **Faucon**, **Serpent**, **Ours**,
+**Tigre**, **Araignée**, **Cerf**. Ces fiches sont la **transcription lisible**
+de `src/data/elements.js`. Le code est la source de vérité : toute valeur
+ci-dessous existe telle quelle dans la fiche gelée correspondante.
+
+## Correspondance avec l'ancien roster
+
+Le roster « Bêtes Spirituelles » **rhabille** les huit éléments d'origine sans
+toucher à une seule valeur de jeu : vitesses, portées, dégâts, cadences,
+cooldowns et ultimes sont repris tels quels. Seules changent l'identité, les
+couleurs et les sprites.
+
+C'est vérifiable, pas déclaratif : en rejouant la matrice dans l'ordre
+d'appariement d'origine, les **36 affrontements sont identiques** — mêmes
+vainqueurs et mêmes durées au dixième de seconde près — une fois les noms
+substitués.
+
+| Bête | Archétype | Reprend la mécanique de | Pourquoi ce mariage |
+| --- | --- | --- | --- |
+| **Loup** | Traqueur | Ombre (`shadow`) | téléportation courte + volée : l'assassin devient traqueur |
+| **Tortue** | Forteresse | Lumière (`light`) | l'Égide était déjà décrite « Forteresse » : elle devient carapace |
+| **Faucon** | Zoner | Vent (`wind`) | le plus rapide, rafales autour de lui |
+| **Serpent** | Embuscade | Plante (`plant`) | la liane fouettante **était** un fouet : elle devient toxique |
+| **Ours** | Berserker | Feu (`fire`) | la brûlure qui s'aggrave devient un saignement, la Rage reste la Rage |
+| **Tigre** | Combo | Foudre (`lightning`) | les arcs enchaînés sont un combo ; les bornes deviennent des marques |
+| **Araignée** | Contrôle | Glace (`ice`) | la Glace était déjà décrite « Contrôle » : le givre devient soie |
+| **Cerf** | Mystique | Eau (`water`) | le trident devient lance, les tourbillons des cercles sacrés |
+
+**Conséquence pour la lecture des fiches** : les annotations `mesuré` et les
+noms de vidéos cités plus bas (`DARK vs ICE`, `WIND vs PLANT`…) disent **d'où
+vient le chiffre**, pas qui le porte aujourd'hui. Un relevé fait sur l'Ombre
+décrit désormais le Loup.
 
 - `mesuré` = relevé sur les vidéos de référence, par échantillonnage d'images
   et analyse des pixels :
@@ -48,7 +76,7 @@ vidéo, libellé noir compris.
 
 ---
 
-## ⬤ OMBRE — `shadow` (affiché « DARK »)
+## 🐺 LOUP — `wolf` (mécanique relevée sur `shadow`)
 
 > Assassin — se déplace par pas d'ombre et draine l'essence.
 
@@ -75,7 +103,7 @@ vidéo, libellé noir compris.
 | Poids du pilotage (`seek`) | 0,42    | calé   |
 | Rebonds                 | élastiques sur les 4 murs, le sens de rotation de l'arme s'inverse | mesuré |
 
-### Arme — Lame du Néant
+### Arme — Dagues-crocs
 
 | Propriété              | Valeur                                | Source |
 | ---------------------- | ------------------------------------- | ------ |
@@ -88,7 +116,7 @@ vidéo, libellé noir compris.
 | Cadence                | 1 touche / 1,05 s maximum             | calé   |
 | Recul infligé / subi   | 300 / 90                              | calé   |
 
-### Pouvoir — Pas d'ombre (`Shadow Step`)
+### Pouvoir — Bond du traqueur (`Hunter’s Leap`)
 
 | Propriété              | Valeur                                            | Source |
 | ---------------------- | ------------------------------------------------- | ------ |
@@ -100,7 +128,7 @@ vidéo, libellé noir compris.
 | Volée                  | 3 traits d'ombre, dispersion ±0,38 rad, dans l'axe du saut | mesuré |
 | Affichage HUD          | `Shadow Step Cooldown: X.Xs`                      | mesuré |
 
-### Ultime — Lien d'essence (`ESSENCE TETHER`)
+### Ultime — Lien de sang (`BLOOD BOND`)
 
 | Propriété          | Valeur                                             | Source |
 | ------------------ | -------------------------------------------------- | ------ |
@@ -117,7 +145,7 @@ Le suivi automatique du dôme confirme aussi qu'il est bien **ancré** : sur ses
 5,6 s d'existence, la distance entre son centre et l'Ombre passe de 71 px à
 324 px — le combattant s'en éloigne, le dôme ne le suit pas.
 
-### Projectile — Trait d'ombre
+### Projectile — Croc lancé
 
 | Propriété | Valeur                       | Source |
 | --------- | ---------------------------- | ------ |
@@ -130,7 +158,7 @@ Le suivi automatique du dôme confirme aussi qu'il est bien **ancré** : sur ses
 
 ---
 
-## ❄ GLACE — `ice` (affiché « ICE »)
+## 🕷 ARAIGNÉE — `spider` (mécanique relevée sur `ice`)
 
 > Contrôle — empile les dégâts et le ralentissement.
 
@@ -154,7 +182,7 @@ Le suivi automatique du dôme confirme aussi qu'il est bien **ancré** : sur ses
 | Vitesse de virage       | 1,9 rad/s | mesuré |
 | Poids du pilotage       | 0,42      | calé   |
 
-### Arme — Hache de givre
+### Arme — Shurikens-toiles
 
 | Propriété               | Valeur                                    | Source |
 | ----------------------- | ----------------------------------------- | ------ |
@@ -173,7 +201,7 @@ compteur `Damage/Slow: N` du HUD, qui atteint 13 en fin de duel sur la vidéo.
 C'est la mécanique de montée en puissance de la Glace — elle est faible au
 début et létale à la fin.
 
-### Pouvoir — Éclats de givre (`Frost Shards`)
+### Pouvoir — Salve de toiles (`Web Burst`)
 
 | Propriété             | Valeur                                | Source |
 | --------------------- | ------------------------------------- | ------ |
@@ -181,7 +209,7 @@ début et létale à la fin.
 | Salve                 | 7 éclats en étoile (360°)             | mesuré |
 | Pendant le Blizzard   | 1 salve / 1,2 s, 10 éclats            | mesuré |
 
-### Ultime — Blizzard (`BLIZZARD`)
+### Ultime — Toile mère (`BROODWEB`)
 
 | Propriété          | Valeur                                                 | Source |
 | ------------------ | ------------------------------------------------------ | ------ |
@@ -192,7 +220,7 @@ début et létale à la fin.
 | Effet du champ     | −35 % de vitesse, 1 PV toutes les 0,7 s                | calé   |
 | Neige              | 90 flocons/s sur toute l'arène                         | mesuré |
 
-### Projectile — Éclat de givre
+### Projectile — Shuriken-toile
 
 | Propriété | Valeur                                  | Source |
 | --------- | --------------------------------------- | ------ |
@@ -206,7 +234,7 @@ début et létale à la fin.
 
 ---
 
-## 🔥 FEU — `fire` (affiché « FIRE »)
+## 🐻 OURS — `bear` (mécanique relevée sur `fire`)
 
 > Attrition — marque l'adversaire d'une brûlure qui s'aggrave.
 
@@ -232,7 +260,7 @@ littéralement ce qu'annonce son libellé dans la vidéo.
 
 ---
 
-## 🛡 LUMIÈRE — `light` (affiché « LIGHT »)
+## 🐢 TORTUE — `turtle` (mécanique relevée sur `light`)
 
 > Contre-attaquant — ne commence pas fort, le devient en encaissant.
 
@@ -277,7 +305,7 @@ bleuté posé sur son jaune. Cette teinte d'état est désormais générique :
 
 ---
 
-## 🌪 VENT — `wind` (affiché « WIND »)
+## 🦅 FAUCON — `hawk` (mécanique relevée sur `wind`)
 
 > Harcèlement — le plus rapide, tornades et lames d'air.
 
@@ -322,7 +350,7 @@ décréments séparés dans la fiche (`cooldownStepOnCast` et `cooldownStep`).
 
 ---
 
-## ⚡ FOUDRE — `lightning` (affiché « LIGHTNING »)
+## 🐯 TIGRE — `tiger` (mécanique relevée sur `lightning`)
 
 > Zone — sème des bornes statiques et enchaîne les arcs.
 
@@ -342,7 +370,7 @@ décréments séparés dans la fiche (`cooldownStepOnCast` et `cooldownStep`).
 
 ---
 
-## 🌀 EAU — `water` (affiché « WATER »)
+## 🦌 CERF — `deer` (mécanique relevée sur `water`)
 
 > Contrôle de terrain — des tourbillons qui aspirent et grandissent.
 
@@ -361,7 +389,7 @@ décréments séparés dans la fiche (`cooldownStepOnCast` et `cooldownStep`).
 
 ---
 
-## 🌱 PLANTE — `plant` (affiché « PLANT »)
+## 🐍 SERPENT — `snake` (mécanique relevée sur `plant`)
 
 > Endurance — sème des bulbes qui blessent l'un et soignent l'autre.
 
@@ -393,20 +421,28 @@ Vérifié par simulation sans rendu sur les **36 affrontements** possibles
 (8 × 8 avec miroirs), 3 seeds chacun :
 
 - durée : **21 à 79 s**, moyenne **41 s** ; les profils défensifs allongent la
-  partie (miroir Lumière ~78 s) ;
-- chaque élément gagne des affrontements et en perd : Lumière, Foudre et Eau
-  dominent légèrement, Feu et Vent sont plus situationnels, la Plante tient le
-  milieu de tableau grâce à sa régénération, et le trio
-  Eau > Lumière > Foudre > Eau boucle en pierre-feuille-ciseaux ;
+  partie (miroir Tortue ~78 s) ;
+- chaque bête gagne des affrontements et en perd : Tortue, Tigre et Cerf
+  dominent légèrement, Ours et Faucon sont plus situationnels, le Serpent tient
+  le milieu de tableau grâce à sa régénération, et le trio
+  Cerf > Tortue > Tigre > Cerf boucle en pierre-feuille-ciseaux ;
 - **mort subite** : au-delà de 55 s, tous les dégâts sont multipliés par
   `1 + (t − 55) / 18` (plafond ×4). Aucun duel ne peut s'éterniser, quels que
-  soient les deux éléments choisis — aucun des 36 affrontements n'atteint la
+  soient les deux bêtes choisies — aucun des 36 affrontements n'atteint la
   limite de simulation ;
-- répartition des victoires sur les 21 duels hors miroir de chaque élément :
-  Ombre 12, Lumière 12, Glace 11, Feu 11, Foudre 10, Vent 10, Plante 9, Eau 9 —
-  les huit éléments tiennent désormais dans trois points d'écart.
+- répartition des victoires sur les 21 duels hors miroir de chaque bête :
+  Loup 12, Tortue 12, Ours 11, Araignée 11, Faucon 10, Tigre 10, Serpent 9,
+  Cerf 9 — les huit tiennent dans trois points d'écart.
   Le classement bouge à chaque retouche : le banc d'essai (`matrix`) sert
-  justement à le vérifier après chaque changement de fiche.
+  justement à le vérifier après chaque changement de fiche ;
+- **l'ordre d'appariement compte.** Les paires sont formées en
+  `[liste[i], liste[j]]` : la liste décide donc qui est le combattant A, et le
+  camp A pèse lourd. En repassant simplement de l'ordre d'appariement à l'ordre
+  d'affichage de l'écran de sélection, la Tortue monte de 12 à 14 victoires et
+  le Serpent tombe de 9 à 5 — **sans qu'une seule valeur de fiche ait bougé**.
+  L'ordre est donc figé en tête de `tools/matrix.mjs`, séparé de `ROSTER` qui
+  n'est plus que l'ordre d'affichage : réordonner un menu ne doit jamais
+  déplacer la référence d'équilibrage.
 
 Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 `index.html?a=…&b=…&seed=…`.

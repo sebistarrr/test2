@@ -14,8 +14,8 @@
 import { TAU, clamp } from '../../core/math.js';
 import { ARENA } from '../../data/tuning.js';
 
-export const shadowAbilities = {
-  id: 'shadow',
+export const wolfAbilities = {
+  id: 'wolf',
 
   /** @param {import('../fighter.js').Fighter} f */
   init(f) {

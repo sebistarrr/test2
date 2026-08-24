@@ -24,8 +24,8 @@
 
 import { clamp } from '../../core/math.js';
 
-export const lightAbilities = {
-  id: 'light',
+export const turtleAbilities = {
+  id: 'turtle',
 
   init(f) {
     const shield = f.el.ability.shield;

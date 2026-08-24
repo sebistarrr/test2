@@ -16,8 +16,8 @@
 
 import { TAU, clamp } from '../../core/math.js';
 
-export const fireAbilities = {
-  id: 'fire',
+export const bearAbilities = {
+  id: 'bear',
 
   init(f) {
     f.state.auraTick = 0;

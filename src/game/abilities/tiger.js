@@ -18,8 +18,8 @@ import { clamp, dist } from '../../core/math.js';
 import { drawSpriteCentered } from '../../render/sprites.js';
 import { PIXEL_MAPS } from '../../data/pixelmaps.js';
 
-export const lightningAbilities = {
-  id: 'lightning',
+export const tigerAbilities = {
+  id: 'tiger',
 
   init(f) {
     /** @type {Array<{x:number,y:number,life:number,born:number}>} */

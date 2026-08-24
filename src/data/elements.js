@@ -1,21 +1,25 @@
 /**
  * ============================================================================
- *  FICHES D'ÉLÉMENTS — source de vérité unique
+ *  FICHES DES BÊTES SPIRITUELLES — source de vérité unique
  * ============================================================================
  *
  *  Tout ce qui définit un combattant est ici : apparence, vitesse, arme,
  *  pouvoir, ultime, projectiles, HUD. Le moteur ne contient AUCUNE constante
- *  propre à un élément : il lit cette fiche.
+ *  propre à une bête : il lit cette fiche.
  *
  *  Les objets sont gelés (deepFreeze) : un duel ne peut pas les modifier, donc
- *  Ombre se comporte exactement pareil au 1er et au 100e duel. Le runtime
+ *  le Loup se comporte exactement pareil au 1er et au 100e duel. Le runtime
  *  travaille sur une copie d'état (voir game/fighter.js).
  *
- *  Ajouter un élément = ajouter une entrée ici + éventuellement un module de
+ *  Ajouter une bête = ajouter une entrée ici + éventuellement un module de
  *  pouvoirs dans game/abilities/. Rien d'autre à toucher.
  *
  *  Unités : px (référentiel 720x1280 de la vidéo), secondes, radians.
- *  « mesuré » = valeur relevée sur la vidéo de référence.
+ *  « mesuré » = valeur relevée sur la vidéo de référence. Le roster « Bêtes
+ *              Spirituelles » rhabille les huit combattants d'origine sans
+ *              toucher à leur mécanique : ces relevés restent donc valables,
+ *              et les noms de vidéos cités plus bas disent d'où vient le
+ *              chiffre, pas qui le porte aujourd'hui.
  *  « calé »   = valeur ajustée pour retrouver le rythme observé (~60 s de duel).
  *
  * @module data/elements
@@ -27,19 +31,20 @@ import { deepFreeze } from './freeze.js';
 const SPIN = 5.76;
 
 /* ==========================================================================
- *  OMBRE  (DARK)
+ *  LOUP  (WOLF) — Traqueur
  * ========================================================================== */
-const SHADOW = {
-  id: 'shadow',
-  name: 'OMBRE',
-  nameRef: 'DARK', // libellé de la vidéo de référence
-  tagline: 'Assassin — se déplace par pas d’ombre et draine l’essence',
-  icon: 'orbDark',
+const WOLF = {
+  id: 'wolf',
+  name: 'LOUP',
+  nameRef: 'WOLF',
+  tagline: 'Traqueur — bondit dans l’angle mort et saigne sa proie',
+  icon: 'wolfIcon',
+  portrait: 'wolfSprite', // vignette de l'écran de sélection
 
   /* ---------- APPARENCE ---------- */
   look: {
     radius: 41, // mesuré : boule de 83 px de diamètre, contour compris
-    body: '#870286', // pipette : rgb(132,6,132)
+    body: '#8fa6c8', // bleu argenté du roster
     bodyHit: '#ffffff', // flash blanc à l'encaissement (observé)
     outline: '#0a0a0a',
     outlineWidth: 5,
@@ -47,10 +52,10 @@ const SHADOW = {
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12, // décalage de la ligne de base pour centrer les chiffres
     aura: {
-      color: 'rgba(124,58,237,0.42)',
+      color: 'rgba(143,166,200,0.45)',
       radius: 1.62, // × rayon du corps
       pulse: 2.4, // Hz
-      showWhen: 'ability-ready', // halo violet quand le Pas d’ombre est prêt
+      showWhen: 'ability-ready', // halo argenté quand le Bond est prêt
     },
     /**
      * Mise en scène (rendu seul, aucun effet sur le duel) : `ribbon` = traînée
@@ -63,18 +68,18 @@ const SHADOW = {
      * et les ondes le long des murs qui s'en chargent (`render/flair.js`).
      */
     flair: {
-      ribbon: { color: '#a855f7', width: 16, alpha: 0.5 },
-      motes: { rate: 9, size: 9, drift: 26, rise: -14, colors: ['#7c3aed', '#a855f7', '#2e1065'] },
-      impact: ['#a855f7', '#c4b5fd', '#ffffff'],
+      ribbon: { color: '#cfe0f5', width: 16, alpha: 0.5 },
+      motes: { rate: 9, size: 9, drift: 26, rise: -14, colors: ['#8fa6c8', '#4f6488', '#dbe9fb'] },
+      impact: ['#dbe9fb', '#ffffff', '#4f6488'],
       shape: 'dot',
-      castFlash: 'rgba(124,58,237,0.55)',
+      castFlash: 'rgba(219,233,251,0.55)',
     },
     trail: {
-      color: 'rgba(88,28,135,0.22)',
+      color: 'rgba(79,100,136,0.24)',
       every: 0.045, // s entre deux images fantômes
       life: 0.28,
     },
-    accent: '#a855f7',
+    accent: '#dbe9fb',
   },
 
   /* ---------- DÉPLACEMENT ---------- */
@@ -90,19 +95,19 @@ const SHADOW = {
 
   /* ---------- ARME ---------- */
   weapon: {
-    name: 'Lame du Néant',
+    name: 'Dagues-crocs',
     reach: 77, // mesuré : centre → pointe = 77 px
     spin: SPIN,
     spinDir: -1, // sens initial (s'inverse aux rebonds)
     handle: {
-      length: 17, // partie manche, en grande partie masquée par le corps
+      length: 29, // amorce masquée par le corps ; la lame occupe 29 → 77
       width: 11,
-      color: '#2b2130',
-      dark: '#171021',
-      outline: '#0b0710',
+      color: '#2c3550',
+      dark: '#171d2e',
+      outline: '#0a0f1a',
       gem: null,
     },
-    head: { sprite: 'darkBlade', scale: 3.0, anchorY: 0.5 },
+    head: { sprite: 'wolfProjectile', scale: 6, anchorY: 0.5 }, // 8 × 6 = 48 px
     /** Portion tranchante (fraction de la portée) + demi-épaisseur. */
     hitbox: { from: 0.42, to: 1, radius: 13 },
     melee: {
@@ -115,10 +120,10 @@ const SHADOW = {
 
   /* ---------- POUVOIR (touche active, automatique) ---------- */
   ability: {
-    id: 'shadowStep',
-    name: 'Pas d’ombre',
-    nameRef: 'Shadow Step',
-    /** Cooldown initial affiché « Shadow Step Cooldown: 3s » (mesuré). */
+    id: 'huntersLeap',
+    name: 'Bond du traqueur',
+    nameRef: 'Hunter’s Leap',
+    /** Cooldown initial affiché « Hunter’s Leap Cooldown: 3s » (mesuré). */
     cooldown: 3,
     /** Chaque utilisation raccourcit le cooldown (3 → 2,8 → 2,6 … mesuré). */
     cooldownStep: 0.2,
@@ -132,18 +137,18 @@ const SHADOW = {
       boostDuration: 0.45,
     },
     /** Volée tirée à l'arrivée (3 traits observés dans la vidéo). */
-    volley: { count: 3, spread: 0.38, projectile: 'shadowBolt' },
+    volley: { count: 3, spread: 0.38, projectile: 'fangDart' },
   },
 
   /* ---------- ULTIME (jauge du HUD) ---------- */
   ultimate: {
-    id: 'essenceTether',
-    name: 'Lien d’essence',
-    nameRef: 'ESSENCE TETHER',
-    barLabel: 'ESSENCE TETHER',
-    barLabelFr: 'LIEN D’ESSENCE',
-    barFill: '#870286',
-    barText: '#f3e8ff',
+    id: 'bloodBond',
+    name: 'Lien de sang',
+    nameRef: 'BLOOD BOND',
+    barLabel: 'BLOOD BOND',
+    barLabelFr: 'LIEN DE SANG',
+    barFill: '#8fa6c8',
+    barText: '#0a0f1a',
     /** Charge : +chargeRate/s et +chargeOnHit par touche portée. */
     chargeRate: 5.5, // calé : ~3 incantations, pour compenser le drain plus lent
     chargeOnHit: 3,
@@ -152,86 +157,90 @@ const SHADOW = {
       radius: 265, // mesuré : largeur médiane stable à 209 px ×1,25
       /** Le dôme **déborde de l'arène** : dans la vidéo il recouvre le HUD. */
       clipToArena: false,
-      fill: 'rgba(30,24,45,0.88)', // pipette : rgb(52,46,70) sur blanc
-      edge: 'rgba(76,29,149,0.95)',
+      fill: 'rgba(20,26,40,0.88)', // nuit bleutée : la traque se fait dans le noir
+      edge: 'rgba(143,166,200,0.95)',
       edgeWidth: 4,
-      sparks: 120, // poussière violette qui dérive dans le dôme
-      sparkColors: ['#a855f7', '#c4b5fd', '#ffffff', '#6d28d9'],
+      sparks: 120, // poussière argentée qui dérive dans le dôme
+      sparkColors: ['#8fa6c8', '#dbe9fb', '#ffffff', '#4f6488'],
       /** Le dôme est figé à l'endroit de l'incantation. */
       anchored: true,
     },
     tether: {
-      color: '#7c3aed',
+      color: '#8fa6c8',
       core: 'rgba(255,255,255,0.55)',
       width: 5,
       /** Drain mesuré sur un dôme entier : 10 PV en 4,5 s, soit 2,2 PV/s. */
       tickInterval: 0.4,
       tickDamage: 1,
       slow: 0.15, // ralentit la cible tant que le lien tient
-      motes: 26, // particules qui remontent le lien vers l'Ombre
+      motes: 26, // particules qui remontent le lien vers le Loup
     },
   },
 
   /* ---------- PROJECTILES ---------- */
   projectiles: {
-    shadowBolt: {
-      label: 'Trait d’ombre',
-      sprite: 'darkBlade', // mini version de la lame (observé)
-      scale: 2.2, // mesuré : trait d'ombre d'environ 44 px de long
+    fangDart: {
+      label: 'Croc lancé',
+      sprite: 'wolfProjectile', // mini version de la dague-croc
+      scale: 2.4, // mesuré : trait d'ombre d'environ 44 px de long
       speed: 600,
       damage: 5,
       radius: 11,
       life: 1.5,
       bounces: 0,
       knockback: 70,
-      trail: { color: 'rgba(59,35,80,0.35)', every: 0.05, life: 0.22 },
+      trail: { color: 'rgba(79,100,136,0.35)', every: 0.05, life: 0.22 },
     },
   },
 
   /* ---------- LIGNE DE STAT DU HUD ---------- */
   hud: {
     /** @param {import('../game/fighter.js').Fighter} f */
-    stat: (f) => `Shadow Step Cooldown: ${formatSeconds(f.ability.cooldown)}`,
-    statFr: (f) => `Pas d’ombre — recharge : ${formatSeconds(f.ability.cooldown)}`,
-    color: '#870286',
+    stat: (f) => `Hunter’s Leap Cooldown: ${formatSeconds(f.ability.cooldown)}`,
+    statFr: (f) => `Bond du traqueur — recharge : ${formatSeconds(f.ability.cooldown)}`,
+    color: '#7d94b8',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
 /* ==========================================================================
- *  GLACE  (ICE)
+ *  ARAIGNÉE  (SPIDER) — Contrôle
  * ========================================================================== */
-const ICE = {
-  id: 'ice',
-  name: 'GLACE',
-  nameRef: 'ICE',
-  tagline: 'Contrôle — empile les stacks de dégâts/ralentissement',
-  icon: 'snowflake',
+const SPIDER = {
+  id: 'spider',
+  name: 'ARAIGNÉE',
+  nameRef: 'SPIDER',
+  tagline: 'Contrôle — empile les toiles qui blessent et engluent',
+  icon: 'spiderIcon',
+  portrait: 'spiderSprite',
 
   look: {
     radius: 41,
-    body: '#00eff0', // pipette : rgb(0,239,240)
+    body: '#2b2733', // noir profond du roster
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
-    hpColor: '#0a0a0a',
+    // seule bête du roster à porter ses PV en clair : le noir profond du corps
+    // avalerait des chiffres noirs, alors que l'arène blanche les rend partout
+    // ailleurs plus lisibles
+    hpColor: '#ffd7dc',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
-      color: 'rgba(34,211,238,0.42)',
+      color: 'rgba(224,31,58,0.45)',
       radius: 1.62,
       pulse: 2.0,
-      showWhen: 'ultimate-ready', // halo cyan quand le Blizzard est chargé
+      showWhen: 'ultimate-ready', // halo rouge quand la Toile mère est chargée
     },
     flair: {
-      ribbon: { color: '#67e8f9', width: 17, alpha: 0.5 },
-      motes: { rate: 9, size: 9, drift: 20, rise: 14, colors: ['#22d3ee', '#0891b2', '#67e8f9'] },
-      impact: ['#a5f3fc', '#ffffff', '#0891b2'],
+      ribbon: { color: '#e01f3a', width: 17, alpha: 0.5 },
+      motes: { rate: 9, size: 9, drift: 20, rise: 14, colors: ['#e01f3a', '#8f8aa4', '#ff5566'] },
+      impact: ['#ff5566', '#ffd7dc', '#8f8aa4'],
       shape: 'spark',
-      castFlash: 'rgba(165,243,252,0.6)',
+      castFlash: 'rgba(224,31,58,0.6)',
     },
-    trail: { color: 'rgba(125,211,252,0.28)', every: 0.05, life: 0.26 },
-    accent: '#06b6d4',
+    trail: { color: 'rgba(143,138,164,0.28)', every: 0.05, life: 0.26 },
+    accent: '#e01f3a',
   },
 
   movement: {
@@ -242,19 +251,19 @@ const ICE = {
   },
 
   weapon: {
-    name: 'Hache de givre',
+    name: 'Shurikens-toiles',
     reach: 132, // mesuré : centre → pointe de hache = 132 px
     spin: SPIN,
     spinDir: 1,
     handle: {
-      length: 90, // long manche gris (mesuré : 90 px + 42 px de tête = 132)
+      length: 84, // long fil de soie (84 px + 48 px de shuriken = 132)
       width: 11,
-      color: '#7d838c',
-      dark: '#3f444b',
-      outline: '#0d0d12',
-      gem: { at: 0.52, size: 8, color: '#37d7f0' }, // pierre cyan au milieu
+      color: '#6d6879',
+      dark: '#3a3644',
+      outline: '#000000',
+      gem: { at: 0.52, size: 8, color: '#e01f3a' }, // perle rouge au milieu
     },
-    head: { sprite: 'iceAxeHead', scale: 3.5, anchorY: 0.5 },
+    head: { sprite: 'spiderProjectile', scale: 6, anchorY: 0.5 }, // 8 × 6 = 48 px
     hitbox: { from: 0.62, to: 1, radius: 20 }, // seule la tête tranche
     melee: {
       /**
@@ -272,97 +281,99 @@ const ICE = {
         slowPerStack: 0.03,
         slowMax: 0.45,
         slowDuration: 2.6,
-        /** Givre visible : la victime prend un voile bleuté (observé — sur
-         *  le jaune de la Lumière, cela donne le vert pâle de la vidéo). */
-        tint: { color: '#7fe3ff', alpha: 0.42, duration: 2.6 },
+        /** Soie visible : la victime prend un voile gris perle qui dit
+         *  l'entrave, sans masquer sa couleur propre. */
+        tint: { color: '#c9c4d6', alpha: 0.42, duration: 2.6 },
       },
     },
   },
 
-  /** Pouvoir passif : salve d'éclats radiale à intervalle fixe. */
+  /** Pouvoir passif : salve de shurikens radiale à intervalle fixe. */
   ability: {
-    id: 'frostShards',
-    name: 'Éclats de givre',
-    nameRef: 'Frost Shards',
-    cooldown: 5, // s entre deux salves hors Blizzard
+    id: 'webBurst',
+    name: 'Salve de toiles',
+    nameRef: 'Web Burst',
+    cooldown: 5, // s entre deux salves hors Toile mère
     cooldownStep: 0, // pas d'accélération : c'est la stat « Damage/Slow » qui monte
     cooldownFloor: 5,
-    burst: { count: 7, spread: Math.PI * 2, projectile: 'iceShard' },
-    /** Pendant le Blizzard, salves plus rapides et plus fournies (observé). */
+    burst: { count: 7, spread: Math.PI * 2, projectile: 'webShuriken' },
+    /** Pendant la Toile mère, salves plus rapides et plus fournies (observé). */
     duringUltimate: { cooldown: 1.2, count: 10 },
   },
 
   ultimate: {
-    id: 'blizzard',
-    name: 'Blizzard',
-    nameRef: 'BLIZZARD',
-    barLabel: 'BLIZZARD',
-    barLabelFr: 'BLIZZARD',
-    barFill: '#00eff0',
-    barText: '#083344',
+    id: 'broodweb',
+    name: 'Toile mère',
+    nameRef: 'BROODWEB',
+    barLabel: 'BROODWEB',
+    barLabelFr: 'TOILE MÈRE',
+    barFill: '#e01f3a',
+    barText: '#ffd7dc',
     barAnchor: 'right', // la jauge se remplit depuis la droite (observé)
-    chargeRate: 5.4, // calé : Blizzard toutes les ~18 s comme dans la vidéo
+    chargeRate: 5.4, // calé : Toile mère toutes les ~18 s comme dans la vidéo
     chargeOnHit: 2,
     duration: 5.2,
     shockwave: {
-      // onde cyan qui dépasse largement l'arène au déclenchement (observé)
+      // onde rouge qui dépasse largement l'arène au déclenchement (observé)
       from: 40,
       to: 900,
       time: 0.95,
-      color: 'rgba(103,214,236,0.85)',
+      color: 'rgba(224,31,58,0.85)',
       width: 6,
     },
     field: {
-      radius: 130, // mesuré : disque cyan de ~130 px autour de la Glace
-      fill: 'rgba(224,247,255,0.55)',
-      edge: 'rgba(103,214,236,0.75)',
+      radius: 130, // mesuré : disque de ~130 px autour de l'Araignée
+      fill: 'rgba(200,196,214,0.5)',
+      edge: 'rgba(224,31,58,0.75)',
       edgeWidth: 3,
-      follows: true, // le champ suit la Glace
+      follows: true, // la nappe de soie suit l'Araignée
       slow: 0.35,
       tickInterval: 0.7,
       tickDamage: 1,
     },
-    snow: { count: 90, fall: 46, drift: 22, color: 'rgba(186,230,253,0.9)' },
+    /** `snow` côté moteur : ici ce sont les fils de soie qui dérivent. */
+    snow: { count: 90, fall: 46, drift: 22, color: 'rgba(190,186,204,0.9)' },
   },
 
   projectiles: {
-    iceShard: {
-      label: 'Éclat de givre',
-      sprite: 'iceShard',
+    webShuriken: {
+      label: 'Shuriken-toile',
+      sprite: 'spiderProjectile',
       scale: 2.4,
       speed: 380,
       damage: 2,
       radius: 10,
       life: 3.4,
-      bounces: 2, // les éclats ricochent sur les murs (observé)
+      bounces: 2, // les shurikens ricochent sur les murs (observé)
       knockback: 45,
       onHit: { slow: 0.12, slowDuration: 1.6 },
-      trail: { color: 'rgba(186,230,253,0.55)', every: 0.035, life: 0.5, dotted: true },
+      trail: { color: 'rgba(190,186,204,0.55)', every: 0.035, life: 0.5, dotted: true },
     },
   },
 
   hud: {
-    stat: (f) => `Damage/Slow: ${f.stacks}`,
-    statFr: (f) => `Dégâts/Ralent. : ${f.stacks}`,
-    color: '#00d5e6',
+    stat: (f) => `Web Damage/Slow: ${f.stacks}`,
+    statFr: (f) => `Toile — dégâts/entrave : ${f.stacks}`,
+    color: '#e01f3a',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
 /* ==========================================================================
- *  FEU  (FIRE)
- *  Relevé : vidéos « LIGHT vs FIRE » et « FIRE vs WATER ».
+ *  OURS  (BEAR) — Berserker
+ *  Chiffres relevés sur : vidéos « LIGHT vs FIRE » et « FIRE vs WATER ».
  * ========================================================================== */
-const FIRE = {
-  id: 'fire',
-  name: 'FEU',
-  nameRef: 'FIRE',
-  tagline: 'Attrition — marque l’adversaire d’une brûlure qui s’aggrave',
-  icon: 'iconFlame',
+const BEAR = {
+  id: 'bear',
+  name: 'OURS',
+  nameRef: 'BEAR',
+  tagline: 'Berserker — chaque morsure creuse une plaie qui saigne',
+  icon: 'bearIcon',
+  portrait: 'bearSprite',
 
   look: {
     radius: 41,
-    body: '#fb0a0a', // pipette : rgb(254,0,0)
+    body: '#a9713f', // brun du roster, éclairci pour rester lisible
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
@@ -370,45 +381,43 @@ const FIRE = {
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
-      color: 'rgba(249,115,22,0.45)',
+      color: 'rgba(200,48,42,0.48)',
       radius: 1.7,
       pulse: 3.2,
       showWhen: 'ultimate-ready',
     },
     flair: {
-      ribbon: { color: '#f97316', width: 18, alpha: 0.6 },
-      motes: { rate: 13, size: 10, drift: 30, rise: -70, colors: ['#f97316', '#ea580c', '#dc2626'] },
-      impact: ['#fbbf24', '#f97316', '#ffffff'],
+      ribbon: { color: '#c8302a', width: 18, alpha: 0.6 },
+      motes: { rate: 13, size: 10, drift: 30, rise: -70, colors: ['#c8302a', '#8a5a34', '#54341c'] },
+      impact: ['#e0bd97', '#c8302a', '#ffffff'],
       shape: 'spark',
-      castFlash: 'rgba(249,115,22,0.6)',
+      castFlash: 'rgba(200,48,42,0.6)',
     },
-    trail: { color: 'rgba(249,115,22,0.28)', every: 0.05, life: 0.3 },
-    accent: '#f2670c',
+    trail: { color: 'rgba(138,90,52,0.3)', every: 0.05, life: 0.3 },
+    accent: '#c8302a',
   },
 
   movement: { speed: 480, turnRate: 1.95, seek: 0.42, mass: 1 },
 
   weapon: {
-    name: 'Lame ardente',
+    name: 'Gantelets griffus',
     reach: 150, // mesuré : ~166 px, ramené à l'échelle du roster
     spin: SPIN,
     spinDir: -1,
     /**
-     * **Aucun manche visible.** Sur FIRE vs WATER, la garde anthracite à gemme
-     * rouge est posée au ras de la boule et la flamme part directement — la
-     * garde fait partie du sprite. `width: 0` demande au moteur de ne rien
-     * tracer, `length` place le sprite juste au bord du corps.
+     * **Aucun manche visible** : le gantelet est chaussé à même la patte, il
+     * part au ras de la boule. `width: 0` demande au moteur de ne rien tracer,
+     * `length` place le sprite juste au bord du corps.
      */
     handle: {
-      length: 38,
-      width: 0,
-      color: '#3f2a20',
-      dark: '#211410',
-      outline: '#0a0502',
+      length: 98,
+      width: 12,
+      color: '#54341c',
+      dark: '#2e1c0e',
+      outline: '#150c08',
       gem: null,
     },
-    /** mesuré : garde + flamme = 112 × 36 px, la pointe tombe sur la portée. */
-    head: { sprite: 'fireBlade', scale: 4, anchorY: 0.5 },
+    head: { sprite: 'bearProjectile', scale: 6.5, anchorY: 0.5 }, // 8 × 6,5 = 52 px
     hitbox: { from: 0.5, to: 1, radius: 16 },
     melee: {
       damage: 5,
@@ -416,7 +425,7 @@ const FIRE = {
       knockback: 240,
       selfRecoil: 85,
       onHit: {
-        // « Burn Damage/Duration » monte de 0,5 par touche (1 → 5,5 mesuré)
+        // « Bleed Damage/Duration » monte de 0,5 par touche (1 → 5,5 mesuré)
         stackGain: 0.5,
         stackMax: 12,
         dot: {
@@ -424,54 +433,53 @@ const FIRE = {
           interval: 1,
           duration: (self) => self.stacks, // la stat sert aussi de durée
           /**
-           * La brûlure fait **les deux à la fois** : elle colore la victime
-           * *et* la cercle d'orange. Au zoom sur FIRE vs WATER, la boule bleue
-           * de l'Eau vire au violet (bleu + orange à 0,72) **et** porte un gros
-           * anneau orange vif tout autour, pendant toute la durée.
+           * Le saignement fait **les deux à la fois** : il colore la victime
+           * *et* la cercle de rouge, pendant toute la durée. Reprend le double
+           * effet relevé sur la brûlure d'origine (teinte à 0,72 + gros anneau).
            */
-          ring: '#f97316',
-          tint: { color: '#f97316', alpha: 0.72 },
+          ring: '#c8302a',
+          tint: { color: '#c8302a', alpha: 0.72 },
         },
       },
     },
   },
 
   ability: {
-    id: 'emberBurst',
-    name: 'Gerbe de braises',
-    nameRef: 'Ember Burst',
+    id: 'clawSweep',
+    name: 'Revers de griffes',
+    nameRef: 'Claw Sweep',
     cooldown: 3.6,
     cooldownStep: 0,
     cooldownFloor: 3.6,
-    burst: { count: 3, spread: 0.55, projectile: 'ember' },
+    burst: { count: 3, spread: 0.55, projectile: 'clawRip' },
   },
 
   ultimate: {
-    id: 'infernalRage',
-    name: 'Rage infernale',
-    nameRef: 'INFERNAL RAGE',
-    barLabel: 'INFERNAL RAGE',
-    barLabelFr: 'RAGE INFERNALE',
-    barFill: '#dc2626',
-    barText: '#fff1f0',
+    id: 'feralRage',
+    name: 'Rage sauvage',
+    nameRef: 'FERAL RAGE',
+    barLabel: 'FERAL RAGE',
+    barLabelFr: 'RAGE SAUVAGE',
+    barFill: '#c8302a',
+    barText: '#ffe9cf',
     /** Cycle de jauge mesuré : la Rage revient toutes les 25 à 27 s. */
     chargeRate: 3.8,
     chargeOnHit: 1,
     duration: 6,
-    /** Nova de cubes orange à l'incantation (observée image par image). */
-    nova: { count: 90, speed: 460, size: 13, life: 1.1, colors: ['#f97316', '#ea580c', '#fbbf24', '#dc2626'] },
-    /** Ailes de flammes autour du corps pendant toute la durée. */
-    wings: { color: '#f97316', core: '#fbbf24', span: 2.3, flap: 6 },
-    /** Aura brûlante : tout adversaire trop près prend la brûlure. */
+    /** Nova de cubes à l'incantation (observée image par image). */
+    nova: { count: 90, speed: 460, size: 13, life: 1.1, colors: ['#c8302a', '#8a5a34', '#e0bd97', '#54341c'] },
+    /** `wings` côté moteur : ici la crinière hérissée du berserker. */
+    wings: { color: '#c8302a', core: '#e0bd97', span: 2.3, flap: 6 },
+    /** Aura de rage : tout adversaire trop près se met à saigner. */
     aura: { radius: 150, tickInterval: 0.6, tickDamage: 2 },
     speedBonus: 1.2,
   },
 
   projectiles: {
-    ember: {
-      label: 'Braise',
-      sprite: 'ember',
-      scale: 3,
+    clawRip: {
+      label: 'Lacération',
+      sprite: 'bearProjectile',
+      scale: 3.2,
       speed: 520,
       damage: 4,
       radius: 11,
@@ -479,36 +487,37 @@ const FIRE = {
       bounces: 0,
       knockback: 90,
       onHit: {
-        dot: { damage: 1, interval: 1, duration: 2, ring: '#f97316', tint: { color: '#f97316', alpha: 0.72 } },
+        dot: { damage: 1, interval: 1, duration: 2, ring: '#c8302a', tint: { color: '#c8302a', alpha: 0.72 } },
       },
-      trail: { color: 'rgba(249,115,22,0.45)', every: 0.03, life: 0.3 },
+      trail: { color: 'rgba(200,48,42,0.45)', every: 0.03, life: 0.3 },
     },
   },
 
   progression: { stack: 1, stack2: 0 },
 
   hud: {
-    stats: [(f) => `Burn Damage/Duration: ${formatHalf(f.stacks)}`],
-    statsFr: [(f) => `Brûlure — dégâts/durée : ${formatHalf(f.stacks)}`],
-    color: '#e11d1d',
+    stats: [(f) => `Bleed Damage/Duration: ${formatHalf(f.stacks)}`],
+    statsFr: [(f) => `Saignement — dégâts/durée : ${formatHalf(f.stacks)}`],
+    color: '#c8302a',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
 /* ==========================================================================
- *  LUMIÈRE  (LIGHT)
- *  Relevé : vidéos « LIGHT vs FIRE », « LIGHT vs DARK », « LIGHT vs LIGHTNING ».
+ *  TORTUE  (TURTLE) — Forteresse
+ *  Chiffres relevés sur : vidéos « LIGHT vs FIRE », « LIGHT vs DARK », « LIGHT vs LIGHTNING ».
  * ========================================================================== */
-const LIGHT = {
-  id: 'light',
-  name: 'LUMIÈRE',
-  nameRef: 'LIGHT',
-  tagline: 'Forteresse — bouclier qui riposte et marteau qui projette',
-  icon: 'iconShield',
+const TURTLE = {
+  id: 'turtle',
+  name: 'TORTUE',
+  nameRef: 'TURTLE',
+  tagline: 'Forteresse — carapace qui riposte et masse qui projette',
+  icon: 'turtleIcon',
+  portrait: 'turtleSprite',
 
   look: {
     radius: 41,
-    body: '#fbf7a3', // pipette : rgb(252,251,168)
+    body: '#3f9e6b', // jade du roster
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
@@ -516,58 +525,56 @@ const LIGHT = {
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     /**
-     * Halo doré. Relevé sur LIGHT vs LIGHTNING : dès que le Piège radiant est
-     * chargé, **c'est la Lumière elle-même** qui s'entoure d'un grand halo d'or
-     * — et il reste allumé pendant tout le trait. La cible, elle, n'est pas
-     * teintée.
+     * Halo doré : dès que la Chaîne de jade est chargée, **c'est la Tortue
+     * elle-même** qui s'entoure d'or, et il reste allumé pendant tout le trait.
+     * La cible, elle, n'est pas teintée.
      */
     aura: {
-      color: 'rgba(253,224,71,0.62)',
+      color: 'rgba(232,192,74,0.62)',
       radius: 2.3,
       pulse: 1.2,
       showWhen: 'ultimate-ready',
     },
     /**
-     * L'Égide ne se voit pas comme une bulle grise sur la vidéo : elle se lit
-     * sur le **liseré doré** de la boule, qui s'épaissit avec le pool.
+     * La Carapace ne se voit pas comme une bulle grise : elle se lit sur le
+     * **liseré doré** de la boule, qui s'épaissit avec le pool.
      */
-    shield: { color: 'rgba(253,224,71,0.6)', glow: 'rgba(250,204,21,0.12)' },
+    shield: { color: 'rgba(232,192,74,0.6)', glow: 'rgba(232,192,74,0.12)' },
     flair: {
-      ribbon: { color: '#fde047', width: 19, alpha: 0.6 },
-      motes: { rate: 10, size: 9, drift: 22, rise: -20, colors: ['#eab308', '#facc15', '#ca8a04'] },
-      impact: ['#fef9c3', '#fde047', '#ffffff'],
+      ribbon: { color: '#e8c04a', width: 19, alpha: 0.6 },
+      motes: { rate: 10, size: 9, drift: 22, rise: -20, colors: ['#e8c04a', '#3f9e6b', '#9a7418'] },
+      impact: ['#a9ecc6', '#e8c04a', '#ffffff'],
       shape: 'streak',
-      castFlash: 'rgba(253,224,71,0.7)',
+      castFlash: 'rgba(232,192,74,0.7)',
     },
-    trail: { color: 'rgba(250,220,60,0.25)', every: 0.05, life: 0.26 },
-    accent: '#eab308',
+    trail: { color: 'rgba(63,158,107,0.28)', every: 0.05, life: 0.26 },
+    accent: '#e8c04a',
   },
 
-  // marteau lourd : la Lumière est le combattant le plus lent du roster
+  // bouclier lourd : la Tortue est la combattante la plus lente du roster
   movement: { speed: 415, turnRate: 1.6, seek: 0.46, mass: 1 },
 
   weapon: {
-    name: 'Marteau d’aube',
+    name: 'Bouclier lourd',
     reach: 155, // mesuré : ~159 px
     spin: SPIN,
     spinDir: 1,
-    /** Hampe d'acier courte : ~31 px visibles au-delà de la boule (mesuré). */
+    /** Bras court : ~31 px visibles au-delà de la boule (mesuré). */
     handle: {
-      length: 78,
+      length: 93,
       width: 11,
-      color: '#8b8b8b',
-      dark: '#4f4f4f',
-      outline: '#0a0a0a',
-      gem: { at: 0.62, size: 9, color: '#f5d020' },
+      color: '#5c7a63',
+      dark: '#2f4235',
+      outline: '#0c1a12',
+      gem: { at: 0.62, size: 9, color: '#e8c04a' },
     },
-    /** mesuré : tête de 63 × 57 px, plus large que haute, gros contour noir. */
-    head: { sprite: 'lightHammerHead', scale: 5.7, anchorY: 0.5 },
+    head: { sprite: 'turtleProjectile', scale: 7.75, anchorY: 0.5 }, // 8 × 7,75 = 62 px
     hitbox: { from: 0.58, to: 1, radius: 22 },
     melee: {
       /**
-       * **Les dégâts du marteau SONT la stat « Shield Damage ».**
-       * Vérifié image par image : à `Shield Damage: 3` la cible perd 3 PV,
-       * à 4-5 elle en perd 5. La Lumière commence donc à 1 dégât par coup et
+       * **Les dégâts du bouclier SONT la stat « Shell Damage ».**
+       * Vérifié image par image : à `Shell Damage: 3` la cible perd 3 PV,
+       * à 4-5 elle en perd 5. La Tortue commence donc à 1 dégât par coup et
        * ne devient dangereuse qu'après avoir encaissé.
        */
       damage: (self) => Math.max(1, Math.round(self.stacks)),
@@ -575,30 +582,30 @@ const LIGHT = {
       /** Le recul suit la stat « Knockback » du HUD (1500 → 5400 mesuré). */
       knockback: (self) => 210 + self.stacks2 * 0.05,
       selfRecoil: 60,
-      // aucune progression ici : les deux stats montent quand la Lumière
+      // aucune progression ici : les deux stats montent quand la Tortue
       // ENCAISSE, pas quand elle frappe (voir ability.shield ci-dessous)
     },
   },
 
   /**
-   * Égide — bouclier **permanent et passif** : il absorbe, riposte, et
-   * surtout **convertit ce qu'il encaisse en puissance**.
+   * Carapace — bouclier **permanent et passif** : elle absorbe, riposte, et
+   * surtout **convertit ce qu'elle encaisse en puissance**.
    *
-   * Mesuré : la Lumière reste à 100 PV pendant 11 s sous les coups, et à
+   * Mesuré : la Tortue reste à 100 PV pendant 11 s sous les coups, et à
    * chaque coup encaissé ses deux compteurs montent d'un cran (+1 dégât,
    * +300 de recul) pendant que l'attaquant perd 1 PV. Aucune onde de choc
-   * périodique n'apparaît dans les vidéos : l'Égide n'a pas d'incantation.
+   * périodique : la Carapace n'a pas d'incantation.
    */
   ability: {
-    id: 'aegis',
-    name: 'Égide',
-    nameRef: 'Aegis',
+    id: 'carapace',
+    name: 'Carapace',
+    nameRef: 'Carapace',
     /** Rythme de rechargement du pool (le « sort » ne fait que le remplir). */
     cooldown: 9,
     cooldownStep: 0,
     cooldownFloor: 9,
     shield: {
-      /** Capacité = base + « Shield Damage » : le bouclier grossit avec la stat. */
+      /** Capacité = base + « Shell Damage » : la carapace grossit avec la stat. */
       capacity: (self) => 9 + self.stacks * 0.4,
       /** Régénération après un répit sans encaisser. */
       regen: 2,
@@ -609,8 +616,8 @@ const LIGHT = {
       /**
        * Gain par coup encaissé — mesuré : +1 et +300, y compris quand une
        * partie des dégâts passe. Seuls les coups **francs** comptent : les
-       * dégâts de zone ou sur la durée (blizzard, brûlure) ne font pas monter
-       * les compteurs, ce qui a été vérifié pendant un blizzard de 30 PV.
+       * dégâts de zone ou sur la durée (toile, saignement) ne font pas monter
+       * les compteurs, ce qui a été vérifié pendant une nappe de 30 PV.
        */
       gainOnHit: { stack: 1, stackMax: 14, stack2: 300, stack2Max: 5400 },
       /**
@@ -625,26 +632,25 @@ const LIGHT = {
   },
 
   ultimate: {
-    id: 'radiantSnare',
-    name: 'Piège radiant',
-    nameRef: 'RADIANT SNARE',
-    barLabel: 'RADIANT SNARE',
-    barLabelFr: 'PIÈGE RADIANT',
-    barFill: '#f2e04a',
-    barText: '#3f3000',
+    id: 'jadeChain',
+    name: 'Chaîne de jade',
+    nameRef: 'JADE CHAIN',
+    barLabel: 'JADE CHAIN',
+    barLabelFr: 'CHAÎNE DE JADE',
+    barFill: '#e8c04a',
+    barText: '#22603f',
     chargeRate: 3.2,
     chargeOnHit: 3,
     duration: 5,
     snare: {
-      color: '#f7d34a',
-      glow: 'rgba(250,220,60,0.55)',
+      color: '#e8c04a',
+      glow: 'rgba(232,192,74,0.55)',
       width: 7,
       gap: 5, // double trait doré (observé)
       /**
-       * **La cible n'est pas teintée.** Au zoom sur LIGHT vs LIGHTNING, la
-       * Foudre piégée garde son jaune saturé et son halo bleu : c'est la
-       * Lumière qui s'allume (voir `look.aura`). Le trait doré est le seul
-       * effet posé sur l'adversaire.
+       * **La cible n'est pas teintée.** La proie enchaînée garde sa couleur
+       * propre et son halo : c'est la Tortue qui s'allume (voir `look.aura`).
+       * Le trait doré est le seul effet posé sur l'adversaire.
        */
       tint: null,
       tintAlpha: 0,
@@ -652,7 +658,7 @@ const LIGHT = {
       /** Drain mesuré : 1 PV par seconde, pas davantage. */
       tickInterval: 1,
       tickDamage: 1,
-      /** Le piège tire la cible vers la Lumière. */
+      /** La chaîne tire la cible vers la Tortue. */
       pull: 90,
     },
   },
@@ -663,32 +669,33 @@ const LIGHT = {
 
   hud: {
     stats: [
-      (f) => `Shield Damage: ${Math.round(f.stacks)}`,
+      (f) => `Shell Damage: ${Math.round(f.stacks)}`,
       (f) => `Knockback: ${Math.round(f.stacks2)}`,
     ],
     statsFr: [
-      (f) => `Dégâts du bouclier : ${Math.round(f.stacks)}`,
+      (f) => `Dégâts de carapace : ${Math.round(f.stacks)}`,
       (f) => `Recul : ${Math.round(f.stacks2)}`,
     ],
-    color: '#d9b800',
+    color: '#c9a227',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
 /* ==========================================================================
- *  VENT  (WIND)
- *  Relevé : vidéo « WIND vs PLANT ».
+ *  FAUCON  (HAWK) — Zoner
+ *  Chiffres relevés sur : vidéo « WIND vs PLANT ».
  * ========================================================================== */
-const WIND = {
-  id: 'wind',
-  name: 'VENT',
-  nameRef: 'WIND',
-  tagline: 'Harcèlement — le plus rapide, tornades et lames d’air',
-  icon: 'iconTornado',
+const HAWK = {
+  id: 'hawk',
+  name: 'FAUCON',
+  nameRef: 'HAWK',
+  tagline: 'Zoner — le plus rapide, rafales et traits de vent',
+  icon: 'hawkIcon',
+  portrait: 'hawkSprite',
 
   look: {
     radius: 41,
-    body: '#bcbf9e', // pipette : rgb(187,190,158)
+    body: '#5fd0e8', // cyan du roster
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
@@ -696,39 +703,38 @@ const WIND = {
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
-      color: 'rgba(214,205,170,0.55)',
+      color: 'rgba(95,208,232,0.55)',
       radius: 1.6,
       pulse: 2.6,
       showWhen: 'ability-ready',
     },
     flair: {
-      ribbon: { color: '#d6cdaa', width: 20, alpha: 0.5 },
-      motes: { rate: 11, size: 9, drift: 46, rise: -6, colors: ['#b9a878', '#8a7f5c', '#d6cdaa'] },
-      impact: ['#e8dcc0', '#ffffff', '#a89b6f'],
+      ribbon: { color: '#eafcff', width: 20, alpha: 0.5 },
+      motes: { rate: 11, size: 9, drift: 46, rise: -6, colors: ['#5fd0e8', '#2a7590', '#eafcff'] },
+      impact: ['#eafcff', '#ffffff', '#2a7590'],
       shape: 'streak',
-      castFlash: 'rgba(232,220,192,0.6)',
+      castFlash: 'rgba(234,252,255,0.6)',
     },
-    trail: { color: 'rgba(207,198,168,0.3)', every: 0.035, life: 0.3 },
-    accent: '#a89b6f',
+    trail: { color: 'rgba(95,208,232,0.32)', every: 0.035, life: 0.3 },
+    accent: '#eafcff',
   },
 
   // le plus rapide et le plus manœuvrant du roster (observé)
   movement: { speed: 500, turnRate: 2.2, seek: 0.4, mass: 1 },
 
   weapon: {
-    name: 'Shuriken de bourrasque',
+    name: 'Arc de vent',
     reach: 105, // mesuré : ~120 px, arme collée au corps
     spin: SPIN * 1.1, // tourne plus vite que les autres (observé)
     spinDir: 1,
     /**
-     * **Aucun manche.** Sur la vidéo le losange est posé à même la boule :
-     * `width: 0` demande au moteur de ne rien dessiner et `length` ne sert
-     * plus qu'à décoller le sprite du centre (34 px → pointe interne cachée
-     * sous le corps, pointe externe à 108 px, soit la portée relevée).
+     * **Aucun manche.** L'arc est tenu à même la serre : `width: 0` demande au
+     * moteur de ne rien dessiner et `length` ne sert plus qu'à décoller le
+     * sprite du centre (34 px → extrémité interne cachée sous le corps,
+     * extrémité externe à 108 px, soit la portée relevée).
      */
-    handle: { length: 34, width: 0, color: '#6f6a55', dark: '#3f3b30', outline: '#201c12', gem: null },
-    /** mesuré : 74 px de pointe à pointe → 17 cellules × 4,35 px. */
-    head: { sprite: 'windShuriken', scale: 4.35, anchorY: 0.5 },
+    handle: { length: 45, width: 0, color: '#2a7590', dark: '#123a49', outline: '#0b1a22', gem: null },
+    head: { sprite: 'hawkProjectile', scale: 7.5, anchorY: 0.5 }, // 8 × 7,5 = 60 px
     hitbox: { from: 0.45, to: 1, radius: 18 },
     melee: {
       damage: 3,
@@ -739,11 +745,11 @@ const WIND = {
     },
   },
 
-  /** Tornade : la stat monte et la recharge descend à chaque incantation. */
+  /** Bourrasque : la stat monte et la recharge descend à chaque incantation. */
   ability: {
-    id: 'tornado',
-    name: 'Tornade',
-    nameRef: 'Tornado',
+    id: 'gale',
+    name: 'Bourrasque',
+    nameRef: 'Gale',
     cooldown: 4, // mesuré : 4 s au départ
     /**
      * Deux mesures à concilier, toutes deux relevées automatiquement :
@@ -757,40 +763,43 @@ const WIND = {
     cooldownStepOnCast: 0.15,
     cooldownStep: 0.5, // mesuré, apparié aux +2 dégâts, quand la rafale touche
     cooldownFloor: 0.5, // mesuré : le HUD descend jusqu'à 0,5 s
+    // clé `tornado` côté moteur (game/abilities/hawk.js) : c'est le coup
+    // d'aile du Faucon, gardé sous son nom d'origine pour ne pas toucher au
+    // module — seule l'identité change, pas la mécanique
     tornado: {
       /**
        * **Rafale, pas une zone.** Détection automatique sur trois vidéos :
-       * la tornade n'existe que 4 à 6 images (0,13 → 0,20 s) et son centre
-       * est toujours à moins de 30 px du Vent — c'est un tourbillon qu'il
+       * la bourrasque n'existe que 4 à 6 images (0,13 → 0,20 s) et son centre
+       * est toujours à moins de 30 px du Faucon — c'est un tourbillon qu'il
        * déclenche *autour de lui*, pas un vortex lancé sur l'adversaire.
        */
       radius: 125, // mesuré : ~120-130 px de diamètre visible
       duration: 0.2,
       knockback: 430, // la rafale projette au lieu d'aspirer
-      /** « Tornado Damage » du HUD, ramené à l'échelle des PV. */
+      /** « Gale Damage » du HUD, ramené à l'échelle des PV. */
       damage: (self) => Math.max(2, Math.round(self.stacks / 2)),
       damageGain: 2, // mesuré : 10 → 24 par pas de 2
       damageMax: 24, // plafond mesuré, apparié au plancher de 0,5 s
       /**
-       * Aspect relevé : un **disque flou couleur sable** composé de larges
-       * pales en éventail qui rayonnent du centre, sans le moindre contour —
-       * pas des cercles concentriques. Le cœur est plus dense et plus chaud.
+       * Aspect relevé : un **disque flou** composé de larges pales en éventail
+       * qui rayonnent du centre, sans le moindre contour — pas des cercles
+       * concentriques. Le cœur est plus dense et plus clair.
        */
-      color: 'rgba(201,190,168,0.46)', // pipette du bord : rgb(201,190,168)
-      edge: 'rgba(178,168,146,0.42)', // le disque garde un bord net sur la vidéo
-      core: 'rgba(168,152,124,0.6)', // pipette du cœur : rgb(168,152,124)
+      color: 'rgba(95,208,232,0.42)',
+      edge: 'rgba(42,117,144,0.42)', // le disque garde un bord net sur la vidéo
+      core: 'rgba(234,252,255,0.6)',
       blades: 9, // pales de l'éventail (comptées sur la vidéo)
     },
   },
 
   ultimate: {
-    id: 'tempestVolley',
-    name: 'Salve de tempête',
-    nameRef: 'TEMPEST VOLLEY',
-    barLabel: 'TEMPEST VOLLEY',
-    barLabelFr: 'SALVE DE TEMPÊTE',
-    barFill: '#b9b295',
-    barText: '#2a2518',
+    id: 'skyVolley',
+    name: 'Salve céleste',
+    nameRef: 'SKY VOLLEY',
+    barLabel: 'SKY VOLLEY',
+    barLabelFr: 'SALVE CÉLESTE',
+    barFill: '#5fd0e8',
+    barText: '#0b1a22',
     /** Cycle de jauge mesuré : ~8 à 10 s entre deux décharges. */
     chargeRate: 11,
     chargeOnHit: 2,
@@ -799,22 +808,22 @@ const WIND = {
      * une seconde et demie au moment où la jauge se vide.
      */
     duration: 1.5,
-    volley: { interval: 0.3, count: 2, spread: 1.1, projectile: 'crescent' },
+    volley: { interval: 0.3, count: 2, spread: 1.1, projectile: 'windArrow' },
     speedBonus: 1.25,
   },
 
   projectiles: {
-    crescent: {
-      label: 'Lame d’air',
-      sprite: 'windCrescent',
-      scale: 3.6, // mesuré : croissants de 43 à 57 px selon l'orientation
+    windArrow: {
+      label: 'Trait de vent',
+      sprite: 'hawkProjectile',
+      scale: 4.4, // mesuré : traits de 43 à 57 px selon l'orientation
       speed: 430,
       damage: 4,
       radius: 12,
       life: 2.2,
       bounces: 1,
       knockback: 80,
-      trail: { color: 'rgba(207,198,168,0.4)', every: 0.04, life: 0.32 },
+      trail: { color: 'rgba(95,208,232,0.4)', every: 0.04, life: 0.32 },
     },
   },
 
@@ -822,32 +831,33 @@ const WIND = {
 
   hud: {
     stats: [
-      (f) => `Tornado Damage: ${Math.round(f.stacks)}`,
+      (f) => `Gale Damage: ${Math.round(f.stacks)}`,
       (f) => `Cooldown: ${formatSeconds(f.ability.cooldown)}`,
     ],
     statsFr: [
-      (f) => `Dégâts de tornade : ${Math.round(f.stacks)}`,
+      (f) => `Dégâts de bourrasque : ${Math.round(f.stacks)}`,
       (f) => `Recharge : ${formatSeconds(f.ability.cooldown)}`,
     ],
-    color: '#8a8163',
+    color: '#2a7590',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
 /* ==========================================================================
- *  FOUDRE  (LIGHTNING)
- *  Relevé : vidéo « LIGHT vs LIGHTNING ».
+ *  TIGRE  (TIGER) — Combo
+ *  Chiffres relevés sur : vidéo « LIGHT vs LIGHTNING ».
  * ========================================================================== */
-const LIGHTNING = {
-  id: 'lightning',
-  name: 'FOUDRE',
-  nameRef: 'LIGHTNING',
-  tagline: 'Zone — sème des bornes statiques et enchaîne les arcs',
-  icon: 'iconBolt',
+const TIGER = {
+  id: 'tiger',
+  name: 'TIGRE',
+  nameRef: 'TIGER',
+  tagline: 'Combo — marque ses proies et enchaîne les frappes',
+  icon: 'tigerIcon',
+  portrait: 'tigerSprite',
 
   look: {
     radius: 41,
-    body: '#f2f003', // pipette : rgb(242,240,3)
+    body: '#f0871f', // orange du roster
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
@@ -855,38 +865,37 @@ const LIGHTNING = {
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     /**
-     * Halo bleu **permanent**. Relevé sur LIGHT vs LIGHTNING : la boule jaune
-     * de la Foudre porte son halo cyan du début à la fin du duel, y compris
-     * quand aucune décharge n'est en cours — c'est sa signature à l'écran.
+     * Halo blanc **permanent** : la boule orange du Tigre le porte du début à
+     * la fin du duel, y compris quand aucun combo n'est en cours — c'est sa
+     * signature à l'écran.
      */
     aura: {
-      color: 'rgba(56,189,248,0.55)',
+      color: 'rgba(255,246,232,0.55)',
       radius: 2.4,
-      pulse: 0.7, // respiration lente : sur la vidéo le halo ne clignote pas
+      pulse: 0.7, // respiration lente : le halo ne clignote pas
       showWhen: 'always',
     },
     flair: {
-      ribbon: { color: '#7dd3fc', width: 16, alpha: 0.65 },
-      motes: { rate: 12, size: 8, drift: 40, rise: -10, colors: ['#38bdf8', '#0284c7', '#f5e60a'] },
-      impact: ['#67e8f9', '#f5e60a', '#ffffff'],
+      ribbon: { color: '#ffd9a8', width: 16, alpha: 0.65 },
+      motes: { rate: 12, size: 8, drift: 40, rise: -10, colors: ['#f0871f', '#b3560c', '#fff6e8'] },
+      impact: ['#fff6e8', '#f0871f', '#ffffff'],
       shape: 'streak',
-      castFlash: 'rgba(103,232,249,0.65)',
+      castFlash: 'rgba(255,246,232,0.65)',
     },
-    trail: { color: 'rgba(125,211,252,0.28)', every: 0.045, life: 0.24 },
-    accent: '#38bdf8',
+    trail: { color: 'rgba(240,135,31,0.3)', every: 0.045, life: 0.24 },
+    accent: '#fff6e8',
   },
 
   movement: { speed: 500, turnRate: 2, seek: 0.42, mass: 1 },
 
   weapon: {
-    name: 'Lame fulgurante',
+    name: 'Katars jumeaux',
     reach: 145,
     spin: SPIN,
     spinDir: -1,
-    /** Long manche de **bois brun** au contour noir en pointillé (mesuré). */
-    handle: { length: 88, width: 10, color: '#7a5c30', dark: '#48371c', outline: '#0f0a04', gem: null },
-    /** mesuré : fer de lance de 56 × 36 px au bout du manche. */
-    head: { sprite: 'boltBlade', scale: 4, anchorY: 0.5 },
+    /** Longue poignée de **cuir fauve** au contour noir (mesuré). */
+    handle: { length: 89, width: 10, color: '#5a3a1c', dark: '#2f1e0c', outline: '#1a0d04', gem: null },
+    head: { sprite: 'tigerProjectile', scale: 7, anchorY: 0.5 }, // 8 × 7 = 56 px
     hitbox: { from: 0.52, to: 1, radius: 17 },
     melee: {
       damage: 3,
@@ -894,39 +903,41 @@ const LIGHTNING = {
       knockback: 230,
       selfRecoil: 80,
       onHit: {
-        stackGain: 0.5, // « Chain Damage » : 1 → 4,5 mesuré
+        stackGain: 0.5, // « Combo Damage » : 1 → 4,5 mesuré
         stackMax: 14,
-        /** Chaque touche plante une borne à l'impact (observé). */
+        /** Chaque touche laisse une marque à l'impact (observé). */
         dropNode: true,
       },
     },
   },
 
   ability: {
-    id: 'staticNode',
-    name: 'Borne statique',
-    nameRef: 'Static Node',
+    id: 'scentMark',
+    name: 'Marque de sang',
+    nameRef: 'Scent Mark',
     cooldown: 3,
     cooldownStep: 0,
     cooldownFloor: 3,
     node: {
       max: 8, // au-delà, la plus ancienne disparaît
       life: 16,
-      sprite: 'teslaNode',
-      /** mesuré : petite bobine de 34 × 34 px (13 cellules × 2,6). */
-      scale: 2.6,
+      // le masque du tigre, pas ses lames : au sol, un katar se lisait comme
+      // une arme tombée là plutôt que comme une marque laissée par la bête
+      sprite: 'tigerIcon',
+      /** mesuré : marque de 34 × 34 px (8 cellules × 4,2). */
+      scale: 4.2,
     },
     chain: {
-      interval: 1.6, // cadence des décharges hors ultime
-      range: 270, // portée borne → cible
-      color: 'rgba(103,232,249,0.95)',
-      glow: 'rgba(56,189,248,0.45)',
+      interval: 1.6, // cadence des relances hors ultime
+      range: 270, // portée marque → cible
+      color: 'rgba(255,246,232,0.95)',
+      glow: 'rgba(240,135,31,0.45)',
       width: 5,
       jitter: 14,
       /**
-       * Rémanence de l'arc à l'écran. Relevé sur LIGHT vs LIGHTNING : la toile
-       * cyan reste lisible ~0,45 s après chaque décharge — c'est ce qui rend le
-       * réseau de bornes visible en permanence pendant la Surcharge.
+       * Rémanence du trait à l'écran : la toile reste lisible ~0,45 s après
+       * chaque relance — c'est ce qui rend le réseau de marques visible en
+       * permanence pendant la Frénésie.
        */
       life: 0.45,
       slow: 0.18,
@@ -935,17 +946,17 @@ const LIGHTNING = {
   },
 
   ultimate: {
-    id: 'supercharge',
-    name: 'Surcharge',
-    nameRef: 'SUPERCHARGE',
-    barLabel: 'SUPERCHARGE',
-    barLabelFr: 'SURCHARGE',
-    barFill: '#f5e60a',
-    barText: '#3a2c05',
+    id: 'frenzy',
+    name: 'Frénésie',
+    nameRef: 'FRENZY',
+    barLabel: 'FRENZY',
+    barLabelFr: 'FRÉNÉSIE',
+    barFill: '#f0871f',
+    barText: '#1a0d04',
     chargeRate: 5.2,
     chargeOnHit: 2,
     duration: 5,
-    chainInterval: 0.5, // le réseau crépite en continu
+    chainInterval: 0.5, // le réseau claque en continu
     rangeBonus: 1.5,
     speedBonus: 1.15,
   },
@@ -955,27 +966,28 @@ const LIGHTNING = {
   progression: { stack: 1, stack2: 0 },
 
   hud: {
-    stats: [(f) => `Chain Damage: ${formatHalf(f.stacks)}`],
-    statsFr: [(f) => `Dégâts de chaîne : ${formatHalf(f.stacks)}`],
-    color: '#d4c800',
+    stats: [(f) => `Combo Damage: ${formatHalf(f.stacks)}`],
+    statsFr: [(f) => `Dégâts de combo : ${formatHalf(f.stacks)}`],
+    color: '#d4700f',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
 /* ==========================================================================
- *  EAU  (WATER)
- *  Relevé : vidéo « FIRE vs WATER ».
+ *  CERF  (DEER) — Mystique
+ *  Chiffres relevés sur : vidéo « FIRE vs WATER ».
  * ========================================================================== */
-const WATER = {
-  id: 'water',
-  name: 'EAU',
-  nameRef: 'WATER',
-  tagline: 'Contrôle de terrain — des tourbillons qui aspirent et grandissent',
-  icon: 'iconDroplet',
+const DEER = {
+  id: 'deer',
+  name: 'CERF',
+  nameRef: 'DEER',
+  tagline: 'Mystique — ouvre des cercles sacrés qui aspirent et grandissent',
+  icon: 'deerIcon',
+  portrait: 'deerSprite',
 
   look: {
     radius: 41,
-    body: '#4a86f7', // pipette : rgb(67,132,255)
+    body: '#19b98a', // émeraude du roster
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
@@ -983,31 +995,31 @@ const WATER = {
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
-      color: 'rgba(59,130,246,0.45)',
+      color: 'rgba(25,185,138,0.5)',
       radius: 1.65,
       pulse: 1.6,
       showWhen: 'ultimate-ready',
     },
     flair: {
-      ribbon: { color: '#60a5fa', width: 18, alpha: 0.55 },
-      motes: { rate: 9, size: 9, drift: 24, rise: 22, colors: ['#2563eb', '#60a5fa', '#1d4ed8'] },
-      impact: ['#93c5fd', '#ffffff', '#1d4ed8'],
+      ribbon: { color: '#9dffd6', width: 18, alpha: 0.55 },
+      motes: { rate: 9, size: 9, drift: 24, rise: 22, colors: ['#12a06b', '#9dffd6', '#0a6344'] },
+      impact: ['#eafff5', '#9dffd6', '#0a6344'],
       shape: 'dot',
-      castFlash: 'rgba(96,165,250,0.6)',
+      castFlash: 'rgba(157,255,214,0.6)',
     },
-    trail: { color: 'rgba(96,165,250,0.3)', every: 0.045, life: 0.3 },
-    accent: '#2563eb',
+    trail: { color: 'rgba(25,185,138,0.32)', every: 0.045, life: 0.3 },
+    accent: '#9dffd6',
   },
 
   movement: { speed: 455, turnRate: 1.8, seek: 0.45, mass: 1 },
 
   weapon: {
-    name: 'Trident des marées',
+    name: 'Lance lumineuse',
     reach: 150,
     spin: SPIN,
     spinDir: 1,
-    handle: { length: 102, width: 11, color: '#3f6fa8', dark: '#254365', outline: '#0b2545', gem: { at: 0.5, size: 8, color: '#93c5fd' } },
-    head: { sprite: 'waterTrident', scale: 4, anchorY: 0.5 },
+    handle: { length: 102, width: 11, color: '#4a7a5f', dark: '#25453a', outline: '#07190f', gem: { at: 0.5, size: 8, color: '#9dffd6' } },
+    head: { sprite: 'deerProjectile', scale: 6, anchorY: 0.5 }, // 8 × 6 = 48 px
     hitbox: { from: 0.6, to: 1, radius: 19 },
     melee: {
       damage: 3,
@@ -1024,14 +1036,17 @@ const WATER = {
   },
 
   ability: {
-    id: 'whirlpool',
-    name: 'Tourbillon',
-    nameRef: 'Whirlpool',
+    id: 'sacredCircle',
+    name: 'Cercle sacré',
+    nameRef: 'Sacred Circle',
     cooldown: 6,
     cooldownStep: 0,
     cooldownFloor: 6,
+    // clés `whirlpool` / `maelstrom` côté moteur (abilities/deer.js) : gardées
+    // sous leur nom d'origine, la mécanique du tourbillon étant reprise telle
+    // quelle — seule l'identité change
     whirlpool: {
-      max: 2, // deux tourbillons simultanés au plus
+      max: 2, // deux cercles simultanés au plus
       life: 7.5,
       /** Rayon piloté par la stat « Size » du HUD. */
       radius: (self) => self.stacks2 * 0.9,
@@ -1039,25 +1054,25 @@ const WATER = {
       tickInterval: 1.2,
       tickDamage: (self) => Math.max(1, Math.round(self.stacks * 0.6)),
       /**
-       * Aspect relevé sur FIRE vs WATER : une **spirale en pixels opaque**
-       * (sprite `waterWhirlpool`), pas un dégradé — disque bleu, bras bleu nuit
-       * sur deux tours et demi, gros contour. Elle tourne lentement sur place.
+       * Aspect : une **spirale en pixels opaque** (sprite `sacredCircle`), pas
+       * un dégradé — disque émeraude, bras sous-bois sur deux tours et demi,
+       * gros contour. Elle tourne lentement sur place.
        */
-      edge: 'rgba(20,48,79,0.75)', // onde d'apparition, au ton du contour
+      edge: 'rgba(7,25,15,0.75)', // onde d'apparition, au ton du contour
       spin: 1.1, // rotation lente, mesurée sur la spirale de la vidéo
     },
-    /** Chaque tourbillon crache des gouttes. */
-    spray: { interval: 1.8, count: 1, projectile: 'droplet' },
+    /** Chaque cercle essaime des lucioles. */
+    spray: { interval: 1.8, count: 1, projectile: 'lightMote' },
   },
 
   ultimate: {
-    id: 'maelstrom',
-    name: 'Maelström',
-    nameRef: 'MAELSTROM',
-    barLabel: 'MAELSTROM',
-    barLabelFr: 'MAELSTRÖM',
-    barFill: '#4a86f7',
-    barText: '#eff6ff',
+    id: 'greatRite',
+    name: 'Grand rite',
+    nameRef: 'GREAT RITE',
+    barLabel: 'GREAT RITE',
+    barLabelFr: 'GRAND RITE',
+    barFill: '#19b98a',
+    barText: '#eafff5',
     chargeRate: 4.2,
     chargeOnHit: 3,
     duration: 5.5,
@@ -1067,22 +1082,22 @@ const WATER = {
       tickInterval: 0.8,
       tickDamage: (self) => Math.max(2, Math.round(self.stacks)),
       spin: 1.7, // même spirale, deux fois plus grande et un peu plus vive
-      edge: 'rgba(20,48,79,0.85)',
+      edge: 'rgba(7,25,15,0.85)',
     },
   },
 
   projectiles: {
-    droplet: {
-      label: 'Goutte',
-      sprite: 'waterDrop',
-      scale: 3,
+    lightMote: {
+      label: 'Luciole',
+      sprite: 'deerProjectile',
+      scale: 3.4,
       speed: 330,
       damage: 1,
       radius: 9,
       life: 2,
       bounces: 1,
       knockback: 45,
-      trail: { color: 'rgba(147,197,253,0.5)', every: 0.04, life: 0.35, dotted: true },
+      trail: { color: 'rgba(157,255,214,0.5)', every: 0.04, life: 0.35, dotted: true },
     },
   },
 
@@ -1090,33 +1105,34 @@ const WATER = {
 
   hud: {
     stats: [
-      (f) => `Whirlpool Damage: ${Math.round(f.stacks)}`,
+      (f) => `Circle Damage: ${Math.round(f.stacks)}`,
       (f) => `Size: ${Math.round(f.stacks2)}`,
     ],
     statsFr: [
-      (f) => `Dégâts du tourbillon : ${Math.round(f.stacks)}`,
+      (f) => `Dégâts du cercle : ${Math.round(f.stacks)}`,
       (f) => `Taille : ${Math.round(f.stacks2)}`,
     ],
-    color: '#2f6fe0',
+    color: '#12a06b',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
 /* ==========================================================================
- *  PLANTE  (PLANT)
- *  Relevé : vidéos « PLANT vs FIRE », « ICE vs PLANT », « DARK vs PLANT »
+ *  SERPENT  (SNAKE) — Embuscade
+ *  Chiffres relevés sur : vidéos « PLANT vs FIRE », « ICE vs PLANT », « DARK vs PLANT »
  *  et « WIND vs PLANT ».
  * ========================================================================== */
-const PLANT = {
-  id: 'plant',
-  name: 'PLANTE',
-  nameRef: 'PLANT',
-  tagline: 'Endurance — sème des bulbes qui blessent l’un et soignent l’autre',
-  icon: 'iconLeaf',
+const SNAKE = {
+  id: 'snake',
+  name: 'SERPENT',
+  nameRef: 'SNAKE',
+  tagline: 'Embuscade — pond des œufs qui blessent l’un et soignent l’autre',
+  icon: 'snakeIcon',
+  portrait: 'snakeSprite',
 
   look: {
     radius: 41,
-    body: '#15c701', // pipette : rgb(21,199,1)
+    body: '#7b3fb5', // violet du roster
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
@@ -1124,48 +1140,51 @@ const PLANT = {
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
-      color: 'rgba(34,197,94,0.45)',
+      color: 'rgba(182,240,58,0.5)',
       radius: 1.65,
       pulse: 1.5,
       showWhen: 'ultimate-ready',
     },
     flair: {
-      ribbon: { color: '#4ade80', width: 19, alpha: 0.55 },
-      motes: { rate: 9, size: 10, drift: 26, rise: -18, colors: ['#16a34a', '#4ade80', '#ec4899'] },
-      impact: ['#4ade80', '#bbf7d0', '#f472b6'],
+      ribbon: { color: '#b6f03a', width: 19, alpha: 0.55 },
+      motes: { rate: 9, size: 10, drift: 26, rise: -18, colors: ['#7b3fb5', '#b6f03a', '#48206e'] },
+      impact: ['#b6f03a', '#e0c4ff', '#f6ecff'],
       shape: 'dot',
-      castFlash: 'rgba(74,222,128,0.6)',
+      castFlash: 'rgba(182,240,58,0.6)',
     },
-    trail: { color: 'rgba(74,222,128,0.26)', every: 0.05, life: 0.28 },
-    accent: '#22c55e',
+    trail: { color: 'rgba(123,63,181,0.28)', every: 0.05, life: 0.28 },
+    accent: '#b6f03a',
   },
 
   movement: { speed: 445, turnRate: 1.7, seek: 0.45, mass: 1 },
 
   /**
-   * La liane est **courbe** : elle n'est pas un sprite mais un tracé, dessiné
-   * par game/abilities/plant.js (`drawWeapon`). Le reste de la fiche décrit
+   * Le fouet est **courbe** : ce n'est pas un sprite mais un tracé, dessiné
+   * par game/abilities/snake.js (`drawWeapon`). Le reste de la fiche décrit
    * quand même sa géométrie, dont se sert la détection de touche.
    */
   weapon: {
-    name: 'Liane fouettante',
+    name: 'Fouet toxique',
     reach: 160, // mesuré : ~164 px
     spin: SPIN,
     spinDir: 1,
-    /** Pédoncule brun : ~30 px visibles au-delà de la boule (mesuré). */
-    handle: { length: 73, width: 13, color: '#6a513a', dark: '#4b351f', outline: '#0a0a0a', gem: null },
+    /** Amorce du fouet : ~30 px visibles au-delà de la boule (mesuré). */
+    handle: { length: 73, width: 13, color: '#5a3a6a', dark: '#38204a', outline: '#140a1c', gem: null },
     head: { sprite: null, scale: 1, anchorY: 0.5 },
     /**
-     * Tracé de la liane, **rasterisé en escalier de pixels** par
-     * game/abilities/plant.js : la vidéo ne montre pas une courbe lisse mais
-     * une suite de blocs, exactement comme les autres armes.
+     * Tracé du fouet, **rasterisé en escalier de pixels** par
+     * game/abilities/snake.js : pas une courbe lisse mais une suite de blocs,
+     * exactement comme les autres armes.
      *
      * Géométrie obtenue en faisant passer un cercle par trois points relevés
-     * sur la liane de la vidéo (départ, crête, extrémité droite) : centre à
-     * 41 px devant le pédoncule, **rayon 46,7 px**, balayage de 207° à 358°.
-     * La liane monte, passe la crête et redescend en crochet ; sa pointe tombe
-     * pile sur la portée mesurée (160 px), crête 38 px au-dessus de l'axe et
-     * crochet 34 px en dessous — les trois cotes de la vidéo.
+     * (départ, crête, extrémité droite) : centre à 41 px devant l'amorce,
+     * **rayon 46,7 px**, balayage de 207° à 358°. Le fouet monte, passe la
+     * crête et redescend en crochet ; sa pointe tombe pile sur la portée
+     * mesurée (160 px), crête 38 px au-dessus de l'axe et crochet 34 px en
+     * dessous — les trois cotes de la vidéo.
+     *
+     * Clé `vine` côté moteur : conservée telle quelle, seul le tracé change
+     * de couleur.
      */
     vine: {
       radius: 46, // mesuré (ajustement de cercle : 46,7)
@@ -1175,14 +1194,14 @@ const PLANT = {
       /**
        * Taille d'un « pixel » de l'escalier (mesuré ~4,2 px). Le contour doit
        * dépasser d'au moins **un bloc et quart**, sinon la quantification
-       * l'avale par endroits et la liane perd son liseré noir.
+       * l'avale par endroits et le fouet perd son liseré noir.
        */
       block: 4,
       outlineWidth: 5.2,
-      outline: '#050d04',
-      body: '#3fa848', // pipette : rgb(70,161,76)
-      light: '#6ec46a', // pipette : rgb(98,189,115)
-      shine: '#96de84', // pipette : rgb(149,207,118)
+      outline: '#140a1c',
+      body: '#7b3fb5', // corps violet
+      light: '#9d63d4', // écailles éclairées
+      shine: '#b6f03a', // venin qui perle le long du fouet
     },
     hitbox: { from: 0.42, to: 1, radius: 22 },
     melee: {
@@ -1191,37 +1210,40 @@ const PLANT = {
       knockback: 235,
       selfRecoil: 80,
       onHit: {
-        stackGain: 1, // « Bulb Damage/Heal » : 1 → 8 mesuré
+        stackGain: 1, // « Egg Damage/Heal » : 1 → 8 mesuré
         stackMax: 14,
       },
     },
   },
 
-  /** Bulbes semés dans l'arène : mine pour l'adversaire, soin pour la Plante. */
+  /** Œufs pondus dans l'arène : mine pour l'adversaire, soin pour le Serpent. */
   ability: {
-    id: 'bulb',
-    name: 'Semis',
-    nameRef: 'Bulb',
+    id: 'clutch',
+    name: 'Ponte',
+    nameRef: 'Clutch',
     cooldown: 5,
     cooldownStep: 0,
     cooldownFloor: 5,
+    // clé `bulb` côté moteur (abilities/snake.js) : mécanique reprise telle
+    // quelle, l'œuf remplace le bulbe
     bulb: {
       max: 4,
       life: 18,
-      sprite: 'plantBulb',
-      scale: 2.5, // mesuré : cosse de ~29 × 37 px, pattes comprises
+      // œuf et crachat sont la même matière : un seul sprite, deux échelles
+      sprite: 'snakeProjectile',
+      scale: 3.4, // mesuré : cosse de ~29 × 37 px → 8 cellules
       /** Rayon de déclenchement (pour les deux camps). */
       radius: 36,
       /**
-       * Délai d'amorçage : sans lui, la Plante ramasserait son propre bulbe
-       * à l'instant où elle le pose. Le temps qu'il germe, elle est repartie.
+       * Délai d'amorçage : sans lui, le Serpent ramasserait son propre œuf
+       * à l'instant où il le pond. Le temps qu'il éclose, il est reparti.
        */
       armDelay: 0.9,
-      /** Une fois mûr, le bulbe tire une fleur sur l'adversaire. */
+      /** Une fois éclos, l'œuf crache du venin sur l'adversaire. */
       shootInterval: 2.2,
       shootRange: 460,
-      projectile: 'flower',
-      /** Dégâts à l'adversaire et soin à la Plante : la stat du HUD. */
+      projectile: 'venomSpit',
+      /** Dégâts à l'adversaire et soin au Serpent : la stat du HUD. */
       damage: (self) => Math.max(1, Math.round(self.stacks)),
       heal: (self) => Math.max(1, Math.round(self.stacks * 0.8)),
       slow: 0.25,
@@ -1230,31 +1252,29 @@ const PLANT = {
   },
 
   ultimate: {
-    id: 'flowerStorm',
-    name: 'Tempête de fleurs',
-    nameRef: 'FLOWER STORM',
-    barLabel: 'FLOWER STORM',
-    barLabelFr: 'TEMPÊTE DE FLEURS',
-    barFill: '#22c55e',
-    barText: '#052e16',
+    id: 'venomStorm',
+    name: 'Nuée de venin',
+    nameRef: 'VENOM STORM',
+    barLabel: 'VENOM STORM',
+    barLabelFr: 'NUÉE DE VENIN',
+    barFill: '#7b3fb5',
+    barText: '#eaffc4',
     chargeRate: 4,
     chargeOnHit: 3,
     duration: 5,
     storm: {
       /**
-       * **Nuée de cubes roses opaques.** Relevé sur WIND vs PLANT, confirmé sur
-       * DARK vs PLANT : des carrés plats parfaitement alignés sur les axes,
-       * d'un rose unique (pipette rgb(248,120,184)), sans contour ni dégradé,
-       * assez serrés pour masquer complètement la cible. Longueur des segments :
-       * 9 à 21 px vidéo, soit 11 à 26 px de scène.
-       *
-       * Aucun cerceau de lianes n'apparaît sur ces vidéos : la tempête **est**
-       * la nuée, à laquelle s'ajoutent quelques corolles qui volent avec elle.
+       * **Nuée de cubes acides opaques.** Reprend la géométrie relevée sur la
+       * tempête d'origine : des carrés plats parfaitement alignés sur les axes,
+       * sans contour ni dégradé, assez serrés pour masquer complètement la
+       * cible. Longueur des segments : 9 à 21 px vidéo, soit 11 à 26 px de
+       * scène. La nuée **est** la tempête, à laquelle s'ajoutent quelques
+       * gouttes plus grosses qui volent avec elle.
        */
-      petals: { rate: 60, size: 13, speed: 210, life: 1, colors: ['#f87ab8', '#f06aae', '#fb8fc4'] },
+      petals: { rate: 60, size: 13, speed: 210, life: 1, colors: ['#b6f03a', '#9ad424', '#cdf76a'] },
       /**
        * Amas dessiné par-dessus les particules (rendu pur, sans aléa simulé) :
-       * des **grappes** de cubes, comme sur la vidéo, plus quelques fleurs.
+       * des **grappes** de cubes, plus quelques gouttes de venin.
        */
       swarm: {
         clusters: 17, // grappes qui tournent autour de la cible
@@ -1264,40 +1284,40 @@ const PLANT = {
         size: 17,
         sizeVar: 0.5,
         churn: 1.9,
-        color: '#f87ab8',
-        flowers: 4, // corolles emportées par la tempête
+        color: '#b6f03a',
+        flowers: 4, // grosses gouttes emportées par la nuée
         flowerSize: 42,
       },
       root: 0.7, // la cible est quasiment clouée sur place
       tickInterval: 0.7,
       tickDamage: (self) => Math.max(1, Math.round(self.stacks / 4)),
-      /** La Plante se régénère pendant sa tempête. */
+      /** Le Serpent se régénère pendant sa nuée. */
       healInterval: 1,
       healAmount: 1,
     },
   },
 
   projectiles: {
-    flower: {
-      label: 'Fleur',
-      sprite: 'flower',
-      scale: 3.6, // mesuré : corolle de ~40 px
+    venomSpit: {
+      label: 'Crachat de venin',
+      sprite: 'snakeProjectile',
+      scale: 3.6, // mesuré : goutte de ~40 px
       speed: 340,
       damage: 2,
       radius: 12,
       life: 2.4,
       bounces: 0,
       knockback: 60,
-      trail: { color: 'rgba(244,114,182,0.45)', every: 0.04, life: 0.4 },
+      trail: { color: 'rgba(182,240,58,0.45)', every: 0.04, life: 0.4 },
     },
   },
 
   progression: { stack: 1, stack2: 0 },
 
   hud: {
-    stats: [(f) => `Bulb Damage/Heal: ${Math.round(f.stacks)}`],
-    statsFr: [(f) => `Bulbe — dégâts/soin : ${Math.round(f.stacks)}`],
-    color: '#16a02c',
+    stats: [(f) => `Egg Damage/Heal: ${Math.round(f.stacks)}`],
+    statsFr: [(f) => `Œuf — dégâts/soin : ${Math.round(f.stacks)}`],
+    color: '#9d5bd8',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
@@ -1315,31 +1335,31 @@ function formatHalf(v) {
 }
 
 export const ELEMENTS = deepFreeze({
-  shadow: SHADOW,
-  ice: ICE,
-  fire: FIRE,
-  light: LIGHT,
-  wind: WIND,
-  lightning: LIGHTNING,
-  water: WATER,
-  plant: PLANT,
+  wolf: WOLF,
+  turtle: TURTLE,
+  hawk: HAWK,
+  snake: SNAKE,
+  bear: BEAR,
+  tiger: TIGER,
+  spider: SPIDER,
+  deer: DEER,
 });
 
 /** Ordre d'affichage dans l'écran de sélection. */
 export const ROSTER = deepFreeze([
-  'shadow',
-  'ice',
-  'fire',
-  'water',
-  'light',
-  'lightning',
-  'wind',
-  'plant',
+  'wolf',
+  'turtle',
+  'hawk',
+  'snake',
+  'bear',
+  'tiger',
+  'spider',
+  'deer',
 ]);
 
 /** @param {string} id */
 export function getElement(id) {
   const el = ELEMENTS[id];
-  if (!el) throw new Error(`Élément inconnu : ${id}`);
+  if (!el) throw new Error(`Bête inconnue : ${id}`);
   return el;
 }

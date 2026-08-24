@@ -21,8 +21,8 @@
 
 import { TAU, clamp } from '../../core/math.js';
 
-export const windAbilities = {
-  id: 'wind',
+export const hawkAbilities = {
+  id: 'hawk',
 
   init(f) {
     /** @type {Array<{x:number,y:number,r:number,life:number,max:number,angle:number}>} */

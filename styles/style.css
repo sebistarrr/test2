@@ -51,10 +51,10 @@
   --plate:        #f9f1da;  /* plaque crème (jauges) rgb(249,241,218) */
   --arena:        #ffffff;  /* intérieur de l'arène                   */
   --ink:          #000000;  /* bordure d'arène / contours             */
-  --shadow-body:  #870286;  /* boule Ombre           rgb(132,6,132)   */
-  --shadow-glow:  #7c3aed;
-  --ice-body:     #00eff0;  /* boule Glace           rgb(0,239,240)   */
-  --ice-glow:     #22d3ee;
+  --wolf-body:    #8fa6c8;  /* boule Loup     — bleu argenté          */
+  --wolf-glow:    #dbe9fb;
+  --spider-body:  #2b2733;  /* boule Araignée — noir profond          */
+  --spider-glow:  #e01f3a;
   --muted:        #9b96ac;  /* textes secondaires sur fond sombre     */
   --on-paper:     #f4eddc;  /* texte posé sur le fond sombre          */
 
