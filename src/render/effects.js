@@ -151,10 +151,14 @@ export class Effects {
           const gr = p.size * (0.6 + 0.4 * t);
           if (p.sprite) {
             // silhouette de la bête : depuis que le corps est un portrait,
-            // un disque plein derrière lui se lisait comme un projectile
+            // un disque plein derrière lui se lisait comme un projectile.
+            // Lissage réactivé le temps du blit, comme pour le corps.
             const s = getTintedSprite(p.sprite, p.color);
             const gw = gr * 2 * (s.width / s.height);
+            const avant = ctx.imageSmoothingEnabled;
+            ctx.imageSmoothingEnabled = true;
             ctx.drawImage(s, p.x - gw / 2, p.y - gr, gw, gr * 2);
+            ctx.imageSmoothingEnabled = avant;
           } else {
             ctx.fillStyle = p.color;
             ctx.beginPath();

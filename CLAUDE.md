@@ -103,6 +103,14 @@ Chacune porte un commentaire le disant.
      vient de `BODY.scale` (× le rayon) dans `tuning.js`. Les PV ne sont plus
      écrits dans le corps mais dans la **barre de vie en haut de l'écran**
      (`HUD.hp`), au-dessus du titre.
+   - **Le corps est le seul élément rendu lisse.** `getSmoothSprite`
+     (`render/sprites.js`) agrandit la pixelmap par interpolation bilinéaire :
+     la bête n'a plus de marches d'escalier. Tout le reste — armes, projectiles,
+     œufs, marques, icônes — **garde le pixel-art**. Deux réglages commandent
+     la douceur, `SMOOTH_SOURCE` surtout : comparé côte à côte, 1 rend la bête
+     floue, 3-4 laissent revenir la grille, 2 est le bon compromis.
+     Le blit doit réactiver `imageSmoothingEnabled` : le contexte de scène
+     tourne en `false` pour le pixel-art et ré-escalierait la réduction.
 5. **Convention de commentaire dans les fiches** : chaque valeur porte
    `mesuré` (relevé vidéo), `calé` (ajusté par simulation) ou `déduit`.
    Ne jamais changer une valeur `mesuré` sans nouveau relevé.

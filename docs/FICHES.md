@@ -451,6 +451,11 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 
 ## Règles communes (moteur)
 
+**Rendu lisse du corps, pixel-art pour le reste.** Le portrait du combattant
+est le seul élément agrandi par interpolation bilinéaire : la bête n'a plus de
+marches d'escalier. Ses armes, ses projectiles, les œufs du Serpent et les
+marques du Tigre restent en pixel-art franc.
+
 **Corps et PV.** Le combattant n'est plus une boule de couleur : c'est le
 `portrait` 16×16 de la bête, dessiné à `BODY.scale` × son rayon. `look.radius`
 ne sert plus qu'aux collisions. Les PV, qui s'écrivaient au centre de la boule,

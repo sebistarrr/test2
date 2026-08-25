@@ -147,10 +147,12 @@ function portraitKey(el) {
  */
 function drawElementBadge(canvas, el) {
   const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
+  // lissé comme dans l'arène : la bête doit se reconnaître d'un écran à l'autre
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const sprite = compilePixelMap(PIXEL_MAPS[portraitKey(el)], 3);
+  const sprite = compilePixelMap(PIXEL_MAPS[portraitKey(el)], 2);
   // cadré dans la vignette avec une marge, ratio conservé
   const k = Math.min((canvas.width * 0.92) / sprite.width, (canvas.height * 0.92) / sprite.height);
   ctx.drawImage(

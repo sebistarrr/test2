@@ -12,14 +12,14 @@
 import { ARENA, BODY, MATCH, PHYSICS } from '../data/tuning.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { TAU, clamp, rotateToward, wrapAngle } from '../core/math.js';
-import { drawSpriteCentered, drawSpriteLeft, getTintedSprite } from '../render/sprites.js';
+import { drawSmoothCentered, drawSpriteLeft, getTintedSprite } from '../render/sprites.js';
 
 /**
  * Force du flash blanc d'encaissement, **et non 1**. La boule d'origine
  * pouvait virer au blanc pur : son contour noir la délimitait encore. Une
  * silhouette pleinement blanche, elle, disparaît sur l'arène blanche — le
  * combattant s'effaçait un cinquième de seconde à chaque coup encaissé.
- * À 0,7 les contours du pixel-art restent lisibles sous le flash.
+ * À 0,7 les contours de la bête restent lisibles sous le flash.
  */
 const FLASH_ALPHA = 0.7;
 
@@ -27,9 +27,12 @@ const FLASH_ALPHA = 0.7;
 function drawTintedCentered(ctx, key, color, alpha, x, y, height) {
   const s = getTintedSprite(key, color);
   const w = height * (s.width / s.height);
+  const avant = ctx.imageSmoothingEnabled;
+  ctx.imageSmoothingEnabled = true;
   ctx.globalAlpha = alpha;
   ctx.drawImage(s, x - w / 2, y - height / 2, w, height);
   ctx.globalAlpha = 1;
+  ctx.imageSmoothingEnabled = avant;
 }
 
 export class Fighter {
@@ -297,7 +300,7 @@ export class Fighter {
     // comme la boule virait au blanc), puis la teinte d'un contrôle adverse se
     // pose par-dessus le sprite.
     const size = this.radius * BODY.scale;
-    drawSpriteCentered(ctx, this.portrait, this.x, this.y, size);
+    drawSmoothCentered(ctx, this.portrait, this.x, this.y, size);
     const dotTint = this.statusTint(now);
     if (this.flash > 0) {
       drawTintedCentered(ctx, this.portrait, look.bodyHit, FLASH_ALPHA, this.x, this.y, size);

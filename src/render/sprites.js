@@ -73,12 +73,60 @@ export function hasSprite(key) {
 }
 
 /** @type {Map<string, HTMLCanvasElement>} */
+const smoothed = new Map();
+
+/** Côté du canvas lissé, avant réduction à la taille d'affichage. */
+const SMOOTH_SIZE = 192;
+
+/**
+ * Résolution de la source avant agrandissement, en pixels par cellule. C'est
+ * **elle** qui règle la douceur : plus la source est basse, plus l'étirement
+ * bilinéaire arrondit. Comparées côte à côte sur le Loup, la Tortue et
+ * l'Araignée : à 1 la bête est franchement floue, à 3 et 4 les marches de
+ * l'escalier reviennent. 2 efface la grille sans perdre la silhouette.
+ */
+const SMOOTH_SOURCE = 2;
+
+/**
+ * Version **lisse** d'un sprite : mêmes formes et mêmes couleurs, sans les
+ * marches d'escalier du pixel-art. Sert au corps des combattants, qui ne se
+ * lit plus en blocs — armes, œufs et marques, eux, restent en pixel-art.
+ *
+ * Calculé une seule fois par sprite : `imageSmoothingQuality = 'high'` est
+ * hors de prix par frame (déjà mesuré à 72 % du fil principal sur l'export
+ * vidéo), mais gratuit à la compilation.
+ */
+export function getSmoothSprite(key) {
+  let cv = smoothed.get(key);
+  if (cv) return cv;
+
+  const map = PIXEL_MAPS[key];
+  if (!map) throw new Error(`[sprites] sprite « ${key} » inconnu`);
+  const source = compilePixelMap(map, SMOOTH_SOURCE);
+  const k = SMOOTH_SIZE / Math.max(map.w, map.h);
+
+  cv = document.createElement('canvas');
+  cv.width = Math.round(map.w * k);
+  cv.height = Math.round(map.h * k);
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(source, 0, 0, cv.width, cv.height);
+  smoothed.set(key, cv);
+  return cv;
+}
+
+/** @type {Map<string, HTMLCanvasElement>} */
 const tinted = new Map();
 
 /**
  * Silhouette pleine d'un sprite, dans une couleur donnée — le corps d'un
- * combattant s'en sert pour le flash blanc d'encaissement et pour les teintes
- * d'état (soie, saignement).
+ * combattant s'en sert pour le flash blanc d'encaissement, pour les teintes
+ * d'état (soie, saignement) et pour ses images fantômes.
+ *
+ * Teintée depuis la version **lisse**, puisque c'est le corps qu'elle
+ * recouvre : une silhouette en blocs par-dessus un corps lisse trahirait la
+ * grille de pixels que l'on vient justement d'effacer.
  *
  * Le résultat est **mis en cache** : ces teintes repassent à chaque frame et
  * `tintCanvas` alloue un canvas à chaque appel. Le nombre de couples
@@ -88,10 +136,25 @@ export function getTintedSprite(key, color) {
   const id = `${key}|${color}`;
   let cv = tinted.get(id);
   if (!cv) {
-    cv = tintCanvas(getSprite(key), color);
+    cv = tintCanvas(getSmoothSprite(key), color);
     tinted.set(id, cv);
   }
   return cv;
+}
+
+/**
+ * Dessine la version lisse d'un sprite, centrée sur (x, y). Le lissage doit
+ * être **réactivé** le temps du blit : le contexte de scène tourne en
+ * `imageSmoothingEnabled = false` pour le pixel-art, ce qui recréerait des
+ * marches en réduisant le canvas lissé à sa taille d'affichage.
+ */
+export function drawSmoothCentered(ctx, key, x, y, heightPx) {
+  const s = getSmoothSprite(key);
+  const w = heightPx * (s.width / s.height);
+  const avant = ctx.imageSmoothingEnabled;
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(s, x - w / 2, y - heightPx / 2, w, heightPx);
+  ctx.imageSmoothingEnabled = avant;
 }
 
 /**
