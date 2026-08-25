@@ -179,8 +179,8 @@ const WOLF = {
   projectiles: {
     fangDart: {
       label: 'Croc lancé',
-      // rendu lisse : bille claire à cœur blanc, cerclée du bleu argenté
-      glow: { radius: 10, core: '#ffffff', edge: '#8fa6c8' },
+      sprite: 'wolfProjectile', // mini version de la dague-croc
+      scale: 2.4, // mesuré : trait d'ombre d'environ 44 px de long
       speed: 600,
       damage: 5,
       radius: 11,
@@ -340,7 +340,8 @@ const SPIDER = {
   projectiles: {
     webShuriken: {
       label: 'Shuriken-toile',
-      glow: { radius: 10, core: '#ffd7dc', edge: '#e01f3a' },
+      sprite: 'spiderProjectile',
+      scale: 2.4,
       speed: 380,
       damage: 2,
       radius: 10,
@@ -476,7 +477,8 @@ const BEAR = {
   projectiles: {
     clawRip: {
       label: 'Lacération',
-      glow: { radius: 12, core: '#ffe9cf', edge: '#c8302a' },
+      sprite: 'bearProjectile',
+      scale: 3.2,
       speed: 520,
       damage: 4,
       radius: 11,
@@ -806,8 +808,8 @@ const HAWK = {
   projectiles: {
     windArrow: {
       label: 'Trait de vent',
-      // le plus effilé du roster : c'est un trait, pas une bille
-      glow: { radius: 12, core: '#ffffff', edge: '#5fd0e8', stretch: 1.9 },
+      sprite: 'hawkProjectile',
+      scale: 4.4, // mesuré : traits de 43 à 57 px selon l'orientation
       speed: 430,
       damage: 4,
       radius: 12,
@@ -1074,7 +1076,8 @@ const DEER = {
   projectiles: {
     lightMote: {
       label: 'Luciole',
-      glow: { radius: 11, core: '#eafff5', edge: '#19b98a' },
+      sprite: 'deerProjectile',
+      scale: 3.4,
       speed: 330,
       damage: 1,
       radius: 9,
@@ -1281,7 +1284,8 @@ const SNAKE = {
   projectiles: {
     venomSpit: {
       label: 'Crachat de venin',
-      glow: { radius: 13, core: '#eaffc4', edge: '#b6f03a' },
+      sprite: 'snakeProjectile',
+      scale: 3.6, // mesuré : goutte de ~40 px
       speed: 340,
       damage: 2,
       radius: 12,

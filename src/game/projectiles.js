@@ -1,14 +1,9 @@
 /**
- * Projectiles (crocs lancés, shurikens-toiles, traits de vent…).
+ * Projectiles (traits d'ombre, éclats de givre).
  *
- * Le comportement (vitesse, dégâts, rebonds, traînée, rendu) est entièrement
- * décrit dans la fiche de la bête : ce module ne fait qu'appliquer la
+ * Le comportement (vitesse, dégâts, rebonds, traînée, sprite) est entièrement
+ * décrit dans la fiche de l'élément : ce module ne fait qu'appliquer la
  * description.
- *
- * **Rendu lisse.** Contrairement aux combattants et aux armes, qui restent en
- * pixel-art, les projectiles sont dessinés en tracés vectoriels : un halo et
- * une bille à dégradé, étirée dans le sens de la course. Une fiche qui décrit
- * un `glow` obtient ce rendu ; sans lui on retombe sur son sprite.
  *
  * @module game/projectiles
  */
@@ -123,8 +118,13 @@ export class Projectiles {
   /** @param {CanvasRenderingContext2D} ctx */
   draw(ctx) {
     for (const p of this.list) {
-      if (p.def.glow) drawGlow(ctx, p);
-      else drawPixelSprite(ctx, p); // repli : une fiche peut encore décrire un sprite
+      const map = PIXEL_MAPS[p.def.sprite];
+      const h = map.h * p.def.scale;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      drawSpriteCentered(ctx, p.def.sprite, 0, 0, h);
+      ctx.restore();
     }
   }
 
@@ -138,61 +138,4 @@ export class Projectiles {
     }
     ctx.restore();
   }
-}
-
-/**
- * `#rrggbb` → `rgba(r,g,b,a)`. Les dégradés ont besoin de la **même** couleur
- * à deux opacités : un halo qui s'éteint vers `transparent` virerait au gris
- * sur les navigateurs qui interpolent en passant par le noir.
- */
-function withAlpha(hex, a) {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
-}
-
-/**
- * Bille lisse : un halo diffus, puis un corps à dégradé dont le point clair
- * est décalé vers l'avant. L'ensemble est étiré le long de la course (`angle`
- * suit la vitesse à chaque frame, rebonds compris), ce qui donne la comète.
- *
- * @param {CanvasRenderingContext2D} ctx
- */
-function drawGlow(ctx, p) {
-  const g = p.def.glow;
-  const r = g.radius;
-  ctx.save();
-  ctx.translate(p.x, p.y);
-  ctx.rotate(p.angle);
-
-  const halo = ctx.createRadialGradient(0, 0, r * 0.25, 0, 0, r * 2.2);
-  halo.addColorStop(0, withAlpha(g.edge, 0.5));
-  halo.addColorStop(0.5, withAlpha(g.edge, 0.16));
-  halo.addColorStop(1, withAlpha(g.edge, 0));
-  ctx.fillStyle = halo;
-  ctx.beginPath();
-  ctx.arc(0, 0, r * 2.2, 0, TAU);
-  ctx.fill();
-
-  // le corps s'allonge dans le sens de la marche : une bille parfaitement
-  // ronde ne dit pas qu'elle file
-  ctx.scale(g.stretch ?? 1.35, 1);
-  const body = ctx.createRadialGradient(r * 0.3, -r * 0.25, r * 0.08, 0, 0, r);
-  body.addColorStop(0, g.core);
-  body.addColorStop(0.45, g.edge);
-  body.addColorStop(1, withAlpha(g.edge, 0.9));
-  ctx.fillStyle = body;
-  ctx.beginPath();
-  ctx.arc(0, 0, r, 0, TAU);
-  ctx.fill();
-  ctx.restore();
-}
-
-/** Repli pixel-art, conservé pour toute fiche sans `glow`. */
-function drawPixelSprite(ctx, p) {
-  const map = PIXEL_MAPS[p.def.sprite];
-  ctx.save();
-  ctx.translate(p.x, p.y);
-  ctx.rotate(p.angle);
-  drawSpriteCentered(ctx, p.def.sprite, 0, 0, map.h * p.def.scale);
-  ctx.restore();
 }
