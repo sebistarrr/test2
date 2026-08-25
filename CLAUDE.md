@@ -25,6 +25,7 @@ Va droit au fichier concerné, en `grep` ciblé plutôt qu'en lecture intégrale
 | Entité combattant (état + dessin) | `src/game/fighter.js` |
 | Pouvoirs d'une bête | `src/game/abilities/<id>.js` |
 | Mise en scène (rubans, nappes, ondes, nombres) | `src/render/flair.js` + `look.flair` de chaque fiche |
+| Projectiles (rendu **lisse**, pas pixel-art) | `src/game/projectiles.js` + `projectiles.*.glow` |
 | Barre de vie (haut) + jauges d'ultime (bas) | `src/render/hud.js` + `HUD` de `tuning.js` |
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
@@ -103,6 +104,11 @@ Chacune porte un commentaire le disant.
      vient de `BODY.scale` (× le rayon) dans `tuning.js`. Les PV ne sont plus
      écrits dans le corps mais dans la **barre de vie en haut de l'écran**
      (`HUD.hp`), au-dessus du titre.
+   - **Deux registres de rendu, à ne pas mélanger.** Combattants, armes, œufs
+     et marques restent en **pixel-art** ; les **projectiles** sont en tracés
+     lisses (halo + bille à dégradé, étirée dans le sens de la course). Une
+     fiche obtient ce rendu en décrivant un `glow: { radius, core, edge }` dans
+     son projectile ; sans lui, `projectiles.js` retombe sur un sprite.
 5. **Convention de commentaire dans les fiches** : chaque valeur porte
    `mesuré` (relevé vidéo), `calé` (ajusté par simulation) ou `déduit`.
    Ne jamais changer une valeur `mesuré` sans nouveau relevé.

@@ -23,7 +23,7 @@ seconde près** (voir *Équilibrage* plus bas).
 
 ![Loup contre Tortue](docs/capture-duel.png)
 
-<sup>Chaque combattant est dessiné par son **portrait pixel-art**, ses PV sont dans la barre du haut. Loup (bond, dagues-crocs) contre Tortue (bouclier, chaîne de jade). Voir aussi [l'écran de sélection](docs/capture-selection.png), [la nuée du Serpent](docs/capture-serpent.png), [la rage de l'Ours](docs/capture-ours.png), [la Tortue qui encaisse](docs/capture-tortue.png), [les cercles du Cerf](docs/capture-zones.png), [la planche du roster](docs/roster-beasts.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
+<sup>Chaque combattant est dessiné par son **portrait pixel-art**, ses PV sont dans la barre du haut ; les **projectiles**, eux, sont en tracés lisses ([exemple](docs/capture-projectiles.png)). Loup (bond, dagues-crocs) contre Tortue (bouclier, chaîne de jade). Voir aussi [l'écran de sélection](docs/capture-selection.png), [la nuée du Serpent](docs/capture-serpent.png), [la rage de l'Ours](docs/capture-ours.png), [la Tortue qui encaisse](docs/capture-tortue.png), [les cercles du Cerf](docs/capture-zones.png), [la planche du roster](docs/roster-beasts.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
 
 ---
 

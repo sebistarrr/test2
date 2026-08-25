@@ -451,6 +451,14 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 
 ## Règles communes (moteur)
 
+**Deux registres de rendu.** Les combattants, leurs armes, les œufs du Serpent
+et les marques du Tigre sont en **pixel-art**. Les **projectiles** ne le sont
+pas : ils sont tracés en vectoriel — un halo diffus, puis une bille à dégradé
+étirée dans le sens de la course. Chaque projectile le décrit dans sa fiche
+(`glow: { radius, core, edge, stretch? }`) ; sans ce bloc, le moteur retombe
+sur un sprite. Le `radius` reprend la taille dessinée de l'ancien sprite, la
+bille pèse donc à l'écran autant que le pixel-art qu'elle remplace.
+
 **Corps et PV.** Le combattant n'est plus une boule de couleur : c'est le
 `portrait` 16×16 de la bête, dessiné à `BODY.scale` × son rayon. `look.radius`
 ne sert plus qu'aux collisions. Les PV, qui s'écrivaient au centre de la boule,
