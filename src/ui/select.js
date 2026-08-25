@@ -11,7 +11,6 @@
 import { ELEMENTS, ROSTER } from '../data/elements.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { compilePixelMap } from '../render/pixelart.js';
-import { TAU } from '../core/math.js';
 
 export function createSelectScreen({ root, onStart }) {
   const slots = {
@@ -104,7 +103,10 @@ export function createSelectScreen({ root, onStart }) {
       const el = id ? ELEMENTS[id] : null;
       slots[key].setAttribute('aria-current', String(active === key));
       slots[key].style.setProperty('--accent', el ? el.look.body : '#000');
-      orbs[key].style.background = el ? el.look.body : '#e6e6e6';
+      // l'emplacement montre la bête choisie, plus de boule de couleur
+      const octx = orbs[key].getContext('2d');
+      octx.clearRect(0, 0, orbs[key].width, orbs[key].height);
+      if (el) drawElementBadge(orbs[key], el);
       names[key].textContent = el ? el.name : '—';
     }
     startBtn.disabled = !picks.a || !picks.b;
@@ -127,31 +129,35 @@ function projectileLine(el) {
   return list.map((p) => `${p.label} — ${p.damage} PV, ${p.speed} px/s`).join(' · ');
 }
 
-/** Vignette : la boule de l'élément + la tête de son arme. */
+/**
+ * Sprite qui représente la bête. Le portrait 16×16 d'abord ; sans lui on
+ * retombe sur son arme, son projectile, puis son icône — le Serpent n'a pas de
+ * sprite d'arme (fouet courbe dessiné en tracé).
+ */
+function portraitKey(el) {
+  return (
+    el.portrait ?? el.weapon.head.sprite ?? Object.values(el.projectiles ?? {})[0]?.sprite ?? el.icon
+  );
+}
+
+/**
+ * Vignette d'une bête : **le portrait seul**, sans la boule de couleur.
+ * L'identité colorée passe par le liseré de la carte (`--accent`), la
+ * silhouette suffit à reconnaître l'animal.
+ */
 function drawElementBadge(canvas, el) {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
-  const cx = canvas.width * 0.42;
-  const cy = canvas.height / 2;
-  const r = canvas.width * 0.3;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, TAU);
-  ctx.fillStyle = el.look.body;
-  ctx.fill();
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = el.look.outline;
-  ctx.stroke();
-
-  // la vignette montre la bête elle-même quand elle a un portrait 16×16 ;
-  // sinon on retombe sur son arme, son projectile, puis son icône — le
-  // Serpent n'a pas de sprite d'arme (fouet courbe dessiné en tracé)
-  const key =
-    el.portrait ?? el.weapon.head.sprite ?? Object.values(el.projectiles ?? {})[0]?.sprite ?? el.icon;
-  const sprite = compilePixelMap(PIXEL_MAPS[key], 3);
-  // la tête d'arme est cadrée dans la place restante, ratio conservé
-  const availW = canvas.width - (cx + r * 0.6);
-  const availH = canvas.height * 0.62;
-  const k = Math.min(availW / sprite.width, availH / sprite.height);
-  ctx.drawImage(sprite, cx + r * 0.6, cy - (sprite.height * k) / 2, sprite.width * k, sprite.height * k);
+  const sprite = compilePixelMap(PIXEL_MAPS[portraitKey(el)], 3);
+  // cadré dans la vignette avec une marge, ratio conservé
+  const k = Math.min((canvas.width * 0.92) / sprite.width, (canvas.height * 0.92) / sprite.height);
+  ctx.drawImage(
+    sprite,
+    (canvas.width - sprite.width * k) / 2,
+    (canvas.height - sprite.height * k) / 2,
+    sprite.width * k,
+    sprite.height * k,
+  );
 }

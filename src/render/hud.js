@@ -1,16 +1,18 @@
 /**
- * HUD bas d'écran : deux jauges d'ultime + la ligne de statistique de chaque
- * combattant. Géométrie relevée au pixel sur la vidéo (voir data/tuning.js).
+ * HUD : la **barre de vie en haut de l'écran**, puis en bas la jauge d'ultime
+ * et la ligne de statistique de chaque combattant. Géométrie relevée au pixel
+ * sur la vidéo pour le bandeau bas (voir data/tuning.js).
  *
  * @module render/hud
  */
 
-import { HUD, STAGE } from '../data/tuning.js';
+import { HUD, MATCH, STAGE } from '../data/tuning.js';
 import { clamp } from '../core/math.js';
 import { drawFittedText } from './text.js';
 
 const BAR_FONT = `700 ${HUD.bar.labelSize}px "Oswald", "Arial Narrow", sans-serif`;
 const STAT_FONT = `700 ${HUD.stat.fontSize}px "Oswald", "Arial Narrow", sans-serif`;
+const HP_FONT = `700 ${HUD.hp.numberSize}px "Oswald", "Arial Narrow", sans-serif`;
 
 /**
  * @param {CanvasRenderingContext2D} ctx
@@ -20,8 +22,57 @@ const STAT_FONT = `700 ${HUD.stat.fontSize}px "Oswald", "Arial Narrow", sans-ser
  * @param {'ref'|'fr'} lang
  */
 export function drawFighterHud(ctx, f, side, value, lang) {
+  drawHpBar(ctx, f, side);
   drawBar(ctx, f, side, value, lang);
   drawStat(ctx, f, side, lang);
+}
+
+/**
+ * Barre de vie. Les deux se vident **vers l'extérieur du cadre** : celle de
+ * gauche est ancrée à gauche, celle de droite à droite. La barre se remplit de
+ * la couleur de la bête, seul lien visuel avec son portrait dans l'arène
+ * maintenant que la boule de couleur a disparu.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {import('../game/fighter.js').Fighter} f
+ * @param {'left'|'right'} side
+ */
+function drawHpBar(ctx, f, side) {
+  const h = HUD.hp;
+  const x = side === 'left' ? h.leftX : h.rightX;
+  const hp = Math.max(0, Math.ceil(f.hp));
+  const v = clamp(f.hp / MATCH.maxHp, 0, 1);
+
+  // même plaque crème que les jauges du bas : les deux étages du HUD sont
+  // posés sur le fond sombre et doivent se lire pareil
+  ctx.fillStyle = STAGE.plate;
+  ctx.fillRect(x, h.y, h.width, h.height);
+
+  // couleur de la bête ; `hpFill` n'existe que pour celle dont le corps est
+  // trop proche du fond sombre pour qu'on voie la barre se vider
+  const w = h.width * v;
+  ctx.fillStyle = f.el.look.hpFill ?? f.el.look.body;
+  ctx.fillRect(side === 'left' ? x : x + h.width - w, h.y, w, h.height);
+
+  ctx.lineJoin = 'miter';
+  ctx.lineWidth = h.border;
+  ctx.strokeStyle = '#000000';
+  ctx.strokeRect(x + h.border / 2, h.y + h.border / 2, h.width - h.border, h.height - h.border);
+
+  // le nombre reste à l'extrémité extérieure, là où la barre est pleine le
+  // plus longtemps ; le liseré crème le décolle aussi bien de la plaque que
+  // du remplissage, quelle que soit la couleur de la bête
+  ctx.font = HP_FONT;
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = side === 'left' ? 'left' : 'right';
+  drawFittedText(
+    ctx,
+    String(hp),
+    side === 'left' ? x + h.pad : x + h.width - h.pad,
+    h.y + h.height / 2 + 1,
+    h.width - h.pad * 2,
+    { fill: '#000000', stroke: STAGE.plate, strokeWidth: 4 },
+  );
 }
 
 function drawBar(ctx, f, side, value, lang) {

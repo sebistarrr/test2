@@ -10,6 +10,7 @@
 
 import { ARENA } from '../data/tuning.js';
 import { TAU } from '../core/math.js';
+import { getTintedSprite } from './sprites.js';
 
 const MAX = 900;
 
@@ -73,8 +74,13 @@ export class Effects {
     }
   }
 
-  ghost(x, y, radius, color, life = 0.28) {
-    this.spawn({ kind: 'ghost', x, y, size: radius, color, life });
+  /**
+   * Image fantôme laissée derrière un combattant qui se téléporte.
+   * `sprite` donne la silhouette de la bête ; sans lui on retombe sur le
+   * disque d'origine.
+   */
+  ghost(x, y, radius, color, life = 0.28, sprite = null) {
+    this.spawn({ kind: 'ghost', x, y, size: radius, color, life, sprite });
   }
 
   ring(x, y, r0, r1, time, color, width, clip = false) {
@@ -142,10 +148,19 @@ export class Effects {
           break;
         }
         case 'ghost': {
-          ctx.fillStyle = p.color;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * (0.6 + 0.4 * t), 0, TAU);
-          ctx.fill();
+          const gr = p.size * (0.6 + 0.4 * t);
+          if (p.sprite) {
+            // silhouette de la bête : depuis que le corps est un portrait,
+            // un disque plein derrière lui se lisait comme un projectile
+            const s = getTintedSprite(p.sprite, p.color);
+            const gw = gr * 2 * (s.width / s.height);
+            ctx.drawImage(s, p.x - gw / 2, p.y - gr, gw, gr * 2);
+          } else {
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, gr, 0, TAU);
+            ctx.fill();
+          }
           break;
         }
         case 'snow':

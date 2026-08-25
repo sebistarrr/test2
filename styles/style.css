@@ -170,13 +170,13 @@ body {
   color: #7d7a88;
 }
 
+/* Emplacement d'un combattant : le portrait de la bête, plus de boule.
+   `pixelated` garde les blocs nets au rééchantillonnage. */
 .slot-orb {
   width: 13cqw;
   height: 13cqw;
-  border-radius: 50%;
-  border: 0.9cqw solid #000;
-  background: #e6e6e6;
   display: block;
+  image-rendering: pixelated;
 }
 
 .slot-name {

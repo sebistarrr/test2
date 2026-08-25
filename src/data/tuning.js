@@ -64,7 +64,36 @@ export const TITLE = deepFreeze({
   strokeWidth: 7,
 });
 
+/**
+ * Le corps du combattant n'est plus une boule de couleur mais le **portrait
+ * de la bête** (`portrait` de la fiche, 16×16). `scale` est un multiple du
+ * rayon : à 2,15 la silhouette pèse à l'écran autant que l'ancienne boule,
+ * le pixel-art n'occupant jamais tout le carré 16×16.
+ *
+ * Purement visuel : le rayon de collision reste `look.radius` (41 px).
+ */
+export const BODY = deepFreeze({ scale: 2.15 });
+
 export const HUD = deepFreeze({
+  /**
+   * Barres de vie, **en haut de l'écran**. La vidéo d'origine portait les PV
+   * en chiffres au centre de la boule ; le portrait de la bête a pris cette
+   * place, les PV remontent donc dans le bandeau resté libre au-dessus du
+   * titre (dont la casse commence à y = 247).
+   *
+   * Mêmes x et même largeur que les jauges d'ultime du bas : les deux étages
+   * du HUD s'alignent sur une seule grille.
+   */
+  hp: {
+    y: 150,
+    height: 46,
+    width: 268,
+    leftX: 39,
+    rightX: 412,
+    border: 3,
+    numberSize: 32,
+    pad: 12,
+  },
   // Deux jauges d'ultime, mesurées : x 39→307 et 412→680, y 965→1000
   bar: {
     y: 965,

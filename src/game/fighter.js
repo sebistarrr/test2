@@ -9,10 +9,28 @@
  * @module game/fighter
  */
 
-import { ARENA, MATCH, PHYSICS } from '../data/tuning.js';
+import { ARENA, BODY, MATCH, PHYSICS } from '../data/tuning.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { TAU, clamp, rotateToward, wrapAngle } from '../core/math.js';
-import { drawSpriteLeft } from '../render/sprites.js';
+import { drawSpriteCentered, drawSpriteLeft, getTintedSprite } from '../render/sprites.js';
+
+/**
+ * Force du flash blanc d'encaissement, **et non 1**. La boule d'origine
+ * pouvait virer au blanc pur : son contour noir la délimitait encore. Une
+ * silhouette pleinement blanche, elle, disparaît sur l'arène blanche — le
+ * combattant s'effaçait un cinquième de seconde à chaque coup encaissé.
+ * À 0,7 les contours du pixel-art restent lisibles sous le flash.
+ */
+const FLASH_ALPHA = 0.7;
+
+/** Silhouette teintée, centrée — flash d'encaissement et teintes d'état. */
+function drawTintedCentered(ctx, key, color, alpha, x, y, height) {
+  const s = getTintedSprite(key, color);
+  const w = height * (s.width / s.height);
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(s, x - w / 2, y - height / 2, w, height);
+  ctx.globalAlpha = 1;
+}
 
 export class Fighter {
   /**
@@ -274,22 +292,26 @@ export class Fighter {
     if (this.customWeapon) this.customWeapon(ctx);
     else this.drawWeapon(ctx);
 
-    // corps — le flash blanc d'encaissement prime sur tout, puis la teinte
-    // d'un contrôle adverse se pose (ou se mélange) sur la couleur d'élément
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, TAU);
-    ctx.fillStyle = this.flash > 0 ? look.bodyHit : look.body;
-    ctx.fill();
+    // corps — le portrait de la bête, à la place de l'ancienne boule de
+    // couleur. Le flash blanc d'encaissement prime sur tout (silhouette pleine,
+    // comme la boule virait au blanc), puis la teinte d'un contrôle adverse se
+    // pose par-dessus le sprite.
+    const size = this.radius * BODY.scale;
+    drawSpriteCentered(ctx, this.portrait, this.x, this.y, size);
     const dotTint = this.statusTint(now);
-    if (this.flash <= 0 && (this.tint || dotTint)) {
-      ctx.globalAlpha = this.tint ? this.tintAlpha : dotTint.alpha;
-      ctx.fillStyle = this.tint ?? dotTint.color;
-      ctx.fill();
-      ctx.globalAlpha = 1;
+    if (this.flash > 0) {
+      drawTintedCentered(ctx, this.portrait, look.bodyHit, FLASH_ALPHA, this.x, this.y, size);
+    } else if (this.tint || dotTint) {
+      drawTintedCentered(
+        ctx,
+        this.portrait,
+        this.tint ?? dotTint.color,
+        this.tint ? this.tintAlpha : dotTint.alpha,
+        this.x,
+        this.y,
+        size,
+      );
     }
-    ctx.lineWidth = look.outlineWidth;
-    ctx.strokeStyle = look.outline;
-    ctx.stroke();
 
     // anneau d'état (brûlure : cerclage orange autour de la victime)
     const ring = this.statusRing(now);
@@ -319,13 +341,17 @@ export class Fighter {
       ctx.arc(this.x, this.y, rr * 1.35, 0, TAU);
       ctx.fill();
     }
+    // les PV ne sont plus écrits ici : ils vivent dans la barre de vie
+    // en haut de l'écran (render/hud.js).
+  }
 
-    // points de vie
-    ctx.font = look.hpFont;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = look.hpColor;
-    ctx.fillText(String(Math.max(0, Math.ceil(this.hp))), this.x, this.y + look.hpOffsetY);
+  /**
+   * Sprite du corps. Une bête sans portrait retomberait sur sa tête d'arme,
+   * mais les huit fiches en ont un — le repli n'est là que pour ne pas casser
+   * le rendu si l'on ajoute une bête en cours de route.
+   */
+  get portrait() {
+    return this.el.portrait ?? this.el.weapon.head.sprite ?? this.el.icon;
   }
 
   auraVisible() {

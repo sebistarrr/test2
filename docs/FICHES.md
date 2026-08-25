@@ -451,6 +451,13 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 
 ## Règles communes (moteur)
 
+**Corps et PV.** Le combattant n'est plus une boule de couleur : c'est le
+`portrait` 16×16 de la bête, dessiné à `BODY.scale` × son rayon. `look.radius`
+ne sert plus qu'aux collisions. Les PV, qui s'écrivaient au centre de la boule,
+sont passés dans la **barre de vie en haut de l'écran** (`HUD.hp`) : deux
+barres de 268 × 46 px alignées sur les jauges d'ultime du bas, remplies de la
+couleur de la bête et vidées vers l'extérieur du cadre.
+
 | Règle                     | Valeur                                                    |
 | ------------------------- | --------------------------------------------------------- |
 | Points de vie             | 100, le premier à 0 perd                                   |

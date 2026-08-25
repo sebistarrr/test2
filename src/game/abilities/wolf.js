@@ -79,6 +79,7 @@ export const wolfAbilities = {
         f.radius * (1 - 0.25 * t),
         f.el.look.trail.color,
         f.el.look.trail.life + t * 0.1,
+        f.portrait,
       );
     }
     fx.burst(fromX, fromY, 14, { color: [f.el.look.accent, '#2e1065', '#ffffff'], speed: 260, size: 5, life: 0.45 });

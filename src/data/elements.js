@@ -39,18 +39,16 @@ const WOLF = {
   nameRef: 'WOLF',
   tagline: 'Traqueur — bondit dans l’angle mort et saigne sa proie',
   icon: 'wolfIcon',
-  portrait: 'wolfSprite', // vignette de l'écran de sélection
+  portrait: 'wolfSprite', // corps dans l'arène + vignette de sélection
 
   /* ---------- APPARENCE ---------- */
   look: {
-    radius: 41, // mesuré : boule de 83 px de diamètre, contour compris
+    radius: 41, // mesuré : boule de 83 px de diamètre. Le corps est désormais
+    //             dessiné avec le portrait ; ce rayon ne sert plus qu'aux collisions
     body: '#8fa6c8', // bleu argenté du roster
     bodyHit: '#ffffff', // flash blanc à l'encaissement (observé)
     outline: '#0a0a0a',
     outlineWidth: 5,
-    hpColor: '#0a0a0a',
-    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
-    hpOffsetY: 12, // décalage de la ligne de base pour centrer les chiffres
     aura: {
       color: 'rgba(143,166,200,0.45)',
       radius: 1.62, // × rayon du corps
@@ -218,14 +216,18 @@ const SPIDER = {
     radius: 41,
     body: '#2b2733', // noir profond du roster
     bodyHit: '#ffffff',
+    /**
+     * Seule bête à dissocier la couleur de sa barre de vie de celle de son
+     * corps : posé sur le fond sombre `#1c1a26`, son noir profond ne se
+     * distinguait pas de la plaque vide et la barre semblait ne jamais
+     * descendre. On reprend son rouge, celui de sa jauge d'ultime.
+     */
+    hpFill: '#e01f3a',
     outline: '#0a0a0a',
     outlineWidth: 5,
     // seule bête du roster à porter ses PV en clair : le noir profond du corps
     // avalerait des chiffres noirs, alors que l'arène blanche les rend partout
     // ailleurs plus lisibles
-    hpColor: '#ffd7dc',
-    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
-    hpOffsetY: 12,
     aura: {
       color: 'rgba(224,31,58,0.45)',
       radius: 1.62,
@@ -377,9 +379,6 @@ const BEAR = {
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
-    hpColor: '#0a0a0a',
-    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
-    hpOffsetY: 12,
     aura: {
       color: 'rgba(200,48,42,0.48)',
       radius: 1.7,
@@ -521,9 +520,6 @@ const TURTLE = {
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
-    hpColor: '#0a0a0a',
-    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
-    hpOffsetY: 12,
     /**
      * Halo doré : dès que la Chaîne de jade est chargée, **c'est la Tortue
      * elle-même** qui s'entoure d'or, et il reste allumé pendant tout le trait.
@@ -699,9 +695,6 @@ const HAWK = {
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
-    hpColor: '#0a0a0a',
-    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
-    hpOffsetY: 12,
     aura: {
       color: 'rgba(95,208,232,0.55)',
       radius: 1.6,
@@ -861,9 +854,6 @@ const TIGER = {
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
-    hpColor: '#0a0a0a',
-    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
-    hpOffsetY: 12,
     /**
      * Halo blanc **permanent** : la boule orange du Tigre le porte du début à
      * la fin du duel, y compris quand aucun combo n'est en cours — c'est sa
@@ -991,9 +981,6 @@ const DEER = {
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
-    hpColor: '#0a0a0a',
-    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
-    hpOffsetY: 12,
     aura: {
       color: 'rgba(25,185,138,0.5)',
       radius: 1.65,
@@ -1136,9 +1123,6 @@ const SNAKE = {
     bodyHit: '#ffffff',
     outline: '#0a0a0a',
     outlineWidth: 5,
-    hpColor: '#0a0a0a',
-    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
-    hpOffsetY: 12,
     aura: {
       color: 'rgba(182,240,58,0.5)',
       radius: 1.65,

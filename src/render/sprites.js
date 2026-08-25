@@ -13,7 +13,7 @@
  */
 
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
-import { compilePixelMap } from './pixelart.js';
+import { compilePixelMap, tintCanvas } from './pixelart.js';
 
 const MANIFEST_URL = new URL('../../assets/sprites/manifest.json', import.meta.url);
 
@@ -70,6 +70,28 @@ export function getSprite(key) {
 
 export function hasSprite(key) {
   return bank.has(key);
+}
+
+/** @type {Map<string, HTMLCanvasElement>} */
+const tinted = new Map();
+
+/**
+ * Silhouette pleine d'un sprite, dans une couleur donnée — le corps d'un
+ * combattant s'en sert pour le flash blanc d'encaissement et pour les teintes
+ * d'état (soie, saignement).
+ *
+ * Le résultat est **mis en cache** : ces teintes repassent à chaque frame et
+ * `tintCanvas` alloue un canvas à chaque appel. Le nombre de couples
+ * (sprite, couleur) est borné par les fiches, la table ne peut pas enfler.
+ */
+export function getTintedSprite(key, color) {
+  const id = `${key}|${color}`;
+  let cv = tinted.get(id);
+  if (!cv) {
+    cv = tintCanvas(getSprite(key), color);
+    tinted.set(id, cv);
+  }
+  return cv;
 }
 
 /**

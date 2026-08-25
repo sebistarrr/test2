@@ -25,6 +25,7 @@ Va droit au fichier concerné, en `grep` ciblé plutôt qu'en lecture intégrale
 | Entité combattant (état + dessin) | `src/game/fighter.js` |
 | Pouvoirs d'une bête | `src/game/abilities/<id>.js` |
 | Mise en scène (rubans, nappes, ondes, nombres) | `src/render/flair.js` + `look.flair` de chaque fiche |
+| Barre de vie (haut) + jauges d'ultime (bas) | `src/render/hud.js` + `HUD` de `tuning.js` |
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
 | Relevés vidéo détaillés, par élément | `docs/FICHES.md` |
@@ -97,6 +98,11 @@ Chacune porte un commentaire le disant.
      jamais déplacer la référence.
 4. **Le décor ne bouge jamais** (cahier des charges) — rasterisé une fois dans
    `scene.js`, blitté en un `drawImage`.
+   - **Le corps d'un combattant est son portrait, plus une boule.** `look.radius`
+     ne dessine plus rien : il ne sert qu'aux collisions. La taille à l'écran
+     vient de `BODY.scale` (× le rayon) dans `tuning.js`. Les PV ne sont plus
+     écrits dans le corps mais dans la **barre de vie en haut de l'écran**
+     (`HUD.hp`), au-dessus du titre.
 5. **Convention de commentaire dans les fiches** : chaque valeur porte
    `mesuré` (relevé vidéo), `calé` (ajusté par simulation) ou `déduit`.
    Ne jamais changer une valeur `mesuré` sans nouveau relevé.
@@ -123,8 +129,8 @@ node tools/beasts-preview.mjs            # planche du roster Bêtes Spirituelles
 node tools/matrix.mjs                    # 36 affrontements x 3 seeds, sans rendu
 node tools/matrix.mjs > /tmp/a.txt && diff tools/matrix-reference.txt /tmp/a.txt
 
-node tools/shot.mjs "?a=wind&b=plant&seed=5" /tmp/s 3,9,20
-FORCE=plant:ult node tools/shot.mjs "?a=wind&b=plant" /tmp/s 8   # déclenche l'ultime
+node tools/shot.mjs "?a=hawk&b=snake&seed=5" /tmp/s 3,9,20
+FORCE=snake:ult node tools/shot.mjs "?a=hawk&b=snake" /tmp/s 8   # déclenche l'ultime
 
 python3 tools/frames.py <video.mp4> <dossier> <pas_s> [t0] [t1]
 python3 tools/montage.py <dossier> <sortie.jpg> <cols> <lignes> <largeur> [début]
@@ -180,10 +186,14 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   sprite démarre à `handle.length` : si `handle.length + 8 × scale` ne vaut pas
   la portée, l'arme reste cachée sous la boule (rayon 41). Les deux sont
   purement visuels — ni la portée ni la hitbox n'en dépendent.
-- **PV clairs + flash blanc.** `bodyHit` passe le corps au blanc à
-  l'encaissement : des `hpColor` clairs y deviennent invisibles. Seule
-  l'Araignée (corps noir profond) porte ses PV en clair ; toutes les autres
-  gardent `#0a0a0a`.
+- **Flash blanc sur fond blanc.** Depuis que le corps est un sprite, teinter
+  la silhouette en blanc plein la fait **disparaître sur l'arène blanche** — la
+  boule d'origine, elle, gardait son contour noir. D'où `FLASH_ALPHA = 0.7`
+  dans `fighter.js` : le pixel-art garde ses contours sous le flash.
+- **Couleur de barre de vie.** La barre se remplit de `look.body`. Celui de
+  l'Araignée est si proche du fond sombre qu'on ne la voyait pas se vider :
+  elle est la seule à porter un `look.hpFill` (son rouge). Toute bête à corps
+  très sombre aura le même besoin.
 
 ---
 
