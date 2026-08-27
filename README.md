@@ -8,27 +8,43 @@ Reproduction d'une vidéo de référence (576 × 1024, 30 fps, 38,6 s), relevée
 image par image : géométrie, palette, typographie, durées et formules sont
 mesurées et documentées dans [`CLAUDE.md`](CLAUDE.md).
 
-## Lancer en local
+## Stack
+
+| Rôle | Outil |
+| --- | --- |
+| Structure et cycle de vie | React 18 + TypeScript strict |
+| Physique | Matter.js — hitboxes, collisions, rebonds, forces |
+| Rendu et VFX | API Canvas 2D native, dans une boucle `requestAnimationFrame` |
+| Build | Vite |
+
+Matter ne dessine rien : `Matter.Render` n'est jamais instancié. Le canvas
+lit les corps physiques et peint par-dessus.
+
+## Lancer
 
 ```bash
-python3 -m http.server 8085
-# puis http://localhost:8085/
+npm install
+npm run dev       # serveur de développement
+npm run build     # tsc -b puis vite build -> dist/
+npm run check     # typage seul
 ```
-
-Aucun build, aucune dépendance à installer : Phaser 3 est chargé depuis un
-CDN, le reste tient dans trois fichiers statiques.
-
-| Fichier | Rôle |
-| --- | --- |
-| `index.html` | page et chargement de Phaser |
-| `style.css` | centrage du canvas |
-| `script.js` | tout le jeu : constantes relevées, sprites, boucle |
-| `CLAUDE.md` | le relevé vidéo complet et le guide de maintenance |
 
 `?seed=1234` fixe les tirages aléatoires du duel.
 
+## Carte des fichiers
+
+| Besoin | Fichier |
+| --- | --- |
+| Constantes du relevé | `src/constants.ts` |
+| Types des entités | `src/types.ts` |
+| Pixelmaps des armes | `src/sprites.ts` |
+| Monde Matter, unités | `src/physics.ts` |
+| Logique du duel | `src/duel.ts` |
+| Tracé Canvas | `src/render.ts` |
+| Montage et boucle rAF | `src/App.tsx` |
+
 ## Déploiement
 
-Chaque push sur `main` publie la racine du dépôt sur GitHub Pages via
-`.github/workflows/deploy.yml`. Activer Pages en mode « GitHub Actions »
-dans les réglages du dépôt.
+Chaque push sur `main` construit le projet et publie `dist/` sur GitHub
+Pages via `.github/workflows/deploy.yml`. Activer Pages en mode
+« GitHub Actions » dans les réglages du dépôt.

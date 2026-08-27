@@ -4,8 +4,9 @@
 dans une arène carrée. Reproduction d'une vidéo de référence
 (576 × 1024, 30 fps, 1159 frames, 38,6 s).
 
-Phaser 3 via CDN + Arcade Physics. Trois fichiers statiques, aucun backend,
-aucun build. Publié sur GitHub Pages à chaque push sur `main`.
+**React 18 + TypeScript strict, Matter.js pour la physique seule, API
+Canvas 2D pour tout le rendu.** Build Vite, publié sur GitHub Pages à
+chaque push sur `main`.
 
 **Lis ce fichier avant d'ouvrir quoi que ce soit d'autre.** Il contient la
 totalité du relevé vidéo : les chiffres sont ici, pas à redécouvrir.
@@ -16,14 +17,57 @@ totalité du relevé vidéo : les chiffres sont ici, pas à redécouvrir.
 
 | Besoin | Fichier |
 | --- | --- |
-| Géométrie, palette, typographie, règles | `script.js` §1 à §4 |
-| Pixelmaps des armes | `script.js` §5 (`MAP_GUN`, `MAP_SWORD`) |
-| Génération des textures | `Duel.preload()` |
-| Décor fixe (arène, titres, cadres, filigrane) | `Duel.drawChrome()` |
-| Jauges + stats, redessinées par frame | `Duel.drawHud()` |
-| Boucle de duel | `Duel.update()` et les `step*()` |
-| Page et centrage | `index.html`, `style.css` |
+| Géométrie, palette, typographie, règles | `src/constants.ts` |
+| Types des entités | `src/types.ts` |
+| Pixelmaps des armes, textures de billes | `src/sprites.ts` |
+| Monde Matter, conversion des unités | `src/physics.ts` |
+| Logique du duel, `step*()` | `src/duel.ts` |
+| Décor, HUD, effets, ordre de tracé | `src/render.ts` |
+| Montage React et boucle `requestAnimationFrame` | `src/App.tsx` |
+| Page et centrage | `index.html`, `src/style.css` |
 | Déploiement | `.github/workflows/deploy.yml` |
+
+### Répartition des rôles
+
+- **Matter.js ne fait QUE la physique** : hitboxes circulaires,
+  collisions, rebonds, forces de recul, vélocité. `Matter.Render` n'est
+  jamais instancié.
+- **Canvas 2D fait tout le visuel** : décor, pixelmaps d'armes, chiffres
+  de PV, éventail vert, sillages, éclats, fantômes.
+- **React monte le canvas et rien d'autre.** Il ne re-rend pas à 60 fps :
+  un état React par frame ferait traverser tout l'arbre au réconciliateur
+  soixante fois par seconde pour rien. La boucle écrit directement dans le
+  canvas via un `useRef`.
+- `src/duel.ts` **ne dessine rien**, `src/render.ts` **ne modifie rien**.
+
+### Pas fixe
+
+La physique avance par pas FIXE de 1000/60 ms, accumulés depuis le temps
+réel dans `App.tsx`. Deux raisons :
+
+1. Sans lui, un écran 144 Hz jouerait le duel deux fois plus vite qu'un
+   60 Hz.
+2. Le facteur de correction interne de Matter ne vaut 1 qu'à pas
+   constant ; à pas variable les rebonds dérivent d'une machine à l'autre.
+
+L'ordre est explicite — `stepWorld()`, puis la logique, puis le rendu —
+et c'est ce qui supprime le piège le plus coûteux du portage Phaser (voir
+« Pièges »).
+
+### Unités
+
+Le relevé est en **px/s** et `constants.ts` le garde tel quel. Matter, lui,
+travaille en **px par pas**. Toute la conversion est isolée dans
+`physics.ts` (`toStep`, `toSec`, `setSpeed`, `speedOf`). Deux règles :
+
+- Ne jamais écrire `body.velocity` à la main : Matter intègre en Verlet, la
+  vélocité est dérivée de la position précédente. Passer par
+  `Body.setVelocity`, qui replace aussi `positionPrev`.
+- Le recul passe par `Body.applyForce`. Matter intègre
+  `v_pas += (force / masse) × dt_ms²`, donc pour un delta de `dv` px/s il
+  faut `force = masse × dv / (60 × dt_ms²)` — c'est ce que fait
+  `applyImpulse()`. La constante a été **recalée sur la mesure** : pic
+  relevé 1 380 px/s à la frame 1011, pic obtenu 1 390 px/s médian.
 
 ---
 
@@ -274,9 +318,11 @@ le mode `pixelArt` global crénèlerait la bordure de l'arène.
 4. **`Damage` du Bladesman n'est jamais stocké.** Il est dérivé de `spin`
    à l'affichage. Le stocker séparément fait diverger les deux valeurs.
 
-5. **Rien ne passe devant les billes.** L'éventail est en profondeur 10, le
-   sillage en 14, les billes en 20, les armes en 30. Le filigrane est dans
-   le décor, donc sous tout le monde.
+5. **Rien ne passe devant les billes.** L'ordre de tracé du Canvas rejoue
+   la pile du relevé : décor, éventail (10), fantômes (12), sillage (14),
+   billes (20), armes (30), éclats (40). Le filigrane est dans le décor,
+   donc sous tout le monde. Les profondeurs sont dans `DEPTH`
+   (`constants.ts`) et servent de documentation de l'ordre d'appel.
 
 6. **La vitesse est rappelée vers sa cible à chaque frame.** Sans ce
    rappel, les chocs bille contre bille finissent par immobiliser un
@@ -286,14 +332,15 @@ le mode `pixelArt` global crénèlerait la bordure de l'arène.
 
 ## Pièges déjà rencontrés
 
-- **`scene.update()` est appelé AVANT le pas d'Arcade.** Lire `sprite.x`
-  dans `update()` donne donc la position de la frame **précédente**. À
-  1 380 px/s (le recul de HIGH NOON) cela décale de près de 50 px tout ce
-  qui est accroché aux billes. Le symptôme se lit mal : le chiffre de PV
-  semble « sortir du cercle à l'impact », le pistolet paraît « flotter à
-  côté du corps », l'épée « se détacher » — trois bugs apparents pour une
-  seule cause. Le placement se fait donc sur `POST_UPDATE`
-  (`placeVisuals`), jamais dans `update()`.
+- **L'ordre logique / physique n'est pas un détail.** En Phaser,
+  `scene.update()` tournait AVANT le pas d'Arcade : lire `sprite.x` y
+  donnait la position de la frame **précédente**, soit près de 50 px
+  d'écart à 1 380 px/s. Le symptôme se lisait mal — le chiffre de PV
+  semblait « sortir du cercle à l'impact », le pistolet « flotter à côté
+  du corps », l'épée « se détacher » : trois bugs apparents pour une seule
+  cause. L'architecture actuelle rend la faute impossible (`stepWorld()`,
+  puis logique, puis rendu), mais tout moteur qui reprendrait la boucle
+  ramènerait le piège.
 
 - **Tester la touche d'épée sur un échantillon par frame laisse la lame
   tunneler.** À 3 tours/s elle n'est alignée sur l'adversaire que 41 ms par
@@ -303,12 +350,25 @@ le mode `pixelArt` global crénèlerait la bordure de l'arène.
   et rien ne change. Le test de balayage supprime la dépendance au frame
   rate ; il a doublé le taux de touche et il a fallu rééquilibrer derrière.
 
-- **`physics.add.overlap(groupe, sprite, cb)` ne garantit pas l'ordre des
-  deux arguments de la callback.** En détruisant aveuglément le premier, on
-  détruit le Bladesman au lieu de la balle : la bille disparaît, mais son
-  chiffre de PV et son épée continuent de suivre le corps détruit, ce qui
-  rend le symptôme confus. Toujours retrouver le projectile par
-  `groupe.contains(a) ? a : b`.
+- **Une paire de collision Matter ne garantit pas l'ordre de `bodyA` /
+  `bodyB`.** Identifier TOUJOURS par `label`. Agir aveuglément sur le
+  premier corps revenait, en Phaser, à détruire le Bladesman à la place de
+  la balle : la bille disparaissait mais son chiffre de PV et son épée
+  continuaient de suivre le corps détruit, ce qui rendait le symptôme
+  illisible.
+
+- **Matter freine tout seul.** `frictionAir` vaut 0,01 par défaut : une
+  bille lancée à 605 px/s tombe sous 300 px/s en quelques secondes et tout
+  le relevé de vitesses s'effondre. Il faut `frictionAir`, `friction` et
+  `frictionStatic` à 0, `restitution` à 1, et `inertia: Infinity` — sans
+  quoi la bille roule sur elle-même et l'arme accrochée part en vrille.
+
+- **Un banc à bas frame rate flatte les verrous.** Le portage Phaser
+  tournait à ~20 fps sous Playwright et manquait des passes de lame ; les
+  mêmes verrous d'invulnérabilité, rejoués à 60 Hz garantis, tuaient
+  l'Outlaw en 26 s au lieu de 38,6 s. `swordCooldown` a dû être remonté
+  d'environ 65 % au portage. Recaler l'équilibrage après tout changement
+  de moteur, jamais reporter les constantes telles quelles.
 
 - **Les cinq taches alignées de la frame 224 sont une seule balle.** Elles
   se lisent comme cinq projectiles dans un détecteur de blobs. L'espacement
@@ -385,12 +445,18 @@ Après toute retouche de gameplay, deux garde-fous chiffrés :
   vidéo, et tout excès vient de la lame.
 - Aucun des deux camps ne gagne systématiquement.
 
+Relevé du portage React/Matter, sur huit graines : durée médiane 33,1 s,
+précision 0,55 à 0,86 coups/s (médiane 0,63), `Damage` final 4,4 à 5,5,
+pic de recul HIGH NOON 1 338 à 1 518 px/s (médiane ~1 395 contre 1 380
+mesuré), quatre victoires chacun. Le banc est `tools/sweep.mjs`.
+
 ---
 
 ## Outils
 
 ```bash
-python3 -m http.server 8085 &        # requis pour les captures
+npm run dev                          # développement
+npm run build && (cd dist && python3 -m http.server 8086 &)   # captures
 
 # Extraction du relevé (nécessite ffmpeg, numpy, pillow, scipy)
 ffmpeg -i reference.mp4 -vsync 0 frames/f%04d.png
@@ -400,11 +466,13 @@ ffmpeg -i reference.mp4 -vsync 0 frames/f%04d.png
 python3 tools/geom.py frames/f0001.png shot.png
 ```
 
-Poignée de debug exposée en page : `globalThis.__game.scene.scenes[0]`.
-`?seed=1234` fixe tous les tirages (angles de départ, gerbes). Ce n'est pas
-un rejeu image par image : Phaser avance sur le temps réel.
+Poignée de debug exposée en page : `globalThis.__duel` (l'instance de
+`Duel`, avec `snapshot()`). `?seed=1234` fixe tous les tirages — angles de
+départ, gerbes d'éclats. Ce n'est pas un rejeu image par image de la vidéo :
+la graine d'origine n'est pas récupérable depuis un rendu.
 
-Vérification syntaxique : `node --check script.js`.
+Vérification du typage : `npm run check` (ou `npm run build`, qui
+enchaîne `tsc -b` puis `vite build`).
 
 ---
 
