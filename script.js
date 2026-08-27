@@ -153,7 +153,12 @@ const RULES = {
   spinHold:     2000,            // mesuré : ~55 frames de palier à 3,00
   spinDecay:    3.0,             // mesuré : -1,00 toutes les 10 frames = -3,0/s
   dmgPerSpin:   2.0,             // mesuré : Damage = 2 x Spin Speed, sans exception
-  swordCooldown: 420,            // calé : empêche la lame de toucher deux fois par passe
+  swordCooldown: 1000,           // calé : une seule touche par passe de lame
+  // Pendant BLADE RUSH la lame tourne à 3 tours/s : chaque arête passe sur
+  // l'adversaire toutes les ~167 ms. Un verrou à 420 ms en avalerait deux
+  // sur trois et la rafale ne ferait pas fondre les PV. On le ramène donc
+  // sous la durée d'un passage pour que chaque coup compte.
+  swordCooldownRush: 115,
 
   // Ultimes --------------------------------------------------------------
   // Jauge gauche : pente de charge 1,13 px/frame sur 238 px utiles, puis
@@ -164,12 +169,16 @@ const RULES = {
   // aux coups portés, pas à une simple horloge.
   rushCharge:   9.0,             // calé : moyenne des trois cycles observés
   rushPerHit:   0.06,            // calé : chaque coup d'épée avance la jauge
-  rushDuration: 2.0,             // mesuré : ~60 frames de jauge vide après le tir
+  rushDuration: 1.5,             // durée stricte de la ruée, minutée
   // Pendant BLADE RUSH la lame fonce sur le tireur. Mesuré : le Bladesman
   // plafonne à 31,3 px/frame (939 px/s) contre 19,1 de médiane — la ruée
   // existe mais reste mesurée, ce n'est pas une téléportation.
   rushSpeed:    939,
-  rushHoming:   7.0,             // calé : rappel de cap vers l'Outlaw, rad/s
+  rushHoming:   20.0,            // calé : rappel de cap vers l'Outlaw, rad/s
+  // Fraction de la vitesse de croisière gardée une fois à portée. Mesuré au
+  // banc : à pleine vitesse la lame ne restait à portée que 58 % de la ruée
+  // et n'y était alignée que 7 frames sur 114 — donc un seul coup porté.
+  rushOrbit:    110,
 
   // Flash blanc du disque touché : une frame à 30 fps (mesuré frame 224).
   flashTime:    70,              // ms — deux frames à 60 fps, une à 30
@@ -469,6 +478,18 @@ class Duel extends Phaser.Scene {
     if (this.gun) { this.gun.destroy(); this.sword.destroy(); }
     if (this.endText) { this.endText.destroy(); this.endText = null; }
     if (this.arcGfx) this.arcGfx.clear();
+    if (this.trailGfx) this.trailGfx.clear();
+
+    // Éclats et fantômes en vol : leur tween les détruit normalement, mais
+    // un redémarrage en plein vol les laisserait à l'écran sur la partie
+    // suivante. On coupe les tweens puis on ramasse ce qui traîne.
+    this.tweens.killAll();
+    this.children.list.slice().forEach(o => {
+      if (o.texture && (o.texture.key === 'spark' ||
+          (/^ball-/.test(o.texture.key) && o !== this.outlaw && o !== this.blade))) {
+        o.destroy();
+      }
+    });
 
     this.bullets = this.physics.add.group();
 
@@ -628,6 +649,11 @@ class Duel extends Phaser.Scene {
       this.stepOutlaw(time, d);
       this.stepBlade(time, d);
       this.stepBullets();
+    } else if (this.arcs.length > 2) {
+      // Partie finie : stepBlade ne tourne plus, donc l'éventail n'est plus
+      // ni alimenté ni purgé — sans ce drainage il restait figé à l'écran
+      // pendant tout l'écran de fin. On le laisse se refermer.
+      this.arcs.splice(0, Math.max(1, Math.ceil(this.arcs.length * d * 6)));
     }
 
     this.drawHud();
@@ -661,34 +687,96 @@ class Duel extends Phaser.Scene {
   /* BLADE RUSH : jauge alimentée par le temps et par les coups portés.
      Une fois pleine, la lame part en survitesse puis la jauge repart de zéro. */
   stepRush(time, d) {
-    if (time < this.rushUntil) {
-      // Ruée : la lame fonce sur le tireur. On ne téléporte pas la bille,
-      // on infléchit son cap vers l'Outlaw et on pousse sa vitesse cible
-      // (mesuré : 31,3 px/frame au pic contre 19,1 de médiane).
+    // Un seul point de sortie, piloté par le minuteur : tant que l'état
+    // dépendait de plusieurs branches, une fin de partie en pleine ruée
+    // laissait rushOn à vrai et l'éventail large bloqué à l'écran.
+    if (this.rushOn && time >= this.rushUntil) this.endRush();
+
+    if (this.rushOn) {
+      // Ruée. Deux régimes, séparés par la portée de la lame.
+      //
+      // Loin : on fonce, cap asservi sur l'Outlaw (mesuré : 31,3 px/frame
+      // au pic contre 19,1 de médiane).
+      //
+      // À portée : on ORBITE. Foncer droit dessus à 939 px/s traversait la
+      // zone utile en une centaine de millisecondes — au banc, la lame n'y
+      // restait que 57 % de la ruée et n'y était alignée que 15 frames sur
+      // 149, d'où un seul coup porté. En tournant autour à distance de
+      // lame, chaque révolution donne une passe qui touche, et les PV
+      // fondent pour de bon.
       const v = this.blade.body.velocity;
       const cur = Math.atan2(v.y, v.x);
-      const want = Phaser.Math.Angle.Between(
+      const toFoe = Phaser.Math.Angle.Between(
         this.blade.x, this.blade.y, this.outlaw.x, this.outlaw.y);
+      const dist = Phaser.Math.Distance.Between(
+        this.blade.x, this.blade.y, this.outlaw.x, this.outlaw.y);
+      const reach = SWORD_R0 + SWORD_W * SWORD_CELL + BALL_R;
+
+      let want;
+      if (dist > reach) {
+        want = toFoe;
+      } else {
+        // Cap tangentiel, ramené vers le radial à proportion de l'écart de
+        // distance : à la bonne distance on tourne, sinon on corrige.
+        const err = Phaser.Math.Clamp(
+          (dist - RULES.rushOrbit) / RULES.rushOrbit, -1, 1);
+        const tangent = toFoe + this.orbitDir * (Math.PI / 2);
+        const radial = err > 0 ? toFoe : toFoe + Math.PI;   // rapproche / écarte
+        want = tangent + Phaser.Math.Angle.Wrap(radial - tangent) * Math.abs(err);
+      }
+      // La vitesse reste celle de la ruée dans les deux régimes. L'avoir
+      // baissée à portée était l'erreur : l'Outlaw court à 589 px/s pendant
+      // HIGH NOON, une lame à 254 px/s ne peut simplement pas rester au
+      // contact — elle décrochait et la ruée ne touchait plus rien.
       const a = cur + Phaser.Math.Angle.Wrap(want - cur) *
                 Math.min(1, d * RULES.rushHoming);
       const sp = Math.hypot(v.x, v.y) || 1;
       this.blade.setVelocity(Math.cos(a) * sp, Math.sin(a) * sp);
+      this.B.base = RULES.rushSpeed;
       return;
-    }
-    if (this.rushOn) {                       // fin de la ruée
-      this.rushOn = false;
-      this.B.base = RULES.speedBlade * (this.noonOn ? RULES.noonSpeedUp : 1);
     }
     this.rush += d / RULES.rushCharge;
     if (this.rush >= 1) {
       this.rush = 0;
       this.rushOn = true;
       this.rushUntil = time + RULES.rushDuration * 1000;
+      // Sens d'orbite figé au déclenchement : celui vers lequel la lame
+      // tourne déjà, pour qu'elle ne fasse pas demi-tour en arrivant.
+      this.orbitDir = Phaser.Math.Angle.Wrap(
+        Math.atan2(this.blade.body.velocity.y, this.blade.body.velocity.x) -
+        Phaser.Math.Angle.Between(this.blade.x, this.blade.y,
+                                  this.outlaw.x, this.outlaw.y)) > 0 ? 1 : -1;
       this.B.base = RULES.rushSpeed;
       this.B.spin = RULES.spinMax;
       this.B.atCapSince = time;
       this.burst(this.blade.x, this.blade.y, 18, 0xC8DE55);
     }
+  }
+
+  /* Sortie de ruée : tout ce que le pouvoir a touché revient à sa valeur
+     de base au même endroit. Rotation, vitesse de déplacement et éventail
+     sont remis ensemble — c'est la dispersion de ces trois remises à zéro
+     qui laissait du vert large accroché derrière la lame. */
+  endRush() {
+    this.rushOn = false;
+    this.rushUntil = 0;
+    // Vitesse de déplacement : retour à la cible de croisière, ultime de
+    // l'Outlaw compris s'il est actif.
+    this.B.base = RULES.speedBlade * (this.noonOn ? RULES.noonSpeedUp : 1);
+    // Rotation : on relâche le plafond, la courbe mesurée reprend la main.
+    this.B.spin = Math.min(this.B.spin, RULES.spinMax);
+    this.B.atCapSince = 0;
+    // Éventail : on purge tout de suite ce qui dépasse la nouvelle
+    // ouverture, sinon la queue large reste visible le temps que la lame
+    // ait tourné de 3,0 rad.
+    this.trimArcs(SLASH_SWEEP);
+  }
+
+  /* Ne garde de l'éventail que ce qui tient dans `sweep` radians derrière
+     la lame. Sert à la fois au tracé courant et à la sortie de ruée. */
+  trimArcs(sweep) {
+    const a = this.arcs;
+    while (a.length > 2 && a[a.length - 1].a - a[0].a > sweep) a.shift();
   }
 
   stepOutlaw(time, d) {
@@ -759,24 +847,37 @@ class Duel extends Phaser.Scene {
 
     // Portée de la lame : segment tournant, testé contre le disque adverse.
     const tip = SWORD_R0 + SWORD_W * SWORD_CELL;
-    if (time - b.lastHit > RULES.swordCooldown && !this.over) {
+    // Verrou d'invulnérabilité : long en régime normal pour qu'une passe ne
+    // compte qu'une fois, court pendant la ruée pour que chaque passage de
+    // lame porte — c'est ce qui fait fondre les PV en rafale.
+    const lock = this.rushOn ? RULES.swordCooldownRush : RULES.swordCooldown;
+    if (time - b.lastHit > lock && !this.over) {
       const dx = this.outlaw.x - this.blade.x;
       const dy = this.outlaw.y - this.blade.y;
       const dist = Math.hypot(dx, dy);
-      if (dist < tip + BALL_R) {
-        // distance point-segment entre le centre de l'Outlaw et la lame
-        const ux = Math.cos(b.ang), uy = Math.sin(b.ang);
-        const proj = Phaser.Math.Clamp(dx * ux + dy * uy, SWORD_R0, tip);
-        const px = dx - ux * proj, py = dy - uy * proj;
-        if (Math.hypot(px, py) < BALL_R + 10) {
+      if (dist > SWORD_R0 - BALL_R && dist < tip + BALL_R) {
+        // Test de BALAYAGE, pas d'échantillon ponctuel. À 3 tours/s la lame
+        // n'est alignée sur l'adversaire que 41 ms par tour : à 30 fps une
+        // seule frame tombe dans cette fenêtre, et si aucune n'y tombe la
+        // lame traverse sans rien toucher. On regarde donc si l'arc parcouru
+        // pendant la frame a franchi le cap de l'adversaire — le résultat ne
+        // dépend plus du frame rate.
+        const toFoe = Math.atan2(dy, dx);
+        // Demi-ouverture sous laquelle le disque adverse est vu depuis la
+        // lame : c'est la fenêtre angulaire où le coup porte.
+        const tol = Math.asin(Math.min(1, (BALL_R + 10) / Math.max(dist, 1)));
+        // Écart du cap de l'adversaire au balayage [angBefore, b.ang],
+        // ramené dans [-pi, pi] autour du début de l'arc.
+        const rel = Phaser.Math.Angle.Wrap(toFoe - angBefore);
+        const swept = b.ang - angBefore;
+        if (rel + tol >= 0 && rel - tol <= swept) {
           b.lastHit = time;
           this.damage('O', b.spin * RULES.dmgPerSpin);
           b.spin = Math.min(RULES.spinMax, b.spin + RULES.spinPerHit);
           this.rush = Math.min(1, this.rush + RULES.rushPerHit);
           // Les éclats fuient la lame : cône centré sur l'axe Bladesman ->
           // Outlaw, donc vers l'extérieur du coup.
-          this.burst(this.outlaw.x, this.outlaw.y, 14, 0xC8DE55,
-                     Math.atan2(dy, dx));
+          this.burst(this.outlaw.x, this.outlaw.y, 14, 0xC8DE55, toFoe);
         }
       }
     }
@@ -789,7 +890,6 @@ class Duel extends Phaser.Scene {
     // 0,6 rad entre deux frames, et l'éventail se rend alors en sept grosses
     // facettes triangulaires au lieu d'un secteur lisse. On interpole donc
     // des relevés intermédiaires sous ARC_STEP, indépendamment du frame rate.
-    const sweep = this.rushOn ? SLASH_SWEEP_RUSH : SLASH_SWEEP;
     const steps = Math.max(1, Math.ceil((b.ang - angBefore) / ARC_STEP));
     for (let i = 1; i <= steps; i++) {
       const k = i / steps;
@@ -799,7 +899,7 @@ class Duel extends Phaser.Scene {
         a: angBefore + (b.ang - angBefore) * k
       });
     }
-    while (this.arcs.length > 2 && b.ang - this.arcs[0].a > sweep) this.arcs.shift();
+    this.trimArcs(this.rushOn ? SLASH_SWEEP_RUSH : SLASH_SWEEP);
     if (this.arcs.length > 400) this.arcs.shift();
   }
 

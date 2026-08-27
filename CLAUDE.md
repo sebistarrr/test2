@@ -114,7 +114,10 @@ Vitesse    rappel doux vers la vitesse cible :
 Rotation   angle += spin × 2π × dt          (spin en tours/seconde)
 
 Portée     tip = 30 + 46 × 2 = 122 px depuis le centre de la bille
-           toucher = distance(centre_outlaw, segment[30, 122]) < 42
+           Le toucher est un test de BALAYAGE, pas un échantillon ponctuel :
+           on regarde si l'arc parcouru dans la frame a franchi le cap de
+           l'adversaire, avec une demi-ouverture asin(42 / distance).
+           Verrou entre deux touches : 1 000 ms, 115 ms pendant la ruée.
 
 Dégâts     Bladesman : damage = 2,00 × spin       (exact, sans exception)
            Outlaw    : damage += 0,10 par coup AU BUT, départ 3,00
@@ -162,6 +165,23 @@ Fenêtres actives relevées : frames 166–366, 519–720, 899–1099.
 zéro et reste vide ~60 frames. Cycles mesurés : 273, 214 et 333 frames —
 donc **pas une simple horloge** : la charge dépend aussi des coups portés.
 Modèle retenu : horloge de 9 s + 6 % par coup d'épée.
+
+La ruée dure **1,5 s**, minutée. Elle a **un seul point de sortie**,
+`endRush()`, qui remet ensemble la vitesse de déplacement, le plafond de
+rotation et l'ouverture de l'éventail. Tant que ces trois remises à zéro
+étaient dispersées, une fin de partie en pleine ruée laissait `rushOn` à
+vrai et l'éventail large accroché derrière la lame.
+
+Deux régimes pendant la ruée, séparés par la portée de lame :
+
+- **loin** — cap asservi sur l'Outlaw, pleine vitesse ;
+- **à portée** — la lame **orbite** à `rushOrbit` du centre adverse.
+
+Foncer droit dessus ne marche pas : à 939 px/s la zone utile est franchie
+en une centaine de millisecondes. Au banc, la lame n'y restait que 57 % de
+la ruée et n'y était alignée que 15 frames sur 149 — un seul coup porté.
+Et il ne faut pas ralentir à portée pour compenser : l'Outlaw court à
+589 px/s pendant HIGH NOON, une lame plus lente décroche aussitôt.
 
 ### Munitions
 
@@ -275,6 +295,14 @@ le mode `pixelArt` global crénèlerait la bordure de l'arène.
   seule cause. Le placement se fait donc sur `POST_UPDATE`
   (`placeVisuals`), jamais dans `update()`.
 
+- **Tester la touche d'épée sur un échantillon par frame laisse la lame
+  tunneler.** À 3 tours/s elle n'est alignée sur l'adversaire que 41 ms par
+  tour : à 30 fps une seule frame tombe dans la fenêtre, et souvent aucune —
+  la lame traverse alors sans rien toucher. Le symptôme est trompeur, il
+  ressemble à un verrou d'invulnérabilité trop long : on baisse le verrou,
+  et rien ne change. Le test de balayage supprime la dépendance au frame
+  rate ; il a doublé le taux de touche et il a fallu rééquilibrer derrière.
+
 - **`physics.add.overlap(groupe, sprite, cb)` ne garantit pas l'ordre des
   deux arguments de la callback.** En détruisant aveuglément le premier, on
   détruit le Bladesman au lieu de la balle : la bille disparaît, mais son
@@ -345,8 +373,17 @@ ici, dans la section « Relevé — mécanique ».
 
 **5. Contrôle.** Après toute retouche visuelle : capture d'écran comparée
 au relevé, et vérification que la géométrie n'a pas bougé (voir Outils).
-Après toute retouche de gameplay : durée de duel plausible (la vidéo dure
-38,6 s) et aucun des deux camps ne gagne systématiquement.
+
+Après toute retouche de gameplay, deux garde-fous chiffrés :
+
+- **Durée de duel** proche de 38,6 s, médiane sur au moins huit graines.
+- **Précision de l'Outlaw** : la vidéo montre la stat `Damage` passer de
+  3,00 à 5,50, soit **25 coups au but en 38,6 s = 0,65 coups/s**. C'est la
+  seule mesure qui donne un budget de dégâts absolu ; elle dit de quel côté
+  vient un déséquilibre. Relevé actuel : 23 à 27 touches, 0,54 à
+  0,70 coups/s, `Damage` final 4,70 à 5,00 — l'Outlaw est donc calé sur la
+  vidéo, et tout excès vient de la lame.
+- Aucun des deux camps ne gagne systématiquement.
 
 ---
 
