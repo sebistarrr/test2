@@ -1,0 +1,41 @@
+/* Le canvas porte tout le rendu : la page ne fait que le centrer sur le
+   même gris-lavande que le fond de la scène (#D4CED5, relevé sur la vidéo),
+   pour qu'aucune couture ne se voie autour du cadre 576x1024. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #D4CED5;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* La police de rendu est chargée ici aussi : Phaser mesure le texte sur le
+     canvas, mais le navigateur n'active une webfont que si un noeud DOM la
+     réclame. Sans cette ligne le premier duel se dessine en repli. */
+  font-family: "Arial Black", "Archivo Black", "Helvetica Neue", Impact, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#game canvas {
+  display: block;
+  /* Le pixel-art des armes est mis à l'échelle en NEAREST côté texture ;
+     ici on laisse le navigateur lisser la réduction globale du canvas,
+     sinon la bordure 3 px de l'arène crénèle sur les écrans non entiers. */
+  image-rendering: auto;
+}
+
+/* Précharge invisible : force le téléchargement d'Archivo Black avant le
+   premier draw, sans occuper de place dans le flux. */
+#fontprobe {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  font-family: "Archivo Black";
+  font-size: 10px;
+}
