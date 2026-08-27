@@ -97,7 +97,11 @@ Archivo Black est chargée depuis Google Fonts comme repli de même graisse.
 Visée      angle = atan2(blade.y - outlaw.y, blade.x - outlaw.x)
            le canon y est asservi à chaque frame, sans lissage.
 
-Recul      v -= (cos angle, sin angle) × 95 px/s   à chaque tir
+Recul      v -= (cos angle, sin angle) × R   à chaque tir
+           R = 95 px/s hors ultime, 790 px/s pendant HIGH NOON.
+           Mesuré : la bille de l'Outlaw plafonne à 27,1 px/frame le reste
+           du temps, mais atteint 46,0 px/frame (1 380 px/s) à la frame
+           1011 — chaque coup de la rafale la propulse violemment.
 
 Rebond     mur : composante normale inversée, norme conservée (bounce = 1)
            bille/bille : séparation Arcade sur corps circulaires
@@ -180,7 +184,18 @@ peintes dans une `CanvasTexture`, puis filtrées en `NEAREST`.
 | Arme | Cellules | Échelle | Taille rendue | Emprise mesurée |
 | --- | --- | --- | --- | --- |
 | Revolver | 34 × 15 | ×2 | 68 × 30 px | r 30 → 97, y −15 → +14 |
-| Épée | 46 × 21 | ×2 | 92 × 42 px | garde r 36–45 (h 43), lame r 45–122 (ép. 24) |
+| Épée | 46 × 21 | ×2 | 92 × 42 px | garde r 36–45, lame r 45–122 |
+
+Relevé au zoom (frame 300, la plus nette du lot) :
+
+- **Revolver** — crosse brune côté bille, carcasse et barillet en acier
+  bleuté-violine, puis un canon **fin** : 6 cellules de haut sur les 15 de
+  l'emprise. C'est le contraste corps épais / canon fin qui l'identifie.
+- **Épée** — garde **orange vif** (232, 160, 40), petite croix trapue de
+  ~9 px de long sur ~30 px de haut. La lame n'est pas symétrique : bande
+  gris-brun sombre sur l'arête **haute**, corps ivoire en **bas**, et les
+  deux arêtes **dentées** — d'où l'aspect scie. Elle est **fuselée** : une
+  lame à côtés parallèles donne un bout carré que le relevé n'a pas.
 
 Les longues séries sont générées par `rep(ch, n)` : compter les caractères
 à la main est la première source de bug sur ce genre de carte. Les lignes
@@ -194,13 +209,24 @@ le mode `pixelArt` global crénèlerait la bordure de l'arène.
 ### Effets
 
 - **Éventail vert** derrière la lame : secteur annulaire plein, reconstruit
-  par quadrilatères entre relevés d'angle successifs. Couleur `#A0B414` à
-  62 % — mesuré : le cœur rend (187, 200, 79) sur blanc. Ouverture bornée
-  en **angle** (1,6 rad, ~92°), jamais en nombre de frames.
-- **Sillage de balle** : cinq tirets alignés sur ~90 px derrière le
-  projectile, alpha décroissant.
-- **Impact** : gerbe d'étincelles, tremblement (±3 px) et sursaut d'échelle
-  (×1,28) du chiffre de points de vie.
+  par quadrilatères entre relevés d'angle successifs. Couleur `#B1C404` à
+  55 % — mesuré : le cœur rend (211, 219, 109) sur l'arène crème. Ouverture
+  bornée en **angle**, jamais en nombre de frames : 1,6 rad (~92°) en
+  régime normal, 3,0 rad (~172°) pendant BLADE RUSH, où il vire au vert
+  fluo. Mesuré : l'aire verte passe de ~3 500 px à 18 488 px au pic
+  (frame 643), un facteur 5,3 — l'éventail s'ouvre, il ne fait pas que
+  changer de teinte.
+- **Sillage de balle** : un **trait**, pas un rond. Mesuré frame 300 :
+  2 px d'épaisseur, valeurs (213, 182, 153) à (236, 206, 177) sur l'arène
+  crème — un trait **pâle**, plus dense à l'avant.
+- **Impact** : le disque touché **blanchit une frame entière**. Mesuré aux
+  frames 223 / 224 / 225 : (135, 89, 61) → (216, 216, 217) → (131, 93, 77),
+  le contour restant sombre. C'est ce flash que montre la vidéo, avec une
+  gerbe d'éclats **allongés** qui giclent à contresens du coup et retombent
+  sous une gravité douce. Le chiffre de PV, lui, ne bouge pas.
+- **Images fantômes** : mesuré frame 643, quatre à cinq disques pâles
+  traînent derrière chaque combattant **lancé** — après un recul de rafale
+  ou pendant la ruée. Jamais en déplacement de croisière.
 
 ---
 
@@ -216,6 +242,14 @@ le mode `pixelArt` global crénèlerait la bordure de l'arène.
 
 3. **L'éventail vert est borné en angle.** Un compteur de frames donne
    trois tours complets de vert à 3,00 tours/s. Déjà fait, déjà corrigé.
+   Il est en plus échantillonné à pas angulaire fixe (`ARC_STEP`) : un
+   relevé par frame suffit à 60 fps mais, à 3 tours/s et 30 fps, la lame
+   avance de 0,6 rad entre deux frames et l'éventail se rend en sept
+   grosses facettes triangulaires.
+
+7. **Rien ne déborde de l'arène.** L'éventail, les éclats et les fantômes
+   passent par un masque géométrique calé sur le bord intérieur du trait.
+   Sans lui, le vert d'une passe près du mur bave sur le fond lavande.
 
 4. **`Damage` du Bladesman n'est jamais stocké.** Il est dérivé de `spin`
    à l'affichage. Le stocker séparément fait diverger les deux valeurs.
@@ -232,6 +266,15 @@ le mode `pixelArt` global crénèlerait la bordure de l'arène.
 
 ## Pièges déjà rencontrés
 
+- **`scene.update()` est appelé AVANT le pas d'Arcade.** Lire `sprite.x`
+  dans `update()` donne donc la position de la frame **précédente**. À
+  1 380 px/s (le recul de HIGH NOON) cela décale de près de 50 px tout ce
+  qui est accroché aux billes. Le symptôme se lit mal : le chiffre de PV
+  semble « sortir du cercle à l'impact », le pistolet paraît « flotter à
+  côté du corps », l'épée « se détacher » — trois bugs apparents pour une
+  seule cause. Le placement se fait donc sur `POST_UPDATE`
+  (`placeVisuals`), jamais dans `update()`.
+
 - **`physics.add.overlap(groupe, sprite, cb)` ne garantit pas l'ordre des
   deux arguments de la callback.** En détruisant aveuglément le premier, on
   détruit le Bladesman au lieu de la balle : la bille disparaît, mais son
@@ -243,6 +286,12 @@ le mode `pixelArt` global crénèlerait la bordure de l'arène.
   se lisent comme cinq projectiles dans un détecteur de blobs. L'espacement
   (10 à 20 px) est incompatible avec la cadence de tir : c'est le sillage
   en tirets.
+
+- **La frame 224 montre un Outlaw BLANC.** Ce n'est pas la couleur de la
+  bille, c'est le flash d'impact d'une seule frame. Un échantillonnage de
+  couleur qui tombe dessus conclut que le camp est blanc ; un traqueur qui
+  cherche du marron perd la bille à chaque coup encaissé. Toujours vérifier
+  une couleur de camp sur une frame **sans impact** — 300 est la bonne.
 
 - **Les libellés de jauge recouvrent le remplissage.** Mesurer le taux de
   charge en comptant les colonnes colorées donne un maximum de 157 px au

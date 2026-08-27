@@ -66,17 +66,29 @@ const C = {
   watermark: 'rgba(120,116,110,0.42)',  // mesuré : rendu (167,163,157) sur blanc
   dead:      '#8E8A92',   // mesuré : le camp mort passe en gris
 
-  // Traînée de lame. Mesuré : le coeur rend (187,200,79) sur blanc, ce qui
-  // correspond à #A0B414 posé à 75 % d'alpha.
-  slash:     [160, 180, 20],
-  slashA:    0.62,
+  // Flash d'impact. Mesuré frame 223/224/225 : le disque touché passe de
+  // (135,89,61) à (216,216,217) puis revient au marron. UNE frame à 30 fps.
+  // Le contour, lui, ne blanchit pas.
+  hit:       '#E4E4E6',
 
-  // Sillage du projectile. Mesuré frame 224 : cinq taches alignées de
-  // (285,568) à (274,660), espacées de 10 à 20 px — c'est UNE balle rendue
-  // en tirets, pas cinq balles. Le sillage fait donc ~90 px de long.
-  trail:     [122, 96, 66],
-  trailLen:  90,
-  trailSeg:  5
+  // Images fantômes. Mesuré frame 643 : quatre à cinq disques pâles de la
+  // taille de la bille traînent derrière chaque combattant lancé.
+  ghostA:    0.30,
+
+  // Traînée de lame. Mesuré frame 643 : le coeur du vert rend (211,219,109)
+  // sur l'arène crème (253,247,237), soit #B1C404 posé à 55 %.
+  slash:     [177, 196, 4],
+  slashA:    0.55,
+  // Pendant BLADE RUSH l'éventail devient franchement fluo (mesuré : l'aire
+  // verte passe de ~3 500 px à ~18 500 px, soit 5,3x).
+  slashRush: [172, 226, 22],
+  slashRushA: 0.72,
+
+  // Sillage du projectile. Mesuré frame 300 : un trait pâle de 2 px, valeurs
+  // (213,182,153) à (236,206,177) sur l'arène crème — pas un trait sombre.
+  trail:     [206, 174, 142],
+  trailLen:  74,
+  trailSeg:  4
 };
 
 /* ---------------------------------------------------------------------
@@ -127,7 +139,11 @@ const RULES = {
   fireDelayNoon: 300,            // mesuré : la cadence double pendant HIGH NOON
   reloadTime:    1600,           // calé : durée du trou entre 0/6 et 6/6
   bulletSpeed:   840,            // mesuré : ~28 px/frame à 30 fps
-  recoil:        95,             // mesuré : recul appliqué à la bille à chaque tir
+  recoil:        95,             // mesuré : recul ordinaire, hors ultime
+  // Mesuré : hors HIGH NOON la bille de l'Outlaw plafonne à 27,1 px/frame ;
+  // pendant l'ultime elle atteint 46,0 px/frame (frame 1011), soit 1 380 px/s.
+  // Chaque coup de la rafale la propulse donc violemment en arrière.
+  recoilNoon:    790,
 
   // Bladesman -----------------------------------------------------------
   spinMin:      0.80,            // mesuré : plancher, jamais franchi
@@ -148,7 +164,17 @@ const RULES = {
   // aux coups portés, pas à une simple horloge.
   rushCharge:   9.0,             // calé : moyenne des trois cycles observés
   rushPerHit:   0.06,            // calé : chaque coup d'épée avance la jauge
-  rushDuration: 2.0              // mesuré : ~60 frames de jauge vide après le tir
+  rushDuration: 2.0,             // mesuré : ~60 frames de jauge vide après le tir
+  // Pendant BLADE RUSH la lame fonce sur le tireur. Mesuré : le Bladesman
+  // plafonne à 31,3 px/frame (939 px/s) contre 19,1 de médiane — la ruée
+  // existe mais reste mesurée, ce n'est pas une téléportation.
+  rushSpeed:    939,
+  rushHoming:   7.0,             // calé : rappel de cap vers l'Outlaw, rad/s
+
+  // Flash blanc du disque touché : une frame à 30 fps (mesuré frame 224).
+  flashTime:    70,              // ms — deux frames à 60 fps, une à 30
+  // Secousse d'écran, réservée aux gros coups (calé : seuil à 5 points).
+  shakeMin:     5.0
 };
 
 /* ---------------------------------------------------------------------
@@ -175,34 +201,38 @@ const PAL_GUN = {
 // la première source d'erreur sur ce genre de carte.
 const rep = (ch, n) => ch.repeat(Math.max(0, n));
 
+// Relevé frame 300 (zoom x12) : crosse brune côté bille, carcasse et
+// barillet en acier bleuté, puis un canon FIN — 6 cellules de haut sur les
+// 15 de l'emprise, contre 30 px pour le corps. C'est ce contraste
+// corps épais / canon fin qui identifie le revolver.
 const MAP_GUN = [
   /*  0 */ '',
-  /*  1 */ '.....KKK',
-  /*  2 */ '....KdddK',                                    // chien
-  /*  3 */ '...KKdmmK' + rep('K', 25),                     // dessus du canon
-  /*  4 */ '..KdvvmmK' + rep('h', 24) + 'K',               // reflet haut
-  /*  5 */ '..KvhvvmK' + rep('l', 24) + 'K',
-  /*  6 */ '.KdvhvvmK' + rep('l', 24) + 'K',
-  /*  7 */ '.KdvvvvmK' + rep('m', 24) + 'K',
-  /*  8 */ '.KdvvvmmK' + rep('d', 24) + 'K',
-  /*  9 */ 'KGdvvmmdK' + rep('K', 25),                     // dessous du canon
-  /* 10 */ 'KGGdKmmdK',                                    // pontet
-  /* 11 */ '.KGGgKKKK',
-  /* 12 */ '..KGgggK',
-  /* 13 */ '..KggggK',
-  /* 14 */ '...KKKK'
+  /*  1 */ '.....KKKK',
+  /*  2 */ '....KdmmdK',                                   // chien
+  /*  3 */ '....KmllmK',
+  /*  4 */ '...KKmllmK' + rep('K', 24),                    // dessus du canon
+  /*  5 */ '...KdmhlmK' + rep('h', 23) + 'K',              // reflet du canon
+  /*  6 */ '..KKdmhlmK' + rep('l', 23) + 'K',
+  /*  7 */ '..KGdmvvmK' + rep('m', 23) + 'K',              // axe du barillet
+  /*  8 */ '..KGGdvvmK' + rep('d', 23) + 'K',
+  /*  9 */ '..KGGdddmK' + rep('K', 24),                    // dessous du canon
+  /* 10 */ '.KGGGdKKKK',                                   // pontet
+  /* 11 */ '.KGGGgK',
+  /* 12 */ '..KGGgK',
+  /* 13 */ '..KGggK',
+  /* 14 */ '...KKK'
 ];
 
 const PAL_SWORD = {
-  K: '#1E1408',   // contour
-  O: '#E8B037',   // garde, or (mesuré : (232,176,55))
-  o: '#B8801F',   // garde, ombre
-  y: '#F5CF63',   // garde, lumière
-  b: '#EFE2C2',   // lame, tranchant clair (mesuré : bande haute crème)
-  n: '#B08F63',   // lame, corps
-  N: '#634526',   // lame, gorge sombre (mesuré : bande brune centrale)
-  g: '#5A3D24',   // fusée, ombre
-  G: '#8A6038'    // fusée, lumière
+  K: '#1E1408',   // contour et dents
+  O: '#E8A028',   // garde, orange vif (mesuré zoom x9 : (232,160,40))
+  o: '#B87418',   // garde, ombre
+  y: '#F5C558',   // garde, lumière
+  N: '#6E5F4B',   // lame, bande sombre du DESSUS (mesuré : gris-brun)
+  n: '#AA9678',   // lame, transition
+  b: '#EDE4C8',   // lame, corps crème du DESSOUS (mesuré : ivoire)
+  g: '#4A3320',   // fusée, ombre
+  G: '#7A5430'    // fusée, lumière
 };
 
 // 46 x 21 cellules, rendues x2 => 92 x 42 px (mesuré : garde à r 36..45,
@@ -211,28 +241,38 @@ const PAL_SWORD = {
 // le long des deux arêtes, pas un liseré continu.
 const serr = n => rep('Kb', Math.ceil(n / 2)).slice(0, n);
 
+// Relevé frame 300 (zoom x9) : la lame n'est pas symétrique. Le DESSUS
+// porte une bande gris-brun sombre, le DESSOUS un corps ivoire, et les deux
+// arêtes sont dentées — d'où l'aspect « scie » de la vidéo.
+// Cotes du relevé : garde r 36..45 (9 px de long, ~30 px de haut), lame
+// r 45..122 (74 px de long, 18 px d'épaisseur). La garde de la vidéo est une
+// petite croix trapue, pas la longue barre qu'on obtient en lui donnant
+// toute la hauteur du sprite.
 const MAP_SWORD = [
-  /*  0 */ '...KKKKKK',
-  /*  1 */ '...KyOOoK',
-  /*  2 */ '...KyOOoK',
-  /*  3 */ '...KyOOoK',
-  /*  4 */ '...KyOOoK',
-  /*  5 */ '...KyOOoK' + serr(31) + 'K',           // arête haute dentée
-  /*  6 */ '...KyOOoK' + rep('b', 31) + 'KK',
-  /*  7 */ '.KGKyOOoK' + rep('b', 33) + 'K',
-  /*  8 */ 'KgGKyOOoK' + rep('n', 34) + 'K',
-  /*  9 */ 'KggKyOOoK' + rep('N', 35) + 'K',
-  /* 10 */ 'KggKyOOoK' + rep('N', 36) + 'K',       // ligne la plus longue = pointe
-  /* 11 */ 'KggKyOOoK' + rep('N', 35) + 'K',
-  /* 12 */ 'KgGKyOOoK' + rep('n', 34) + 'K',
-  /* 13 */ '.KGKyOOoK' + rep('b', 33) + 'K',
-  /* 14 */ '...KyOOoK' + rep('b', 31) + 'KK',
-  /* 15 */ '...KyOOoK' + serr(31) + 'K',           // arête basse dentée
-  /* 16 */ '...KyOOoK',
-  /* 17 */ '...KyOOoK',
-  /* 18 */ '...KyOOoK',
-  /* 19 */ '...KyOOoK',
-  /* 20 */ '...KKKKKK'
+  /*  0 */ '',
+  /*  1 */ '',
+  /*  2 */ '',
+  /*  3 */ '....KKKK',
+  /*  4 */ '....KyOoK',
+  /*  5 */ '....KyOoK',
+  // Le fuselage : chaque ligne s'arrête deux cellules avant la précédente en
+  // s'éloignant de l'axe, ce qui taille la pointe en losange comme sur le
+  // relevé. À longueurs égales on obtient une lame à bout carré.
+  /*  6 */ '....KyOoK' + serr(29) + 'K',           // arête haute dentée
+  /*  7 */ '....KyOoK' + rep('N', 30) + 'K',       // bande sombre du dessus
+  /*  8 */ '.KGKKyOoK' + rep('N', 32) + 'K',
+  /*  9 */ 'KgGKKyOoK' + rep('n', 34) + 'K',       // transition
+  /* 10 */ 'KggKKyOoK' + rep('b', 36) + 'K',       // axe : la pointe
+  /* 11 */ 'KgGKKyOoK' + rep('b', 34) + 'K',
+  /* 12 */ '.KGKKyOoK' + rep('b', 32) + 'K',       // corps ivoire du dessous
+  /* 13 */ '....KyOoK' + rep('n', 30) + 'K',
+  /* 14 */ '....KyOoK' + serr(29) + 'K',           // arête basse dentée
+  /* 15 */ '....KyOoK',
+  /* 16 */ '....KyOoK',
+  /* 17 */ '....KKKK',
+  /* 18 */ '',
+  /* 19 */ '',
+  /* 20 */ ''
 ];
 
 const GUN_CELL = 2, GUN_W = 34, GUN_H = 15;      // -> 68 x 30
@@ -240,8 +280,15 @@ const SWORD_CELL = 2, SWORD_W = 46, SWORD_H = 21; // -> 92 x 42
 const GUN_R0 = 30;      // mesuré : le sprite démarre à r=30 du centre
 const SWORD_R0 = 30;    // mesuré : la garde démarre au bord de la bille
 
-// Ouverture de l'éventail vert derrière la lame (mesuré : ~110 degrés).
-const SLASH_SWEEP = 1.6;
+// Ouverture de l'éventail vert derrière la lame. Mesuré : l'aire verte
+// dans l'arène passe de ~3 500 px en régime normal à 18 488 px au pic
+// (frame 643), un facteur 5,3 — l'éventail s'ouvre donc largement pendant
+// BLADE RUSH au lieu de garder une ouverture fixe.
+const SLASH_SWEEP = 1.6;        // mesuré : ~92 degrés en régime normal
+const SLASH_SWEEP_RUSH = 3.0;   // mesuré : ~172 degrés au pic (frame 643)
+// Pas angulaire de l'échantillonnage de l'éventail. Sans lui le rendu suit
+// le frame rate : à 30 fps et 3 tours/s on n'obtient que sept facettes.
+const ARC_STEP = 0.09;
 
 /* ---------------------------------------------------------------------
    6. OUTILS
@@ -313,6 +360,10 @@ class Duel extends Phaser.Scene {
   preload() {
     this.buildBallTexture('ball-outlaw', C.outlaw);
     this.buildBallTexture('ball-blade', C.blade);
+    // Variantes « touché » : mesuré frames 223/224/225, le disque blanchit
+    // une frame entière pendant que son contour, lui, reste sombre.
+    this.buildBallTexture('ball-outlaw-hit', C.hit);
+    this.buildBallTexture('ball-blade-hit', C.hit);
     this.buildWeaponTexture('gun', MAP_GUN, PAL_GUN, GUN_CELL, GUN_W, GUN_H);
     this.buildWeaponTexture('sword', MAP_SWORD, PAL_SWORD, SWORD_CELL, SWORD_W, SWORD_H);
     this.buildBulletTexture();
@@ -343,30 +394,32 @@ class Duel extends Phaser.Scene {
     t.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 
-  // Projectile : le relevé montre une marque sombre allongée, pas un point.
-  // Elle est plus dense à l'avant et s'effiloche à l'arrière.
+  // Projectile : un TRAIT, pas un rond. Mesuré frame 300 : le sillage fait
+  // 2 px d'épaisseur et rend (213,182,153) à (236,206,177) sur l'arène crème
+  // — un trait pâle, plus dense à l'avant, qui s'efface vers l'arrière.
   buildBulletTexture() {
-    const t = this.textures.createCanvas('bullet', 18, 4);
+    const t = this.textures.createCanvas('bullet', 22, 2);
     const ctx = t.getContext();
-    const g = ctx.createLinearGradient(0, 0, 18, 0);
-    g.addColorStop(0, 'rgba(70,58,44,0)');
-    g.addColorStop(0.55, 'rgba(58,46,34,0.75)');
-    g.addColorStop(1, 'rgba(30,22,14,1)');
+    const g = ctx.createLinearGradient(0, 0, 22, 0);
+    g.addColorStop(0, 'rgba(214,190,164,0)');
+    g.addColorStop(0.6, 'rgba(206,174,142,0.65)');
+    g.addColorStop(1, 'rgba(176,140,104,0.95)');
     ctx.fillStyle = g;
-    ctx.fillRect(0, 1, 18, 2);
+    ctx.fillRect(0, 0, 22, 2);
     t.refresh();
     t.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 
+  // Éclats d'impact : de petits fragments allongés, pas des ronds flous.
+  // Un rectangle plein rendu en NEAREST garde l'arête dure du pixel-art ;
+  // la rotation du sprite l'aligne sur sa trajectoire.
   buildSparkTexture() {
-    const t = this.textures.createCanvas('spark', 8, 8);
+    const t = this.textures.createCanvas('spark', 6, 2);
     const ctx = t.getContext();
-    const g = ctx.createRadialGradient(4, 4, 0, 4, 4, 4);
-    g.addColorStop(0, 'rgba(255,236,170,1)');
-    g.addColorStop(1, 'rgba(255,190,60,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 8, 8);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, 6, 2);
     t.refresh();
+    t.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 
   /* --- mise en place ------------------------------------------------ */
@@ -382,10 +435,25 @@ class Duel extends Phaser.Scene {
     this.arcGfx = this.add.graphics().setDepth(10);
     this.trailGfx = this.add.graphics().setDepth(14);   // sous les billes
 
+    // Tout ce qui déborde est coupé au bord intérieur de l'arène : dans la
+    // vidéo, ni l'éventail vert ni une étincelle ne franchissent le trait.
+    const cut = this.make.graphics({ add: false });
+    cut.fillRect(ARENA.inX, ARENA.inY, ARENA.inW, ARENA.inH);
+    this.clip = cut.createGeometryMask();
+    this.arcGfx.setMask(this.clip);
+    this.trailGfx.setMask(this.clip);
+
     this.physics.world.setBounds(ARENA.inX, ARENA.inY, ARENA.inW, ARENA.inH);
 
     this.startMatch();
     this.drawChrome();
+
+    // Phaser appelle scene.update() AVANT le pas d'Arcade : lire sprite.x
+    // dans update() donne la position de la frame précédente. À 1 380 px/s
+    // cela décale le chiffre de PV et le pistolet de près de 50 px du corps.
+    // Le placement des éléments accrochés aux billes se fait donc ici, une
+    // fois la physique résolue.
+    this.events.on(Phaser.Scenes.Events.POST_UPDATE, this.placeVisuals, this);
   }
 
   startMatch() {
@@ -410,16 +478,16 @@ class Duel extends Phaser.Scene {
     this.O = {
       s: this.outlaw, hp: RULES.hp, dmg: RULES.dmgOutlaw0,
       ammo: RULES.magazine, nextShot: 0, reloading: false, reloadEnd: 0,
-      base: RULES.speedOutlaw, shake: 0, pop: 0
+      base: RULES.speedOutlaw, flash: 0, pop: 0, nextGhost: 0
     };
     this.B = {
       s: this.blade, hp: RULES.hp, spin: RULES.spinMin, ang: 0,
       atCapSince: 0, burning: false, lastHit: 0,
-      base: RULES.speedBlade, shake: 0, pop: 0
+      base: RULES.speedBlade, flash: 0, pop: 0, nextGhost: 0
     };
 
     this.noon = 0; this.noonUntil = 0;
-    this.rush = 0; this.rushUntil = 0;
+    this.rush = 0; this.rushUntil = 0; this.rushOn = false;
 
     this.gun = this.add.image(0, 0, 'gun').setDepth(30);
     this.gun.setOrigin(0, 0.5);                    // pivot au bord de la bille
@@ -562,8 +630,14 @@ class Duel extends Phaser.Scene {
       this.stepBullets();
     }
 
-    this.stepVisuals(time, d);
     this.drawHud();
+  }
+
+  /* Placement de tout ce qui est accroché aux billes. Appelé sur
+     POST_UPDATE, donc après le pas d'Arcade : les positions sont celles
+     que le moteur va effectivement rendre. */
+  placeVisuals(time, dt) {
+    this.stepVisuals(time, Math.min(dt, 50) / 1000);
   }
 
   /* HIGH NOON : la jauge se charge, puis se vide pendant que l'arène
@@ -587,11 +661,30 @@ class Duel extends Phaser.Scene {
   /* BLADE RUSH : jauge alimentée par le temps et par les coups portés.
      Une fois pleine, la lame part en survitesse puis la jauge repart de zéro. */
   stepRush(time, d) {
-    if (time < this.rushUntil) return;
+    if (time < this.rushUntil) {
+      // Ruée : la lame fonce sur le tireur. On ne téléporte pas la bille,
+      // on infléchit son cap vers l'Outlaw et on pousse sa vitesse cible
+      // (mesuré : 31,3 px/frame au pic contre 19,1 de médiane).
+      const v = this.blade.body.velocity;
+      const cur = Math.atan2(v.y, v.x);
+      const want = Phaser.Math.Angle.Between(
+        this.blade.x, this.blade.y, this.outlaw.x, this.outlaw.y);
+      const a = cur + Phaser.Math.Angle.Wrap(want - cur) *
+                Math.min(1, d * RULES.rushHoming);
+      const sp = Math.hypot(v.x, v.y) || 1;
+      this.blade.setVelocity(Math.cos(a) * sp, Math.sin(a) * sp);
+      return;
+    }
+    if (this.rushOn) {                       // fin de la ruée
+      this.rushOn = false;
+      this.B.base = RULES.speedBlade * (this.noonOn ? RULES.noonSpeedUp : 1);
+    }
     this.rush += d / RULES.rushCharge;
     if (this.rush >= 1) {
       this.rush = 0;
+      this.rushOn = true;
       this.rushUntil = time + RULES.rushDuration * 1000;
+      this.B.base = RULES.rushSpeed;
       this.B.spin = RULES.spinMax;
       this.B.atCapSince = time;
       this.burst(this.blade.x, this.blade.y, 18, 0xC8DE55);
@@ -627,14 +720,18 @@ class Duel extends Phaser.Scene {
     b.body.setAllowGravity(false);
     b.setVelocity(Math.cos(ang) * RULES.bulletSpeed, Math.sin(ang) * RULES.bulletSpeed);
 
-    // Recul : la bille est repoussée dans l'axe opposé au tir (mesuré).
-    this.outlaw.body.velocity.x -= Math.cos(ang) * RULES.recoil;
-    this.outlaw.body.velocity.y -= Math.sin(ang) * RULES.recoil;
+    // Recul. Hors ultime il reste discret ; pendant HIGH NOON chaque coup de
+    // la rafale propulse la bille en arrière (mesuré : 46,0 px/frame au pic
+    // de la frame 1011, contre 27,1 px/frame maximum le reste du temps).
+    const kickback = this.noonOn ? RULES.recoilNoon : RULES.recoil;
+    this.outlaw.body.velocity.x -= Math.cos(ang) * kickback;
+    this.outlaw.body.velocity.y -= Math.sin(ang) * kickback;
 
     o.ammo--;
     o.nextShot = time + (this.noonOn ? RULES.fireDelayNoon : RULES.fireDelay);
     o.pop = 1;
-    this.burst(b.x, b.y, 4, 0xE8D9A8);
+    // Les étincelles de bouche partent vers l'avant, dans l'axe du canon.
+    this.burst(b.x, b.y, this.noonOn ? 7 : 4, 0xE8D9A8, ang);
   }
 
   stepBlade(time, d) {
@@ -656,6 +753,8 @@ class Duel extends Phaser.Scene {
     }
 
     // Rotation : « Spin Speed » est en tours par seconde.
+    const angBefore = b.ang;
+    const posBefore = { x: this.blade.x, y: this.blade.y };
     b.ang += b.spin * Math.PI * 2 * d;
 
     // Portée de la lame : segment tournant, testé contre le disque adverse.
@@ -674,7 +773,10 @@ class Duel extends Phaser.Scene {
           this.damage('O', b.spin * RULES.dmgPerSpin);
           b.spin = Math.min(RULES.spinMax, b.spin + RULES.spinPerHit);
           this.rush = Math.min(1, this.rush + RULES.rushPerHit);
-          this.burst(this.outlaw.x, this.outlaw.y, 12, 0xC8DE55);
+          // Les éclats fuient la lame : cône centré sur l'axe Bladesman ->
+          // Outlaw, donc vers l'extérieur du coup.
+          this.burst(this.outlaw.x, this.outlaw.y, 14, 0xC8DE55,
+                     Math.atan2(dy, dx));
         }
       }
     }
@@ -683,9 +785,22 @@ class Duel extends Phaser.Scene {
     // Mesuré : il couvre ~110 degrés derrière la lame quelle que soit la
     // vitesse de rotation — à 3,00 tours/s un compteur de frames donnerait
     // trois tours complets de vert.
-    this.arcs.push({ x: this.blade.x, y: this.blade.y, a: b.ang });
-    while (this.arcs.length > 2 && b.ang - this.arcs[0].a > SLASH_SWEEP) this.arcs.shift();
-    if (this.arcs.length > 90) this.arcs.shift();
+    // Un relevé par frame ne suffit pas : à 3,00 tours/s la lame avance de
+    // 0,6 rad entre deux frames, et l'éventail se rend alors en sept grosses
+    // facettes triangulaires au lieu d'un secteur lisse. On interpole donc
+    // des relevés intermédiaires sous ARC_STEP, indépendamment du frame rate.
+    const sweep = this.rushOn ? SLASH_SWEEP_RUSH : SLASH_SWEEP;
+    const steps = Math.max(1, Math.ceil((b.ang - angBefore) / ARC_STEP));
+    for (let i = 1; i <= steps; i++) {
+      const k = i / steps;
+      this.arcs.push({
+        x: posBefore.x + (this.blade.x - posBefore.x) * k,
+        y: posBefore.y + (this.blade.y - posBefore.y) * k,
+        a: angBefore + (b.ang - angBefore) * k
+      });
+    }
+    while (this.arcs.length > 2 && b.ang - this.arcs[0].a > sweep) this.arcs.shift();
+    if (this.arcs.length > 400) this.arcs.shift();
   }
 
   stepBullets() {
@@ -702,7 +817,11 @@ class Duel extends Phaser.Scene {
 
   onBulletHit(bullet) {
     if (!bullet.active || this.over) return;
-    this.burst(bullet.x, bullet.y, 10, 0xFFD27A);
+    // Les éclats repartent vers le tireur, à contresens de la balle, et
+    // prennent le ton du camp touché (doré côté Bladesman).
+    const v = bullet.body.velocity;
+    this.burst(bullet.x, bullet.y, 11, 0xDCC462,
+               Math.atan2(v.y, v.x) + Math.PI);
     bullet.destroy();
     this.damage('B', this.O.dmg);
     // La stat monte au COUP AU BUT, pas au coup tiré : sur la vidéo elle
@@ -718,8 +837,15 @@ class Duel extends Phaser.Scene {
   damage(who, amount) {
     const t = who === 'O' ? this.O : this.B;
     t.hp = Math.max(0, t.hp - amount);
-    t.shake = 1;       // tremblement du chiffre (mesuré à l'impact)
-    t.pop = 1;         // sursaut d'échelle
+    // Mesuré frames 223/224/225 : le disque touché blanchit une frame pleine.
+    // C'est CE flash que montre la vidéo, pas un tremblement du chiffre —
+    // le nombre, lui, ne quitte jamais le centre de la bille.
+    t.flash = this.time.now + RULES.flashTime;
+    t.pop = 1;         // sursaut d'échelle, centré donc sans décalage
+    // Secousse d'écran réservée aux gros coups.
+    if (amount >= RULES.shakeMin) {
+      this.cameras.main.shake(120, 0.0016 * Math.min(3, amount / RULES.shakeMin));
+    }
     if (t.hp <= 0 && !this.over) this.finish(who);
   }
 
@@ -738,17 +864,32 @@ class Duel extends Phaser.Scene {
     this.time.delayedCall(2600, () => { this.startMatch(); this.drawChrome(); });
   }
 
-  burst(x, y, n, tint) {
+  /* Gerbe d'éclats. Les fragments giclent dans un cône centré sur `away`
+     — la direction opposée au coup — puis retombent : une gravité faible
+     leur donne la parabole du relevé, qu'un simple fondu radial n'a pas.
+     `away` absent = gerbe omnidirectionnelle (choc bille contre bille). */
+  burst(x, y, n, tint, away) {
+    const spread = away === undefined ? Math.PI : 0.9;
+    const base = away === undefined ? 0 : away;
     for (let i = 0; i < n; i++) {
-      const p = this.add.image(x, y, 'spark').setDepth(40).setTint(tint);
-      const a = rnd(0, Math.PI * 2), sp = rnd(40, 220);
-      p.setScale(rnd(0.6, 1.8));
+      const a = base + rnd(-spread, spread);
+      const sp = rnd(90, 340);
+      const p = this.add.image(x, y, 'spark').setDepth(40).setTint(tint)
+        .setMask(this.clip);
+      p.setScale(rnd(0.7, 1.9), rnd(0.7, 1.4)).setRotation(a);
+      // Intégration à la main : les tweens de Phaser sont linéaires, or on
+      // veut la chute. Deux composantes, la verticale accélérée.
+      const vx = Math.cos(a) * sp, vy0 = Math.sin(a) * sp;
+      const life = rnd(260, 520);
+      const st = { t: 0 };
       this.tweens.add({
-        targets: p,
-        x: x + Math.cos(a) * sp * 0.35,
-        y: y + Math.sin(a) * sp * 0.35,
-        alpha: 0, scale: 0,
-        duration: rnd(180, 420),
+        targets: st, t: 1, duration: life,
+        onUpdate: () => {
+          const s = st.t * life / 1000;
+          p.x = x + vx * s;
+          p.y = y + vy0 * s + 520 * s * s * 0.5;   // gravité douce
+          p.alpha = 1 - st.t * st.t;
+        },
         onComplete: () => p.destroy()
       });
     }
@@ -799,12 +940,16 @@ class Duel extends Phaser.Scene {
     g.clear();
     const tip = SWORD_R0 + SWORD_W * SWORD_CELL;
     const inner = SWORD_R0 + 8;
-    const green = Phaser.Display.Color.GetColor(C.slash[0], C.slash[1], C.slash[2]);
+    // Pendant BLADE RUSH l'éventail vire au vert fluo et devient plus dense
+    // (mesuré : l'aire verte est multipliée par 5,3 au pic).
+    const gc = this.rushOn ? C.slashRush : C.slash;
+    const ga = this.rushOn ? C.slashRushA : C.slashA;
+    const green = Phaser.Display.Color.GetColor(gc[0], gc[1], gc[2]);
     const n = this.arcs.length;
     for (let i = 1; i < n; i++) {
       const p = this.arcs[i - 1], q = this.arcs[i];
       const t = i / (n - 1);                       // 1 = collé à la lame
-      g.fillStyle(green, C.slashA * t * t);
+      g.fillStyle(green, ga * t * t);
       g.fillPoints([
         { x: p.x + Math.cos(p.a) * inner, y: p.y + Math.sin(p.a) * inner },
         { x: p.x + Math.cos(p.a) * tip,   y: p.y + Math.sin(p.a) * tip },
@@ -813,18 +958,49 @@ class Duel extends Phaser.Scene {
       ], true);
     }
 
-    // Chiffres de PV : tremblement + sursaut à l'impact (mesuré).
-    const put = (fig, sprite, txt) => {
-      fig.shake = Math.max(0, fig.shake - d * 6);
+    // Images fantômes : le relevé de la frame 643 montre quatre à cinq
+    // disques pâles derrière chaque combattant lancé. On les échantillonne
+    // à cadence fixe et on les laisse s'éteindre, plutôt qu'à chaque frame :
+    // à 60 fps un fantôme par frame donne une bouillie continue.
+    this.stepGhosts(time, this.O, 'ball-outlaw');
+    this.stepGhosts(time, this.B, 'ball-blade');
+
+    // Chiffres de PV. Ancrés en (0,5 ; 0,5) et posés EXACTEMENT au centre
+    // du disque : la vidéo ne décale jamais le nombre, même à l'impact.
+    // Le sursaut d'échelle part du même centre, il ne déplace donc rien —
+    // c'est le disque qui blanchit, pas le chiffre qui tremble.
+    const put = (fig, sprite, txt, key) => {
       fig.pop = Math.max(0, fig.pop - d * 5);
-      const sx = fig.shake ? rnd(-3, 3) : 0;
-      const sy = fig.shake ? rnd(-3, 3) : 0;
+      const lit = time < fig.flash;
+      const want = lit ? key + '-hit' : key;
+      if (sprite.texture.key !== want) sprite.setTexture(want);
       txt.setText(String(Math.ceil(fig.hp)));
-      txt.setPosition(sprite.x + sx, sprite.y + sy - 1);
-      txt.setScale(1 + fig.pop * 0.28);
+      txt.setPosition(sprite.x, sprite.y);
+      txt.setScale(1 + fig.pop * 0.22);
     };
-    put(this.O, this.outlaw, this.hpTexts[0]);
-    put(this.B, this.blade, this.hpTexts[1]);
+    put(this.O, this.outlaw, this.hpTexts[0], 'ball-outlaw');
+    put(this.B, this.blade, this.hpTexts[1], 'ball-blade');
+  }
+
+  /* Trace de vitesse : un fantôme tous les GHOST_EVERY ms tant que la bille
+     dépasse sa vitesse de croisière — c'est le cas juste après le recul de
+     HIGH NOON et pendant la ruée du Bladesman. */
+  stepGhosts(time, fig, key) {
+    const v = fig.s.body.velocity;
+    const sp = Math.hypot(v.x, v.y);
+    // Seuil haut : le relevé ne montre de fantômes que sur les ruées et les
+    // reculs de rafale, jamais en déplacement de croisière.
+    if (sp < fig.base * 1.45 || this.over) return;
+    if (time < (fig.nextGhost || 0)) return;
+    fig.nextGhost = time + 34;
+    const p = this.add.image(fig.s.x, fig.s.y, key)
+      .setDepth(12)                       // sous les billes : rien ne passe devant
+      .setAlpha(C.ghostA)
+      .setMask(this.clip);
+    this.tweens.add({
+      targets: p, alpha: 0, scale: 0.88,
+      duration: 150, onComplete: () => p.destroy()
+    });
   }
 
   // Rappel progressif vers la vitesse cible, direction inchangée. Sert
