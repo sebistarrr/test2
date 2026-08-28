@@ -823,13 +823,28 @@ export const ICON_SABRE = deepFreeze({
  * Aucune garde n'est visible : ce qui ressemblait à un losange de garde est
  * derrière la bille, donc invisible en jeu.
  *
- * D'où une carte de 52 × 8 rendue à `scale: 4` : 208 × 32 px logiques, avec
- * `handle.length: -44` pour que le talon dépasse derrière le pivot et que la
- * pointe tombe pile sur la portée (−44 + 52 × 4 = 164).
+ * **La silhouette est crantée, pas lisse.** C'est le second relevé, pris sur
+ * l'image 4,267 s où la lance passe à 1,2° de l'horizontale : le contour noir
+ * monte et descend d'une dent toutes les ~8 px logiques sur les deux bords, du
+ * talon à la pointe. La carte lisse d'origine lissait précisément ce qui fait
+ * lire l'arme comme une pique et non comme une épée. Les demi-épaisseurs
+ * ci-dessus, elles, ne bougent pas : elles restent `mesuré`, le crantage se
+ * pose dessus.
+ *
+ * D'où une carte de 104 × 16 rendue à `scale: 2` : toujours 208 × 32 px
+ * logiques, avec `handle.length: -44` pour que le talon dépasse derrière le
+ * pivot et que la pointe tombe pile sur la portée (−44 + 104 × 2 = 164).
  * ------------------------------------------------------------------ */
 export const DRAGOON_LANCE = deepFreeze({
-  w: 52,
-  h: 8,
+  /**
+   * **104 x 16 à `scale: 2`**, là où la carte précédente faisait 52 x 8 à
+   * `scale: 4`. Même encombrement (208 x 32 px logiques), donc même portée
+   * (−44 + 208 = 164) et même profil en feuille — mais **deux fois plus de
+   * résolution en longueur**, ce qui est exactement ce qu'il faut pour des
+   * crans de 2 px. À 52 cellules, le plus petit cran possible en faisait 4.
+   */
+  w: 104,
+  h: 16,
   palette: {
     K: '#0d0a14', // contour
     l: '#9a8ab4', // arête haute, éclairée (p80 de la lame relevée)
@@ -839,14 +854,22 @@ export const DRAGOON_LANCE = deepFreeze({
     d: '#17111f', // manche à l'ombre
   },
   rows: [
-    '.........................KKKKKKKKKKK................',
-    '.....................KKKKlllllllllllKKKKKKKKKKKK....',
-    '..KKKKKKKKKKKKKKKKKKKllllpppppppppppllllllllllllKK..',
-    'KKmmmmmmmmmmmmmmmmmmmpppppppppppppppppppppppppppllKK',
-    'KKdddddddddddddddddddpppppppppppppppppppppppppppssKK',
-    '..KKKKKKKKKKKKKKKKKKKsssspppppppppppssssssssssssKK..',
-    '.....................KKKKsssssssssssKKKKKKKKKKKK....',
-    '.........................KKKKKKKKKKK................',
+    '...............................KKKKKKKKKKKKKKKKKllKKllKKllKKllKKKKKKKKKKKKKKKK..........................',
+    '.......................KKKKKKKKKllKKllKKllKKllKllllllllllllllllKllKKllKKllKKlKKKKKKKKKKKKKK.............',
+    '.....................KKKllKKllKlllllllllllllllllppllppllppllppllllllllllllllllKKllKKllKKllKKKKKKKK......',
+    '..............KKKKKKKKllllllllllppllppllppllpplpppppppppppppppplppllppllppllplllllllllllllllllKKlKK.....',
+    '.........KKKKKKmKKmmKKllppllpplpppppppppppppppppppppppppppppppppppppppppppppppllppllppllppllllllllKKKK..',
+    '.KKKKKKKKKmmKKmmmmmmmmppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppllpllKlKK.',
+    'KKmmKKmmmmmmmmmmmmmmmmppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppllllKK',
+    'KmmmmmmmmmmmmmmmmmmmmmppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppplpllK',
+    'KmddmmddddmmddmmmmmmmmpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppspslK',
+    'KKddKKdddddddddmddmmddppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppssssKK',
+    '.KKKKKKKKKddKKddddddddppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppsspssKsKK.',
+    '.........KKKKKKdKKddKKssppssppspppppppppppppppppppppppppppppppppppppppppppppppssppssppssppssssssssKKKK..',
+    '..............KKKKKKKKssssssssssppssppssppssppsppppppppppppppppsppssppssppsspsssssssssssssssssKKsKK.....',
+    '.....................KKKssKKssKsssssssssssssssssppssppssppssppssssssssssssssssKKssKKssKKssKKKKKKKK......',
+    '.......................KKKKKKKKKssKKssKKssKKssKssssssssssssssssKssKKssKKssKKsKKKKKKKKKKKKKK.............',
+    '...............................KKKKKKKKKKKKKKKKKssKKssKKssKKssKKKKKKKKKKKKKKKK..........................',
   ],
 });
 

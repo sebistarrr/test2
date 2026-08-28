@@ -60,46 +60,87 @@ commentaire.
 | --- | --- | --- | --- |
 | `outlaw` Hors-la-loi | Pistolero | canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, dégâts +0,10 par balle au but | `abilities/outlaw.js` |
 | `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin` | `abilities/bladesman.js` |
-| `dragoon` Dragoon | Lancier | lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène | `abilities/dragoon.js` |
+| `dragoon` Dragoon | Lancier | **charge** en trois phases (viser → verrouiller → foncer) avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène | `abilities/dragoon.js` |
 
 ### Le Dragoon en détail
 
 | Ce qu'il porte | Relevé sur la vidéo | Ce qui est dans la fiche |
 | --- | --- | --- |
 | Corps | bille `#574a84` (pipette), rayon 33 px vidéo | `look.body`, `radius: 41` |
-| Traînée | **deux effets** : boucles roses tracées par la pointe d'arme, **et** un fuseau cramoisi `#a32b4a` derrière la bille | `look.flair.ribbon` **et** `look.flair.smear` (le second a dû être ajouté à `render/flair.js` : le ruban ne suit que la pointe) |
+| Traînée | **trois effets** : boucles roses tracées par la pointe d'arme, fuseau cramoisi `#a32b4a` derrière la bille, **et des images fantômes pendant la charge** | `look.flair.ribbon`, `.smear` et `.ghost` — les deux derniers ont dû être ajoutés à `render/flair.js` |
 | Portée | centre → pointe = **164 px** | `weapon.reach: 164` |
-| Talon | dépasse de 42 px **derrière** le pivot | `handle.length: -44`, `handle.width: 0` — toute la lance est une carte 52 × 8 à `scale: 4` |
+| Talon | dépasse de 42 px **derrière** le pivot | `handle.length: -44`, `handle.width: 0` — toute la lance est une carte 104 × 16 à `scale: 2` |
 | Forme de lame | **en feuille** : 24 px de large à la bille, **32 au ventre**, 21 près de la pointe. Relevé en aplatissant la lance sur trois images | `dragoonLance` — le premier portage l'affinait de façon monotone, c'était faux |
-| Cadence relevée | **5 touches en 27,6 s = 0,181 coup/s**, budget 2,54 PV/s | le moteur rend 0,192 et 2,36 (voir plus bas) |
+| Silhouette | **crantée sur les deux bords**, une dent tous les ~8 px, du talon à la pointe | la carte est passée de 52 × 8 à **104 × 16** pour que des crans de 2 px soient possibles ; même encombrement, même portée |
+| Visée | la lance **pointe l'adversaire** : ±5° du cap bille → adversaire, et converge après chaque décrochage | `weapon.spin: 0` — deuxième arme braquée du roster après le canon du Hors-la-loi |
+| Charge | **~1 400 px/s pendant ~0,15 s**, contre 540 en croisière, lance en avant | `weapon.lunge.speed: 2.6`, `.dash: 0.16` |
+| Cadence relevée | **5 touches en 27,6 s = 0,181 coup/s**, budget 2,54 PV/s | le moteur rend 0,193 et **2,54** (voir plus bas) |
 | Dégâts | 10, **+2 par touche portée** (10→12→14→16→18→20, six touches pour tuer) | `stack: 10`, `stackGain: 2` — gardés bruts, comme ceux du Hors-la-loi |
 | Vitesse | 432 px/s vidéo → **540** | gardée telle quelle : vérifié au banc, 15 victoires sur 30 à 540 contre 16 à 470 |
 | Jauge « JUMP » | pleine en ~10 s, marches de ~8 % aux touches | `chargeRate: 10`, `chargeOnHit: 8` |
 | Bond | 0,45 s d'élan, **1,5 s hors de l'arène**, marqueur gris qui suit la cible, chute dans un rayon de 110 px | `ultimate.windup / flight / marker / impact` |
 
-**Un seul écart au relevé subsiste, et il est chiffré : le verrou.** La vidéo
-donne trois touches de lance consécutives à 13,63 / 14,77 / 16,37 s, donc un
-verrou réel d'environ **1,1 s**. Mais à 1 s la lance de 164 px accroche ici
-**0,341 fois par seconde** contre 0,181 relevé — deux fois trop. À 6 s le moteur
-rend 0,192 coup/s et 2,36 PV/s, contre 0,181 et 2,54 : *ce que la vidéo montre*
-est donc exact, seul le mécanisme diffère — un verrou long ici, des coups
-manqués là-bas.
+#### La charge, et ce qu'elle a réparé
 
-Ce n'est pas un défaut général du moteur : `tools/probe.mjs` donne au
-Hors-la-loi **0,649 coup/s** là où sa vidéo en mesure 0,65. Le Dragoon fait
-exception parce que son segment tranchant balaie près d'un cinquième de l'arène.
+Le Dragoon ne flotte pas en faisant tourner sa lance : il **vise, verrouille,
+puis fonce en ligne droite**. Quatre phases dans `weapon.lunge`, typées
+`LungePhase` dans le module :
 
-Le **plafond de pile à 14** est `déduit`, pas `calé` : la vidéo n'en montre
-aucun (elle s'arrête à 20 parce que le Dragoon meurt), mais tous les combattants
-à stat croissante du roster en ont un, et sans plafond la montée est quadratique
-en durée de duel. Au banc : 12 → 10 victoires sur 30 ; **14 → 15** ; 16 → 22.
+| Phase | Ce qui s'y passe | Qui écrit `weaponAngle` |
+| --- | --- | --- |
+| `aim` | la lance pivote vers le centre de l'adversaire, plafonnée à ~230 °/s | ce module, seul |
+| `lock` | l'angle est **gelé**, la lance ne suit plus la cible | personne |
+| `dash` | le corps file à 2,6 × sa vitesse le long de l'angle verrouillé | personne |
+| `recover` | temps mort après la charge ou la touche | personne |
 
-**Conséquence assumée : le Dragoon tue au métronome.** Verrou fixe + plafond
-donnent 8 touches à 10, 12, 14, 14… soit 106 PV en ~43 s. Plusieurs de ses
-duels se terminent donc à 43,2 s **exactement**, quel que soit l'adversaire :
-la question n'est pas s'il gagne mais si l'autre tue avant. C'est aussi, de tout
-le roster, le profil qui colle le mieux à sa vidéo : rare et lourd, exactement
-les cinq touches à 10-12-14-16-18 du duel de référence.
+Le gel est **l'absence d'écriture** : la fiche porte `weapon.spin = 0`, donc
+`Fighter.step` n'y touche pas non plus. Un seul point de sortie, `endDash()`,
+remet ensemble vitesse, facteur de vitesse et traînée — c'est le piège du
+Bretteur, qui a déjà coûté une fin de duel en pleine ruée.
+
+**Le verrou de touche est revenu à sa valeur relevée de 1,1 s.** Il a longtemps
+valu **6 s**, et c'était le seul écart au relevé qui subsistait : une lance de
+164 px qui *balaie en tournant* accroche 0,34 fois par seconde là où la vidéo
+en compte 0,181, et seul un verrou absurde ramenait la cadence. Le mécanisme
+était faux, pas le chiffre. La charge le rend : le Dragoon ne touche plus par
+hasard en balayant, il touche **quand sa charge aboutit**.
+
+**La visée impose sa contrepartie.** Une lance asservie à la cible pointe sur
+elle en permanence, donc l'embroche en permanence : au banc, **0,42 coup/s**, et
+30 duels gagnés en 19 s. D'où la règle « la lance ne blesse qu'en charge » —
+hors charge elle est *portée*, pas poussée, et le verrou de touche est retenu à
+chaque pas. C'est exactement le piège du Hors-la-loi, dont le canon asservi
+gagnait 27 duels sur 27 avant que sa dispersion ne le ramène à sa précision
+relevée.
+
+**`lunge.minRange` est le paramètre de cadence, et il a remplacé une rustine.**
+Allonger la pause entre deux charges ramenait bien la cadence à 0,181 coup/s,
+mais à 2,5 s de temps mort — un Dragoon planté, là où la vidéo montre *une
+charge par seconde environ, dont une sur cinq porte*. Le bon levier n'était pas
+la fréquence des charges mais leur **taux de réussite** : borner l'engagement
+par le bas force la charge longue, celle que l'adversaire a le temps
+d'esquiver. La géométrie le dit — la charge couvre 224 px et la lance en ajoute
+164, donc engagée à moins de ~250 px elle touche presque à coup sûr, et au-delà
+de ~430 elle n'arrive jamais. Calé à **320 px**.
+
+Le **plafond de pile** est `déduit`, pas `calé` : la vidéo n'en montre aucun
+(elle s'arrête à 20 parce que le Dragoon meurt), mais tous les combattants à
+stat croissante du roster en ont un, et sans plafond la montée est quadratique
+en durée de duel. Il est passé de 14 à **16** avec la charge — non pour rendre
+le Dragoon plus fort, mais parce que le mécanisme lui donne moins de touches et
+qu'il faut bien qu'elles pèsent : à 14, il ne rendait que 2,25 PV/s contre 2,54
+relevés, et tombait à 11 victoires sur 30.
+
+**Le relevé est rendu, aux deux chiffres.** Le moteur donne **0,193 coup/s** et
+**2,54 PV/s**, contre 0,181 et 2,54 mesurés : le budget de dégâts — ce qui
+décide les duels — tombe au centième, et la cadence est aussi proche que
+l'ancien mécanisme l'obtenait (0,192), mais cette fois sans verrou de 6 s pour
+la forcer.
+
+**Le Dragoon ne tue plus au métronome.** L'ancien couple verrou fixe + plafond
+donnait 8 touches et 106 PV en ~43 s, si régulièrement que plusieurs de ses
+duels se terminaient à 43,2 s **exactement**, quel que soit l'adversaire. La
+charge rend la durée à la géométrie : ses duels vont maintenant de 20 à 48 s.
 
 **Le moteur ne connaît aucun combattant** : `fighter.js`, `physics.js` et
 `projectiles.js` lisent la fiche. En ajouter un = une entrée dans
@@ -173,17 +214,19 @@ sans que ça se voie.
    même part qu'à huit (9 à 12 sur 21). Après **tout** changement, comparer la
    matrice (voir Outils) : un changement visuel doit la laisser **identique au
    fichier près**.
-   - **Deux écarts connus, tous deux hérités du même couplage.**
-     La **Lumière à 21/30** : son Égide grandit quand elle **encaisse**, et les
-     trois invités frappent rarement pour beaucoup — exactement le profil que le
-     bouclier absorbe. Elle les bat 9-0. Ce n'est pas une dérive, c'est un
-     couplage de fiches ; aucune valeur de la Lumière n'a été touchée.
-     Le **Vent à 12/30** : il était déjà au plancher de la bande (12/27) et perd
-     3-0 contre le Dragoon, ce qui le fait passer juste dessous. Là encore,
-     aucune valeur du Vent n'a bougé.
-   - Relevé courant : Lumière 21, Hors-la-loi 17, Glace 16, Ombre 15,
-     **Dragoon 15**, Feu 14, Foudre 14, Plante 14, Bretteur 14, Eau 13,
-     Vent 12.
+   - **Un seul écart connu subsiste.** La **Lumière à 20/30** : son Égide
+     grandit quand elle **encaisse**, et les trois invités frappent rarement
+     pour beaucoup — exactement le profil que le bouclier absorbe. Ce n'est pas
+     une dérive, c'est un couplage de fiches ; aucune valeur de la Lumière n'a
+     jamais été touchée.
+     Le **Vent est rentré dans la bande** avec la charge du Dragoon (12 → 14) :
+     il perdait 3-0 contre l'ancien Dragoon au métronome, il lui prend
+     maintenant des duels. Là encore, aucune valeur du Vent n'a bougé — c'est
+     le second écart connu qui se résorbe tout seul.
+   - Relevé courant : Lumière 20, Ombre 15, Feu 15, Hors-la-loi 15,
+     Bretteur 15, **Dragoon 15**, Glace 14, Foudre 14, Vent 14, Plante 14,
+     Eau 14. **Dix combattants sur onze tiennent en deux points** — c'est la
+     table la plus resserrée qu'ait eue le projet.
    - **`ROSTER` décide qui est le camp A.** Les paires sont formées en
      `[liste[i], liste[j]]`, et le camp A pèse lourd. Un nouveau venu s'ajoute
      donc **en queue** : inséré ailleurs, il déplacerait le camp A
@@ -197,7 +240,13 @@ sans que ça se voie.
    par réflexe : la vitesse du Dragoon a été mesurée à 540 px/s et **gardée**,
    parce que le banc a montré qu'elle ne cassait rien (15/30 contre 16/30 à
    470). Un `calé` doit être justifié par une mesure, pas par une intuition.
-6. **`alive` ≠ `onStage`.** Un combattant peut être vivant *et absent* :
+6. **Les compteurs génériques du `Fighter`.** `offstage`, `invulnerable`,
+   `boost` et `ghosting` ont tous la même forme : un module les allume, le
+   moteur les décompte, et le moteur **ne sait pas pourquoi**. `ghosting` est
+   le plus récent — il dit « sème des images fantômes », il n'est lu que par
+   `render/flair.js`, donc l'allumer ne peut rien changer au duel. C'est la
+   forme à reprendre pour tout nouvel effet accroché à un état de module.
+7. **`alive` ≠ `onStage`.** Un combattant peut être vivant *et absent* :
    `Fighter.offstage` (secondes restantes hors du plateau) le retire du
    déplacement, des collisions, des touches, des projectiles, du rendu et de
    toute la mise en scène. Le moteur ne sait pas *pourquoi* il est parti — seul
@@ -290,6 +339,29 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   faux sans que rien ne plante**. Règle : un setter de balayage doit
   `assert` que son ancre est **unique**, et il faut relire
   `git diff src/data/elements.js` avant de croire un chiffre.
+- **Une arme braquée touche en permanence.** C'est le piège du Hors-la-loi,
+  repayé à l'identique sur le Dragoon. Dès qu'une arme cesse de tourner pour
+  **viser**, elle pointe sur la cible à chaque image, donc elle la touche à
+  chaque fenêtre de recharge : le Dragoon est monté à **0,42 coup/s** contre
+  0,181 relevé, et gagnait ses 30 duels en 19 s. Chaque arme braquée doit donc
+  porter son propre garde-fou — une dispersion pour le canon, une règle « la
+  lance ne blesse qu'en charge » pour la lance. Le garde-fou n'est pas un
+  ornement : c'est ce qui rend la précision relevée.
+- **Un détecteur qui suit la traînée, pas l'arme.** Le premier portage donnait
+  au Dragoon une rotation d'arme de 327 °/s « mesurée ». Elle ne l'était pas :
+  le relevé prenait le barycentre des pixels indigo les plus lointains, et
+  pendant une charge ce sont les **images fantômes**, pas la lance. Sur les
+  plages sans charge, l'axe principal du nuage (ACP) tient dans ±5° du cap vers
+  l'adversaire — l'arme vise, elle ne tourne pas. Mesurer une orientation
+  demande une ACP, jamais un barycentre : un barycentre bascule d'un bout à
+  l'autre d'un objet symétrique, et se laisse tirer par tout ce qui traîne.
+- **Caler une cadence par le temps mort donne un personnage planté.** Ramener
+  la cadence de touche du Dragoon à sa valeur relevée en allongeant la pause
+  entre deux charges marchait — à 2,5 s de temps mort. La vidéo montre l'exact
+  contraire : *beaucoup* de charges, dont *peu* portent. Quand une cadence est
+  trop haute, se demander d'abord si c'est la fréquence de l'action ou son taux
+  de réussite qui est faux ; ici c'était le second, et le bon levier était la
+  distance minimale d'engagement.
 - **Un pouvoir sans recharge finie.** Le Dragoon n'a pas de pouvoir actif : sa
   fiche porte `ability.cooldown: Infinity` et l'écran de sélection affichait
   « recharge Infinitys ». `select.js` teste maintenant `Number.isFinite` et
@@ -300,6 +372,16 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   en arrière de la bille. Corollaire : `handle.length + map.w × scale` doit
   toujours valoir la portée (−52 + 54 × 4 = 164), sinon la pointe ment sur la
   hitbox.
+- **Les minuteurs sont *figés* pendant `offstage`, pas seulement suspendus.**
+  `Fighter.step` sort avant de décompter `meleeCd` : le verrou de touche garde
+  donc, pour toute la durée du Bond, la valeur qu'il avait au décollage. Quand
+  le Bond partait en pleine charge — la seule phase où le garde-fou « la lance
+  ne blesse qu'en charge » ne s'applique pas — cette valeur était zéro, et le
+  Dragoon touchait **gratuitement** à l'atterrissage, lance pointée sur une
+  cible à 74 px. Une touche garantie tous les ~8 s, invisible au relevé, qui
+  portait à elle seule **dix victoires sur trente** : la corriger l'a fait
+  tomber de 15 à 5, et il a fallu remonter le plafond de pile pour le ramener.
+  Toute chute du Bond doit poser le verrou comme le ferait `resolveMelee`.
 - **`offstage` ne doit pas expirer avant le module.** Le décompte de
   `Fighter.offstage` et celui de `f.ult.active` avancent du même `dt` : à
   l'égalité stricte le Dragoon réapparaît une image **à son ancienne position**

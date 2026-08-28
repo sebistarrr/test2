@@ -28,11 +28,11 @@ leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
 | --- | --- | --- | --- |
 | **Hors-la-loi** | Revolver | **canon asservi à la cible** — il ne tourne pas ; barillet de 6 et dégâts qui montent de 0,10 par balle au but | Plein soleil / HIGH NOON (cadence doublée, recul ×8) |
 | **Bretteur** | Sabre dentelé | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
-| **Dragoon** | Lance de dragon (**164 px, la plus longue portée du jeu**) | dégâts qui montent de **+2 par touche portée**, mais un seul coup toutes les 6 s | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
+| **Dragoon** | Lance de dragon (**164 px, la plus longue portée du jeu**), crantée et braquée sur la cible | **charge** en trois phases — il vise, verrouille son angle, puis fonce à 2,6 × sa vitesse en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 
 ![Lumière contre Feu](docs/capture-duel.png)
 
-<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png), [la brûlure du Feu](docs/capture-feu.png), [l'écran de sélection](docs/capture-selection.png), [le Hors-la-loi sous HIGH NOON](docs/capture-horsloi.png), [la ruée du Bretteur](docs/capture-bretteur.png), [le Bond du Dragoon](docs/capture-dragoon.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
+<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png), [la brûlure du Feu](docs/capture-feu.png), [l'écran de sélection](docs/capture-selection.png), [le Hors-la-loi sous HIGH NOON](docs/capture-horsloi.png), [la ruée du Bretteur](docs/capture-bretteur.png), [le Bond du Dragoon](docs/capture-dragoon.png), [sa charge de lance](docs/capture-dragoon-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
 
 ---
 
@@ -257,8 +257,9 @@ prise dessus se convertit en **×1,25** vers ce repère 720 × 1280.
 | BLADE RUSH                    | horloge de 9 s + 6 % par coup, ruée de 1,5 s, verrou à 115 ms |
 | Précision du Hors-la-loi      | 25 coups au but en 38,6 s = **0,65 coup/s** |
 | Boule Dragoon                 | `#574a84`, traînée cramoisie `#a32b4a`       |
-| Lance du Dragoon              | centre → pointe 164 px, talon 42 px **derrière** le pivot ; lame **en feuille**, 24 px de large à la bille, 32 au ventre, 21 près de la pointe |
-| Progression « Damage » (Dragoon) | 10,00 → 20,00 par pas de **2,00**, à la touche portée ; 5 touches en 27,6 s, soit 0,181 coup/s et 2,54 PV/s |
+| Lance du Dragoon              | centre → pointe 164 px, talon 42 px **derrière** le pivot ; lame **en feuille**, 24 px de large à la bille, 32 au ventre, 21 près de la pointe ; silhouette **crantée** sur les deux bords, une dent tous les ~8 px |
+| Progression « Damage » (Dragoon) | 10,00 → 20,00 par pas de **2,00**, à la touche portée ; 5 touches en 27,6 s, soit 0,181 coup/s et 2,54 PV/s (le moteur rend 0,193 et **2,54**) |
+| Charge du Dragoon             | la lance **vise** l'adversaire (±5° du cap, pas de rotation libre), puis le corps file à ~1 400 px/s pendant ~0,15 s contre 540 en croisière |
 | Bond du Dragoon               | jauge pleine en 10 s, 0,45 s d'élan, **1,5 s hors de l'arène**, impact de rayon 110 px |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les

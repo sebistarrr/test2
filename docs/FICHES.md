@@ -452,40 +452,69 @@ sont converties ×1,25 vers le repère 720 × 1280.
 | Bloc | Valeur | Source |
 | --- | --- | --- |
 | Corps | rayon 41 px, `#574a84` (pipette), contour `#181008` 5 px, PV en crème | mesuré |
-| Traînée | **deux effets distincts**, et le premier portage n'en rendait qu'un : les boucles roses autour de la lance sont tracées par la **pointe d'arme** (`flair.ribbon`), le **fuseau cramoisi derrière la bille** est un effet à part (`flair.smear`, ajouté à `render/flair.js`). Mesuré `#a32b4a` au cœur, `#df8692` sur les bords | mesuré |
+| Traînée | **trois effets distincts** : les boucles roses autour de la lance, tracées par la **pointe d'arme** (`flair.ribbon`) ; le **fuseau cramoisi derrière la bille** (`flair.smear`) ; et les **images fantômes de la charge** (`flair.ghost`) — une bande de billes qui se recouvrent, lance comprise, visible image par image entre 8,60 et 8,83 s. Les deux derniers ont dû être ajoutés à `render/flair.js`. Mesuré `#a32b4a` au cœur, `#df8692` sur les bords | mesuré |
 | Déplacement | **540 px/s**, virage 1,85 rad/s. Mesuré 432 px/s sur la vidéo 576 et **gardé tel quel**, contrairement aux deux autres invités : au banc il fait 15 victoires sur 30 à 540 contre 16 à 470 — sa vitesse n'est pas ce qui le rend fort | mesuré |
 | **Arme** | *Lance de dragon* — **portée 164 px, la plus longue du jeu**. Talon qui dépasse de **42 px derrière le pivot**, longueur totale 206 px | mesuré |
 | Forme de la lame | **en feuille** : plus large au milieu qu'à ses deux bouts. Relevé en aplatissant la lance sur trois images nettes (t = 0 / 4,5 / 7,8 s) — la bille est localisée au sous-pixel, l'image tournée pour mettre la lance à l'horizontale, puis la demi-épaisseur mesurée colonne par colonne. Les trois profils concordent : **24 px de large à la bille, 32 au ventre, 21 près de la pointe**. Le premier portage l'affinait de façon monotone, ce que la vidéo dément | mesuré |
-| Rendu de la lance | une seule carte de **52 × 8 à `scale: 4`**. `handle.length: -44` et `handle.width: 0` : rien n'est tracé à la main, le blit démarre en arrière de la bille, et −44 + 52 × 4 = 164 tombe pile sur la portée | mesuré |
+| Silhouette de la lame | **crantée sur les deux bords**, une dent tous les ~8 px logiques, du talon à la pointe. Relevé sur l'image 4,267 s, où la lance passe à 1,2° de l'horizontale : le contour noir monte et descend en dents de scie. La carte lisse d'origine lissait précisément ce qui fait lire l'arme comme une pique et non comme une épée | mesuré |
+| Rendu de la lance | une seule carte de **104 × 16 à `scale: 2`**, passée là depuis 52 × 8 à `scale: 4` pour que des crans de 2 px soient possibles — à 52 cellules, le plus petit cran possible en faisait 4. Même encombrement (208 × 32 px logiques), donc même portée. `handle.length: -44` et `handle.width: 0` : rien n'est tracé à la main, le blit démarre en arrière de la bille, et −44 + 104 × 2 = 164 tombe pile sur la portée | mesuré |
+| Orientation de la lance | **elle vise, elle ne tourne pas.** L'axe principal du nuage de pixels indigo (ACP), comparé au cap bille → adversaire, tient dans **±5°** sur toutes les plages où la lance est isolable, et converge après chaque décrochage (−19,5° → −0,8° entre 4,43 et 4,80 s). Le plafond de rotation est de ~230 °/s. La fiche porte donc `weapon.spin: 0`, comme le canon du Hors-la-loi | mesuré |
+| **Charge** | viser → verrouiller → foncer. En croisière la bille tient 400–450 px/s vidéo (soit les 540 de la fiche) ; pendant une charge (t = 8,70 → 8,84 s) elle monte à 1 125–1 160 px/s vidéo, soit **~1 400 en repère jeu**, sur **~0,15 s** | mesuré |
 | Garde | **aucune**. Ce qui ressemblait à un losange de garde sur les premières captures est derrière la bille, donc invisible en jeu : au-delà du bord de la bille le profil ne montre aucun renflement | mesuré |
 | Hitbox | de 0,32 à 1 de la portée (la lame commence à 52 px du centre), rayon 12 px | déduit du sprite |
 | **Corps à corps** | la stat « Damage » du HUD, **+2 à chaque touche portée**. Relevé image par image sur la bande de stat : elle passe 10 → 12 → 14 → 16 → 18 → 20 aux instants **12,53 / 13,63 / 14,77 / 16,37 / 21,00 s**, et l'Outlaw descend de 100 à 30 PV. 10+12+14+16+18 = 70 : le compte tombe au PV près sur **cinq touches** | mesuré |
 | Ce que le duel donne | **5 touches en 27,6 s = 0,181 coup/s**, pour un budget de **2,54 PV/s**. Deux de ces cinq touches sont des chutes du Bond (12,53 et 21,00) ; les trois touches de lance tombent à 13,63 / 14,77 / 16,37 s | mesuré |
-| Cadence | **6 s entre deux touches** — et c'est le **seul écart au relevé qui subsiste**. Les trois touches de lance consécutives disent un verrou réel d'environ 1,1 s ; mais à 1 s la lance de 164 px accroche ici **0,341 fois par seconde** contre 0,181 relevé, soit deux fois trop. À 6 s le moteur rend 0,192 coup/s et 2,36 PV/s, contre 0,181 et 2,54 : **ce que la vidéo montre est exact, seul le mécanisme diffère** — un verrou long ici, des coups manqués là-bas | calé |
-| Plafond de pile | 14, **déduit**. La vidéo n'en montre aucun : elle s'arrête à 20 parce que le Dragoon meurt, pas parce que la stat bute. Mais *tous* les combattants à stat croissante du roster en ont un (Araignée 14, Serpent 14, Hors-la-loi 8, Bretteur 3), et sans plafond la montée est quadratique en durée de duel. Mesuré au banc : 12 → 10 victoires sur 30 et 2,10 PV/s ; **14 → 15 et 2,36** ; 16 → 22 et 2,61 | déduit |
+| Cadence | **1,1 s entre deux touches**, la valeur que donnent les trois touches de lance consécutives. Elle a longtemps valu 6 s, et c'était alors le seul écart au relevé qui subsistait : une lance de 164 px qui *balaie en tournant* accroche 0,34 fois par seconde contre 0,181 relevé. Le mécanisme était faux, pas le chiffre — la charge l'a rendu, et le verrou avec | mesuré |
+| Fenêtre d'engagement | la charge ne part qu'entre **320 et 470 px** de l'adversaire. C'est le paramètre de cadence du personnage, et il a remplacé une rustine : allonger la pause entre deux charges ramenait bien la cadence à 0,181 coup/s, mais à 2,5 s de temps mort, là où la vidéo montre *une charge par seconde environ dont une sur cinq porte*. La géométrie tranche — la charge couvre 224 px et la lance en ajoute 164, donc engagée sous ~250 px elle touche presque à coup sûr, et au-delà de ~430 elle n'arrive jamais | calé |
+| Garde-fou de la visée | **la lance ne blesse qu'en charge.** Hors charge elle est *portée*, pas poussée. Sans cette règle, une lance asservie à la cible l'embroche en permanence : au banc, **0,42 coup/s** et 30 duels gagnés en 19 s. C'est le piège du Hors-la-loi, dont le canon asservi gagnait 27 duels sur 27 avant sa dispersion | calé |
+| Plafond de pile | **16**, déduit. La vidéo n'en montre aucun : elle s'arrête à 20 parce que le Dragoon meurt, pas parce que la stat bute. Mais *tous* les combattants à stat croissante du roster en ont un (Araignée 14, Serpent 14, Hors-la-loi 8, Bretteur 3), et sans plafond la montée est quadratique en durée de duel. Il valait 14 du temps du verrou de 6 s ; il monte à 16 avec la charge, non pour rendre le Dragoon plus fort mais parce que le mécanisme lui donne **moins** de touches et qu'il faut bien qu'elles pèsent — à 14, il ne rend que 2,25 PV/s contre 2,54 relevés, et tombe à 11 victoires sur 30 | déduit |
 | Pouvoir | *Furie du lancier* — **passif**. Le Dragoon n'a aucun pouvoir actif dans la vidéo : sa seule ligne de stat est « Damage », et elle ne bouge qu'aux touches | mesuré |
 | **Ultime** | *Bond* (`JUMP`). Jauge pleine en ~10 s (+0,10 de remplissage par seconde), marches de ~8 % à chaque touche | mesuré |
 | Déroulé du Bond | jauge vidée → **0,45 s d'élan** au sol → **1,5 s hors de l'arène** → chute. Chronométré deux fois : 10,60 / 11,02 / 12,53 s, puis 19,03 / 19,50 / 21,00 s | mesuré |
 | Pendant le vol | le Dragoon **n'est plus dans l'arène** : ni touché, ni touchant, ni dessiné. Un disque gris suit l'adversaire, enfle jusqu'à 2,5 × le rayon au sommet du bond puis se resserre à 1,35 × — c'est le resserrement qui annonce la chute | mesuré |
-| Impact | il retombe **sur le marqueur**, frappe dans un rayon de 110 px pour les dégâts courants de la lance, recul 520. L'arène blanchit d'un coup, une onde grise part jusqu'à 225 px en 0,35 s | mesuré |
+| Impact | il retombe **collé à l'adversaire** — le marqueur, décalé de 0,9 × la somme des deux rayons pour que les billes se touchent sans s'interpénétrer : posé pile dessus, `resolveBodies` le séparait aussitôt et la chute devenait illisible. Il frappe dans un rayon de 110 px pour les dégâts courants de la lance, recul 520. L'arène blanchit d'un coup, une onde grise part jusqu'à 225 px en 0,35 s | mesuré |
+| Décollage | une **onde de choc grise au sol** part du point de départ, jusqu'à 190 px en 0,4 s. Le Dragoon disparaît d'une image à l'autre : sans elle, rien ne dit d'où il est parti. Les deux bouts du bond se répondent — même disque gris au départ qu'à l'arrivée | déduit |
 | Comptabilité de l'impact | la chute compte comme une touche : sur la vidéo l'Outlaw passe de 100 à 90 PV alors que le HUD affiche « Damage: 10.00 », et la stat monte ensuite à 12 | mesuré |
 | Projectile | aucun — tout passe par la lance et le Bond | mesuré |
 | HUD | `Damage: 10` | mesuré |
 
-**Pourquoi le verrou ne peut pas être celui de la vidéo.** Le garde-fou existe :
-`tools/probe.mjs` donne au Hors-la-loi **0,649 coup/s** là où sa vidéo en mesure
-0,65 — ce moteur reproduit donc fidèlement la cadence de contact du jeu
-d'origine. Le Dragoon fait exception parce que sa lance est la plus longue du
-plateau : son segment tranchant balaie près d'un cinquième de l'arène. Le verrou
-est le seul réglage qui restitue les deux chiffres que la vidéo montre.
+**La charge, en quatre phases.** Le Dragoon ne flotte pas en faisant tourner sa
+lance : il vise, verrouille son angle, fonce en ligne droite, puis récupère.
+Les phases sont typées `LungePhase` dans `abilities/dragoon.js`.
 
-**Le Dragoon tue au métronome, et c'est assumé.** Verrou fixe de 6 s et plafond
-à 14 donnent huit touches à 10, 12, 14, 14… soit 106 PV en environ 43 s.
-Plusieurs de ses duels se terminent donc à **43,2 s exactement**, quel que soit
-l'adversaire : la question n'est pas s'il gagne, mais si l'autre tue avant.
-C'est aussi, de tout le roster, le combattant dont le profil colle le mieux à sa
-vidéo : rare et lourd, exactement les cinq touches à 10-12-14-16-18 du duel de
-référence.
+| Phase | Ce qui s'y passe | Qui écrit `weaponAngle` |
+| --- | --- | --- |
+| `aim` | la lance pivote vers le centre de l'adversaire, plafonnée à ~230 °/s | ce module, seul |
+| `lock` | l'angle est **gelé**, la lance ne suit plus la cible | personne |
+| `dash` | le corps file à 2,6 × sa vitesse le long de l'angle verrouillé, en semant des images fantômes | personne |
+| `recover` | temps mort après la charge ou la touche | personne |
+
+Le gel est **l'absence d'écriture** : la fiche portant `weapon.spin = 0`,
+`Fighter.step` ne touche pas non plus à l'angle. La charge a **un seul point de
+sortie**, `endDash()`, qui remet ensemble vitesse, facteur de vitesse et
+traînée — c'est le piège du Bretteur, dont la ruée avait déjà laissé un
+éventail large accroché derrière la lame pour les avoir dispersés.
+
+**Ce que le moteur rend.** **0,193 coup/s** et **2,54 PV/s**, contre 0,181 et
+2,54 relevés. Le budget de dégâts — ce qui décide les duels — tombe au
+centième, là où l'ancien mécanisme rendait 2,36 ; et la cadence est aussi
+proche que ce même mécanisme l'obtenait (0,192), mais cette fois sans verrou de
+6 s pour la forcer.
+
+**Le piège qui a coûté le plus cher dans cette refonte.** Pendant le vol,
+`Fighter.step` sort avant de décompter `meleeCd` : le verrou de touche est donc
+**figé** pour toute la durée du Bond, à la valeur qu'il avait au décollage. Si
+le Bond partait en pleine charge — la seule phase où le garde-fou ne s'applique
+pas — cette valeur était zéro, et le Dragoon touchait gratuitement à
+l'atterrissage, lance pointée sur une cible à 74 px. Une touche garantie tous
+les ~8 s, invisible au relevé et qui portait à elle seule dix victoires sur
+trente. `land()` pose maintenant le verrou comme le ferait `resolveMelee`.
+
+**Le Dragoon ne tue plus au métronome.** L'ancien couple verrou fixe de 6 s +
+plafond à 14 donnait huit touches à 10, 12, 14, 14… soit 106 PV en environ 43 s,
+si régulièrement que plusieurs de ses duels se terminaient à **43,2 s
+exactement**, quel que soit l'adversaire. La charge rend la durée à la
+géométrie : ses duels vont maintenant de 20 à 48 s.
 
 Le Bond est le seul pouvoir du jeu qui **retire son porteur du plateau**. Côté
 moteur c'est `Fighter.offstage` : générique comme `invulnerable`, il ne dit pas
@@ -508,22 +537,23 @@ Vérifié par simulation sans rendu sur les **66 affrontements** possibles
   soient les deux combattants choisis — aucun des 66 affrontements n'atteint la
   limite de simulation ;
 - répartition des victoires sur les **30 duels hors miroir** de chaque
-  combattant : Lumière 21, Hors-la-loi 17, Glace 16, Ombre 15, **Dragoon 15**,
-  Feu 14, Foudre 14, Plante 14, Bretteur 14, Eau 13, Vent 12. Neuf combattants
-  sur onze tiennent dans quatre points ;
-- **l'arrivée du Dragoon n'a rien déplacé.** Il est ajouté *en queue* de
-  `ROSTER`, donc les 45 affrontements déjà mesurés gardent leurs indices, leurs
-  camps A/B et leurs seeds : le diff de `tools/matrix-reference.txt` ne contient
-  **que des ajouts**, les 45 lignes historiques sont identiques au caractère
-  près ;
-- **le premier écart est la Lumière**, à 21. Elle bat les trois invités 9-0 :
-  son Égide grandit quand elle **encaisse**, et les trois frappent rarement pour
-  beaucoup — le profil exact que le bouclier absorbe. Aucune valeur de la
-  Lumière n'a été touchée : ses 36 affrontements d'origine sont **identiques au
-  fichier près** ;
-- **le second est le Vent**, à 12. Il était déjà au plancher de la bande
-  (12 sur 27) et perd 3-0 contre le Dragoon, ce qui le fait passer juste
-  dessous. Aucune valeur du Vent n'a bougé non plus ;
+  combattant : Lumière 20, Ombre 15, Feu 15, Hors-la-loi 15, Bretteur 15,
+  **Dragoon 15**, Glace 14, Foudre 14, Vent 14, Plante 14, Eau 14. **Dix
+  combattants sur onze tiennent en deux points** — c'est la table la plus
+  resserrée qu'ait eue le projet ;
+- **la refonte du Dragoon a resserré la table.** Elle ne pouvait pas laisser la
+  matrice intacte — c'est un changement de jeu, pas un changement visuel — et
+  elle touche les 30 duels du Dragoon, donc jusqu'à 3 victoires chez chacun de
+  ses dix adversaires. Elle les a rapprochés du centre plutôt que dispersés :
+  le seul combattant hors bande passe de 21 à 20, et le Vent y revient ;
+- **le seul écart restant est la Lumière**, à 20. Son Égide grandit quand elle
+  **encaisse**, et les trois invités frappent rarement pour beaucoup — le profil
+  exact que le bouclier absorbe. Aucune valeur de la Lumière n'a jamais été
+  touchée ;
+- **le Vent est rentré dans la bande** (12 → 14). Il perdait 3-0 contre l'ancien
+  Dragoon au métronome, dont les 43,2 s réglées comme une horloge ne lui
+  laissaient aucune prise ; il lui prend maintenant des duels. Aucune valeur du
+  Vent n'a bougé non plus ;
 - garde-fou du Hors-la-loi : `tools/probe.mjs outlaw` mesure **0,60 coup/s**
   contre les 0,65 relevés sur la vidéo, et sa stat `Damage` finit autour de 5,0
   contre 5,50 mesurés.

@@ -88,6 +88,15 @@ export class Fighter {
      */
     this.offstage = 0;
 
+    /**
+     * Temps restant pendant lequel le combattant **sème des images fantômes**.
+     * Générique comme `offstage` : le moteur ne sait pas *pourquoi* il en sème,
+     * seul son module le sait (la charge du Dragoon). C'est `render/flair.js`
+     * qui le lit, donc allumer ce compteur ne peut rien changer au duel — la
+     * mise en scène a son propre aléa et son propre banc de particules.
+     */
+    this.ghosting = 0;
+
     this.trailTimer = 0;
     this.boost = 0; // durée restante d'un bonus de vitesse
     this.boostFactor = 1;
@@ -196,11 +205,14 @@ export class Fighter {
     if (this.offstage > 0) {
       this.offstage = Math.max(0, this.offstage - dt);
       this.invulnerable = Math.max(0, this.invulnerable - dt);
+      // parti en l'air : il ne laisse pas de fantôme à son dernier point connu
+      this.ghosting = 0;
       this.wall = null;
       return;
     }
 
     this.meleeCd = Math.max(0, this.meleeCd - dt);
+    this.ghosting = Math.max(0, this.ghosting - dt);
     this.flash = Math.max(0, this.flash - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
     this.boost = Math.max(0, this.boost - dt);

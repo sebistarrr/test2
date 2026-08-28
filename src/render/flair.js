@@ -32,6 +32,12 @@ const MAX_POPS = 24;
 const RIBBON = 26;
 /** Longueur du fuseau de vitesse traîné derrière le corps, même unité. */
 const SMEAR = 30;
+/**
+ * Nombre de **poses fantômes** gardées par combattant. Une pose = (x, y, cap
+ * d'arme) : de quoi redessiner la silhouette entière, bille **et** lance, là où
+ * elle était. Le fuseau et le ruban, eux, ne gardent qu'un point.
+ */
+const GHOSTS = 16;
 
 export class Flair {
   /** @param {{range:Function, spread:Function, pick:Function, chance:Function}} rng viewRng */
@@ -55,6 +61,18 @@ export class Flair {
      * @type {Map<any, {pts:number[], head:number, n:number}>}
      */
     this.smears = new Map();
+    /**
+     * **Images fantômes.** Des copies translucides de la silhouette entière —
+     * bille et lance — laissées derrière un combattant tant que son compteur
+     * `ghosting` tourne. C'est la traînée de la charge du Dragoon, relevée sur
+     * sa vidéo : une bande cramoisie faite de billes qui se recouvrent, pas un
+     * trait continu comme le fuseau.
+     *
+     * Opt-in par `look.flair.ghost` : un combattant sans ce bloc n'en sème pas.
+     * Purement géométrique — aucun tirage d'aléa, pas même `viewRng`.
+     * @type {Map<any, {pts:Float32Array, head:number, n:number, debt:number}>}
+     */
+    this.ghosts = new Map();
     /** Éclair blanc plein cadre, très bref (incantation d'ultime, K.O.). */
     this.flash = 0;
     this.flashMax = 1;
@@ -68,6 +86,7 @@ export class Flair {
     for (const f of fighters) {
       this.ribbons.set(f, { pts: new Float32Array(RIBBON * 2), head: 0, n: 0 });
       this.smears.set(f, { pts: new Float32Array(SMEAR * 2), head: 0, n: 0 });
+      this.ghosts.set(f, { pts: new Float32Array(GHOSTS * 3), head: 0, n: 0, debt: 0 });
       this.moteDebt.set(f, 0);
     }
   }
@@ -177,6 +196,7 @@ export class Flair {
       if (!f.onStage) continue;
       this._trackRibbon(f);
       this._trackSmear(f);
+      this._trackGhosts(f, dt);
       if (live) this._emitMotes(f, dt);
     }
     if (live) this._walls(dt, fighters);
@@ -341,6 +361,74 @@ export class Flair {
   }
 
   /**
+   * Poses fantômes : on en dépose une toutes les `every` secondes tant que le
+   * compteur `ghosting` du combattant tourne, puis la file se **vide par le
+   * plus ancien** au même rythme. Sans cette vidange, la traînée resterait
+   * plantée en l'air à la fin de la charge au lieu de se résorber derrière lui.
+   */
+  _trackGhosts(f, dt) {
+    const spec = f.el.look.flair?.ghost;
+    const g = this.ghosts.get(f);
+    if (!spec || !g) return;
+
+    if (f.ghosting <= 0) {
+      g.debt += dt;
+      while (g.debt >= spec.every) {
+        g.debt -= spec.every;
+        if (g.n > 0) g.n--;
+      }
+      return;
+    }
+
+    g.debt += dt;
+    while (g.debt >= spec.every) {
+      g.debt -= spec.every;
+      g.pts[g.head * 3] = f.x;
+      g.pts[g.head * 3 + 1] = f.y;
+      g.pts[g.head * 3 + 2] = f.weaponAngle;
+      g.head = (g.head + 1) % GHOSTS;
+      if (g.n < GHOSTS) g.n++;
+    }
+  }
+
+  /**
+   * **Images fantômes**, dessinées sous le combattant : la silhouette entière
+   * répétée le long de la charge, du plus effacé (le plus ancien) au plus franc
+   * (le plus récent). Bille **et** lance : sans la lance, la traînée d'une arme
+   * de 164 px ne veut rien dire.
+   */
+  _drawGhosts(ctx, f) {
+    const spec = f.el.look.flair?.ghost;
+    const g = this.ghosts.get(f);
+    if (!spec || !g || g.n < 1) return;
+    const w = f.el.weapon;
+    const back = w.handle.length;
+
+    ctx.save();
+    ctx.lineCap = 'butt';
+    ctx.fillStyle = spec.color;
+    ctx.strokeStyle = spec.color;
+    for (let i = 0; i < g.n; i++) {
+      const idx = (g.head - g.n + i + GHOSTS * 2) % GHOSTS;
+      const x = g.pts[idx * 3];
+      const y = g.pts[idx * 3 + 1];
+      const a = g.pts[idx * 3 + 2];
+      const k = (i + 1) / g.n; // 0 = le plus ancien
+      ctx.globalAlpha = spec.alpha * k * k;
+      ctx.beginPath();
+      ctx.arc(x, y, f.radius * (0.55 + 0.45 * k), 0, TAU);
+      ctx.fill();
+      ctx.lineWidth = spec.lance * (0.4 + 0.6 * k);
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(a) * back, y + Math.sin(a) * back);
+      ctx.lineTo(x + Math.cos(a) * w.reach, y + Math.sin(a) * w.reach);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  /**
    * Fuseau de vitesse, dessiné **sous** le combattant : large et opaque au ras
    * du corps, effilé et transparent vers l'arrière. C'est une écharpe, pas un
    * trait — d'où le trapèze plutôt qu'un `lineTo`.
@@ -424,7 +512,8 @@ export class Flair {
   drawUnder(ctx, fighters) {
     for (const f of fighters) {
       if (!f.onStage) continue;
-      // le fuseau d'abord : il passe sous le ruban d'arme
+      // les fantômes tout au fond, puis le fuseau, puis le ruban d'arme
+      this._drawGhosts(ctx, f);
       this._drawSmear(ctx, f);
       this._drawRibbon(ctx, f);
     }
@@ -555,6 +644,7 @@ export class Flair {
 
   clear() {
     for (const r of this.smears.values()) { r.head = 0; r.n = 0; }
+    for (const g of this.ghosts.values()) { g.head = 0; g.n = 0; g.debt = 0; }
     for (const m of this.motes) m.alive = false;
     for (const p of this.pops) p.alive = false;
     for (const r of this.ribbons.values()) r.n = 0;
