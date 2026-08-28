@@ -34,6 +34,7 @@ const SHADOW = {
   name: 'OMBRE',
   nameRef: 'DARK', // libellé de la vidéo de référence
   tagline: 'Assassin — se déplace par pas d’ombre et draine l’essence',
+  taglineRef: 'Assassin — shadow-steps into the blind spot and drains the essence',
   icon: 'orbDark',
 
   /* ---------- APPARENCE ---------- */
@@ -91,6 +92,7 @@ const SHADOW = {
   /* ---------- ARME ---------- */
   weapon: {
     name: 'Lame du Néant',
+    nameRef: 'Void Blade',
     reach: 77, // mesuré : centre → pointe = 77 px
     spin: SPIN,
     spinDir: -1, // sens initial (s'inverse aux rebonds)
@@ -176,6 +178,7 @@ const SHADOW = {
   projectiles: {
     shadowBolt: {
       label: 'Trait d’ombre',
+      labelRef: 'Shadow Bolt',
       sprite: 'darkBlade', // mini version de la lame (observé)
       scale: 2.2, // mesuré : trait d'ombre d'environ 44 px de long
       speed: 600,
@@ -206,6 +209,7 @@ const ICE = {
   name: 'GLACE',
   nameRef: 'ICE',
   tagline: 'Contrôle — empile les stacks de dégâts/ralentissement',
+  taglineRef: 'Control — stacks damage and slow with every hit',
   icon: 'snowflake',
 
   look: {
@@ -243,6 +247,7 @@ const ICE = {
 
   weapon: {
     name: 'Hache de givre',
+    nameRef: 'Frost Axe',
     reach: 132, // mesuré : centre → pointe de hache = 132 px
     spin: SPIN,
     spinDir: 1,
@@ -328,6 +333,7 @@ const ICE = {
   projectiles: {
     iceShard: {
       label: 'Éclat de givre',
+      labelRef: 'Frost Shard',
       sprite: 'iceShard',
       scale: 2.4,
       speed: 380,
@@ -358,6 +364,7 @@ const FIRE = {
   name: 'FEU',
   nameRef: 'FIRE',
   tagline: 'Attrition — marque l’adversaire d’une brûlure qui s’aggrave',
+  taglineRef: 'Attrition — brands the enemy with a burn that keeps growing',
   icon: 'iconFlame',
 
   look: {
@@ -390,6 +397,7 @@ const FIRE = {
 
   weapon: {
     name: 'Lame ardente',
+    nameRef: 'Ember Blade',
     reach: 150, // mesuré : ~166 px, ramené à l'échelle du roster
     spin: SPIN,
     spinDir: -1,
@@ -470,6 +478,7 @@ const FIRE = {
   projectiles: {
     ember: {
       label: 'Braise',
+      labelRef: 'Ember',
       sprite: 'ember',
       scale: 3,
       speed: 520,
@@ -504,6 +513,7 @@ const LIGHT = {
   name: 'LUMIÈRE',
   nameRef: 'LIGHT',
   tagline: 'Forteresse — bouclier qui riposte et marteau qui projette',
+  taglineRef: 'Fortress — a shield that strikes back and a hammer that throws',
   icon: 'iconShield',
 
   look: {
@@ -548,6 +558,7 @@ const LIGHT = {
 
   weapon: {
     name: 'Marteau d’aube',
+    nameRef: 'Dawn Hammer',
     reach: 155, // mesuré : ~159 px
     spin: SPIN,
     spinDir: 1,
@@ -684,6 +695,7 @@ const WIND = {
   name: 'VENT',
   nameRef: 'WIND',
   tagline: 'Harcèlement — le plus rapide, tornades et lames d’air',
+  taglineRef: 'Harasser — the fastest of all, tornadoes and blades of air',
   icon: 'iconTornado',
 
   look: {
@@ -717,6 +729,7 @@ const WIND = {
 
   weapon: {
     name: 'Shuriken de bourrasque',
+    nameRef: 'Gale Shuriken',
     reach: 105, // mesuré : ~120 px, arme collée au corps
     spin: SPIN * 1.1, // tourne plus vite que les autres (observé)
     spinDir: 1,
@@ -806,6 +819,7 @@ const WIND = {
   projectiles: {
     crescent: {
       label: 'Lame d’air',
+      labelRef: 'Air Blade',
       sprite: 'windCrescent',
       scale: 3.6, // mesuré : croissants de 43 à 57 px selon l'orientation
       speed: 430,
@@ -843,6 +857,7 @@ const LIGHTNING = {
   name: 'FOUDRE',
   nameRef: 'LIGHTNING',
   tagline: 'Zone — sème des bornes statiques et enchaîne les arcs',
+  taglineRef: 'Zoner — plants static nodes and chains arcs between them',
   icon: 'iconBolt',
 
   look: {
@@ -880,6 +895,7 @@ const LIGHTNING = {
 
   weapon: {
     name: 'Lame fulgurante',
+    nameRef: 'Storm Blade',
     reach: 145,
     spin: SPIN,
     spinDir: -1,
@@ -971,6 +987,7 @@ const WATER = {
   name: 'EAU',
   nameRef: 'WATER',
   tagline: 'Contrôle de terrain — des tourbillons qui aspirent et grandissent',
+  taglineRef: 'Terrain control — whirlpools that pull and keep growing',
   icon: 'iconDroplet',
 
   look: {
@@ -1003,6 +1020,7 @@ const WATER = {
 
   weapon: {
     name: 'Trident des marées',
+    nameRef: 'Tidal Trident',
     reach: 150,
     spin: SPIN,
     spinDir: 1,
@@ -1074,6 +1092,7 @@ const WATER = {
   projectiles: {
     droplet: {
       label: 'Goutte',
+      labelRef: 'Droplet',
       sprite: 'waterDrop',
       scale: 3,
       speed: 330,
@@ -1112,6 +1131,7 @@ const PLANT = {
   name: 'PLANTE',
   nameRef: 'PLANT',
   tagline: 'Endurance — sème des bulbes qui blessent l’un et soignent l’autre',
+  taglineRef: 'Endurance — sows bulbs that wound one and heal the other',
   icon: 'iconLeaf',
 
   look: {
@@ -1149,6 +1169,7 @@ const PLANT = {
    */
   weapon: {
     name: 'Liane fouettante',
+    nameRef: 'Lashing Vine',
     reach: 160, // mesuré : ~164 px
     spin: SPIN,
     spinDir: 1,
@@ -1280,6 +1301,7 @@ const PLANT = {
   projectiles: {
     flower: {
       label: 'Fleur',
+      labelRef: 'Flower',
       sprite: 'flower',
       scale: 3.6, // mesuré : corolle de ~40 px
       speed: 340,
@@ -1321,6 +1343,7 @@ const OUTLAW = {
   name: 'HORS-LA-LOI',
   nameRef: 'OUTLAW',
   tagline: 'Pistolero — vise, tire, recule, et affûte ses dégâts balle après balle',
+  taglineRef: 'Gunslinger — aims, fires, kicks back, and sharpens every bullet',
   icon: 'iconRevolver',
 
   look: {
@@ -1362,6 +1385,7 @@ const OUTLAW = {
 
   weapon: {
     name: 'Revolver',
+    nameRef: 'Revolver',
     /** Mesuré : pointe du canon à 97 px du centre sur la vidéo 576 → ×1,25.
      *  Elle **découle** du sprite : 37 (garde) + 34 cellules × 2,5. */
     reach: 122,
@@ -1447,6 +1471,7 @@ const OUTLAW = {
   projectiles: {
     shot: {
       label: 'Balle',
+      labelRef: 'Bullet',
       sprite: 'outlawShot',
       scale: 3.2,
       /** Calé : à 30 fps la vidéo ne montre que le sillage, jamais la balle.
@@ -1493,6 +1518,7 @@ const BLADESMAN = {
   name: 'BRETTEUR',
   nameRef: 'BLADESMAN',
   tagline: 'Duelliste — sa lame accélère jusqu’à la surchauffe, puis fond sur sa cible',
+  taglineRef: 'Duellist — his blade winds up to overheat, then rushes his target',
   icon: 'iconSabre',
 
   look: {
@@ -1531,6 +1557,7 @@ const BLADESMAN = {
 
   weapon: {
     name: 'Sabre dentelé',
+    nameRef: 'Serrated Sabre',
     /** Mesuré : garde à r 36–45, lame à r 45–122 sur la vidéo 576 → ×1,25 :
      *  garde à 45–56, pointe à 152. La portée **découle** du sprite —
      *  45 (garde) + 40 cellules × 2,68 — pour que hitbox et dessin ne
@@ -1656,6 +1683,7 @@ const DRAGOON = {
   name: 'DRAGOON',
   nameRef: 'DRAGOON',
   tagline: 'Lancier — frappe de plus en plus fort, et tombe du ciel',
+  taglineRef: 'Lancer — hits harder with every strike, and falls from the sky',
   icon: 'iconLance',
 
   look: {
@@ -1703,6 +1731,7 @@ const DRAGOON = {
 
   weapon: {
     name: 'Lance de dragon',
+    nameRef: 'Dragon Lance',
     /** Mesuré : centre → pointe = 131 px sur la vidéo 576 → ×1,25 = 164.
      *  **La plus longue portée du roster.** Elle découle du sprite :
      *  −52 (talon) + 54 cellules × 4 = 164, pour que hitbox et dessin ne

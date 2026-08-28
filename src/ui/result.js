@@ -11,7 +11,10 @@
  * @module ui/result
  */
 
-export function createResultScreen({ root, onRematch, onReplay, onBack, onExport }) {
+import { UI, label } from './lang.js';
+
+export function createResultScreen({ root, onRematch, onReplay, onBack, onExport, lang = 'ref' }) {
+  const t = UI[lang] ?? UI.ref;
   const winnerEl = root.querySelector('#result-winner');
   const detailEl = root.querySelector('#result-detail');
   const exportBtn = root.querySelector('#btn-export');
@@ -23,7 +26,7 @@ export function createResultScreen({ root, onRematch, onReplay, onBack, onExport
   exportBtn.addEventListener('click', () => {
     if (exportBtn.disabled) return;
     onExport();
-    exportNote.textContent = 'Vidéo téléchargée — prête pour YouTube Shorts.';
+    exportNote.textContent = t.exportDone;
   });
 
   /** @param {'off'|'pending'|'ready'|'failed'} state */
@@ -32,7 +35,7 @@ export function createResultScreen({ root, onRematch, onReplay, onBack, onExport
     exportBtn.hidden = off;
     exportNote.hidden = off && !note;
     exportBtn.disabled = state !== 'ready';
-    exportBtn.textContent = state === 'pending' ? 'PRÉPARATION…' : 'EXPORTER EN SHORT';
+    exportBtn.textContent = state === 'pending' ? t.exportPending : t.exportShort;
     exportNote.textContent = note;
   }
 
@@ -44,10 +47,13 @@ export function createResultScreen({ root, onRematch, onReplay, onBack, onExport
     show(r) {
       root.classList.remove('hidden');
       root.style.setProperty('--accent', r.winner.look.body);
-      winnerEl.textContent = `${r.winner.name} L'EMPORTE`;
-      detailEl.textContent =
-        `${r.winnerHp} PV restants · duel de ${r.duration.toFixed(1)} s · ` +
-        `${r.hits[0] + r.hits[1]} touches · seed ${r.seed}`;
+      winnerEl.textContent = t.winner(label(r.winner, lang));
+      detailEl.textContent = t.resultDetail(
+        r.winnerHp,
+        r.duration.toFixed(1),
+        r.hits[0] + r.hits[1],
+        r.seed,
+      );
     },
     setExport,
     hide() {

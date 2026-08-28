@@ -9,11 +9,13 @@
  */
 
 import { ELEMENTS, ROSTER } from '../data/elements.js';
+import { UI, label } from './lang.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { compilePixelMap } from '../render/pixelart.js';
 import { TAU } from '../core/math.js';
 
-export function createSelectScreen({ root, onStart }) {
+export function createSelectScreen({ root, onStart, lang = 'ref' }) {
+  const t = UI[lang] ?? UI.ref;
   const slots = {
     a: root.querySelector('#slot-a'),
     b: root.querySelector('#slot-b'),
@@ -44,11 +46,11 @@ export function createSelectScreen({ root, onStart }) {
 
     const name = document.createElement('span');
     name.className = 'card-name';
-    name.textContent = el.name;
+    name.textContent = label(el, lang);
 
     const role = document.createElement('span');
     role.className = 'card-role';
-    role.textContent = el.tagline.split('—')[0].trim().toUpperCase();
+    role.textContent = tagline(el, lang).split('—')[0].trim().toUpperCase();
 
     card.append(cv, name, role);
     card.setAttribute('aria-pressed', 'false');
@@ -78,24 +80,26 @@ export function createSelectScreen({ root, onStart }) {
   function showSheet(id) {
     const el = ELEMENTS[id];
     const w = el.weapon;
-    const melee = typeof w.melee.damage === 'function' ? 'pile courante' : `${w.melee.damage} PV`;
+    // les dégâts peuvent être une fonction de la pile courante : affichés tels
+    // quels, ils imprimaient le code source dans la fiche
+    const dmg = typeof w.melee.damage === 'function' ? t.meleeStack : t.meleeHp(w.melee.damage);
     // un pouvoir sans recharge finie est un passif (la Furie du lancier du
     // Dragoon : elle ne se déclenche pas, elle monte à chaque touche)
-    const pouvoir = Number.isFinite(el.ability.cooldown)
-      ? `${el.ability.name} — recharge ${el.ability.cooldown}s`
-      : `${el.ability.name} — passif`;
+    const ability = Number.isFinite(el.ability.cooldown)
+      ? t.abilityLine(label(el.ability, lang), el.ability.cooldown)
+      : t.abilityPassive(label(el.ability, lang));
     sheetEl.hidden = false;
     sheetEl.style.setProperty('--accent', el.look.body);
     sheetEl.innerHTML = `
-      <h3>${el.name}</h3>
+      <h3>${label(el, lang)}</h3>
       <dl>
-        <dt>Rôle</dt><dd>${el.tagline}</dd>
-        <dt>Vitesse</dt><dd>${el.movement.speed} px/s — virage ${el.movement.turnRate} rad/s</dd>
-        <dt>Arme</dt><dd>${w.name} — portée ${w.reach} px, ${spinLine(w)}</dd>
-        <dt>Corps à corps</dt><dd>${melee} toutes les ${w.melee.cooldown}s</dd>
-        <dt>Pouvoir</dt><dd>${pouvoir}</dd>
-        <dt>Ultime</dt><dd>${el.ultimate.name} — ${el.ultimate.duration}s</dd>
-        <dt>Projectile</dt><dd>${projectileLine(el)}</dd>
+        <dt>${t.sheetRole}</dt><dd>${tagline(el, lang)}</dd>
+        <dt>${t.sheetSpeed}</dt><dd>${t.speedLine(el.movement.speed, el.movement.turnRate)}</dd>
+        <dt>${t.sheetWeapon}</dt><dd>${t.weaponLine(label(w, lang), w.reach, spinLine(w, t))}</dd>
+        <dt>${t.sheetMelee}</dt><dd>${t.meleeLine(dmg, w.melee.cooldown)}</dd>
+        <dt>${t.sheetAbility}</dt><dd>${ability}</dd>
+        <dt>${t.sheetUltimate}</dt><dd>${t.ultimateLine(label(el.ultimate, lang), el.ultimate.duration)}</dd>
+        <dt>${t.sheetProjectile}</dt><dd>${projectileLine(el, t)}</dd>
       </dl>`;
   }
 
@@ -110,7 +114,7 @@ export function createSelectScreen({ root, onStart }) {
       slots[key].setAttribute('aria-current', String(active === key));
       slots[key].style.setProperty('--accent', el ? el.look.body : '#000');
       orbs[key].style.background = el ? el.look.body : '#e6e6e6';
-      names[key].textContent = el ? el.name : '—';
+      names[key].textContent = el ? label(el, lang) : '—';
     }
     startBtn.disabled = !picks.a || !picks.b;
   }
@@ -126,14 +130,22 @@ export function createSelectScreen({ root, onStart }) {
 }
 
 /**
+ * Rôle du combattant, dans la langue de l'écran. Les fiches portent les deux :
+ * `tagline` en français, `taglineRef` en anglais.
+ */
+function tagline(el, lang) {
+  return lang === 'fr' ? el.tagline : el.taglineRef ?? el.tagline;
+}
+
+/**
  * Ligne « rotation » de la fiche.
  * Une arme à `spin: 0` n'est pas une arme immobile : elle est braquée par son
  * module de pouvoirs (le revolver du Hors-la-loi suit sa cible à chaque image).
  * Afficher « rotation 0 °/s » se lisait comme un bug.
  */
-function spinLine(w) {
-  if (!w.spin) return 'arme braquée, sans rotation propre';
-  return `rotation ${(w.spin * 57.2958).toFixed(0)} °/s`;
+function spinLine(w, t) {
+  if (!w.spin) return t.spinNone;
+  return t.spinLine((w.spin * 57.2958).toFixed(0));
 }
 
 /**
@@ -141,13 +153,13 @@ function spinLine(w) {
  * dégâts peuvent être une fonction de la pile courante (la balle du
  * Hors-la-loi porte sa stat « Damage », comme son coup à bout portant).
  */
-function projectileLine(el) {
+function projectileLine(el, t) {
   const list = Object.values(el.projectiles ?? {});
-  if (!list.length) return 'aucun — tout passe par l’arme et les zones';
+  if (!list.length) return t.projectileNone;
   return list
     .map((p) => {
-      const dmg = typeof p.damage === 'function' ? 'pile courante' : `${p.damage} PV`;
-      return `${p.label} — ${dmg}, ${p.speed} px/s`;
+      const dmg = typeof p.damage === 'function' ? t.meleeStack : t.meleeHp(p.damage);
+      return t.projectileLine(p.labelRef ?? p.label, dmg, p.speed);
     })
     .join(' · ');
 }

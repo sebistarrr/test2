@@ -4,7 +4,8 @@
  * Paramètres d'URL utiles :
  *   ?a=shadow&b=ice   duel direct, sans passer par la sélection
  *   ?seed=1234        rejoue exactement le même duel
- *   ?lang=fr          libellés du HUD en français (par défaut : ceux de la vidéo)
+ *   ?lang=fr          toute l'application en français — HUD, titre d'arène et
+ *                     écrans DOM (par défaut : l'anglais de la vidéo)
  *   ?debug=1          hitboxes + compteurs
  *   ?rec=0            n'enregistre pas le duel (pas d'export, mais zéro coût)
  *
@@ -21,9 +22,12 @@ import { Match } from './game/match.js';
 import { createSelectScreen } from './ui/select.js';
 import { createResultScreen } from './ui/result.js';
 import { createRecorder, createNullRecorder } from './render/recorder.js';
+import { UI, applyStaticLabels } from './ui/lang.js';
 
 const params = new URLSearchParams(location.search);
 const LANG = params.get('lang') === 'fr' ? 'fr' : 'ref';
+/** Libellés de l'interface dans la langue choisie (voir ui/lang.js). */
+const T = UI[LANG];
 const DEBUG = params.get('debug') === '1';
 /** Le film du duel coûte un peu de fil principal : `?rec=0` le coupe net. */
 const RECORD = params.get('rec') !== '0';
@@ -45,9 +49,14 @@ const loop = createLoop({
   },
 });
 
+// libellés statiques d'index.html : appliqués même en anglais, pour que le
+// HTML et la table de ui/lang.js ne puissent pas diverger en silence
+applyStaticLabels(document, LANG);
+
 const selectScreen = createSelectScreen({
   root: document.querySelector('#screen-select'),
   onStart: (pair) => startMatch(pair),
+  lang: LANG,
 });
 
 const resultScreen = createResultScreen({
@@ -57,6 +66,7 @@ const resultScreen = createResultScreen({
   // revoir : même affiche ET même seed, donc exactement le même duel
   onReplay: () => startMatch(lastPair, lastSeed),
   onExport: () => recorder.download(`duel-${lastPair[0]}-vs-${lastPair[1]}-seed${lastSeed}`),
+  lang: LANG,
   onBack: () => {
     resultScreen.hide();
     loop.stop();
@@ -105,14 +115,14 @@ async function finishRecording() {
   try {
     const blob = await recorder.stop();
     if (!blob) {
-      resultScreen.setExport('failed', 'Export vidéo indisponible sur ce navigateur.');
+      resultScreen.setExport('failed', T.exportUnsupported);
       return;
     }
     const mb = (blob.size / 1048576).toFixed(1);
-    resultScreen.setExport('ready', `Vertical 1080 × 1920 · ${recorder.extension.toUpperCase()} · ${mb} Mo`);
+    resultScreen.setExport('ready', T.exportReady(recorder.extension.toUpperCase(), mb));
   } catch (err) {
     console.warn('[export] échec :', err);
-    resultScreen.setExport('failed', 'Export vidéo indisponible sur ce navigateur.');
+    resultScreen.setExport('failed', T.exportUnsupported);
   }
 }
 

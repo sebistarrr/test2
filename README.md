@@ -61,7 +61,7 @@ empêche Jekyll d'ignorer les dossiers.
 | ------------ | ----------------------------------------------------------------- |
 | `?a=&b=`     | lance directement un duel sans écran de sélection — `shadow`, `ice`, `fire`, `water`, `light`, `lightning`, `wind`, `plant`, `outlaw`, `bladesman` |
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
-| `?lang=fr`   | HUD en français (par défaut : libellés anglais de la vidéo)        |
+| `?lang=fr`   | **toute l'interface** en français — HUD, titre d'arène et écrans DOM (par défaut : l'anglais de la vidéo) |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |
 | `?rec=0`     | n'enregistre pas le duel : pas d'export possible, mais pas un cycle dépensé pour lui |
 
@@ -147,6 +147,7 @@ src/
 │       ├── outlaw.js      Visée asservie + Barillet + Plein soleil
 │       └── bladesman.js   Courbe de rotation (surchauffe) + Ruée de lame
 └── ui/
+    ├── lang.js            libellés d'interface, anglais et français
     ├── select.js          écran de sélection (lit les fiches)
     └── result.js          écran de fin
 tools/                     outillage de vérification (non chargé par la page)
@@ -154,6 +155,7 @@ tools/                     outillage de vérification (non chargé par la page)
 ├── matrix-reference.txt   sortie de référence, à differ après tout changement
 ├── probe.mjs              durée, touches et coups/s d'un combattant sur tout
 │                          le roster — garde-fou chiffré du Hors-la-loi
+├── lang-check.mjs         garde-fou de la langue (tables et champs `Ref`)
 ├── shot.mjs               captures d'écran, avec déclenchement de pouvoir
 ├── frames.py              extraction d'images d'une vidéo de référence
 ├── montage.py             planche-contact des images extraites
@@ -190,6 +192,19 @@ donc VS Code fait la vérification de types (`// @ts-check` suffit à l'activer)
 La boucle est à **pas fixe (120 Hz)** avec accumulateur : la simulation est
 identique sur un écran 60 Hz ou 144 Hz, et les collisions arme/corps ne
 « traversent » pas à haute vitesse.
+
+---
+
+## Langue
+
+**L'application est en anglais** — c'est la langue de la vidéo de référence
+(`DARK`, `HIGH NOON`, `Damage: 5.50`), donc celle du HUD et du titre d'arène
+depuis toujours ; les écrans de sélection et de fin ont suivi. `?lang=fr`
+bascule l'ensemble, chrome DOM compris.
+
+Le dépôt, lui, reste en français : code, commentaires, documentation et
+messages d'erreur console. Ce sont deux publics différents. Tout l'affichage
+passe par [`src/ui/lang.js`](src/ui/lang.js), deux tables aux clés identiques.
 
 ---
 
@@ -260,7 +275,11 @@ s'éternise. Détail de l'équilibrage dans [`docs/FICHES.md`](docs/FICHES.md).
 
 1. **La fiche** dans `src/data/elements.js` (copie `SHADOW` et adapte).
    Tout y passe : couleurs, rayon, vitesse, arme, dégâts, pouvoir, ultime,
-   projectiles, libellés du HUD.
+   projectiles, libellés du HUD. **Les deux langues sont dans la fiche** :
+   `name`/`nameRef`, `tagline`/`taglineRef`, `weapon.name`/`weapon.nameRef`,
+   `hud.statsFr`/`hud.stats`… L'application affiche l'anglais ; oublier un
+   champ `Ref` fait retomber une ligne en français au milieu d'un écran
+   anglais (le repli est silencieux).
 2. **Les sprites** dans `src/data/pixelmaps.js` (texte) ou en PNG via
    `assets/sprites/manifest.json` — voir
    [`assets/sprites/README.md`](assets/sprites/README.md).

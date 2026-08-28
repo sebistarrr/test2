@@ -25,6 +25,7 @@ Va droit au fichier concerné, en `grep` ciblé plutôt qu'en lecture intégrale
 | Pouvoirs d'un combattant | `src/game/abilities/<id>.js` |
 | Mise en scène (rubans, nappes, ondes, nombres) | `src/render/flair.js` + `look.flair` de chaque fiche |
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
+| Libellés d'interface (les deux langues) | `src/ui/lang.js` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
 | Relevés vidéo détaillés, par combattant | `docs/FICHES.md` |
 
@@ -93,6 +94,48 @@ courtes avec moins de montée ont été essayées (4,0 s/10, 3,0 s/10, 4,5 s/12,
 **Le moteur ne connaît aucun combattant** : `fighter.js`, `physics.js` et
 `projectiles.js` lisent la fiche. En ajouter un = une entrée dans
 `elements.js` + un module dans `abilities/` + une ligne dans `ROSTER`.
+
+---
+
+## Langue
+
+**L'application est en anglais, le dépôt est en français.** Deux règles
+distinctes, à ne pas confondre :
+
+- **ce que voit le joueur** est en anglais — c'est la langue de la vidéo de
+  référence (`DARK`, `HIGH NOON`, `Damage: 5.50`), donc celle du HUD et du
+  titre d'arène depuis toujours. Les écrans DOM ont suivi ;
+- **le code, les commentaires, la doc et les réponses** restent en français
+  (voir « Habitudes attendues »). Les messages d'erreur console aussi : ils
+  s'adressent à qui développe, pas à qui joue.
+
+Tout l'affichage passe par `src/ui/lang.js` : une table `UI.ref` (anglais) et
+`UI.fr` (français), aux **clés strictement identiques**, plus l'aide `label()`
+qui choisit entre `name` et `nameRef`. `?lang=fr` bascule l'ensemble — HUD,
+titre d'arène *et* chrome DOM. Avant, seul le HUD suivait et l'écran de
+sélection restait français quoi qu'il arrive.
+
+Chaque fiche porte donc **les deux moitiés** de son identité :
+
+| Français | Anglais | Où c'est lu |
+| --- | --- | --- |
+| `name` | `nameRef` | titre d'arène, cartes, écran de fin |
+| `tagline` | `taglineRef` | rôle de la carte + ligne « Role » |
+| `weapon.name` | `weapon.nameRef` | ligne « Weapon » |
+| `ability.name` / `ultimate.name` | `.nameRef` | lignes « Ability » / « Ultimate » |
+| `projectiles.*.label` | `.labelRef` | ligne « Projectile » |
+| `hud.statsFr` | `hud.stats` | ligne de stat du HUD |
+| `ultimate.barLabelFr` | `ultimate.barLabel` | jauge d'ultime |
+
+**Ajouter un combattant sans ses champs `Ref` le fait retomber en français au
+milieu d'un écran anglais** : `label()` a un repli silencieux (`nameRef ?? name`)
+qui évite le plantage mais pas l'incohérence. Les remplir fait partie de la
+fiche, pas d'une passe de traduction ultérieure.
+
+`index.html` est écrit en anglais pour que la page soit correcte avant même que
+le module ne se charge, puis `applyStaticLabels()` la réécrit — y compris en
+anglais. C'est volontaire : c'est ce qui empêche le HTML et la table de diverger
+sans que ça se voie.
 
 ---
 
@@ -178,6 +221,10 @@ python3 -m http.server 8085 &            # requis par les outils Playwright
 node tools/matrix.mjs                    # 66 affrontements x 3 seeds, sans rendu
 node tools/matrix.mjs > /tmp/a.txt && diff tools/matrix-reference.txt /tmp/a.txt
 
+node tools/lang-check.mjs                # garde-fou de la langue : les deux tables
+                                         # de ui/lang.js doivent porter les mêmes clés,
+                                         # et chaque fiche tous ses champs `Ref`
+
 node tools/probe.mjs outlaw              # durée, touches et coups/s d'un combattant
                                          # sur tout le roster — c'est le garde-fou
                                          # chiffré du Hors-la-loi (0,65 coup/s relevé)
@@ -217,6 +264,11 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
 ---
 
 ## Pièges déjà rencontrés
+
+- **Une moitié d'écran dans chaque langue.** `?lang=fr` ne pilotait que le HUD
+  et le titre d'arène ; les écrans DOM étaient français en dur. En anglais, on
+  lisait donc « CHOISIS TES COMBATTANTS » au-dessus d'un duel « DARK vs ICE ».
+  Tout l'affichage passe désormais par `src/ui/lang.js`, un seul interrupteur.
 
 - **Un `re.sub` de calage qui déborde sur une autre fiche.** En balayant des
   cadences pour le Dragoon, une expression ancrée sur `hitbox: { from: …` a
@@ -283,16 +335,20 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
 
 ## Habitudes attendues
 
-- **Français** dans le code, les commentaires, la doc et les réponses.
+- **Français** dans le code, les commentaires, la doc et les réponses — mais
+  **anglais dans l'application** (section « Langue »).
 - Commentaires qui expliquent **pourquoi** (et citent la mesure), pas quoi.
 - Après un changement visuel : capture d'écran de contrôle + matrice inchangée.
 - Après un changement de gameplay : matrice + justification du nouvel équilibre.
 - Tenir `README.md` et `docs/FICHES.md` à jour ; régénérer `docs/capture-*.png`
   quand le rendu change.
 - **Tout se développe directement sur `main`.** Pas de branche `claude/*` : on
-  commite sur `main` et on y pousse. Le dépôt n'a plus qu'une branche, et c'est
-  voulu — les branches de travail avaient fini par contenir trois rosters
-  divergents qu'aucune fusion ne pouvait réconcilier.
+  commite sur `main` et on y pousse. Le dépôt **n'a plus qu'une branche**, et
+  `main` est la branche par défaut — les quatre branches de travail ont été
+  supprimées, elles avaient fini par porter trois rosters divergents qu'aucune
+  fusion ne pouvait réconcilier. N'en recrée pas.
+- **Français dans le code, anglais à l'écran** — voir la section « Langue ».
+  Un nouveau combattant apporte ses champs `Ref` en même temps que sa fiche.
 - Commits en français, corps détaillé, puis push sur `main`, et attendre que
   Pages ait publié.
 - Un nouveau combattant s'ajoute **en queue de `ROSTER`** : `tools/matrix.mjs`
