@@ -1,4 +1,4 @@
-// Matrice d'équilibrage : 36 affrontements x 3 seeds, simulés SANS rendu.
+// Matrice d'équilibrage : 66 affrontements x 3 seeds, simulés SANS rendu.
 // La sortie doit rester identique après tout changement purement visuel :
 //   node tools/matrix.mjs > /tmp/apres.txt && diff /tmp/avant.txt /tmp/apres.txt
 // Prérequis : un serveur statique sur $URL (defaut http://127.0.0.1:8085).

@@ -19,6 +19,8 @@ import { segmentPointDistance, wrapAngle } from '../core/math.js';
  * @param {import('./fighter.js').Fighter} b
  */
 export function resolveBodies(a, b) {
+  // un combattant hors du plateau ne bouscule personne
+  if (!a.onStage || !b.onStage) return false;
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const d = Math.hypot(dx, dy);
@@ -49,7 +51,9 @@ export function resolveBodies(a, b) {
  * @returns {null|{x:number,y:number,nx:number,ny:number}}
  */
 export function weaponHit(attacker, target) {
-  if (attacker.meleeCd > 0 || !attacker.alive || !target.alive) return null;
+  // `onStage` et pas `alive` : un combattant en l'air (le Bond du Dragoon) ne
+  // touche pas et ne se fait pas toucher
+  if (attacker.meleeCd > 0 || !attacker.onStage || !target.onStage) return null;
   if (target.invulnerable > 0) return null;
 
   const b = attacker.bladeSegment();

@@ -1,8 +1,9 @@
 # Fiches des combattants
 
 Huit éléments : **Ombre**, **Glace**, **Feu**, **Eau**, **Lumière**, **Foudre**,
-**Vent**, **Plante**, plus deux personnages invités — **Hors-la-loi** et
-**Bretteur** — repris du duel *Outlaw vs Bladesman*.
+**Vent**, **Plante**, plus trois personnages invités repris de la chaîne
+« ballthingsim » — **Hors-la-loi** et **Bretteur** du duel *Outlaw vs
+Bladesman*, et **Dragoon** de *Dragoon vs Outlaw*.
 Ces fiches sont la **transcription lisible** de `src/data/elements.js`. Le code
 est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
 fiche gelée correspondante.
@@ -440,27 +441,78 @@ citée entre parenthèses.
 
 ---
 
+## 🐲 DRAGOON — `dragoon` (affiché « DRAGOON »)
+
+> Lancier — frappe de plus en plus fort, et tombe du ciel.
+
+Relevé sur `Dragoon vs Outlaw` (576 × 1024, 33,6 s) — la vidéo dont le
+Hors-la-loi est déjà tiré, vue depuis l'autre camp. Toutes les cotes `mesuré`
+sont converties ×1,25 vers le repère 720 × 1280.
+
+| Bloc | Valeur | Source |
+| --- | --- | --- |
+| Corps | rayon 41 px, `#574a84` (pipette), contour `#181008` 5 px, PV en crème | mesuré |
+| Traînée | **fuseau cramoisi** derrière la bille indigo — `#a32b4a` au cœur, `#df8692` sur les bords. Son seul ton chaud, rendu par le ruban de pointe d'arme | mesuré |
+| Déplacement | **540 px/s**, virage 1,85 rad/s. Mesuré 432 px/s sur la vidéo 576 et **gardé tel quel**, contrairement aux deux autres invités : au banc il fait 15 victoires sur 30 à 540 contre 16 à 470 — sa vitesse n'est pas ce qui le rend fort | mesuré |
+| **Arme** | *Lance de dragon* — **portée 164 px, la plus longue du jeu** (centre → pointe = 131 px vidéo). Talon qui dépasse de **52 px derrière le pivot**, longueur totale 216 px | mesuré |
+| Rendu de la lance | une seule carte de **54 × 12 à `scale: 4`**, soit exactement la résolution du sprite d'origine (marche d'escalier de 3,2 px vidéo = 4 px logiques). `handle.length: -52` et `handle.width: 0` : rien n'est tracé à la main, le blit démarre en arrière de la bille | mesuré |
+| Hitbox | de 0,32 à 1 de la portée (la lame commence à 52 px du centre), rayon 12 px | déduit du sprite |
+| **Corps à corps** | la stat « Damage » du HUD, **+2 à chaque touche portée** : 10 → 12 → 14 → 16 → 18 → 20 sur la vidéo, avec des chutes de PV de l'Outlaw exactement égales (100 → 90 → 78 → 64 → 48 → 30). Six touches ont suffi | mesuré |
+| Cadence | **6 s entre deux touches**, de loin le verrou le plus long du roster. C'est lui qui paie des dégâts de 10 à 14 là où le reste du plateau frappe pour 3 à 6. Balayage : 1,3 s → 30 victoires sur 30 ; 3,0 s → 29 ; 4,5 s → 26 ; 6,0 s → 15 | calé |
+| Plafond de pile | 14. La vidéo n'en montre aucun — elle s'arrête à 20 parce que le duel s'arrête. À 24 le Dragoon gagnait encore 24 duels sur 30 malgré le verrou de 6 s, parce qu'un duel qui dure le fait finir à 24 PV par coup | calé |
+| Pouvoir | *Furie du lancier* — **passif**. Le Dragoon n'a aucun pouvoir actif dans la vidéo : sa seule ligne de stat est « Damage », et elle ne bouge qu'aux touches | mesuré |
+| **Ultime** | *Bond* (`JUMP`). Jauge pleine en ~10 s (+0,10 de remplissage par seconde), marches de ~8 % à chaque touche | mesuré |
+| Déroulé du Bond | jauge vidée → **0,45 s d'élan** au sol → **1,5 s hors de l'arène** → chute. Chronométré deux fois : 10,60 / 11,02 / 12,53 s, puis 19,03 / 19,50 / 21,00 s | mesuré |
+| Pendant le vol | le Dragoon **n'est plus dans l'arène** : ni touché, ni touchant, ni dessiné. Un disque gris suit l'adversaire, enfle jusqu'à 2,5 × le rayon au sommet du bond puis se resserre à 1,35 × — c'est le resserrement qui annonce la chute | mesuré |
+| Impact | il retombe **sur le marqueur**, frappe dans un rayon de 110 px pour les dégâts courants de la lance, recul 520. L'arène blanchit d'un coup, une onde grise part jusqu'à 225 px en 0,35 s | mesuré |
+| Comptabilité de l'impact | la chute compte comme une touche : sur la vidéo l'Outlaw passe de 100 à 90 PV alors que le HUD affiche « Damage: 10.00 », et la stat monte ensuite à 12 | mesuré |
+| Projectile | aucun — tout passe par la lance et le Bond | mesuré |
+| HUD | `Damage: 10` | mesuré |
+
+**Le Dragoon tue au métronome, et c'est assumé.** Verrou fixe de 6 s et plafond
+à 14 donnent huit touches à 10, 12, 14, 14… soit 106 PV en environ 43 s.
+Plusieurs de ses duels se terminent donc à **43,2 s exactement**, quel que soit
+l'adversaire : la question n'est pas s'il gagne, mais si l'autre tue avant. Des
+cadences plus courtes avec moins de montée ont été essayées (4,0 s avec plafond
+10, 3,0 s/10, 4,5 s/12, 5,0 s/12) : toutes donnent un écart *moins* régulier.
+
+Le Bond est le seul pouvoir du jeu qui **retire son porteur du plateau**. Côté
+moteur c'est `Fighter.offstage` : générique comme `invulnerable`, il ne dit pas
+*pourquoi* le combattant est parti. Toute boucle qui teste `f.alive` pour
+décider de le *voir* doit tester `f.onStage` — sinon il reste un ruban, une
+nappe de sol ou une hitbox au dernier point connu.
+
+---
+
 ## Équilibrage du roster
 
-Vérifié par simulation sans rendu sur les **55 affrontements** possibles
-(10 × 10 avec miroirs), 3 seeds chacun :
+Vérifié par simulation sans rendu sur les **66 affrontements** possibles
+(11 × 11 avec miroirs), 3 seeds chacun :
 
 - durée : **17 à 72 s**, moyenne **38 s** — soit exactement la durée de la vidéo
-  de référence des deux invités ; les profils défensifs allongent la partie
+  de référence du Hors-la-loi ; les profils défensifs allongent la partie
   (miroir Lumière ~78 s) ;
 - **mort subite** : au-delà de 55 s, tous les dégâts sont multipliés par
   `1 + (t − 55) / 18` (plafond ×4). Aucun duel ne peut s'éterniser, quels que
-  soient les deux combattants choisis — aucun des 55 affrontements n'atteint la
+  soient les deux combattants choisis — aucun des 66 affrontements n'atteint la
   limite de simulation ;
-- répartition des victoires sur les **27 duels hors miroir** de chaque
-  combattant : Lumière 18, Hors-la-loi 15, Ombre 14, Glace 14, Feu 14, Eau 12,
-  Foudre 12, Vent 12, Plante 12, Bretteur 12. Neuf combattants sur dix tiennent
-  dans trois points ;
-- **le seul écart est la Lumière**, à 18. Elle bat les deux invités 6-0 : son
-  Égide grandit quand elle **encaisse**, et les deux nouveaux frappent souvent
-  pour peu — 0,60 et 0,64 coup/s, 3 à 6 PV, le profil exact que le bouclier
-  absorbe. Aucune valeur de la Lumière n'a été touchée : ses 36 affrontements
-  d'origine sont **identiques au fichier près** ;
+- répartition des victoires sur les **30 duels hors miroir** de chaque
+  combattant : Lumière 21, Hors-la-loi 17, Glace 16, Ombre 15, **Dragoon 15**,
+  Feu 14, Foudre 14, Plante 14, Bretteur 14, Eau 13, Vent 12. Neuf combattants
+  sur onze tiennent dans quatre points ;
+- **l'arrivée du Dragoon n'a rien déplacé.** Il est ajouté *en queue* de
+  `ROSTER`, donc les 45 affrontements déjà mesurés gardent leurs indices, leurs
+  camps A/B et leurs seeds : le diff de `tools/matrix-reference.txt` ne contient
+  **que des ajouts**, les 45 lignes historiques sont identiques au caractère
+  près ;
+- **le premier écart est la Lumière**, à 21. Elle bat les trois invités 9-0 :
+  son Égide grandit quand elle **encaisse**, et les trois frappent rarement pour
+  beaucoup — le profil exact que le bouclier absorbe. Aucune valeur de la
+  Lumière n'a été touchée : ses 36 affrontements d'origine sont **identiques au
+  fichier près** ;
+- **le second est le Vent**, à 12. Il était déjà au plancher de la bande
+  (12 sur 27) et perd 3-0 contre le Dragoon, ce qui le fait passer juste
+  dessous. Aucune valeur du Vent n'a bougé non plus ;
 - garde-fou du Hors-la-loi : `tools/probe.mjs outlaw` mesure **0,60 coup/s**
   contre les 0,65 relevés sur la vidéo, et sa stat `Damage` finit autour de 5,0
   contre 5,50 mesurés.

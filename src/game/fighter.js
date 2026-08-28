@@ -79,6 +79,15 @@ export class Fighter {
     this.shield = 0;
     this.shieldMax = 0;
 
+    /**
+     * Temps restant **hors du plateau**. Un combattant qui saute quitte
+     * l'arène : il ne bouge plus, ne touche plus, n'est plus touché et n'est
+     * plus dessiné, mais il reste vivant et son HUD continue de vivre.
+     * Générique comme `invulnerable` : le moteur ne sait pas *pourquoi* il est
+     * parti, seul son module de pouvoirs le sait (le Bond du Dragoon).
+     */
+    this.offstage = 0;
+
     this.trailTimer = 0;
     this.boost = 0; // durée restante d'un bonus de vitesse
     this.boostFactor = 1;
@@ -99,6 +108,11 @@ export class Fighter {
 
   get alive() {
     return this.hp > 0;
+  }
+
+  /** Vivant **et** présent dans l'arène : la condition de tout ce qui le voit. */
+  get onStage() {
+    return this.hp > 0 && this.offstage <= 0;
   }
 
   /** Facteur de vitesse courant (1 = nominal), ralentissements inclus. */
@@ -177,6 +191,15 @@ export class Fighter {
    * @param {number} now temps de duel
    */
   step(dt, now) {
+    // hors du plateau : plus de déplacement, plus de rebond, plus de rotation
+    // d'arme — le combattant est en l'air, il n'existe plus pour l'arène
+    if (this.offstage > 0) {
+      this.offstage = Math.max(0, this.offstage - dt);
+      this.invulnerable = Math.max(0, this.invulnerable - dt);
+      this.wall = null;
+      return;
+    }
+
     this.meleeCd = Math.max(0, this.meleeCd - dt);
     this.flash = Math.max(0, this.flash - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);

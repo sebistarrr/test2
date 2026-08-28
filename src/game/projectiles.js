@@ -87,7 +87,8 @@ export class Projectiles {
 
       // cible
       for (const f of fighters) {
-        if (f === p.owner || !f.alive) continue;
+        // `onStage` : un combattant en l'air laisse passer les projectiles
+        if (f === p.owner || !f.onStage) continue;
         if (dist(p.x, p.y, f.x, f.y) <= f.radius + r) {
           // les dégâts peuvent dépendre des stats évolutives du tireur, comme
           // ceux de l'arme : la balle du Hors-la-loi porte la même stat

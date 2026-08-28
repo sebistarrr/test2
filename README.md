@@ -1,4 +1,4 @@
-# Elemental Duel — dix combattants, un duel
+# Elemental Duel — onze combattants, un duel
 
 Clone haute fidélité des duels d'éléments de la chaîne de référence
 (*Elemental Armory League*), en **HTML + CSS + JavaScript** avec un rendu
@@ -18,18 +18,21 @@ GitHub Pages.
 | **Vent** | Shuriken de bourrasque (losange évidé, sans manche) | le plus rapide, rafales tournoyantes autour de lui | Salve de tempête |
 | **Plante** | Liane fouettante (crochet en escalier de pixels) | bulbes qui blessent l'un et **soignent** l'autre | Tempête de fleurs (nuée de cubes roses) |
 
-**Plus deux invités**, repris du duel *Outlaw vs Bladesman* et portés sur ce
-moteur. Ils ne sont pas des éléments : ce sont deux personnages, avec leurs
-couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
+**Plus trois invités**, repris de la chaîne « ballthingsim » et portés sur ce
+moteur : le Hors-la-loi et le Bretteur du duel *Outlaw vs Bladesman*, et le
+Dragoon de *Dragoon vs Outlaw* — la même vidéo que le Hors-la-loi, vue depuis
+l'autre camp. Ils ne sont pas des éléments : ce sont des personnages, avec
+leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
 | **Hors-la-loi** | Revolver | **canon asservi à la cible** — il ne tourne pas ; barillet de 6 et dégâts qui montent de 0,10 par balle au but | Plein soleil / HIGH NOON (cadence doublée, recul ×8) |
 | **Bretteur** | Sabre dentelé | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
+| **Dragoon** | Lance de dragon (**164 px, la plus longue portée du jeu**) | dégâts qui montent de **+2 par touche portée**, mais un seul coup toutes les 6 s | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 
 ![Lumière contre Feu](docs/capture-duel.png)
 
-<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png), [la brûlure du Feu](docs/capture-feu.png), [l'écran de sélection](docs/capture-selection.png), [le Hors-la-loi sous HIGH NOON](docs/capture-horsloi.png), [la ruée du Bretteur](docs/capture-bretteur.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
+<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png), [la brûlure du Feu](docs/capture-feu.png), [l'écran de sélection](docs/capture-selection.png), [le Hors-la-loi sous HIGH NOON](docs/capture-horsloi.png), [la ruée du Bretteur](docs/capture-bretteur.png), [le Bond du Dragoon](docs/capture-dragoon.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
 
 ---
 
@@ -147,7 +150,7 @@ src/
     ├── select.js          écran de sélection (lit les fiches)
     └── result.js          écran de fin
 tools/                     outillage de vérification (non chargé par la page)
-├── matrix.mjs             55 affrontements x 3 seeds, sans rendu
+├── matrix.mjs             66 affrontements x 3 seeds, sans rendu
 ├── matrix-reference.txt   sortie de référence, à differ après tout changement
 ├── probe.mjs              durée, touches et coups/s d'un combattant sur tout
 │                          le roster — garde-fou chiffré du Hors-la-loi
@@ -224,7 +227,7 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 | Brûlure du Feu                | teinte du corps **et** anneau orange sur la victime |
 | Borne de la Foudre            | bobine de 34 px, halo bleu permanent sur le porteur |
 
-Les deux invités viennent d'une **autre vidéo, en 576 × 1024** : toute mesure
+Les trois invités viennent d'**autres vidéos, en 576 × 1024** : toute mesure
 prise dessus se convertit en **×1,25** vers ce repère 720 × 1280.
 
 | Élément mesuré                | Valeur relevée (convertie)        |
@@ -238,10 +241,14 @@ prise dessus se convertit en **×1,25** vers ce repère 720 × 1280.
 | HIGH NOON                     | horloge de 7,0 s, effet 6,2 s, cadence doublée |
 | BLADE RUSH                    | horloge de 9 s + 6 % par coup, ruée de 1,5 s, verrou à 115 ms |
 | Précision du Hors-la-loi      | 25 coups au but en 38,6 s = **0,65 coup/s** |
+| Boule Dragoon                 | `#574a84`, traînée cramoisie `#a32b4a`       |
+| Lance du Dragoon              | centre → pointe 164 px, talon 52 px **derrière** le pivot, total 216 px |
+| Progression « Damage » (Dragoon) | 10,00 → 20,00 par pas de **2,00**, à la touche portée |
+| Bond du Dragoon               | jauge pleine en 10 s, 0,45 s d'élan, **1,5 s hors de l'arène**, impact de rayon 110 px |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les
-**55 affrontements possibles** (3 seeds chacun), un duel dure **17 à 72 s**
-(38 s en moyenne, pile la durée de la vidéo de référence des deux invités),
+**66 affrontements possibles** (3 seeds chacun), un duel dure **17 à 72 s**
+(38 s en moyenne, pile la durée de la vidéo de référence du Hors-la-loi),
 la Glace finit à 12-13 piles, l'Ombre atteint son plancher de 0,7 s et le
 Hors-la-loi termine autour de 5,0 de dégâts, comme sur sa vidéo. Une
 **mort subite** amplifie les dégâts au-delà de 55 s pour qu'aucun duel ne
@@ -249,7 +256,7 @@ s'éternise. Détail de l'équilibrage dans [`docs/FICHES.md`](docs/FICHES.md).
 
 ---
 
-## Ajouter un élément
+## Ajouter un combattant
 
 1. **La fiche** dans `src/data/elements.js` (copie `SHADOW` et adapte).
    Tout y passe : couleurs, rayon, vitesse, arme, dégâts, pouvoir, ultime,

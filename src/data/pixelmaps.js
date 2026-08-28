@@ -804,6 +804,75 @@ export const ICON_SABRE = deepFreeze({
   ],
 });
 
+/* ------------------------------------------------------------------
+ * DRAGOON — la lance, arme la plus longue du jeu
+ *
+ * Relevé image par image sur la première seconde de « Dragoon vs Outlaw »
+ * (576 × 1024, donc ×1,25 vers le repère 720 × 1280) :
+ *   • centre de la bille → pointe          = 131 px vidéo → 164 px logiques
+ *   • talon derrière le centre             =  42 px vidéo →  52 px logiques
+ *   • longueur totale                      = 173 px vidéo → 216 px logiques
+ *   • marche d'escalier du pixel-art source ≈ 3,2 px vidéo → 4 px logiques
+ * D'où une carte de 54 × 12 rendue à `scale: 4` : 216 × 48 px logiques, soit
+ * exactement la résolution du sprite d'origine.
+ *
+ * Le talon dépasse **derrière** le pivot : la fiche pose donc
+ * `handle.length: -52` (et `handle.width: 0`, rien à tracer) pour que le blit
+ * démarre en arrière de la bille. Toute la lance tient dans cette seule carte
+ * — comme le revolver et le sabre des deux autres invités.
+ * ------------------------------------------------------------------ */
+export const DRAGOON_LANCE = deepFreeze({
+  w: 54,
+  h: 12,
+  palette: {
+    K: '#06040a', // contour noir (arène blanche : le noir mesuré suffit)
+    l: '#b9a9e0', // reflet du tranchant, arête haute
+    p: '#7a5ea4', // corps de lame
+    s: '#4a3468', // lame à l'ombre
+    m: '#2f2636', // manche
+    d: '#17111f', // manche à l'ombre
+  },
+  rows: [
+    '..................KKK.................................',
+    '.................KlllK................................',
+    '................KlppplKKKKKKKKK.......................',
+    '...KKKKKKKKKKKKKlppppplllllllllKKKKKKKKKKKK...........',
+    '.KKmmmmmmmmmmmmmpppppppppppppppllllllllllllKKKKKKKK...',
+    'KmmdddddddddddddpppppppppppppppppppppppppppllllllllKKK',
+    'KdddddddddddddddpppppppppppppppppppppppppppssssssssKKK',
+    '.KKdddddddddddddpppppppppppppppssssssssssssKKKKKKKK...',
+    '...KKKKKKKKKKKKKspppppsssssssssKKKKKKKKKKKK...........',
+    '................KspppsKKKKKKKKK.......................',
+    '.................KsssK................................',
+    '..................KKK.................................',
+  ],
+});
+
+/** Icône du Dragoon : la pointe de lance, seule chose que l'adversaire voit venir. */
+export const ICON_LANCE = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: { K: '#06040a', l: '#b9a9e0', p: '#7a5ea4', s: '#4a3468', m: '#2f2636' },
+  rows: [
+    '.............KK.',
+    '............KlK.',
+    '...........KlpK.',
+    '..........KlppK.',
+    '.........KlppsK.',
+    '........KlppsKK.',
+    '.......KlppsKK..',
+    '......KlppsKK...',
+    '.....KlppsKK....',
+    '....KKlpsKK.....',
+    '...KKKlsKK......',
+    '..KmmKKKK.......',
+    '.KmmmK..........',
+    'KmmmK...........',
+    'KmmK............',
+    'KKK.............',
+  ],
+});
+
 /** Table des sprites : clé → description. Les clés servent aux overrides PNG. */
 export const PIXEL_MAPS = deepFreeze({
   // Ombre & Glace
@@ -840,4 +909,7 @@ export const PIXEL_MAPS = deepFreeze({
   bladesmanSabre: BLADESMAN_SABRE,
   iconRevolver: ICON_REVOLVER,
   iconSabre: ICON_SABRE,
+  // Dragoon
+  dragoonLance: DRAGOON_LANCE,
+  iconLance: ICON_LANCE,
 });

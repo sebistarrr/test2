@@ -1642,6 +1642,189 @@ function formatHalf(v) {
   return Number.isInteger(r) ? `${r}` : r.toFixed(1);
 }
 
+/* ==========================================================================
+ *  DRAGOON — Lancier  (invité)
+ *
+ *  Troisième combattant venu de la chaîne « ballthingsim », relevé sur
+ *  « Dragoon vs Outlaw » (576 × 1024, 33,6 s) — la vidéo dont le Hors-la-loi
+ *  est déjà tiré, vue depuis l'autre camp. Toutes les cotes `mesuré`
+ *  ci-dessous sortent de cette vidéo, converties ×1,25 vers le repère
+ *  720 × 1280.
+ * ========================================================================== */
+const DRAGOON = {
+  id: 'dragoon',
+  name: 'DRAGOON',
+  nameRef: 'DRAGOON',
+  tagline: 'Lancier — frappe de plus en plus fort, et tombe du ciel',
+  icon: 'iconLance',
+
+  look: {
+    radius: 41, // mesuré : bille de rayon 33 sur la vidéo 576 → ×1,25 = 41
+    body: '#574a84', // pipette : (87,74,132), médiane érodée titre + bille + jauge
+    bodyHit: '#e4e4e6', // mesuré : le disque touché blanchit, comme les deux autres invités
+    outline: '#181008',
+    outlineWidth: 5,
+    /** Mesuré : PV en blanc cerné de noir. Ce moteur ne cerne pas le chiffre ;
+     *  sur l'indigo sombre, seul un ton clair reste lisible. */
+    hpColor: '#f5f2ea',
+    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
+    hpOffsetY: 12,
+    aura: {
+      color: 'rgba(87,74,132,0.5)',
+      radius: 1.66,
+      pulse: 2.2,
+      showWhen: 'ultimate-ready', // halo indigo quand le Bond est chargé
+    },
+    /**
+     * La traînée du Dragoon est la signature la plus visible de sa vidéo : un
+     * **fuseau cramoisi** derrière la bille indigo, mesuré `#a32b4a` au cœur et
+     * `#df8692` sur les bords. C'est le seul rouge de sa palette, et il est
+     * rendu ici par le ruban de pointe d'arme.
+     */
+    flair: {
+      ribbon: { color: '#c2385a', width: 18, alpha: 0.55 },
+      motes: { rate: 10, size: 9, drift: 24, rise: -18, colors: ['#574a84', '#a32b4a', '#cfc2f0'] },
+      impact: ['#cfc2f0', '#ffffff', '#a32b4a'],
+      shape: 'spark',
+      castFlash: 'rgba(207,194,240,0.6)',
+    },
+    trail: { color: 'rgba(163,43,74,0.30)', every: 0.04, life: 0.32 },
+    accent: '#c2385a',
+  },
+
+  /** Mesuré 432 px/s (médiane de 37 segments rectilignes, bille isolée par
+   *  érosion pour ne pas suivre la lance) → ×1,25 = 540. **Gardé tel quel**,
+   *  contrairement au Hors-la-loi et au Bretteur qui ont dû être ralentis :
+   *  vérifié au banc, le Dragoon fait 15 victoires sur 30 à 540 px/s contre 16
+   *  à 470 — sa vitesse n'est pas ce qui le rend fort, c'est sa portée et ses
+   *  dégâts. Aucune raison de toucher un `mesuré` qui ne casse rien.
+   *  C'est le combattant le plus rapide du roster après le Bretteur. */
+  movement: { speed: 540, turnRate: 1.85, seek: 0.4, mass: 1 },
+
+  weapon: {
+    name: 'Lance de dragon',
+    /** Mesuré : centre → pointe = 131 px sur la vidéo 576 → ×1,25 = 164.
+     *  **La plus longue portée du roster.** Elle découle du sprite :
+     *  −52 (talon) + 54 cellules × 4 = 164, pour que hitbox et dessin ne
+     *  puissent pas diverger quand on retouche la carte. */
+    reach: 164,
+    spin: SPIN, // mesuré : 327 °/s sur la première seconde, soit le SPIN commun
+    spinDir: 1,
+    /** `width: 0` : rien à tracer, toute la lance tient dans `dragoonLance`.
+     *  `length` est **négatif** parce que le talon dépasse derrière le pivot
+     *  (52 px mesurés) — le blit démarre donc en arrière de la bille, ce que
+     *  ne fait aucune autre arme du roster. */
+    handle: { length: -52, width: 0, color: '#2f2636', dark: '#17111f', outline: '#06040a', gem: null },
+    head: { sprite: 'dragoonLance', scale: 4, anchorY: 0.5 },
+    /** Seule la lame tranche : elle commence à 52 px du centre (fraction 0,32),
+     *  le talon et le manche ne comptent pas. Rayon volontairement fin — une
+     *  arme aussi longue touche sans arrêt avec un gros rayon. */
+    hitbox: { from: 0.32, to: 1, radius: 12 },
+    melee: {
+      /** Mesuré : la stat « Damage » part de 10,00 et monte de 2,00 par touche
+       *  portée — 10 → 12 → 14 → 16 → 18 → 20 sur la vidéo, avec des chutes de
+       *  PV de l'Outlaw exactement égales (100 → 90 → 78 → 64 → 48 → 30).
+       *  Six touches ont suffi. Aucun plafond n'est visible sur 33,6 s. */
+      damage: (f) => Math.max(10, Math.round(f.stacks)),
+      /** Calé, et de loin le verrou le plus long du roster — il est ce qui
+       *  **paie** des dégâts de 10 à 14 là où le reste du plateau frappe pour
+       *  3 à 6. Les touches de la vidéo sont espacées de 1,2 à 1,8 s, mais
+       *  c'est la portée de 164 px qui décide ici. Balayage sur les 30 duels
+       *  du Dragoon : 1,3 s → 30 victoires sur 30 ; 3,0 s → 29 ; 4,5 s → 26 ;
+       *  6,0 s → 16, et c'est là que l'écart devient régulier (1 à 2 victoires
+       *  contre chacun, aucun 3-0 ni 0-3). */
+      cooldown: 6.0,
+      knockback: 300,
+      selfRecoil: 95,
+      /** Mesuré : +2,00 par touche portée. Aucun plafond n'apparaît sur les
+       *  33,6 s de vidéo — la stat s'arrête à 20 parce que le duel s'arrête.
+       *  Le plafond est donc **calé**, et c'est le second levier : à 24 le
+       *  Dragoon gagnait encore 24 duels sur 30 même avec le verrou de 6 s,
+       *  parce qu'un duel qui dure le fait finir à 24 PV par coup. À 14 —
+       *  soit les trois montées de la vidéo, 10 → 12 → 14 — il tombe à 16. */
+      onHit: { stackGain: 2, stackMax: 14 },
+    },
+  },
+
+  /**
+   * Le Dragoon n'a **aucun pouvoir actif** dans la vidéo : sa seule ligne de
+   * stat est « Damage », et elle ne bouge qu'aux touches. La montée en dégâts
+   * *est* son pouvoir ; elle est décrite dans `weapon.melee.onHit`.
+   * Ce cooldown n'est jamais consommé (le module n'arme aucune minuterie),
+   * mais la fiche doit en porter un : le moteur le lit à la construction.
+   */
+  ability: {
+    id: 'lancersFury',
+    name: 'Furie du lancier',
+    nameRef: 'Lancer’s Fury',
+    cooldown: Infinity,
+    cooldownStep: 0,
+    cooldownFloor: Infinity,
+  },
+
+  ultimate: {
+    id: 'jump',
+    name: 'Bond',
+    nameRef: 'JUMP',
+    barLabel: 'JUMP',
+    barLabelFr: 'BOND',
+    barFill: '#594984', // pipette : remplissage de la jauge
+    barText: '#ffffff',
+    /** Mesuré : +0,10 de remplissage par seconde, donc jauge pleine en ~10 s. */
+    chargeRate: 10,
+    /** Mesuré : marches de ~8 % à chaque touche portée. */
+    chargeOnHit: 8,
+    /**
+     * Durée totale pendant laquelle la jauge reste vide et le Bond occupe le
+     * Dragoon : 0,45 s d'élan puis 1,5 s hors de l'arène. Chronométré deux
+     * fois : jauge vidée à 10,60 s / décollage 11,02 s / retour 12,53 s, puis
+     * 19,03 / 19,50 / 21,00.
+     */
+    duration: 1.95,
+    windup: 0.45, // mesuré : 0,42 s et 0,47 s entre la vidange et le décollage
+    flight: 1.5, // mesuré : 1,51 s et 1,50 s d'absence
+    /**
+     * Marqueur au sol : un disque gris qui **suit l'adversaire** pendant tout
+     * le vol. Il enfle pendant la montée puis se resserre jusqu'au corps —
+     * c'est ce resserrement qui annonce l'impact (mesuré : ~100 px de rayon à
+     * mi-vol, ~55 px juste avant la chute).
+     */
+    marker: {
+      grow: 2.5, // × rayon de la bille, au sommet du bond
+      land: 1.35, // × rayon de la bille, à l'instant de la chute
+      fill: 'rgba(120,116,124,0.30)',
+      edge: 'rgba(90,86,96,0.55)',
+      edgeWidth: 3,
+    },
+    /**
+     * Chute. Les dégâts sont ceux de la lance au moment de l'impact : sur la
+     * vidéo l'Outlaw passe de 100 à 90 PV alors que le HUD affiche
+     * « Damage: 10.00 », et la stat monte ensuite comme après une touche.
+     */
+    impact: {
+      radius: 110, // mesuré : disque rose de ~106 px
+      knockback: 520,
+      ring: { to: 225, time: 0.35, color: 'rgba(150,146,156,0.8)', width: 6 }, // mesuré
+      flash: 'rgba(255,255,255,0.55)', // l'arène blanchit d'un coup à la chute
+      shake: 14,
+      sparks: 34,
+    },
+  },
+
+  /** Le Dragoon n'a aucun projectile : tout passe par la lance et le Bond. */
+  projectiles: {},
+
+  /** Mesuré : « Damage: 10.00 » à la première image du duel. */
+  progression: { stack: 10, stack2: 0 },
+
+  hud: {
+    stats: [(f) => `Damage: ${formatHalf(f.stacks)}`],
+    statsFr: [(f) => `Dégâts : ${formatHalf(f.stacks)}`],
+    color: '#8c7ec4',
+    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
+  },
+};
+
 export const ELEMENTS = deepFreeze({
   shadow: SHADOW,
   ice: ICE,
@@ -1653,6 +1836,7 @@ export const ELEMENTS = deepFreeze({
   plant: PLANT,
   outlaw: OUTLAW,
   bladesman: BLADESMAN,
+  dragoon: DRAGOON,
 });
 
 /**
@@ -1675,6 +1859,7 @@ export const ROSTER = deepFreeze([
   'plant',
   'outlaw',
   'bladesman',
+  'dragoon',
 ]);
 
 /** @param {string} id */

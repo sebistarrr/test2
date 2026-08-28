@@ -79,6 +79,11 @@ export function createSelectScreen({ root, onStart }) {
     const el = ELEMENTS[id];
     const w = el.weapon;
     const melee = typeof w.melee.damage === 'function' ? 'pile courante' : `${w.melee.damage} PV`;
+    // un pouvoir sans recharge finie est un passif (la Furie du lancier du
+    // Dragoon : elle ne se déclenche pas, elle monte à chaque touche)
+    const pouvoir = Number.isFinite(el.ability.cooldown)
+      ? `${el.ability.name} — recharge ${el.ability.cooldown}s`
+      : `${el.ability.name} — passif`;
     sheetEl.hidden = false;
     sheetEl.style.setProperty('--accent', el.look.body);
     sheetEl.innerHTML = `
@@ -88,7 +93,7 @@ export function createSelectScreen({ root, onStart }) {
         <dt>Vitesse</dt><dd>${el.movement.speed} px/s — virage ${el.movement.turnRate} rad/s</dd>
         <dt>Arme</dt><dd>${w.name} — portée ${w.reach} px, ${spinLine(w)}</dd>
         <dt>Corps à corps</dt><dd>${melee} toutes les ${w.melee.cooldown}s</dd>
-        <dt>Pouvoir</dt><dd>${el.ability.name} — recharge ${el.ability.cooldown}s</dd>
+        <dt>Pouvoir</dt><dd>${pouvoir}</dd>
         <dt>Ultime</dt><dd>${el.ultimate.name} — ${el.ultimate.duration}s</dd>
         <dt>Projectile</dt><dd>${projectileLine(el)}</dd>
       </dl>`;

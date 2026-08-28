@@ -161,7 +161,9 @@ export class Flair {
     this.flash = Math.max(0, this.flash - dt);
 
     for (const f of fighters) {
-      if (!f.alive) continue;
+      // `onStage` partout dans la mise en scène : un combattant en l'air (le
+      // Bond du Dragoon) n'a ni ruban, ni nappe, ni sillage, ni poussière.
+      if (!f.onStage) continue;
       this._trackRibbon(f);
       if (live) this._emitMotes(f, dt);
     }
@@ -200,7 +202,7 @@ export class Flair {
    */
   _walls(dt, fighters) {
     for (const f of fighters) {
-      if (!f.alive || !f.wall) continue;
+      if (!f.onStage || !f.wall) continue;
       this.ripples.push({
         side: f.wall,
         at: f.wall === 'left' || f.wall === 'right' ? f.y : f.x,
@@ -254,7 +256,7 @@ export class Flair {
   drawFloor(ctx, fighters) {
     ctx.save();
     for (const f of fighters) {
-      if (!f.alive) continue;
+      if (!f.onStage) continue;
       const r = f.radius * 3.6;
       const g = ctx.createRadialGradient(f.x, f.y, f.radius * 0.4, f.x, f.y, r);
       g.addColorStop(0, f.el.look.aura.color);
@@ -277,7 +279,7 @@ export class Flair {
   drawWake(ctx, fighters, now) {
     ctx.save();
     for (const f of fighters) {
-      if (!f.alive) continue;
+      if (!f.onStage) continue;
       // le sillage n'apparaît qu'à vitesse **anormale** : projeté par un coup,
       // ou lancé par un bonus. En croisière, rien — sinon c'est du bruit.
       const speed = Math.hypot(f.impulseX, f.impulseY) + f.currentSpeed(now);
@@ -371,7 +373,7 @@ export class Flair {
   /** Rubans d'arme + poussière : sous les combattants. */
   drawUnder(ctx, fighters) {
     for (const f of fighters) {
-      if (f.alive) this._drawRibbon(ctx, f);
+      if (f.onStage) this._drawRibbon(ctx, f);
     }
     for (const m of this.motes) {
       if (!m.alive) continue;
@@ -450,7 +452,7 @@ export class Flair {
   /** État critique : au-dessus des combattants, sous les nombres. */
   drawDanger(ctx, fighters, now) {
     for (const f of fighters) {
-      if (!f.alive || f.hp > 25) continue;
+      if (!f.onStage || f.hp > 25) continue;
       const urgency = 1 - f.hp / 25;
       const beat = 0.5 + 0.5 * Math.sin(now * (7 + urgency * 9));
       ctx.save();

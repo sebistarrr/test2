@@ -381,6 +381,7 @@ export class Match {
     // il se présente dans ses propres couleurs : plus de brûlure, plus de givre
     w.dots.length = 0;
     w.slows.length = 0;
+    w.offstage = 0; // un vainqueur en plein bond redescend pour la parade
     w.tint = null;
     w.flash = 0;
     this.fx.ring(w.x, w.y, w.radius, MATCH.victory.ringTo, 0.55, w.el.look.accent, 14, true);
@@ -514,6 +515,8 @@ export class Match {
     if (this.phase === 'victory') this.drawVictoryGlow(ctx);
     for (const f of this.fighters) {
       if (!f.alive && !showDead) continue;
+      // en l'air : il a quitté l'arène, on ne dessine que son marqueur au sol
+      if (f.offstage > 0) continue;
       if (f === this.winner && this.phase === 'victory') this.drawWinner(ctx);
       else f.draw(ctx, this.time);
     }

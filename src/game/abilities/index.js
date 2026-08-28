@@ -25,6 +25,7 @@ import { waterAbilities } from './water.js';
 import { plantAbilities } from './plant.js';
 import { outlawAbilities } from './outlaw.js';
 import { bladesmanAbilities } from './bladesman.js';
+import { dragoonAbilities } from './dragoon.js';
 
 const REGISTRY = {
   shadow: shadowAbilities,
@@ -37,6 +38,7 @@ const REGISTRY = {
   plant: plantAbilities,
   outlaw: outlawAbilities,
   bladesman: bladesmanAbilities,
+  dragoon: dragoonAbilities,
 };
 
 /** Module neutre : sert de repli pour un élément sans pouvoirs dédiés. */
