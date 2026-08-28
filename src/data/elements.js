@@ -1710,7 +1710,14 @@ const DRAGOON = {
      * rendu ici par le ruban de pointe d'arme.
      */
     flair: {
+      /** Les boucles roses qui entourent la lance : c'est la **pointe d'arme**
+       *  qui les trace en tournant. Mesuré `#c2385a`. */
       ribbon: { color: '#c2385a', width: 18, alpha: 0.55 },
+      /** Le fuseau **derrière la bille**, l'autre moitié de sa signature, et
+       *  ce que le premier portage avait oublié : le ruban ne suit que la
+       *  pointe d'arme. Seul combattant du roster à en porter un. Mesuré
+       *  `#a32b4a` au cœur, large au ras du corps et effilé vers l'arrière. */
+      smear: { color: '#a32b4a', width: 46, alpha: 0.42 },
       motes: { rate: 10, size: 9, drift: 24, rise: -18, colors: ['#574a84', '#a32b4a', '#cfc2f0'] },
       impact: ['#cfc2f0', '#ffffff', '#a32b4a'],
       shape: 'spark',
@@ -1741,10 +1748,11 @@ const DRAGOON = {
     spinDir: 1,
     /** `width: 0` : rien à tracer, toute la lance tient dans `dragoonLance`.
      *  `length` est **négatif** parce que le talon dépasse derrière le pivot
-     *  (52 px mesurés) — le blit démarre donc en arrière de la bille, ce que
-     *  ne fait aucune autre arme du roster. */
-    handle: { length: -52, width: 0, color: '#2f2636', dark: '#17111f', outline: '#06040a', gem: null },
-    head: { sprite: 'dragoonLance', scale: 4, anchorY: 0.5 },
+     *  (**42 px** remesurés en aplatissant la lance, arrondis à 44 pour tomber
+     *  sur la grille du sprite) — le blit démarre donc en arrière de la bille,
+     *  ce que ne fait aucune autre arme du roster. */
+    handle: { length: -44, width: 0, color: '#2f2636', dark: '#17111f', outline: '#0d0a14', gem: null },
+    head: { sprite: 'dragoonLance', scale: 4, anchorY: 0.5 }, // −44 + 52 × 4 = 164
     /** Seule la lame tranche : elle commence à 52 px du centre (fraction 0,32),
      *  le talon et le manche ne comptent pas. Rayon volontairement fin — une
      *  arme aussi longue touche sans arrêt avec un gros rayon. */
@@ -1755,22 +1763,36 @@ const DRAGOON = {
        *  PV de l'Outlaw exactement égales (100 → 90 → 78 → 64 → 48 → 30).
        *  Six touches ont suffi. Aucun plafond n'est visible sur 33,6 s. */
       damage: (f) => Math.max(10, Math.round(f.stacks)),
-      /** Calé, et de loin le verrou le plus long du roster — il est ce qui
-       *  **paie** des dégâts de 10 à 14 là où le reste du plateau frappe pour
-       *  3 à 6. Les touches de la vidéo sont espacées de 1,2 à 1,8 s, mais
-       *  c'est la portée de 164 px qui décide ici. Balayage sur les 30 duels
-       *  du Dragoon : 1,3 s → 30 victoires sur 30 ; 3,0 s → 29 ; 4,5 s → 26 ;
-       *  6,0 s → 16, et c'est là que l'écart devient régulier (1 à 2 victoires
-       *  contre chacun, aucun 3-0 ni 0-3). */
-      cooldown: 6.0,
+      /**
+       * **Calé, et c'est le seul écart au relevé qui subsiste.** Sur la vidéo
+       * les touches de lance tombent à 13,63 / 14,77 / 16,37 s : le verrou réel
+       * est donc d'environ **1,1 s**, comme le reste du roster. Mais à 1 s, la
+       * lance de 164 px accroche ici **0,34 fois par seconde** là où la vidéo
+       * en compte 0,181 — deux fois trop.
+       *
+       * Le verrou est ce qui restitue les deux chiffres que la vidéo *montre* :
+       * à 6 s il donne 0,195 coup/s et 2,55 PV/s, contre 0,181 et 2,54 relevés.
+       * Ce que la vidéo montre est donc exact ; seul le mécanisme diffère — un
+       * verrou long ici, des coups manqués là-bas. Même arbitrage que pour les
+       * vitesses des deux autres invités : « recaler l'équilibrage après tout
+       * changement de moteur, jamais reporter les constantes telles quelles ».
+       */
+      cooldown: 6,
       knockback: 300,
       selfRecoil: 95,
-      /** Mesuré : +2,00 par touche portée. Aucun plafond n'apparaît sur les
-       *  33,6 s de vidéo — la stat s'arrête à 20 parce que le duel s'arrête.
-       *  Le plafond est donc **calé**, et c'est le second levier : à 24 le
-       *  Dragoon gagnait encore 24 duels sur 30 même avec le verrou de 6 s,
-       *  parce qu'un duel qui dure le fait finir à 24 PV par coup. À 14 —
-       *  soit les trois montées de la vidéo, 10 → 12 → 14 — il tombe à 16. */
+      /**
+       * Mesuré : **+2,00 par touche portée**, relevé au PV près. La stat passe
+       * 10 → 12 → 14 → 16 → 18 → 20 aux instants 12,53 / 13,63 / 14,77 /
+       * 16,37 / 21,00 s, et l'Outlaw descend de 100 à 30 PV : 10+12+14+16+18
+       * = 70, exactement les cinq touches placées.
+       *
+       * Le plafond, lui, est **déduit** : la vidéo n'en montre aucun, mais elle
+       * s'arrête à 20 parce que le Dragoon meurt, pas parce que la stat bute —
+       * et *tous* les combattants à stat croissante du roster en ont un
+       * (Araignée 14, Serpent 14, Hors-la-loi 8, Bretteur 3). Sans plafond la
+       * montée est quadratique en durée de duel. À 16, le budget de dégâts
+       * tombe pile sur celui de la vidéo : 2,55 PV/s contre 2,54.
+       */
       onHit: { stackGain: 2, stackMax: 14 },
     },
   },

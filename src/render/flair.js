@@ -30,6 +30,8 @@ const MAX_MOTES = 260;
 const MAX_POPS = 24;
 /** Longueur du ruban d'arme, en pas de simulation (120 Hz). */
 const RIBBON = 26;
+/** Longueur du fuseau de vitesse traîné derrière le corps, même unité. */
+const SMEAR = 30;
 
 export class Flair {
   /** @param {{range:Function, spread:Function, pick:Function, chance:Function}} rng viewRng */
@@ -45,6 +47,14 @@ export class Flair {
     this.popCursor = 0;
     /** @type {Map<any, {pts:number[], head:number, n:number}>} */
     this.ribbons = new Map();
+    /**
+     * Fuseau de vitesse : les positions passées du **corps**, pas de la pointe
+     * d'arme. C'est la traînée cramoisie du Dragoon, mesurée sur sa vidéo —
+     * une écharpe large collée derrière la bille, qui s'affine et s'efface.
+     * Opt-in par `look.flair.smear` : un combattant sans ce bloc n'en a pas.
+     * @type {Map<any, {pts:number[], head:number, n:number}>}
+     */
+    this.smears = new Map();
     /** Éclair blanc plein cadre, très bref (incantation d'ultime, K.O.). */
     this.flash = 0;
     this.flashMax = 1;
@@ -57,6 +67,7 @@ export class Flair {
   attach(fighters) {
     for (const f of fighters) {
       this.ribbons.set(f, { pts: new Float32Array(RIBBON * 2), head: 0, n: 0 });
+      this.smears.set(f, { pts: new Float32Array(SMEAR * 2), head: 0, n: 0 });
       this.moteDebt.set(f, 0);
     }
   }
@@ -165,6 +176,7 @@ export class Flair {
       // Bond du Dragoon) n'a ni ruban, ni nappe, ni sillage, ni poussière.
       if (!f.onStage) continue;
       this._trackRibbon(f);
+      this._trackSmear(f);
       if (live) this._emitMotes(f, dt);
     }
     if (live) this._walls(dt, fighters);
@@ -317,6 +329,44 @@ export class Flair {
     if (r.n < RIBBON) r.n++;
   }
 
+  /** Fuseau de vitesse : on enregistre la position du corps, pas de l'arme. */
+  _trackSmear(f) {
+    if (!f.el.look.flair?.smear) return;
+    const r = this.smears.get(f);
+    if (!r) return;
+    r.pts[r.head * 2] = f.x;
+    r.pts[r.head * 2 + 1] = f.y;
+    r.head = (r.head + 1) % SMEAR;
+    if (r.n < SMEAR) r.n++;
+  }
+
+  /**
+   * Fuseau de vitesse, dessiné **sous** le combattant : large et opaque au ras
+   * du corps, effilé et transparent vers l'arrière. C'est une écharpe, pas un
+   * trait — d'où le trapèze plutôt qu'un `lineTo`.
+   */
+  _drawSmear(ctx, f) {
+    const spec = f.el.look.flair?.smear;
+    const r = this.smears.get(f);
+    if (!spec || !r || r.n < 4) return;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = spec.color;
+    for (let i = 1; i < r.n; i++) {
+      const a = (r.head - r.n + i - 1 + SMEAR * 2) % SMEAR;
+      const b = (r.head - r.n + i + SMEAR * 2) % SMEAR;
+      const k = i / r.n;
+      ctx.globalAlpha = spec.alpha * k * k;
+      ctx.lineWidth = spec.width * k;
+      ctx.beginPath();
+      ctx.moveTo(r.pts[a * 2], r.pts[a * 2 + 1]);
+      ctx.lineTo(r.pts[b * 2], r.pts[b * 2 + 1]);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
   /** Poussière d'ambiance : le combattant n'est jamais inerte. */
   _emitMotes(f, dt) {
     const spec = f.el.look.flair?.motes;
@@ -373,7 +423,10 @@ export class Flair {
   /** Rubans d'arme + poussière : sous les combattants. */
   drawUnder(ctx, fighters) {
     for (const f of fighters) {
-      if (f.onStage) this._drawRibbon(ctx, f);
+      if (!f.onStage) continue;
+      // le fuseau d'abord : il passe sous le ruban d'arme
+      this._drawSmear(ctx, f);
+      this._drawRibbon(ctx, f);
     }
     for (const m of this.motes) {
       if (!m.alive) continue;
@@ -501,6 +554,7 @@ export class Flair {
   }
 
   clear() {
+    for (const r of this.smears.values()) { r.head = 0; r.n = 0; }
     for (const m of this.motes) m.alive = false;
     for (const p of this.pops) p.alive = false;
     for (const r of this.ribbons.values()) r.n = 0;

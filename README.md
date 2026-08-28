@@ -257,8 +257,8 @@ prise dessus se convertit en **×1,25** vers ce repère 720 × 1280.
 | BLADE RUSH                    | horloge de 9 s + 6 % par coup, ruée de 1,5 s, verrou à 115 ms |
 | Précision du Hors-la-loi      | 25 coups au but en 38,6 s = **0,65 coup/s** |
 | Boule Dragoon                 | `#574a84`, traînée cramoisie `#a32b4a`       |
-| Lance du Dragoon              | centre → pointe 164 px, talon 52 px **derrière** le pivot, total 216 px |
-| Progression « Damage » (Dragoon) | 10,00 → 20,00 par pas de **2,00**, à la touche portée |
+| Lance du Dragoon              | centre → pointe 164 px, talon 42 px **derrière** le pivot ; lame **en feuille**, 24 px de large à la bille, 32 au ventre, 21 près de la pointe |
+| Progression « Damage » (Dragoon) | 10,00 → 20,00 par pas de **2,00**, à la touche portée ; 5 touches en 27,6 s, soit 0,181 coup/s et 2,54 PV/s |
 | Bond du Dragoon               | jauge pleine en 10 s, 0,45 s d'élan, **1,5 s hors de l'arène**, impact de rayon 110 px |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les

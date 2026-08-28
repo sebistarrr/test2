@@ -807,44 +807,46 @@ export const ICON_SABRE = deepFreeze({
 /* ------------------------------------------------------------------
  * DRAGOON — la lance, arme la plus longue du jeu
  *
- * Relevé image par image sur la première seconde de « Dragoon vs Outlaw »
- * (576 × 1024, donc ×1,25 vers le repère 720 × 1280) :
- *   • centre de la bille → pointe          = 131 px vidéo → 164 px logiques
- *   • talon derrière le centre             =  42 px vidéo →  52 px logiques
- *   • longueur totale                      = 173 px vidéo → 216 px logiques
- *   • marche d'escalier du pixel-art source ≈ 3,2 px vidéo → 4 px logiques
- * D'où une carte de 54 × 12 rendue à `scale: 4` : 216 × 48 px logiques, soit
- * exactement la résolution du sprite d'origine.
+ * Relevé en aplatissant la lance : pour trois images nettes (t = 0 / 4,5 /
+ * 7,8 s), la bille est localisée au sous-pixel, l'image est tournée pour
+ * mettre la lance à l'horizontale, puis on mesure la demi-épaisseur colonne
+ * par colonne. Les trois profils concordent.
  *
- * Le talon dépasse **derrière** le pivot : la fiche pose donc
- * `handle.length: -52` (et `handle.width: 0`, rien à tracer) pour que le blit
- * démarre en arrière de la bille. Toute la lance tient dans cette seule carte
- * — comme le revolver et le sabre des deux autres invités.
+ *   • talon                       = −34 px vidéo → −42 px logiques
+ *   • pointe                      = 128 / 132 / 136 px vidéo → **164 px**
+ *   • demi-épaisseur, à la bille  =   9,7 px vidéo → 24 px logiques de large
+ *   • demi-épaisseur, au ventre   =  12,8 px vidéo → **32 px** de large
+ *   • demi-épaisseur, près pointe =   8,4 px vidéo → 21 px de large
+ *
+ * **La lame est en feuille** : plus large au milieu qu'à ses deux bouts. Le
+ * premier portage l'affinait de façon monotone, ce que la vidéo dément.
+ * Aucune garde n'est visible : ce qui ressemblait à un losange de garde est
+ * derrière la bille, donc invisible en jeu.
+ *
+ * D'où une carte de 52 × 8 rendue à `scale: 4` : 208 × 32 px logiques, avec
+ * `handle.length: -44` pour que le talon dépasse derrière le pivot et que la
+ * pointe tombe pile sur la portée (−44 + 52 × 4 = 164).
  * ------------------------------------------------------------------ */
 export const DRAGOON_LANCE = deepFreeze({
-  w: 54,
-  h: 12,
+  w: 52,
+  h: 8,
   palette: {
-    K: '#06040a', // contour noir (arène blanche : le noir mesuré suffit)
-    l: '#b9a9e0', // reflet du tranchant, arête haute
-    p: '#7a5ea4', // corps de lame
-    s: '#4a3468', // lame à l'ombre
+    K: '#0d0a14', // contour
+    l: '#9a8ab4', // arête haute, éclairée (p80 de la lame relevée)
+    p: '#6b5484', // corps de lame (médiane relevée)
+    s: '#4a3a63', // arête basse, à l'ombre (p20 relevée)
     m: '#2f2636', // manche
     d: '#17111f', // manche à l'ombre
   },
   rows: [
-    '..................KKK.................................',
-    '.................KlllK................................',
-    '................KlppplKKKKKKKKK.......................',
-    '...KKKKKKKKKKKKKlppppplllllllllKKKKKKKKKKKK...........',
-    '.KKmmmmmmmmmmmmmpppppppppppppppllllllllllllKKKKKKKK...',
-    'KmmdddddddddddddpppppppppppppppppppppppppppllllllllKKK',
-    'KdddddddddddddddpppppppppppppppppppppppppppssssssssKKK',
-    '.KKdddddddddddddpppppppppppppppssssssssssssKKKKKKKK...',
-    '...KKKKKKKKKKKKKspppppsssssssssKKKKKKKKKKKK...........',
-    '................KspppsKKKKKKKKK.......................',
-    '.................KsssK................................',
-    '..................KKK.................................',
+    '.........................KKKKKKKKKKK................',
+    '.....................KKKKlllllllllllKKKKKKKKKKKK....',
+    '..KKKKKKKKKKKKKKKKKKKllllpppppppppppllllllllllllKK..',
+    'KKmmmmmmmmmmmmmmmmmmmpppppppppppppppppppppppppppllKK',
+    'KKdddddddddddddddddddpppppppppppppppppppppppppppssKK',
+    '..KKKKKKKKKKKKKKKKKKKsssspppppppppppssssssssssssKK..',
+    '.....................KKKKsssssssssssKKKKKKKKKKKK....',
+    '.........................KKKKKKKKKKK................',
   ],
 });
 

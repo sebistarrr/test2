@@ -23,7 +23,7 @@ Va droit au fichier concerné, en `grep` ciblé plutôt qu'en lecture intégrale
 | Déroulé du duel, dégâts, rendu global | `src/game/match.js` |
 | Entité combattant (état + dessin) | `src/game/fighter.js` |
 | Pouvoirs d'un combattant | `src/game/abilities/<id>.js` |
-| Mise en scène (rubans, nappes, ondes, nombres) | `src/render/flair.js` + `look.flair` de chaque fiche |
+| Mise en scène (rubans, fuseaux, nappes, ondes, nombres) | `src/render/flair.js` + `look.flair` de chaque fiche |
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
 | Libellés d'interface (les deux langues) | `src/ui/lang.js` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
@@ -67,29 +67,39 @@ commentaire.
 | Ce qu'il porte | Relevé sur la vidéo | Ce qui est dans la fiche |
 | --- | --- | --- |
 | Corps | bille `#574a84` (pipette), rayon 33 px vidéo | `look.body`, `radius: 41` |
-| Traînée | fuseau cramoisi `#a32b4a` au cœur | `look.flair.ribbon`, rendu par le ruban de pointe d'arme |
-| Portée | centre → pointe = 131 px vidéo → **164 px** | `weapon.reach: 164` |
-| Talon | dépasse de 52 px **derrière** le pivot | `handle.length: -52`, `handle.width: 0` — toute la lance est une carte 54 × 12 à `scale: 4` |
+| Traînée | **deux effets** : boucles roses tracées par la pointe d'arme, **et** un fuseau cramoisi `#a32b4a` derrière la bille | `look.flair.ribbon` **et** `look.flair.smear` (le second a dû être ajouté à `render/flair.js` : le ruban ne suit que la pointe) |
+| Portée | centre → pointe = **164 px** | `weapon.reach: 164` |
+| Talon | dépasse de 42 px **derrière** le pivot | `handle.length: -44`, `handle.width: 0` — toute la lance est une carte 52 × 8 à `scale: 4` |
+| Forme de lame | **en feuille** : 24 px de large à la bille, **32 au ventre**, 21 près de la pointe. Relevé en aplatissant la lance sur trois images | `dragoonLance` — le premier portage l'affinait de façon monotone, c'était faux |
+| Cadence relevée | **5 touches en 27,6 s = 0,181 coup/s**, budget 2,54 PV/s | le moteur rend 0,192 et 2,36 (voir plus bas) |
 | Dégâts | 10, **+2 par touche portée** (10→12→14→16→18→20, six touches pour tuer) | `stack: 10`, `stackGain: 2` — gardés bruts, comme ceux du Hors-la-loi |
 | Vitesse | 432 px/s vidéo → **540** | gardée telle quelle : vérifié au banc, 15 victoires sur 30 à 540 contre 16 à 470 |
 | Jauge « JUMP » | pleine en ~10 s, marches de ~8 % aux touches | `chargeRate: 10`, `chargeOnHit: 8` |
 | Bond | 0,45 s d'élan, **1,5 s hors de l'arène**, marqueur gris qui suit la cible, chute dans un rayon de 110 px | `ultimate.windup / flight / marker / impact` |
 
-Deux valeurs seulement sont `calé`, et ce sont elles qui **paient** des dégâts
-de 10 à 14 là où le reste du plateau frappe pour 3 à 6 :
+**Un seul écart au relevé subsiste, et il est chiffré : le verrou.** La vidéo
+donne trois touches de lance consécutives à 13,63 / 14,77 / 16,37 s, donc un
+verrou réel d'environ **1,1 s**. Mais à 1 s la lance de 164 px accroche ici
+**0,341 fois par seconde** contre 0,181 relevé — deux fois trop. À 6 s le moteur
+rend 0,192 coup/s et 2,36 PV/s, contre 0,181 et 2,54 : *ce que la vidéo montre*
+est donc exact, seul le mécanisme diffère — un verrou long ici, des coups
+manqués là-bas.
 
-- **le verrou à 6 s**, le plus long du roster. Balayage sur ses 30 duels :
-  1,3 s → 30 victoires sur 30 ; 3,0 s → 29 ; 4,5 s → 26 ; 6,0 s → 15.
-- **le plafond de pile à 14**, que la vidéo ne montre pas (elle s'arrête à 20
-  parce que le duel s'arrête). À 24 il gagnait encore 24 duels sur 30 malgré le
-  verrou : un duel qui dure le faisait finir à 24 PV par coup.
+Ce n'est pas un défaut général du moteur : `tools/probe.mjs` donne au
+Hors-la-loi **0,649 coup/s** là où sa vidéo en mesure 0,65. Le Dragoon fait
+exception parce que son segment tranchant balaie près d'un cinquième de l'arène.
+
+Le **plafond de pile à 14** est `déduit`, pas `calé` : la vidéo n'en montre
+aucun (elle s'arrête à 20 parce que le Dragoon meurt), mais tous les combattants
+à stat croissante du roster en ont un, et sans plafond la montée est quadratique
+en durée de duel. Au banc : 12 → 10 victoires sur 30 ; **14 → 15** ; 16 → 22.
 
 **Conséquence assumée : le Dragoon tue au métronome.** Verrou fixe + plafond
 donnent 8 touches à 10, 12, 14, 14… soit 106 PV en ~43 s. Plusieurs de ses
 duels se terminent donc à 43,2 s **exactement**, quel que soit l'adversaire :
-la question n'est pas s'il gagne mais si l'autre tue avant. Des cadences plus
-courtes avec moins de montée ont été essayées (4,0 s/10, 3,0 s/10, 4,5 s/12,
-5,0 s/12) : toutes donnent un écart *moins* régulier.
+la question n'est pas s'il gagne mais si l'autre tue avant. C'est aussi, de tout
+le roster, le profil qui colle le mieux à sa vidéo : rare et lourd, exactement
+les cinq touches à 10-12-14-16-18 du duel de référence.
 
 **Le moteur ne connaît aucun combattant** : `fighter.js`, `physics.js` et
 `projectiles.js` lisent la fiche. En ajouter un = une entrée dans
@@ -270,12 +280,16 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   lisait donc « CHOISIS TES COMBATTANTS » au-dessus d'un duel « DARK vs ICE ».
   Tout l'affichage passe désormais par `src/ui/lang.js`, un seul interrupteur.
 
-- **Un `re.sub` de calage qui déborde sur une autre fiche.** En balayant des
-  cadences pour le Dragoon, une expression ancrée sur `hitbox: { from: …` a
-  aussi réécrit celle du **Hors-la-loi** (0,62 → 0,32). Cinq affrontements de la
-  matrice ont bougé, dont un vainqueur. Ça ne se voit pas à la lecture : ça se
-  voit en diffant la référence, et en vérifiant que `git diff` sur `elements.js`
-  ne contient **que des ajouts** quand on ajoute un combattant.
+- **Un `re.sub` de calage qui déborde sur une autre fiche. Deux fois.** En
+  balayant des cadences pour le Dragoon, une expression ancrée sur
+  `hitbox: { from: …` a réécrit celle du **Hors-la-loi** (0,62 → 0,32) : cinq
+  affrontements de la matrice ont bougé, dont un vainqueur. La seconde fois,
+  un `re.sub` sur `onHit: { stackGain: …` a réécrit ceux du Hors-la-loi **et**
+  du Bretteur, et un `s.index('damage: (f) => Math.max(')` a pris la première
+  fiche du fichier au lieu de la bonne : **tout un balayage de mesures était
+  faux sans que rien ne plante**. Règle : un setter de balayage doit
+  `assert` que son ancre est **unique**, et il faut relire
+  `git diff src/data/elements.js` avant de croire un chiffre.
 - **Un pouvoir sans recharge finie.** Le Dragoon n'a pas de pouvoir actif : sa
   fiche porte `ability.cooldown: Infinity` et l'écran de sélection affichait
   « recharge Infinitys ». `select.js` teste maintenant `Number.isFinite` et
