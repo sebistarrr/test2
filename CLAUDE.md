@@ -163,6 +163,43 @@ La charge sur cap en donne davantage : à 16 le Lancier monte à 19 victoires su
 
 ---
 
+## Roster réduit — temporaire
+
+**Seul le Lancier est jouable.** Les dix autres sont désactivés dans
+`elements.js` via `DISABLED`, le temps de travailler le Lancier seul.
+
+```js
+// src/data/elements.js
+export const DISABLED = deepFreeze(['shadow', 'ice', ...]);  // en retirer un = le réactiver
+export const PLAYABLE = deepFreeze(ROSTER.filter((id) => !DISABLED.includes(id)));
+```
+
+**Pour tout réactiver : vider la liste** — `export const DISABLED = deepFreeze([]);`.
+Rien d'autre à faire, et rien n'a été supprimé.
+
+Ce que la désactivation touche, et ce qu'elle ne touche pas :
+
+| Touché | Intact |
+| --- | --- |
+| écran de sélection (`ui/select.js` lit `PLAYABLE`) | `ELEMENTS` et `ROSTER`, entiers |
+| duel par défaut (`main.js`) | `tools/matrix.mjs` — mesure toujours les **onze** |
+| | `tools/lang-check.mjs` — vérifie toujours les onze fiches |
+| | l'accès par URL : `?a=fire&b=ice` marche encore |
+
+**C'est délibéré que l'outillage ignore `DISABLED`.** La matrice est le
+garde-fou d'équilibrage : la laisser tomber à un seul combattant perdrait la
+référence des dix autres, et il faudrait tout recaler à la réactivation. De
+même, `lang-check` continue de vérifier les onze fiches pour qu'une fiche
+désactivée ne pourrisse pas en silence. `tools/matrix-reference.txt` est donc
+**inchangée**, et c'est la preuve que la réduction n'a touché aucun équilibre.
+
+Conséquence à connaître : le duel par défaut est un **miroir**, Lancier contre
+Lancier. Il tourne, mais les deux camps sont visuellement identiques — même
+bille cuivre, même titre. Le HUD reste le seul repère (jauge et ligne de stat à
+gauche = camp A). Ça se résout tout seul à la réactivation.
+
+---
+
 ## Langue
 
 **L'application est en anglais, le dépôt est en français.** Deux règles

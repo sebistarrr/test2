@@ -2063,6 +2063,56 @@ export const ROSTER = deepFreeze([
   'lancer',
 ]);
 
+/**
+ * Combattants **temporairement désactivés**.
+ *
+ * Rien n'est supprimé : `ELEMENTS` et `ROSTER` restent entiers. Cette liste ne
+ * retire les combattants que de ce qui est **jouable** — écran de sélection et
+ * duel par défaut. C'est volontaire, et c'est ce qui rend la manœuvre
+ * réversible sans rien reconstruire.
+ *
+ * **L'outillage continue de lire `ROSTER` en entier**, et il le faut :
+ * `tools/matrix.mjs` est le garde-fou d'équilibrage, et le laisser tomber à un
+ * seul combattant reviendrait à perdre la matrice de référence des dix autres
+ * — donc à devoir tout recaler à la réactivation. De même `lang-check.mjs`
+ * vérifie les onze fiches, pour qu'une fiche désactivée ne pourrisse pas en
+ * silence.
+ *
+ * **Pour réactiver :** retirer l'identifiant de cette liste. Pour tout
+ * réactiver d'un coup, la vider — `export const DISABLED = deepFreeze([]);`.
+ *
+ * Les identifiants désactivés restent accessibles par URL (`?a=fire&b=ice`) :
+ * la désactivation porte sur l'écran de sélection, pas sur le moteur, ce qui
+ * permet de continuer à tester un combattant sans le remettre en vitrine.
+ */
+export const DISABLED = deepFreeze([
+  'shadow',
+  'ice',
+  'fire',
+  'water',
+  'light',
+  'lightning',
+  'wind',
+  'plant',
+  'outlaw',
+  'bladesman',
+]);
+
+/**
+ * Le roster **jouable** : `ROSTER` moins `DISABLED`, dans le même ordre.
+ *
+ * Dérivé plutôt que recopié : deux listes tenues à la main finissent par
+ * diverger, et l'écran de sélection afficherait alors une carte pour un
+ * combattant que le moteur ne connaît plus.
+ */
+export const PLAYABLE = deepFreeze(ROSTER.filter((id) => !DISABLED.includes(id)));
+
+if (PLAYABLE.length === 0) {
+  // Un roster jouable vide donne un écran de sélection blanc et un plantage à
+  // la première partie : mieux vaut le dire ici.
+  throw new Error('DISABLED désactive tout le roster — il faut au moins un combattant.');
+}
+
 /** @param {string} id */
 export function getElement(id) {
   const el = ELEMENTS[id];
