@@ -71,7 +71,7 @@ qui tienne sur toute la vidéo.
 | Ce qu'il porte | Relevé | Ce qui est dans la fiche |
 | --- | --- | --- |
 | Corps | **cuivre `#c9905f`** — écart volontaire : la vidéo montre une bille indigo `#574a84` | `look.body`, `radius: 41` |
-| Arme | **hampe fine cuivre à segments bleu-vert, ligature blanche, virole argent, grosse tête à barbelures** — d'après la maquette, pas la vidéo | `lancerSpear`, carte 104 × 16 à `scale: 2` |
+| Arme | **hampe cuivre à segments bleu-vert hachurés de blanc, ligature à cordelettes pendantes, virole argent, pointe de flèche à bords droits et barbelures** — d'après la maquette, pas la vidéo | `lancerSpear`, carte 104 × 22 à `scale: 2` |
 | Portée | centre → pointe = **164 px**, la plus longue du roster | `weapon.reach: 164` |
 | Talon | dépasse de 42 px **derrière** le pivot | `handle.length: -44` — −44 + 104 × 2 = 164 |
 | **Angle d'arme** | **la lance suit le cap de déplacement** : 6,6° d'écart médian sur 141 images, contre 37,9° du cap vers l'adversaire | `weapon.spin: 0`, et `abilities/lancer.js` recopie `heading` |
@@ -415,6 +415,29 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   « recharge Infinitys ». `select.js` teste maintenant `Number.isFinite` et
   écrit « passif ». Le moteur, lui, s'en moque : le module n'arme aucune
   minuterie.
+- **Générer un sprite par une formule au lieu de transcrire la maquette.** La
+  première lance livrée était une **feuille arrondie** là où la maquette montre
+  une **pointe de flèche à bords droits**. Deux causes, et aucune n'était un
+  choix : le profil était tracé en `half = 7.2 * (1 - u) ** 1.3`, et l'exposant
+  1,3 rend la courbe **convexe** — des bords droits demandent un exposant de 1 ;
+  et la carte faisait 16 cellules de haut pour une tête à `half = 7.2` sur un
+  axe à 7,5, donc **le contour tombait hors carte** et il ne restait aucune
+  place pour les barbelures. Une formule interpole ce qu'on ne lui a pas
+  demandé ; quand un dessin est fourni, les arêtes qui font la silhouette se
+  posent **explicitement**.
+- **La hauteur d'une carte d'arme ne coûte rien.** `fighter.js` pose
+  `headH = map.h × scale` et `drawSpriteLeft` en tire `w = headH × map.w/map.h`
+  — la hauteur **s'annule**, la largeur dessinée vaut toujours `map.w × scale`.
+  Grandir une carte en hauteur ne change donc ni la portée, ni la hitbox, ni la
+  taille du pixel : seulement la place disponible. La lance est passée de 16 à
+  22 cellules pour loger sa tête, sans qu'aucune valeur de la fiche ne bouge.
+  Grandir en **largeur**, en revanche, déplacerait la pointe.
+- **Une icône redessinée à la main diverge de son arme.** `ICON_LANCE` avait
+  déjà lâché deux fois : restée indigo quand l'arme est passée au cuivre, puis
+  restée une lame fine quand la tête est devenue une pointe de flèche. Elle
+  **échantillonne maintenant le profil de `LANCER_SPEAR`** sur un axe à 45° —
+  hampe, virole, tête — donc elle ne peut plus mentir sur l'arme qu'elle
+  annonce.
 - **Le talon de la lance passe derrière le pivot.** `drawSpriteLeft` blitte le
   sprite à partir de `handle.length` : une valeur **négative** le fait démarrer
   en arrière de la bille. Corollaire : `handle.length + map.w × scale` doit

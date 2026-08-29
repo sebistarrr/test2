@@ -825,22 +825,34 @@ export const ICON_SABRE = deepFreeze({
  * écartés : cuivre `#975938 / #6b3b22 / #4d2815`, bleu-vert `#7e9ca0 / #556a6d`,
  * ligature `#fdfefc`, contour `#231108`.
  *
- * **L'encombrement ne bouge pas** : toujours 104 × 16 à `scale: 2`, donc
- * 208 × 32 px logiques, et `handle.length: -44` place la pointe à
- * −44 + 208 = **164**, la portée relevée. Changer le dessin ne change donc
- * ni la portée ni la hitbox.
+ * **La portée ne bouge pas, et la hauteur de carte n'y entre pas.**
+ * `fighter.js` pose `headH = map.h × scale`, et `drawSpriteLeft` en tire
+ * `w = headH × map.w / map.h` : la hauteur **s'annule**, la largeur dessinée
+ * vaut toujours `map.w × scale` = 208 px logiques. Avec `handle.length: -44`,
+ * la pointe reste à −44 + 208 = **164**. Grandir la carte en hauteur ne coûte
+ * donc ni portée, ni hitbox, ni taille de pixel — seulement de la place.
+ *
+ * Et il en fallait : la carte a **16 → 22** cellules de haut. À 16, la tête
+ * atteignait `half = 7,2` sur un axe à 7,5, donc son contour tombait **hors
+ * carte** et il ne restait aucune cellule pour les barbelures. C'est la moitié
+ * de la raison pour laquelle le premier jet rendait une feuille lisse au lieu
+ * de la pointe de flèche de la maquette ; l'autre moitié était un profil tracé
+ * en `(1 − u) ** 1.3`, donc **convexe**, là où la maquette a des bords droits.
+ * Les deux arêtes sont maintenant linéaires, posées explicitement.
  *
  * Conséquence de cadrage, déjà vraie de l'ancienne carte : la bille (rayon 41)
- * couvre les cellules 0 à ~43. Tout ce qui doit se voir — ligature, virole,
- * tête — est donc posé **au-delà de la cellule 43**, et le pommeau du talon
- * n'apparaît que quand la lance dépasse derrière la bille.
+ * couvre les cellules 0 à ~42. Tout ce qui doit se voir — hachures blanches
+ * des segments bleu-vert, ligature, cordelettes pendantes, virole, tête — est
+ * donc posé **au-delà de la cellule 43**, et le pommeau du talon n'apparaît
+ * que quand la lance dépasse derrière la bille.
  * ------------------------------------------------------------------ */
 export const LANCER_SPEAR = deepFreeze({
   w: 104,
-  h: 16,
+  h: 22,
   palette: {
     K: '#231108',
-    C: '#c9905f',
+    C: '#e0a877',
+    p: '#c9905f',
     c: '#975938',
     o: '#6b3b22',
     O: '#4d2815',
@@ -848,61 +860,73 @@ export const LANCER_SPEAR = deepFreeze({
     t: '#556a6d',
     W: '#fdfefc',
     w: '#b9c2c1',
-    g: '#6b6e6a',
+    g: '#8e918d',
+    G: '#5f625e',
   },
   rows: [
-    '....................................................................................CKK.................',
-    '................................................................................KO.KCCCKK...............',
-    '..................................................................................KCCCCCCKK.............',
-    '...............................................................................K.KCCCCCCCCCKKK..........',
-    '..KKKK....................................................KKKKKKKKKKK....KKKKKKWKCCCCCCCCCCCCCKK........',
-    'KKccccKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKWoWWoWWoWWoKKKKWgWgWgWCCCCCCCCCCCCCCCCKKK.....',
-    'ccccccccOOccccccccccccccTcTTTTccccTcTTTTcTTTTcTTTTcTccccccWoWWoWWoWWoTcTTWgWgWgWCCCcCCCCCCCCCCCCCCCCCCK.',
-    'ccccccccOOccccccccccccccTcTTTTccccTcTTTTcTTTTcTTTTcTccccccWoWWoWWoWWoTcTTWgWgWgWcccccccccccccccccCCCCCCK',
-    'ooooooooOOooooooooooooootottttooootottttottttottttotoooooowOwwOwwOwwOtottwgwgwgwoooccccccoooooooooooOOOO',
-    'ooooooooOOooooooooooooootottttooootottttottttottttotoooooowOwwOwwOwwOtottwgwgwgwOooooooooooooooOOOOKKKKK',
-    'KKooooKKOOKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKwOwwOwwOwwOKKKKwgwgwgwOOoooooooooOOOOOKKK.....',
-    '..KKKK..KK................................................KKKKKKKKKKK....KKKKKKKKOOooooOOOOOOOKK........',
-    '................................................................................KOOOOOOOOOOKKK..........',
-    '..................................................................................KOOOOOOKK.............',
-    '...................................................................................KOOOKK...............',
-    '....................................................................................OKK.................',
+    '........................................................................................................',
+    '...................................................................................KK...................',
+    '...................................................................................CCKK.................',
+    '..................................................................................KCCCCKKK..............',
+    '..................................................................................CCCCCCCCKK............',
+    '.................................................................................KCCCCCCCCCCKKK.........',
+    '.................................................................................CCppppCCCCCCCCKK.......',
+    '..KKKK..KK................................................KKKKKKKKKKKK....KKKKKKKCpppppppppCCCCCCKKK....',
+    'KKccccKKOOKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKWoWWoWWoWWoWKKKKgGgGgGCppppppppppppppCCCCCKK..',
+    'ccccccccOOccccccccccccccccTWTTTWTTccccccTTTWTTTWTTTWccccccWWWWWWWWWWWWTWTTgGgGgGpppCCCCCCCCCCCCCCCCCCCKK',
+    'ccccccccOOccccccccccccccccWTTTWTTTccccccTTWTTTWTTTWTccccccWWWWWWWWWWWWWTTTgGgGgGpcccccccccccccpppppppppC',
+    'ooooooooOOooooooooooooooootttwtttwooooootwtttwtttwttoooooowwwwwwwwwwwwtttwGgGgGgccccccccccccccccccccoooO',
+    'ooooooooOOoooooooooooooooottwtttwtoooooowtttwtttwtttoooooowOwwOwwOwwOwttwtGgGgGgoocccccccccooooooooOOOKK',
+    'KKooooKKOOKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKwwwwwWwwwWwwKKKKGgGgGgOooooooooooooooOOOOOKK..',
+    '..KKKK..KK................................................KKKKKWKKKWKK....KKKKKgKOoooooooooOOOOOOKKK....',
+    '...............................................................W...W...........K.OOooooOOOOOOOOKK.......',
+    '...............................................................W....W............KOOOOOOOOOOKKK.........',
+    '...............................................................w....W.............OOOOOOOOKK............',
+    '...............................................................w....W.............KOOOOKKK..............',
+    '.....................................................................w.............OOKK.................',
+    '.....................................................................w.............KK...................',
+    '........................................................................................................',
   ],
 });
 
 /** Icône du Dragoon : la pointe de lance, seule chose que l'adversaire voit venir. */
 export const ICON_LANCE = deepFreeze({
-  /** Icône de titre et de carte du Lancier — même gamme que `LANCER_SPEAR` :
-   *  tête cuivre, virole blanche, hampe cuivre à segment bleu-vert. Elle avait
-   *  gardé l'indigo de la première version de l'arme, ce qui laissait un
-   *  fragment de l'ancienne identité dans le titre d'arène. */
+  /**
+   * Icône de titre et de carte du Lancier. Elle n'est pas redessinée à la
+   * main : elle **échantillonne le profil de `LANCER_SPEAR`** sur un axe à
+   * 45°, hampe → virole → tête à bords droits. Redessinée, elle avait déjà
+   * divergé deux fois — restée indigo quand l'arme est passée au cuivre, puis
+   * restée une lame fine quand la tête est devenue une pointe de flèche.
+   */
   w: 16,
   h: 16,
   palette: {
     K: '#231108', // contour
-    C: '#c9905f', // cuivre éclairé
-    p: '#975938', // cuivre
+    C: '#e0a877', // cuivre éclairé, arête de lame
+    p: '#c9905f', // cuivre clair
+    c: '#975938', // cuivre
     s: '#6b3b22', // cuivre à l'ombre
+    O: '#4d2815', // cuivre sombre, biseau bas
     W: '#fdfefc', // virole
     T: '#7e9ca0', // bleu-vert
   },
   rows: [
-    '.............KK.',
-    '............KCK.',
-    '...........KCpK.',
-    '..........KCppK.',
-    '.........KCppsK.',
-    '........KCppsKK.',
-    '.......KCppsKK..',
-    '......KCppsKK...',
-    '.....KCppsKK....',
-    '....KKCpsKK.....',
-    '...KKWpsKK......',
-    '..KWWKKKK.......',
-    '.KppTK..........',
-    'KpTTK...........',
-    'KppK............',
-    'KKK.............',
+    '................',
+    '................',
+    '..........KKK...',
+    '........CCCpcK..',
+    '........CppcsK..',
+    '.......KWpcsOK..',
+    '.......WWWssO...',
+    '......KcWppOO...',
+    '.....KccspK.....',
+    '....KTTsK.......',
+    '...KcTTK........',
+    '..KccsK.........',
+    '...csK..........',
+    '....K...........',
+    '................',
+    '................',
   ],
 });
 

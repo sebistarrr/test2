@@ -257,7 +257,7 @@ prise dessus se convertit en **×1,25** vers ce repère 720 × 1280.
 | BLADE RUSH                    | horloge de 9 s + 6 % par coup, ruée de 1,5 s, verrou à 115 ms |
 | Précision du Hors-la-loi      | 25 coups au but en 38,6 s = **0,65 coup/s** |
 | Boule Lancier                 | mesurée `#574a84` indigo ; **le jeu la met en cuivre `#c9905f`** pour l'accorder à l'arme redessinée. Traînée cramoisie `#a32b4a` conservée |
-| Lance du Lancier              | centre → pointe 164 px, talon 42 px **derrière** le pivot. Le **dessin** ne vient pas de la vidéo mais d'une maquette d'arme : hampe fine cuivre à segments bleu-vert, ligature blanche, virole argent, tête à barbelures. L'encombrement, lui, reste celui du relevé |
+| Lance du Lancier              | centre → pointe 164 px, talon 42 px **derrière** le pivot. Le **dessin** ne vient pas de la vidéo mais d'une maquette d'arme : hampe cuivre à segments bleu-vert hachurés de blanc, ligature à cordelettes pendantes, virole argent, et une **pointe de flèche à bords droits** avec barbelures à la base. L'encombrement, lui, reste celui du relevé |
 | Progression « Damage » (Lancier) | 10,00 → 20,00 par pas de **2,00**, à la touche portée ; 5 touches en 27,6 s, soit 0,181 coup/s et 2,54 PV/s (le moteur rend 0,195 et **2,52**) |
 | Angle de lance (Lancier)      | **elle suit le cap de déplacement** : 6,6° d'écart médian sur 141 images de toute la vidéo, contre 37,9° du cap vers l'adversaire. Elle ne tourne pas librement et ne vise pas |
 | Charge du Lancier             | le corps file à ~1 400 px/s pendant ~0,15 s contre 540 en croisière, lance dans l'axe |
