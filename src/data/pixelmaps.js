@@ -805,128 +805,151 @@ export const ICON_SABRE = deepFreeze({
 });
 
 /* ------------------------------------------------------------------
- * Fer de lance du Lancier — d'après la maquette d'arme fournie.
+ * LANCIER — **lance électrique**, transcrite de la maquette fournie.
  *
- * L'ancienne carte était une lame **en feuille** relevée sur la vidéo : large
- * sur toute sa longueur, crantée, indigo. La maquette montre autre chose, et
- * c'est elle qui fait foi désormais — une **hampe fine** et une **grosse tête
- * en fer de lance**, dans une gamme cuivre et bleu-vert :
+ * Elle remplace la lance de cuivre. Ce n'est pas un dessin d'après la
+ * maquette : c'est la maquette elle-même, réduite par blocs **3 × 3 exacts**.
  *
- *   • hampe cuivre `#975938`, ponctuée de segments bleu-vert `#7e9ca0` et de
- *     torsades cuivre en diagonale ;
- *   • une **ligature blanche** `#fdfefc` aux deux tiers, la partie la plus
- *     claire de l'arme et son point de repère à l'écran ;
- *   • une **virole argent** de quatre anneaux qui sépare la hampe de la lame ;
- *   • une **tête à barbelures** : évasement brutal sur 4 cellules, puis
- *     effilement rectiligne jusqu'à la pointe, arête centrale claire et
- *     biseau inférieur sombre — les facettes de la maquette.
+ *     624 / 208 = 3        129 / 43 = 3
  *
- * Les couleurs sont **pipettées sur la maquette**, fond et arcs électriques
- * écartés : cuivre `#975938 / #6b3b22 / #4d2815`, bleu-vert `#7e9ca0 / #556a6d`,
- * ligature `#fdfefc`, contour `#231108`.
+ * Aucun rééchantillonnage, donc le rapport d'aspect est conservé au pixel
+ * près, et la médiane par bloc rend les aplats que le JPEG source avait
+ * bruités (écart-type ~20 sur des zones unies).
  *
- * **La portée ne bouge pas, et la hauteur de carte n'y entre pas.**
- * `fighter.js` pose `headH = map.h × scale`, et `drawSpriteLeft` en tire
- * `w = headH × map.w / map.h` : la hauteur **s'annule**, la largeur dessinée
- * vaut toujours `map.w × scale` = 208 px logiques. Avec `handle.length: -44`,
- * la pointe reste à −44 + 208 = **164**. Grandir la carte en hauteur ne coûte
- * donc ni portée, ni hitbox, ni taille de pixel — seulement de la place.
+ * **Pourquoi une carte texte et pas l'override PNG**, qui existe pourtant
+ * (`assets/sprites/manifest.json`) : `fighter.js` prend
+ * `headH = map.h × scale` sur la **carte**, et `drawSpriteLeft` en tire
+ * `w = headH × img.w / img.h` sur l'**image**. Un PNG dont le rapport d'aspect
+ * diffère de celui de la carte décale donc la largeur dessinée sans toucher la
+ * hitbox — le PNG en 624 × 129 posait la pointe à 168,8 px au lieu de 164,
+ * soit une arme qui ment de 5 px sur son allonge. La transcription évite le
+ * problème au lieu de le contourner.
  *
- * Et il en fallait : la carte a **16 → 22** cellules de haut. À 16, la tête
- * atteignait `half = 7,2` sur un axe à 7,5, donc son contour tombait **hors
- * carte** et il ne restait aucune cellule pour les barbelures. C'est la moitié
- * de la raison pour laquelle le premier jet rendait une feuille lisse au lieu
- * de la pointe de flèche de la maquette ; l'autre moitié était un profil tracé
- * en `(1 − u) ** 1.3`, donc **convexe**, là où la maquette a des bords droits.
- * Les deux arêtes sont maintenant linéaires, posées explicitement.
+ * **La portée ne bouge pas** : 208 cellules à `scale: 1` font 208 px logiques,
+ * et avec `handle.length: -44` la pointe reste à −44 + 208 = **164**, la
+ * portée relevée. La carte de cuivre faisait 104 à `scale: 2` — même produit,
+ * deux fois plus de détail, et c'est ce qu'il fallait pour loger les
+ * filaments d'éclair de la maquette.
  *
- * Conséquence de cadrage, déjà vraie de l'ancienne carte : la bille (rayon 41)
- * couvre les cellules 0 à ~42. Tout ce qui doit se voir — hachures blanches
- * des segments bleu-vert, ligature, cordelettes pendantes, virole, tête — est
- * donc posé **au-delà de la cellule 43**, et le pommeau du talon n'apparaît
- * que quand la lance dépasse derrière la bille.
+ * Conséquence de cadrage, inchangée : la bille (rayon 41) couvre les cellules
+ * 0 à ~85. Le pommeau doré et le premier tiers de hampe sont donc derrière
+ * elle, et ne se voient que quand la lance dépasse par l'arrière.
  * ------------------------------------------------------------------ */
 export const LANCER_SPEAR = deepFreeze({
-  w: 104,
-  h: 22,
+  w: 208,
+  h: 43,
   palette: {
-    K: '#231108',
-    C: '#e0a877',
-    p: '#c9905f',
-    c: '#975938',
-    o: '#6b3b22',
-    O: '#4d2815',
-    T: '#7e9ca0',
-    t: '#556a6d',
-    W: '#fdfefc',
-    w: '#b9c2c1',
-    g: '#8e918d',
-    G: '#5f625e',
+    0: '#080211',
+    1: '#150526',
+    2: '#210f3e',
+    3: '#301e53',
+    4: '#3e266c',
+    5: '#4c2d80',
+    6: '#5d3d8e',
+    7: '#7046ac',
+    8: '#765a92',
+    9: '#8765b4',
+    a: '#9d7bc8',
+    b: '#d9c15b',
+    c: '#b897da',
+    d: '#d0b6ec',
+    e: '#e7d1f9',
+    f: '#f8e6ff',
   },
   rows: [
-    '........................................................................................................',
-    '...................................................................................KK...................',
-    '...................................................................................CCKK.................',
-    '..................................................................................KCCCCKKK..............',
-    '..................................................................................CCCCCCCCKK............',
-    '.................................................................................KCCCCCCCCCCKKK.........',
-    '.................................................................................CCppppCCCCCCCCKK.......',
-    '..KKKK..KK................................................KKKKKKKKKKKK....KKKKKKKCpppppppppCCCCCCKKK....',
-    'KKccccKKOOKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKWoWWoWWoWWoWKKKKgGgGgGCppppppppppppppCCCCCKK..',
-    'ccccccccOOccccccccccccccccTWTTTWTTccccccTTTWTTTWTTTWccccccWWWWWWWWWWWWTWTTgGgGgGpppCCCCCCCCCCCCCCCCCCCKK',
-    'ccccccccOOccccccccccccccccWTTTWTTTccccccTTWTTTWTTTWTccccccWWWWWWWWWWWWWTTTgGgGgGpcccccccccccccpppppppppC',
-    'ooooooooOOooooooooooooooootttwtttwooooootwtttwtttwttoooooowwwwwwwwwwwwtttwGgGgGgccccccccccccccccccccoooO',
-    'ooooooooOOoooooooooooooooottwtttwtoooooowtttwtttwtttoooooowOwwOwwOwwOwttwtGgGgGgoocccccccccooooooooOOOKK',
-    'KKooooKKOOKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKwwwwwWwwwWwwKKKKGgGgGgOooooooooooooooOOOOOKK..',
-    '..KKKK..KK................................................KKKKKWKKKWKK....KKKKKgKOoooooooooOOOOOOKKK....',
-    '...............................................................W...W...........K.OOooooOOOOOOOOKK.......',
-    '...............................................................W....W............KOOOOOOOOOOKKK.........',
-    '...............................................................w....W.............OOOOOOOOKK............',
-    '...............................................................w....W.............KOOOOKKK..............',
-    '.....................................................................w.............OOKK.................',
-    '.....................................................................w.............KK...................',
-    '........................................................................................................',
+    '................................................................................................................................................................................................................',
+    '................................................................................................................................................................................................................',
+    '................................................................................................................................................................................................................',
+    '................................................................................................................................................................................................................',
+    '................................................................................................................................................................................................................',
+    '................................................................................................................................................................................................................',
+    '................................................................................................................................................................................................................',
+    '..................................................................................................................................................6.............................................................',
+    '.................................................................................................................................................f865...........................................................',
+    '.........................................................................................................................6688............8a96668899c6...........................................................',
+    '...........................................................................................................................8d8..........68ae9adff99e86........8.................................................',
+    '............................................................................................................................6e98966686...669c88c9aaefa6......6856...............................................',
+    '............................................................................................................................5cfe87ceed86.68879c...8aff96.....66a5...............................................',
+    '.............................................................................................................................4aff666dfa65.68daa...89eff86.....6d8...............................................',
+    '............................................................................................................................634eff...4e68...8d88....68ee88....8ae8..............................................',
+    '...........................................................................................................................16766efe..3fd8....8f89...586f89.....8f66....de85.....................................',
+    '......................................................................................................................01.....6768ef..78f68....8e6....6cfe8.....6fd6.....6d96....................................',
+    '......................................................................................................................023....57976de878fa5.....ec22111ff59.....89fd.....88fd8..........e........................',
+    '.....................................................................................................................03562101477776de97ff8.110125789999632.....55ff8.....8dff8..........fa6.....................',
+    '.....................................................................................................................046763334577776888ff91222467a898977741....8efd5......57fc6.....12..fe6.....................',
+    '.......000000...........................................................................................0000000000000046a666645666677658fd256679a21111897762211ffc951111.237cf6....392...dea....................',
+    '....000.555320...............................................................................000000010112865444831633136a569755667747777ef777798123d31159777678fc997799822a9afd...26993...ffe...................',
+    '..03bb08977768000000000000001000000000000000000000010000000000000000000000000000000000001110188c655679449a66c56648c5414695567766677777777fe77791356e6531397777dc7777acca999aaaa9955779921138f8211...............',
+    '.0bbbb0666777700.4444444469994444344489a55544444456c6544444469c5444444456dc444444445ac4455555aca66777ca69666d555aa75413695455a999777a97777a9982256afa754156a679777777777777777777777777778dfe9999222............',
+    '00bbbb05656676136666666677cc966666666dd9666666666aca776666667ae8777777777dd666666666cd99997cc6765666667dc7656555555531369545567a779efff779c6861479edd975318cdc667777667777777777777777777fffffa99aaa9100........',
+    '00bbbb1665555412445555565cd655554446da555555555cdc555555555555c85555555555ddc65555555cdc67c7655556656666cca55dddc76430359544445556ce66ffda668.199af9ce9742896afe9558de9766667ccd86666979fe77affffeccefff9.......',
+    '00bbbb14555544023344555ca844444459ac54445566aca75545445ac644444cc54444444556999554445555a7555445566567cc559656445a643025953444444ec5559867966.189fd9cdd8.187556ee8cee5af66666665defffffe7677777cc8777668........',
+    '00bbb8045555441223445cd444444445754434444aa4444444444ccd44444444a964444444444447a6444455a64444444756d765555aa63347a54135954444444e554555579664146699ca6421875556dde8555cdcc96666667efff97667766666554...........',
+    '.13bb804554444001234454333333338433233333443333333339ac4333333333389333333333334563333444622344a946a644445575444469951269544655dd65545556cd669226567d65315855567656766558ca9655ce7666667999662123...............',
+    '..0023044444440000000000000000000000000000000000000000000000000000000000000000000000000000000348339933344555445a5544613676976667655555559fe99981345ed530.865556a655544445566aaca3456763225fe52..................',
+    '....000.333320..............................................................................00000000000033346532222221377655544455554445fd344586112d21168544445e965421114556cdd4112666264.ff8...................',
+    '.......000000...........................................................................................00001100000000377544423455552113e3223448811111264331114df6422...0126ff58..1.42..8ff.....................',
+    '.....................................................................................................................0356433223455521e.c9301222458454544221...13cf55......84f86....1....ff......................',
+    '.....................................................................................................................03441000245542..ece...1112333456a4422......3ef99.....8ee55.........f.......................',
+    '.....................................................................................................................01.1....34652...fae.....8.f22345f8468......6cfd8...68ff85.........ff.......................',
+    '.....................................................................................................................200.....4563...69e6.....8f...001ffde.......6ff88..6cfdf8...................................',
+    '............................................................................................................................2433effe66e5....8fe.......8eff.....86f86..8dd86.....................................',
+    '............................................................................................................................1333dfe866e6...eec.......68dfe.....6de5.............................................',
+    '.............................................................................................................................25dfd9d96a68dd9666......6ffe8.....6e6..............................................',
+    '.............................................................................................................................8ff.8.....68688.......e8fe86......6d...............................................',
+    '............................................................................................................................8fc..................fffffc6.......6a...............................................',
+    '..........................................................................................................................5c96..................e6669a6........55...............................................',
+    '..........................................................................................................................555...................568ec8.........4................................................',
   ],
 });
 
 /** Icône du Dragoon : la pointe de lance, seule chose que l'adversaire voit venir. */
 export const ICON_LANCE = deepFreeze({
   /**
-   * Icône de titre et de carte du Lancier. Elle n'est pas redessinée à la
-   * main : elle **échantillonne le profil de `LANCER_SPEAR`** sur un axe à
-   * 45°, hampe → virole → tête à bords droits. Redessinée, elle avait déjà
-   * divergé deux fois — restée indigo quand l'arme est passée au cuivre, puis
-   * restée une lame fine quand la tête est devenue une pointe de flèche.
+   * Icône de titre et de carte du Lancier, **dérivée de l'artwork lui-même** :
+   * la lance est tournée de 45° et réduite au cadre, elle n'est ni redessinée
+   * ni reconstruite à partir d'un profil. C'est la seule façon qu'elle ne
+   * mente pas sur l'arme qu'elle annonce — elle avait déjà divergé trois fois
+   * (restée indigo quand l'arme est passée au cuivre, restée une lame fine
+   * quand la tête est devenue une pointe de flèche, puis restée cuivre quand
+   * l'arme est passée à l'électrique).
+   *
+   * Deux pièges de réduction, payés puis corrigés : cadrer la **tête seule**
+   * donne une tache illisible à 16 px — c'est la silhouette longue terminée
+   * par une masse qui se lit comme une arme ; et il faut **prémultiplier
+   * l'alpha** avant de réduire, sans quoi la moyenne d'aire mélange le noir
+   * des pixels transparents au violet de l'arme et toute la silhouette ressort
+   * presque noire.
    */
   w: 16,
   h: 16,
   palette: {
-    K: '#231108', // contour
-    C: '#e0a877', // cuivre éclairé, arête de lame
-    p: '#c9905f', // cuivre clair
-    c: '#975938', // cuivre
-    s: '#6b3b22', // cuivre à l'ombre
-    O: '#4d2815', // cuivre sombre, biseau bas
-    W: '#fdfefc', // virole
-    T: '#7e9ca0', // bleu-vert
+    0: '#3f1d58',
+    1: '#4c2690',
+    2: '#6637ae',
+    3: '#8758b2',
+    4: '#9c6dd9',
+    5: '#bb8afc',
+    6: '#e1a8ff',
+    7: '#ffbaff',
   },
   rows: [
     '................',
     '................',
-    '..........KKK...',
-    '........CCCpcK..',
-    '........CppcsK..',
-    '.......KWpcsOK..',
-    '.......WWWssO...',
-    '......KcWppOO...',
-    '.....KccspK.....',
-    '....KTTsK.......',
-    '...KcTTK........',
-    '..KccsK.........',
-    '...csK..........',
-    '....K...........',
     '................',
-    '................',
+    '.............73.',
+    '............42..',
+    '..........5326..',
+    '.........4324...',
+    '.........117....',
+    '........22......',
+    '.......2........',
+    '......1.........',
+    '.....1..........',
+    '...32...........',
+    '..23............',
+    '.1..............',
+    '32..............',
   ],
 });
 

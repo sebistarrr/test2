@@ -70,8 +70,8 @@ qui tienne sur toute la vidéo.
 
 | Ce qu'il porte | Relevé | Ce qui est dans la fiche |
 | --- | --- | --- |
-| Corps | **cuivre `#c9905f`** — écart volontaire : la vidéo montre une bille indigo `#574a84` | `look.body`, `radius: 41` |
-| Arme | **hampe cuivre à segments bleu-vert hachurés de blanc, ligature à cordelettes pendantes, virole argent, pointe de flèche à bords droits et barbelures** — d'après la maquette, pas la vidéo | `lancerSpear`, carte 104 × 22 à `scale: 2` |
+| Corps | **violet `#7046ac`**, la teinte de la hampe — proche, de fait, de l'indigo `#574a84` mesuré | `look.body`, `radius: 41` |
+| Arme | **lance électrique violette** — pommeau doré, hampe parcourue de fissures blanches, garde, tête hérissée à gemme centrale — transcrite de la maquette, pas de la vidéo | `lancerSpear`, carte 208 × 43 à `scale: 1` |
 | Portée | centre → pointe = **164 px**, la plus longue du roster | `weapon.reach: 164` |
 | Talon | dépasse de 42 px **derrière** le pivot | `handle.length: -44` — −44 + 104 × 2 = 164 |
 | **Angle d'arme** | **la lance suit le cap de déplacement** : 6,6° d'écart médian sur 141 images, contre 37,9° du cap vers l'adversaire | `weapon.spin: 0`, et `abilities/lancer.js` recopie `heading` |
@@ -313,22 +313,19 @@ sans que ça se voie.
   sombre `#1c1a26`**. L'arène reste blanche → le pixel-art garde ses contours
   noirs mesurés. Le « chrome » posé sur le fond sombre (titre, lignes de stat)
   passe à un liseré crème `STAGE.outline` ; les jauges gardent une plaque crème.
-- **Le Lancier ne ressemble plus à sa vidéo, et c'est demandé.** Trois écarts
-  assumés, tous d'origine externe (une maquette d'arme fournie) et non d'un
-  relevé : son **arme** est celle de la maquette — hampe cuivre à segments
-  bleu-vert, ligature blanche, virole argent, tête à barbelures — là où la
-  vidéo montre une lame en feuille indigo ; sa **bille** est cuivre `#c9905f`
-  au lieu de l'indigo `#574a84` mesuré ; sa **jauge** et sa ligne de stat
-  suivent, sans quoi elles restaient les derniers fragments indigo de l'écran.
-  Tout le reste — portée, cadence, dégâts, vitesse, Bond — reste au relevé.
-- **Le cuivre de la bille n'est pas le cuivre dominant de la hampe.** La teinte
-  dominante est `#975938` ; le Hors-la-loi est à `#8a5934`, soit **13 unités de
-  rouge** d'écart, et dans leur duel les deux billes et les deux titres
-  devenaient indiscernables. La bille porte donc `#c9905f`, le cuivre de la
-  facette éclairée du fer de lance — toujours « la couleur de l'arme », mais à
-  63 unités du Hors-la-loi. Corollaire : sur ce cuivre clair, le crème mesuré
-  du chiffre de PV se noie, donc il passe en brun sombre — même écart que l'or
-  du Bretteur, même raison.
+- **Le Lancier ne ressemble plus à sa vidéo, et c'est demandé.** Son **arme**
+  est la **lance électrique** d'une maquette fournie — pommeau doré, hampe
+  violette parcourue de fissures blanches, tête hérissée à gemme — là où la
+  vidéo montre une lame en feuille indigo. Sa **bille**, sa **jauge** et sa
+  **ligne de stat** suivent la gamme violette de l'arme. Tout le reste —
+  portée, cadence, dégâts, vitesse, Bond — reste au relevé.
+- **Le violet retombe près du relevé, le cuivre en était l'écart.** La bille
+  porte `#7046ac`, la hampe de la lance ; la vidéo donne `#574a84`. C'est donc
+  le détour par le cuivre (`#c9905f`, du temps de la lance de bronze) qui
+  s'éloignait du relevé, pas ce retour. Corollaire : le crème `#f5f2ea`
+  **mesuré** du chiffre de PV revient, après avoir dû passer en brun sombre le
+  temps où le cuivre clair de la bille le noyait. Et la teinte reste distincte
+  de l'Ombre (`#870286`), qui est un magenta à rouge dominant.
 - Filigrane `@ElementalArmoryLeague` non reproduit — ni le « ballthing.com » /
   « @ballthingsim » des vidéos des trois invités.
 - **HIGH NOON ne teinte pas l'arène.** Sur sa vidéo, l'arène entière vire au

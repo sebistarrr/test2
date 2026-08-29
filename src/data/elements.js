@@ -1701,18 +1701,30 @@ const LANCER = {
      * cuivre de la facette éclairée du fer de lance, donc toujours « la
      * couleur de l'arme », et il s'en détache nettement (63, 55, 43 d'écart).
      */
-    body: '#c9905f',
+    /**
+     * Violet de la hampe de la lance électrique — la bille suit l'arme, comme
+     * elle suivait le cuivre avant elle.
+     *
+     * Retour, de fait, tout près de l'indigo `#574a84` **mesuré** sur la
+     * vidéo : c'est le détour par le cuivre qui était l'écart, pas celui-ci.
+     * Et la teinte reste distincte de l'Ombre (`#870286`), qui est un magenta
+     * — rouge dominant, là où celui-ci a le bleu dominant.
+     */
+    body: '#7046ac',
     bodyHit: '#e4e4e6', // mesuré : le disque touché blanchit, comme les deux autres invités
     outline: '#181008',
     outlineWidth: 5,
     /** Mesuré : PV en blanc cerné de noir. Ce moteur ne cerne pas le chiffre
      *  (voir le Bretteur) : sur le cuivre clair, le crème mesuré se noie, donc
      *  le chiffre passe en brun sombre. Même écart volontaire, même raison. */
-    hpColor: '#3d2113',
+    /** Retour au crème **mesuré**. Il avait dû passer en brun sombre parce que
+     *  le cuivre clair de la bille le noyait ; sur ce violet profond, le crème
+     *  d'origine repasse sans peine. */
+    hpColor: '#f5f2ea',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
-      color: 'rgba(201,144,95,0.5)',
+      color: 'rgba(112,70,172,0.5)',
       radius: 1.66,
       pulse: 2.2,
       showWhen: 'ultimate-ready', // halo cuivre quand le Bond est chargé
@@ -1762,8 +1774,8 @@ const LANCER = {
   movement: { speed: 540, turnRate: 1.85, seek: 0.4, mass: 1 },
 
   weapon: {
-    name: 'Lance de cuivre',
-    nameRef: 'Copper Lance',
+    name: 'Lance électrique',
+    nameRef: 'Electric Lance',
     /** Mesuré : centre → pointe = 131 px sur la vidéo 576 → ×1,25 = 164.
      *  **La plus longue portée du roster.** Elle découle du sprite :
      *  −52 (talon) + 54 cellules × 4 = 164, pour que hitbox et dessin ne
@@ -1867,8 +1879,8 @@ const LANCER = {
      *  (**42 px** remesurés en aplatissant la lance, arrondis à 44 pour tomber
      *  sur la grille du sprite) — le blit démarre donc en arrière de la bille,
      *  ce que ne fait aucune autre arme du roster. */
-    handle: { length: -44, width: 0, color: '#6b3b22', dark: '#4d2815', outline: '#231108', gem: null },
-    head: { sprite: 'lancerSpear', scale: 2, anchorY: 0.5 }, // −44 + 104 × 2 = 164
+    handle: { length: -44, width: 0, color: '#4c2d80', dark: '#210f3e', outline: '#080211', gem: null },
+    head: { sprite: 'lancerSpear', scale: 1, anchorY: 0.5 }, // −44 + 208 × 1 = 164
     /** Seule la lame tranche : elle commence à 52 px du centre (fraction 0,32),
      *  le talon et le manche ne comptent pas. Rayon volontairement fin — une
      *  arme aussi longue touche sans arrêt avec un gros rayon. */
@@ -1945,10 +1957,12 @@ const LANCER = {
     nameRef: 'JUMP',
     barLabel: 'JUMP',
     barLabelFr: 'BOND',
-    /** La pipette donne l'indigo `#594984` de la vidéo ; la jauge suit le
-     *  changement de teinte du corps, sans quoi elle restait le dernier
-     *  fragment indigo de l'écran. C'est le cuivre moyen de la hampe. */
-    barFill: '#975938',
+    /** La jauge suit la teinte du corps, sans quoi elle resterait le dernier
+     *  fragment de l'ancienne identité à l'écran. C'est le violet sombre de la
+     *  hampe de la lance électrique — et il retombe tout près de l'indigo
+     *  `#594984` pipetté sur la vidéo, que le passage par le cuivre avait
+     *  écarté. */
+    barFill: '#5d3d8e',
     barText: '#ffffff',
     /** Mesuré : +0,10 de remplissage par seconde, donc jauge pleine en ~10 s. */
     chargeRate: 10,
@@ -2021,7 +2035,9 @@ const LANCER = {
   hud: {
     stats: [(f) => `Damage: ${formatHalf(f.stacks)}`],
     statsFr: [(f) => `Dégâts : ${formatHalf(f.stacks)}`],
-    color: '#c9905f', // cuivre : la ligne de stat suivait encore l'indigo d'origine
+    // Violet clair : sur l'encre sombre du chrome, le violet de la bille
+    // manquerait de contraste.
+    color: '#9d7bc8',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
