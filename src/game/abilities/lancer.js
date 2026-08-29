@@ -1,52 +1,68 @@
 /**
- * Pouvoirs du DRAGOON — relevés sur « Dragoon vs Outlaw » (576 × 1024, 30 fps).
+ * Pouvoirs du LANCIER — relevés sur « Dragoon vs Outlaw » (576 × 1024, 30 fps).
  *
- *  • **Charge de lance** — le cœur du personnage, et ce que le premier portage
- *    avait manqué. Le Dragoon ne flotte pas en faisant tourner sa lance : il
- *    **vise, verrouille, puis fonce en ligne droite**, lance en avant, en
- *    laissant une traînée d'images fantômes cramoisies. Trois phases, plus une
- *    de récupération, décrites plus bas.
+ *  • **La lance suit le cap.** C'est la mécanique centrale du personnage, et
+ *    les deux portages précédents l'avaient manquée chacun à sa façon. La
+ *    lance ne tourne pas librement et ne vise pas non plus : elle est
+ *    **soudée à la vitesse**, et pointe là où le Lancier va.
+ *
+ *  • **Charge de lance** — il accélère en ligne droite, pointe en avant, en
+ *    laissant une traînée d'images fantômes cramoisies.
  *
  *  • Furie du lancier — passif : la stat « Damage » du HUD monte à chaque
  *    touche portée. Rien à faire ici, c'est `weapon.melee.onHit.stackGain`
  *    qui l'applique.
  *
  *  • BOND (JUMP) — ultime. Le seul pouvoir du jeu qui **retire son porteur de
- *    l'arène** : le Dragoon prend son élan (0,45 s), disparaît une seconde et
+ *    l'arène** : le Lancier prend son élan (0,45 s), disparaît une seconde et
  *    demie, puis retombe sur l'adversaire. Pendant le vol, un disque gris suit
  *    la cible : il enfle au sommet du bond puis se resserre — c'est le
  *    resserrement qui annonce la chute.
  *
- * ## Le relevé de la charge
+ * ## Le relevé de l'angle d'arme
  *
- * Trois mesures, prises image par image sur la vidéo de référence :
+ * Mesuré sur 141 images réparties sur toute la vidéo, lance isolée par ACP de
+ * son contour sombre — les fantômes translucides et la traînée cramoisie sont
+ * écartés par seuil, ce qui est précisément ce qui manquait au premier relevé.
  *
- *  1. **La lance vise l'adversaire.** L'axe principal du nuage de pixels
- *     indigo, comparé au cap bille → adversaire, tient dans **±5°** sur toutes
- *     les plages où la lance est isolable (t = 3,0–3,2 / 3,4–3,6 / 4,0–4,3 s),
- *     et **converge** après chaque décrochage (err −19,5° → −0,8° entre 4,43 et
- *     4,80 s). Elle ne tourne donc pas librement : la fiche porte
- *     `weapon.spin = 0`, comme le canon du Hors-la-loi, et c'est ce module qui
- *     écrit `weaponAngle`.
- *  2. **Le plafond de rotation est de ~230 °/s** : quand le cap de l'adversaire
- *     file, la lance le suit à 220 °/s (21,5° → −30,0° en 0,234 s) sans jamais
- *     aller plus vite. D'où `lunge.aimRate`.
- *  3. **La charge est trois fois la vitesse de croisière.** En croisière, la
- *     bille tient 400–450 px/s vidéo, soit 500–560 en repère jeu — la vitesse
- *     `mesuré` de 540 de la fiche. Pendant une charge (t = 8,70–8,84 s), elle
- *     monte à 1 125–1 160 px/s vidéo, soit **~1 400 en repère jeu**, sur
- *     ~0,15 s. D'où `lunge.speed` et `lunge.dash`.
+ * | Ce à quoi on compare l'axe de la lance | Écart médian |
+ * | --- | --- |
+ * | **cap de déplacement** | **6,6°** (3,7° sur les images les mieux isolées) |
+ * | cap vers l'adversaire | 37,9° |
  *
- * ## Ce que la charge répare
+ * Et ça tient à tous les régimes de vitesse : 10,6° en marche lente, 6,1° en
+ * croisière, 4,8° à l'accélération, 6,1° en pleine charge. 94 % des images
+ * sont à moins de 15° du cap de déplacement.
  *
- * L'ancien verrou de touche de **6 s** était le seul écart au relevé qui
- * subsistait, et il était assumé faute de mieux : une lance de 164 px qui
- * balaie en tournant accroche 0,34 fois par seconde là où la vidéo en compte
- * 0,181, et seul un verrou absurde ramenait la cadence. La charge rend le
- * mécanisme au lieu de le maquiller — le Dragoon ne touche plus par hasard en
- * balayant, il touche **quand sa charge aboutit** — ce qui rend au verrou sa
- * valeur relevée de 1,1 s. C'est la cadence du cycle qui porte désormais le
- * budget de dégâts, comme sur la vidéo.
+ * ### Ce que les deux relevés précédents avaient donné, et pourquoi
+ *
+ *  1. **327 °/s de rotation libre.** Le détecteur prenait le barycentre des
+ *     pixels indigo les plus lointains ; pendant une charge, ce sont les
+ *     **images fantômes**, pas la lance.
+ *  2. **« Elle vise, à ±5° ».** Mesuré sur les seules plages où le Lancier
+ *     fonçait *sur* l'adversaire — là où cap de déplacement et cap adverse se
+ *     confondent. Un sous-ensemble biaisé : la conclusion était vraie sur
+ *     l'échantillon et fausse en général.
+ *
+ * ### Ce que `weaponAngle = heading` rend, et qu'aucun des deux ne rendait
+ *
+ *  - l'angle **figé une demi-seconde** quand il va tout droit (2,13 → 2,67 s,
+ *    moins de 10° d'écart) ;
+ *  - un **saut de 85° en une image** au rebond mural (2,667 → 2,700 s) —
+ *    `Fighter.step` réfléchit `heading` sur les murs, l'arme suit ;
+ *  - une rotation lente le reste du temps : |ω| médian **33 °/s**, 88 % des
+ *    images sous 100 °/s — c'est le pilotage (1,85 × 0,4 = 0,74 rad/s), pas
+ *    une règle d'arme.
+ *
+ * Aucune de ces trois valeurs n'est réglée nulle part : elles tombent toutes
+ * seules. C'est la marque d'un mécanisme juste plutôt que d'un chiffre calé.
+ *
+ * ## Ordre d'exécution
+ *
+ * `Match` appelle `Fighter.step()` **avant** `mod.update()`. Quand ce module
+ * recopie `heading` dans `weaponAngle`, il lit donc le cap déjà intégré et
+ * déjà réfléchi par les rebonds du pas courant : l'arme ne traîne jamais d'une
+ * image derrière le corps.
  *
  * Déterminisme : tout ce qui est ici tourne dans le fil de simulation. La
  * décoration passe donc par `fx.ring`, qui **ne tire aucun aléa** — un
@@ -54,34 +70,38 @@
  * vainqueurs. Les images fantômes, elles, sont dans `render/flair.js` : le
  * module ne fait qu'allumer le compteur `f.ghosting`.
  *
- * @module game/abilities/dragoon
+ * @module game/abilities/lancer
  */
 
-import { TAU, clamp, rotateToward, wrapAngle } from '../../core/math.js';
+import { TAU, clamp, wrapAngle } from '../../core/math.js';
 import { ARENA } from '../../data/tuning.js';
 
 /**
- * Phase de la charge.
+ * Phase du cycle de charge.
  *
- *  - `aim`     : la lance pivote vers le centre de l'adversaire ;
- *  - `lock`    : l'angle est **gelé**, la lance ne suit plus la cible ;
- *  - `dash`    : le corps file en ligne droite le long de l'angle verrouillé ;
- *  - `recover` : temps mort, puis la visée reprend.
+ *  - `seek`    : deplacement normal, la lance suit le cap ;
+ *  - `dash`    : le corps file en ligne droite, cap gele ;
+ *  - `recover` : temps mort apres la charge ou la touche.
  *
- * @typedef {'aim'|'lock'|'dash'|'recover'} LungePhase
+ * Il n'y a plus de phase de visee ni de verrouillage : la lance suivant le cap
+ * de deplacement, elle est **deja** dans l'axe de la charge. Viser n'aurait
+ * aucun sens, et geler l'angle non plus — c'est le cap qui est gele pendant la
+ * charge, et l'arme suit.
+ *
+ * @typedef {'seek'|'dash'|'recover'} LungePhase
  */
 
-export const dragoonAbilities = {
-  id: 'dragoon',
+export const lancerAbilities = {
+  id: 'lancer',
 
   /** @param {import('../fighter.js').Fighter} f */
   init(f) {
     /** @type {LungePhase} */
-    f.state.phase = 'aim';
+    f.state.phase = 'seek';
     f.state.phaseTimer = 0;
-    /** Cap figé au verrouillage : la charge le suit sans le corriger. */
-    f.state.dashAngle = f.weaponAngle;
-    // 'ground' | 'windup' | 'flight' — le vol est le seul état où le Dragoon
+    /** Cap figé au départ de la charge : elle le suit sans le corriger. */
+    f.state.dashAngle = f.heading;
+    // 'ground' | 'windup' | 'flight' — le vol est le seul état où le Lancier
     // quitte le plateau (voir Fighter.offstage)
     f.state.jump = 'ground';
     f.state.jumpTimer = 0;
@@ -129,12 +149,8 @@ export const dragoonAbilities = {
   },
 
   /**
-   * Machine d'états de la charge.
-   *
-   * Un seul `switch`, et **un seul endroit qui écrit `weaponAngle`** : la phase
-   * `aim`. Les trois autres ne l'écrivent pas du tout, ce qui *est* le gel de
-   * l'angle — la fiche porte `weapon.spin = 0`, donc `Fighter.step` n'y touche
-   * pas non plus.
+   * Machine d'états de la charge, et **l'unique endroit qui écrit
+   * `weaponAngle`** — d'un bout à l'autre du cycle, il vaut le cap.
    */
   tickLunge(f, dt, now, game) {
     const L = f.el.weapon.lunge;
@@ -142,70 +158,68 @@ export const dragoonAbilities = {
     f.state.phaseTimer += dt;
 
     /**
+     * **La lance suit le cap.** Tout le personnage tient dans cette ligne :
+     * pas de visée, pas de rotation propre, pas d'inertie d'arme. Le cap est
+     * déjà intégré et déjà réfléchi par les rebonds — `Fighter.step` tourne
+     * avant ce module — donc l'arme ne traîne pas d'une image derrière le
+     * corps.
+     *
+     * Pendant la charge, `heading` est réécrit sur `dashAngle` juste en
+     * dessous : l'angle d'arme est donc gelé lui aussi, sans qu'on ait à le
+     * geler explicitement.
+     */
+    f.weaponAngle = wrapAngle(f.heading);
+
+    /**
      * **La lance ne blesse qu'en charge.** Hors charge elle est *portée*, pas
      * poussée : le verrou de touche est retenu à chaque pas, et seule la phase
      * `dash` le laisse courir.
      *
-     * C'est la contrepartie obligée de la visée. Une lance de 164 px asservie
-     * à la cible pointe sur elle en permanence, donc l'embroche en permanence :
-     * au banc, sans ce verrou, le Dragoon montait à **0,42 coup/s** contre
-     * 0,181 relevé, et gagnait ses 30 duels en 19 s. C'est exactement le piège
-     * du Hors-la-loi, dont le canon asservi gagnait 27 duels sur 27 avant que
-     * sa dispersion ne le ramène à sa précision relevée.
+     * C'est la contrepartie obligée d'une arme de 164 px braquée dans l'axe du
+     * déplacement — et le Lancier se déplace vers son adversaire. Sans ce
+     * verrou il l'embroche en continu : au banc, **0,42 coup/s** contre 0,181
+     * relevé, et 30 duels gagnés en 19 s. C'est exactement le piège du
+     * Hors-la-loi, dont le canon asservi gagnait 27 duels sur 27 avant que sa
+     * dispersion ne le ramène à sa précision relevée.
      */
     if (f.state.phase !== 'dash') f.meleeCd = Math.max(f.meleeCd, L.guard);
 
     switch (f.state.phase) {
-      case 'aim': {
+      case 'seek': {
         if (!target || !target.onStage) return;
-        const want = Math.atan2(target.y - f.y, target.x - f.x);
-        // la visée est ralentie comme le reste : une lance givrée vise mal
-        f.weaponAngle = rotateToward(f.weaponAngle, want, L.aimRate * f.slowFactor(now) * dt);
-        const err = Math.abs(wrapAngle(f.weaponAngle - want));
         const d = Math.hypot(target.x - f.x, target.y - f.y);
-        // **fenêtre d'engagement**, bornée des deux côtés : un lancier charge
-        // de loin. Trop près, il embroche à coup sûr et la charge n'est plus
-        // qu'une formalité ; trop loin, il n'arrive jamais au contact.
-        if (err <= L.tolerance && d <= L.range && d >= L.minRange) this.lock(f, game);
+        // **fenetre d'engagement**, bornee des deux cotes : un lancier charge
+        // de loin. Trop pres, il embroche a coup sur et la charge n'est plus
+        // qu'une formalite ; trop loin, il n'arrive jamais au contact.
+        if (d > L.range || d < L.minRange) return;
+        // l'adversaire doit etre dans l'axe de la lance — c'est-a-dire du cap
+        const bear = Math.atan2(target.y - f.y, target.x - f.x);
+        if (Math.abs(wrapAngle(bear - f.heading)) <= L.cone) this.dash(f, game);
         break;
       }
 
-      case 'lock':
-        // rien n'écrit l'angle : c'est le gel, et il est total
-        if (f.state.phaseTimer >= L.lock) this.dash(f, game);
-        break;
-
       case 'dash':
-        // ligne droite : le cap est réécrit à chaque pas sur l'angle verrouillé,
+        // ligne droite : le cap est reecrit a chaque pas sur l'angle de depart,
         // sinon le pilotage automatique de `Fighter.step` incurverait la charge
         f.heading = f.state.dashAngle;
         if (f.state.phaseTimer >= L.dash) this.endDash(f);
         break;
 
       case 'recover':
-        if (f.state.phaseTimer >= L.recover) this.setPhase(f, 'aim');
+        if (f.state.phaseTimer >= L.recover) this.setPhase(f, 'seek');
         break;
 
       default:
-        this.setPhase(f, 'aim');
+        this.setPhase(f, 'seek');
     }
-  },
-
-  /** Verrouillage : l'angle de charge est pris ici, et plus rien ne le bouge. */
-  lock(f, game) {
-    const L = f.el.weapon.lunge;
-    f.state.dashAngle = f.weaponAngle;
-    this.setPhase(f, 'lock');
-    // un anneau serré, le temps du verrou : c'est le seul préavis que
-    // l'adversaire reçoit. `fx.ring` ne tire aucun aléa.
-    game.fx.ring(f.x, f.y, f.radius * 1.5, f.radius * 1.05, L.lock, L.lockRing, 3, true);
   },
 
   /** Départ de la charge : vitesse, cap et traînée sont allumés ensemble. */
   dash(f, game) {
     const L = f.el.weapon.lunge;
+    // le cap de la charge est le cap courant : la lance pointe deja dedans
+    f.state.dashAngle = f.heading;
     this.setPhase(f, 'dash');
-    f.heading = f.state.dashAngle;
     f.boost = L.dash;
     f.boostFactor = L.speed;
     // le compteur couvre exactement la charge ; passé zéro, `flair` vide la
@@ -218,7 +232,7 @@ export const dragoonAbilities = {
   /**
    * **Seul point de sortie de la charge.** Vitesse, facteur de vitesse et
    * traînée sont remis ensemble, et la phase passe à `recover`. Dispersées,
-   * ces remises à zéro laissaient un bonus de vitesse accroché au Dragoon
+   * ces remises à zéro laissaient un bonus de vitesse accroché au Lancier
    * quand la charge s'interrompait sur une touche — c'est le piège du Bretteur,
    * qui a déjà coûté une fin de duel en pleine ruée.
    */
@@ -230,7 +244,7 @@ export const dragoonAbilities = {
   },
 
   /**
-   * La pointe a touché. Le Dragoon est **repoussé en arrière** et repart au
+   * La pointe a touché. Le Lancier est **repoussé en arrière** et repart au
    * début du cycle : c'est ce que montre la vidéo, où chaque touche de lance
    * est suivie d'un recul net avant la charge suivante.
    *
@@ -250,7 +264,7 @@ export const dragoonAbilities = {
   /* Bond                                                                */
   /* ------------------------------------------------------------------ */
 
-  /** Élan : le Dragoon reste au sol, mais la jauge se vide déjà (mesuré). */
+  /** Élan : le Lancier reste au sol, mais la jauge se vide déjà (mesuré). */
   castJump(f, game) {
     const ult = f.el.ultimate;
     // une charge en cours ne survit pas au Bond : sans ça, le bonus de vitesse
@@ -269,12 +283,12 @@ export const dragoonAbilities = {
     });
   },
 
-  /** Décollage : le Dragoon quitte le plateau pour toute la durée du vol. */
+  /** Décollage : le Lancier quitte le plateau pour toute la durée du vol. */
   takeOff(f, game) {
     const ult = f.el.ultimate;
     f.state.jump = 'flight';
     f.state.jumpTimer = 0;
-    // marge de sécurité : c'est `land()` qui remet le Dragoon sur le plateau,
+    // marge de sécurité : c'est `land()` qui remet le Lancier sur le plateau,
     // le décompte de `offstage` ne doit surtout pas l'y ramener avant
     f.offstage = ult.flight + 0.1;
     // il ne peut plus être touché : il n'est plus là
@@ -283,7 +297,7 @@ export const dragoonAbilities = {
     f.impulseY = 0;
     const target = f.opponent;
     f.state.mark = { x: target?.x ?? f.x, y: target?.y ?? f.y, r: f.radius };
-    // **onde de choc au sol, au point de décollage** : le Dragoon disparaît
+    // **onde de choc au sol, au point de décollage** : le Lancier disparaît
     // d'une image à l'autre, et sans elle rien ne dit d'où il est parti.
     const lift = ult.liftoff;
     game.fx.ring(f.x, f.y, f.radius * 0.8, lift.to, lift.time, lift.color, lift.width, true);
@@ -318,7 +332,7 @@ export const dragoonAbilities = {
   },
 
   /**
-   * Chute : le Dragoon retombe **collé à l'adversaire** et frappe autour de
+   * Chute : le Lancier retombe **collé à l'adversaire** et frappe autour de
    * lui. Le décalage est pris le long du cap adversaire → marqueur pour que
    * les deux billes se touchent sans s'interpénétrer : posé pile sur la cible,
    * il serait aussitôt séparé par `resolveBodies`, ce qui rendait la chute

@@ -805,95 +805,103 @@ export const ICON_SABRE = deepFreeze({
 });
 
 /* ------------------------------------------------------------------
- * DRAGOON — la lance, arme la plus longue du jeu
+ * Fer de lance du Lancier — d'après la maquette d'arme fournie.
  *
- * Relevé en aplatissant la lance : pour trois images nettes (t = 0 / 4,5 /
- * 7,8 s), la bille est localisée au sous-pixel, l'image est tournée pour
- * mettre la lance à l'horizontale, puis on mesure la demi-épaisseur colonne
- * par colonne. Les trois profils concordent.
+ * L'ancienne carte était une lame **en feuille** relevée sur la vidéo : large
+ * sur toute sa longueur, crantée, indigo. La maquette montre autre chose, et
+ * c'est elle qui fait foi désormais — une **hampe fine** et une **grosse tête
+ * en fer de lance**, dans une gamme cuivre et bleu-vert :
  *
- *   • talon                       = −34 px vidéo → −42 px logiques
- *   • pointe                      = 128 / 132 / 136 px vidéo → **164 px**
- *   • demi-épaisseur, à la bille  =   9,7 px vidéo → 24 px logiques de large
- *   • demi-épaisseur, au ventre   =  12,8 px vidéo → **32 px** de large
- *   • demi-épaisseur, près pointe =   8,4 px vidéo → 21 px de large
+ *   • hampe cuivre `#975938`, ponctuée de segments bleu-vert `#7e9ca0` et de
+ *     torsades cuivre en diagonale ;
+ *   • une **ligature blanche** `#fdfefc` aux deux tiers, la partie la plus
+ *     claire de l'arme et son point de repère à l'écran ;
+ *   • une **virole argent** de quatre anneaux qui sépare la hampe de la lame ;
+ *   • une **tête à barbelures** : évasement brutal sur 4 cellules, puis
+ *     effilement rectiligne jusqu'à la pointe, arête centrale claire et
+ *     biseau inférieur sombre — les facettes de la maquette.
  *
- * **La lame est en feuille** : plus large au milieu qu'à ses deux bouts. Le
- * premier portage l'affinait de façon monotone, ce que la vidéo dément.
- * Aucune garde n'est visible : ce qui ressemblait à un losange de garde est
- * derrière la bille, donc invisible en jeu.
+ * Les couleurs sont **pipettées sur la maquette**, fond et arcs électriques
+ * écartés : cuivre `#975938 / #6b3b22 / #4d2815`, bleu-vert `#7e9ca0 / #556a6d`,
+ * ligature `#fdfefc`, contour `#231108`.
  *
- * **La silhouette est crantée, pas lisse.** C'est le second relevé, pris sur
- * l'image 4,267 s où la lance passe à 1,2° de l'horizontale : le contour noir
- * monte et descend d'une dent toutes les ~8 px logiques sur les deux bords, du
- * talon à la pointe. La carte lisse d'origine lissait précisément ce qui fait
- * lire l'arme comme une pique et non comme une épée. Les demi-épaisseurs
- * ci-dessus, elles, ne bougent pas : elles restent `mesuré`, le crantage se
- * pose dessus.
+ * **L'encombrement ne bouge pas** : toujours 104 × 16 à `scale: 2`, donc
+ * 208 × 32 px logiques, et `handle.length: -44` place la pointe à
+ * −44 + 208 = **164**, la portée relevée. Changer le dessin ne change donc
+ * ni la portée ni la hitbox.
  *
- * D'où une carte de 104 × 16 rendue à `scale: 2` : toujours 208 × 32 px
- * logiques, avec `handle.length: -44` pour que le talon dépasse derrière le
- * pivot et que la pointe tombe pile sur la portée (−44 + 104 × 2 = 164).
+ * Conséquence de cadrage, déjà vraie de l'ancienne carte : la bille (rayon 41)
+ * couvre les cellules 0 à ~43. Tout ce qui doit se voir — ligature, virole,
+ * tête — est donc posé **au-delà de la cellule 43**, et le pommeau du talon
+ * n'apparaît que quand la lance dépasse derrière la bille.
  * ------------------------------------------------------------------ */
-export const DRAGOON_LANCE = deepFreeze({
-  /**
-   * **104 x 16 à `scale: 2`**, là où la carte précédente faisait 52 x 8 à
-   * `scale: 4`. Même encombrement (208 x 32 px logiques), donc même portée
-   * (−44 + 208 = 164) et même profil en feuille — mais **deux fois plus de
-   * résolution en longueur**, ce qui est exactement ce qu'il faut pour des
-   * crans de 2 px. À 52 cellules, le plus petit cran possible en faisait 4.
-   */
+export const LANCER_SPEAR = deepFreeze({
   w: 104,
   h: 16,
   palette: {
-    K: '#0d0a14', // contour
-    l: '#9a8ab4', // arête haute, éclairée (p80 de la lame relevée)
-    p: '#6b5484', // corps de lame (médiane relevée)
-    s: '#4a3a63', // arête basse, à l'ombre (p20 relevée)
-    m: '#2f2636', // manche
-    d: '#17111f', // manche à l'ombre
+    K: '#231108',
+    C: '#c9905f',
+    c: '#975938',
+    o: '#6b3b22',
+    O: '#4d2815',
+    T: '#7e9ca0',
+    t: '#556a6d',
+    W: '#fdfefc',
+    w: '#b9c2c1',
+    g: '#6b6e6a',
   },
   rows: [
-    '...............................KKKKKKKKKKKKKKKKKllKKllKKllKKllKKKKKKKKKKKKKKKK..........................',
-    '.......................KKKKKKKKKllKKllKKllKKllKllllllllllllllllKllKKllKKllKKlKKKKKKKKKKKKKK.............',
-    '.....................KKKllKKllKlllllllllllllllllppllppllppllppllllllllllllllllKKllKKllKKllKKKKKKKK......',
-    '..............KKKKKKKKllllllllllppllppllppllpplpppppppppppppppplppllppllppllplllllllllllllllllKKlKK.....',
-    '.........KKKKKKmKKmmKKllppllpplpppppppppppppppppppppppppppppppppppppppppppppppllppllppllppllllllllKKKK..',
-    '.KKKKKKKKKmmKKmmmmmmmmppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppllpllKlKK.',
-    'KKmmKKmmmmmmmmmmmmmmmmppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppllllKK',
-    'KmmmmmmmmmmmmmmmmmmmmmppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppplpllK',
-    'KmddmmddddmmddmmmmmmmmpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppspslK',
-    'KKddKKdddddddddmddmmddppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppssssKK',
-    '.KKKKKKKKKddKKddddddddppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppsspssKsKK.',
-    '.........KKKKKKdKKddKKssppssppspppppppppppppppppppppppppppppppppppppppppppppppssppssppssppssssssssKKKK..',
-    '..............KKKKKKKKssssssssssppssppssppssppsppppppppppppppppsppssppssppsspsssssssssssssssssKKsKK.....',
-    '.....................KKKssKKssKsssssssssssssssssppssppssppssppssssssssssssssssKKssKKssKKssKKKKKKKK......',
-    '.......................KKKKKKKKKssKKssKKssKKssKssssssssssssssssKssKKssKKssKKsKKKKKKKKKKKKKK.............',
-    '...............................KKKKKKKKKKKKKKKKKssKKssKKssKKssKKKKKKKKKKKKKKKK..........................',
+    '....................................................................................CKK.................',
+    '................................................................................KO.KCCCKK...............',
+    '..................................................................................KCCCCCCKK.............',
+    '...............................................................................K.KCCCCCCCCCKKK..........',
+    '..KKKK....................................................KKKKKKKKKKK....KKKKKKWKCCCCCCCCCCCCCKK........',
+    'KKccccKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKWoWWoWWoWWoKKKKWgWgWgWCCCCCCCCCCCCCCCCKKK.....',
+    'ccccccccOOccccccccccccccTcTTTTccccTcTTTTcTTTTcTTTTcTccccccWoWWoWWoWWoTcTTWgWgWgWCCCcCCCCCCCCCCCCCCCCCCK.',
+    'ccccccccOOccccccccccccccTcTTTTccccTcTTTTcTTTTcTTTTcTccccccWoWWoWWoWWoTcTTWgWgWgWcccccccccccccccccCCCCCCK',
+    'ooooooooOOooooooooooooootottttooootottttottttottttotoooooowOwwOwwOwwOtottwgwgwgwoooccccccoooooooooooOOOO',
+    'ooooooooOOooooooooooooootottttooootottttottttottttotoooooowOwwOwwOwwOtottwgwgwgwOooooooooooooooOOOOKKKKK',
+    'KKooooKKOOKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKwOwwOwwOwwOKKKKwgwgwgwOOoooooooooOOOOOKKK.....',
+    '..KKKK..KK................................................KKKKKKKKKKK....KKKKKKKKOOooooOOOOOOOKK........',
+    '................................................................................KOOOOOOOOOOKKK..........',
+    '..................................................................................KOOOOOOKK.............',
+    '...................................................................................KOOOKK...............',
+    '....................................................................................OKK.................',
   ],
 });
 
 /** Icône du Dragoon : la pointe de lance, seule chose que l'adversaire voit venir. */
 export const ICON_LANCE = deepFreeze({
+  /** Icône de titre et de carte du Lancier — même gamme que `LANCER_SPEAR` :
+   *  tête cuivre, virole blanche, hampe cuivre à segment bleu-vert. Elle avait
+   *  gardé l'indigo de la première version de l'arme, ce qui laissait un
+   *  fragment de l'ancienne identité dans le titre d'arène. */
   w: 16,
   h: 16,
-  palette: { K: '#06040a', l: '#b9a9e0', p: '#7a5ea4', s: '#4a3468', m: '#2f2636' },
+  palette: {
+    K: '#231108', // contour
+    C: '#c9905f', // cuivre éclairé
+    p: '#975938', // cuivre
+    s: '#6b3b22', // cuivre à l'ombre
+    W: '#fdfefc', // virole
+    T: '#7e9ca0', // bleu-vert
+  },
   rows: [
     '.............KK.',
-    '............KlK.',
-    '...........KlpK.',
-    '..........KlppK.',
-    '.........KlppsK.',
-    '........KlppsKK.',
-    '.......KlppsKK..',
-    '......KlppsKK...',
-    '.....KlppsKK....',
-    '....KKlpsKK.....',
-    '...KKKlsKK......',
-    '..KmmKKKK.......',
-    '.KmmmK..........',
-    'KmmmK...........',
-    'KmmK............',
+    '............KCK.',
+    '...........KCpK.',
+    '..........KCppK.',
+    '.........KCppsK.',
+    '........KCppsKK.',
+    '.......KCppsKK..',
+    '......KCppsKK...',
+    '.....KCppsKK....',
+    '....KKCpsKK.....',
+    '...KKWpsKK......',
+    '..KWWKKKK.......',
+    '.KppTK..........',
+    'KpTTK...........',
+    'KppK............',
     'KKK.............',
   ],
 });
@@ -935,6 +943,6 @@ export const PIXEL_MAPS = deepFreeze({
   iconRevolver: ICON_REVOLVER,
   iconSabre: ICON_SABRE,
   // Dragoon
-  dragoonLance: DRAGOON_LANCE,
+  lancerSpear: LANCER_SPEAR,
   iconLance: ICON_LANCE,
 });

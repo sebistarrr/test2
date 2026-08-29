@@ -1670,7 +1670,7 @@ function formatHalf(v) {
 }
 
 /* ==========================================================================
- *  DRAGOON — Lancier  (invité)
+ *  LANCER — Lancier  (invité)
  *
  *  Troisième combattant venu de la chaîne « ballthingsim », relevé sur
  *  « Dragoon vs Outlaw » (576 × 1024, 33,6 s) — la vidéo dont le Hors-la-loi
@@ -1678,33 +1678,47 @@ function formatHalf(v) {
  *  ci-dessous sortent de cette vidéo, converties ×1,25 vers le repère
  *  720 × 1280.
  * ========================================================================== */
-const DRAGOON = {
-  id: 'dragoon',
-  name: 'DRAGOON',
-  nameRef: 'DRAGOON',
-  tagline: 'Lancier — frappe de plus en plus fort, et tombe du ciel',
-  taglineRef: 'Lancer — hits harder with every strike, and falls from the sky',
+const LANCER = {
+  id: 'lancer',
+  name: 'LANCIER',
+  nameRef: 'LANCER',
+  tagline: 'Chargeur — pointe en avant, il frappe de plus en plus fort',
+  taglineRef: 'Charger — spear first, and every hit lands harder',
   icon: 'iconLance',
 
   look: {
     radius: 41, // mesuré : bille de rayon 33 sur la vidéo 576 → ×1,25 = 41
-    body: '#574a84', // pipette : (87,74,132), médiane érodée titre + bille + jauge
+    /**
+     * **Cuivre, comme sa lance.** Écart volontaire au relevé : la vidéo montre
+     * une bille indigo `#574a84`, mais l'arme a été refaite d'après la
+     * maquette, et la bille reprend sa teinte dominante — `#975938`, pipettée
+     * sur la hampe.
+     *
+     * **C'est le cuivre clair, pas le cuivre moyen, et c'est délibéré.** La
+     * teinte dominante de la hampe est `#975938` — mais le Hors-la-loi est à
+     * `#8a5934`, soit 13 unités de rouge d'écart : dans leur duel, les deux
+     * billes et les deux titres devenaient indiscernables. `#c9905f` est le
+     * cuivre de la facette éclairée du fer de lance, donc toujours « la
+     * couleur de l'arme », et il s'en détache nettement (63, 55, 43 d'écart).
+     */
+    body: '#c9905f',
     bodyHit: '#e4e4e6', // mesuré : le disque touché blanchit, comme les deux autres invités
     outline: '#181008',
     outlineWidth: 5,
-    /** Mesuré : PV en blanc cerné de noir. Ce moteur ne cerne pas le chiffre ;
-     *  sur l'indigo sombre, seul un ton clair reste lisible. */
-    hpColor: '#f5f2ea',
+    /** Mesuré : PV en blanc cerné de noir. Ce moteur ne cerne pas le chiffre
+     *  (voir le Bretteur) : sur le cuivre clair, le crème mesuré se noie, donc
+     *  le chiffre passe en brun sombre. Même écart volontaire, même raison. */
+    hpColor: '#3d2113',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
-      color: 'rgba(87,74,132,0.5)',
+      color: 'rgba(201,144,95,0.5)',
       radius: 1.66,
       pulse: 2.2,
-      showWhen: 'ultimate-ready', // halo indigo quand le Bond est chargé
+      showWhen: 'ultimate-ready', // halo cuivre quand le Bond est chargé
     },
     /**
-     * La traînée du Dragoon est la signature la plus visible de sa vidéo : un
+     * La traînée du Lancier est la signature la plus visible de sa vidéo : un
      * **fuseau cramoisi** derrière la bille indigo, mesuré `#a32b4a` au cœur et
      * `#df8692` sur les bords. C'est le seul rouge de sa palette, et il est
      * rendu ici par le ruban de pointe d'arme.
@@ -1729,10 +1743,10 @@ const DRAGOON = {
        * duel.
        */
       ghost: { color: '#c2385a', every: 0.03, alpha: 0.5, lance: 20 },
-      motes: { rate: 10, size: 9, drift: 24, rise: -18, colors: ['#574a84', '#a32b4a', '#cfc2f0'] },
-      impact: ['#cfc2f0', '#ffffff', '#a32b4a'],
+      motes: { rate: 10, size: 9, drift: 24, rise: -18, colors: ['#c9905f', '#a32b4a', '#f0dcc6'] },
+      impact: ['#e8c9a8', '#ffffff', '#a32b4a'],
       shape: 'spark',
-      castFlash: 'rgba(207,194,240,0.6)',
+      castFlash: 'rgba(232,201,168,0.6)',
     },
     trail: { color: 'rgba(163,43,74,0.30)', every: 0.04, life: 0.32 },
     accent: '#c2385a',
@@ -1741,72 +1755,102 @@ const DRAGOON = {
   /** Mesuré 432 px/s (médiane de 37 segments rectilignes, bille isolée par
    *  érosion pour ne pas suivre la lance) → ×1,25 = 540. **Gardé tel quel**,
    *  contrairement au Hors-la-loi et au Bretteur qui ont dû être ralentis :
-   *  vérifié au banc, le Dragoon fait 15 victoires sur 30 à 540 px/s contre 16
+   *  vérifié au banc, le Lancier fait 15 victoires sur 30 à 540 px/s contre 16
    *  à 470 — sa vitesse n'est pas ce qui le rend fort, c'est sa portée et ses
    *  dégâts. Aucune raison de toucher un `mesuré` qui ne casse rien.
    *  C'est le combattant le plus rapide du roster après le Bretteur. */
   movement: { speed: 540, turnRate: 1.85, seek: 0.4, mass: 1 },
 
   weapon: {
-    name: 'Lance de dragon',
-    nameRef: 'Dragon Lance',
+    name: 'Lance de cuivre',
+    nameRef: 'Copper Lance',
     /** Mesuré : centre → pointe = 131 px sur la vidéo 576 → ×1,25 = 164.
      *  **La plus longue portée du roster.** Elle découle du sprite :
      *  −52 (talon) + 54 cellules × 4 = 164, pour que hitbox et dessin ne
      *  puissent pas diverger quand on retouche la carte. */
     reach: 164,
     /**
-     * **La lance ne tourne pas** : elle vise. C'est le second combattant du
-     * roster dans ce cas, après le canon du Hors-la-loi, et c'est un relevé —
-     * l'axe principal du nuage de pixels indigo tient dans ±5° du cap
-     * bille → adversaire sur toutes les plages où la lance est isolable, et
-     * converge après chaque décrochage. Le « 327 °/s » du premier portage
-     * venait d'un détecteur qui suivait la **traînée** de la charge, pas la
-     * lance. `weaponAngle` est donc écrit par `abilities/dragoon.js`.
+     * **La lance suit le cap de déplacement.** Elle ne tourne pas librement et
+     * ne vise pas non plus : elle est *soudée à la vitesse*, et pointe là où le
+     * Lancier va.
+     *
+     * Relevé sur 141 images réparties sur toute la vidéo, lance isolée par ACP
+     * de son contour sombre (les fantômes translucides et la traînée cramoisie
+     * sont écartés par seuil) : l'axe de la lance tient à **6,6° du cap de
+     * déplacement** en médiane — 3,7° sur les images où elle est le mieux
+     * isolée, et 94 % sous 15° — contre **37,9° du cap vers l'adversaire**.
+     * Le résultat tient à tous les régimes : 10,6° en marche lente, 6,1° en
+     * croisière, 4,8° à l'accélération, 6,1° en pleine charge.
+     *
+     * Les deux relevés précédents étaient faux, chacun à sa façon. Le premier
+     * donnait 327 °/s de rotation libre : le détecteur suivait la **traînée**,
+     * pas l'arme. Le second concluait « elle vise, à ±5° » — mesuré sur les
+     * seules plages où le Lancier fonçait *sur* l'adversaire, où cap de
+     * déplacement et cap adverse se confondent. Un sous-ensemble biaisé.
+     *
+     * Ce que ça explique, et que ni l'un ni l'autre ne rendait : l'angle reste
+     * **figé une demi-seconde** quand il va tout droit (2,13 → 2,67 s, moins de
+     * 10° d'écart), **saute de 85° en une image** au rebond mural
+     * (2,667 → 2,700 s, là où `heading` est réfléchi), et tourne lentement le
+     * reste du temps — |ω| médian **33 °/s**, 88 % des images sous 100 °/s.
+     * Toutes ces valeurs tombent d'elles-mêmes si `weaponAngle = heading` :
+     * c'est le pilotage qui les produit, pas une règle d'arme.
+     *
+     * D'où `spin: 0` — `Fighter.step` n'écrit pas l'angle — et c'est
+     * `abilities/lancer.js` qui le recopie du cap à chaque pas.
      */
     spin: 0,
     spinDir: 1,
     /**
-     * **Charge de lance** : viser → verrouiller → foncer. Voir le module pour
-     * le relevé complet ; en deux chiffres, la visée plafonne à ~230 °/s et la
-     * charge porte la bille à ~1 400 px/s pendant ~0,15 s, contre 540 en
-     * croisière.
+     * **Charge de lance.** Le Lancier accélère en ligne droite, pointe en
+     * avant. Il n'y a plus ni visée ni verrouillage : la lance suivant le cap,
+     * elle est *déjà* dans l'axe de la charge — il suffit de partir quand
+     * l'adversaire s'y trouve.
+     *
+     * Mesuré : la charge porte la bille à ~1 400 px/s pendant ~0,15 s, contre
+     * 540 en croisière (t = 8,70 → 8,84 s sur la vidéo).
      */
     lunge: {
-      /** Mesuré : 220 °/s de pointe quand le cap adverse file (21,5° → −30,0°
-       *  en 0,234 s), jamais plus. 4,0 rad/s = 229 °/s. */
-      aimRate: 4.0,
       /**
-       * **Fenêtre d'engagement**, bornée des deux côtés.
-       *
-       * `minRange` est le paramètre qui rend au personnage sa cadence relevée,
-       * et il a remplacé une rustine : allonger la pause entre deux charges
-       * ramenait bien la cadence de touche à 0,181 coup/s, mais à 2,5 s de
-       * temps mort — un Dragoon planté, là où la vidéo en montre **une charge
-       * par seconde environ, dont une sur cinq porte**. Le bon levier n'était
-       * pas la fréquence des charges mais leur **taux de réussite** : borner
-       * l'engagement par le bas force la charge longue, celle que l'adversaire
-       * a le temps d'esquiver.
+       * **Fenêtre d'engagement**, bornée des deux côtés — c'est le paramètre
+       * de cadence du personnage, et il a remplacé une rustine : allonger la
+       * pause entre deux charges ramenait bien la cadence de touche à
+       * 0,181 coup/s, mais à 2,5 s de temps mort, là où la vidéo montre **une
+       * charge par seconde environ, dont une sur cinq porte**. Le bon levier
+       * n'est pas la fréquence des charges mais leur **taux de réussite**.
        *
        * La géométrie le dit : la charge couvre 1 400 × 0,16 = 224 px, et la
        * lance en ajoute 164. Engagée à moins de ~250 px, elle touche presque à
        * coup sûr ; engagée au-delà de ~430, elle n'arrive jamais.
+       *
+       * Calé à **265** au banc, contre 320 du temps de la visée : la charge
+       * partant maintenant sur un cône étroit plutôt que sur un angle corrigé,
+       * elle s'engage moins souvent, et il faut rouvrir la fenêtre par le bas
+       * pour retrouver le budget relevé. Le balayage est net — 320 → 2,04 PV/s,
+       * 300 → 2,26, 280 → 2,35, **265 → 2,52**, 200 → 3,29.
        */
-      minRange: 320,
+      minRange: 265,
       range: 470,
-      /** Calé : ±9°. Plus serré, la cible bouge assez pour qu'il ne parte
-       *  jamais ; plus large, il charge de travers et le cycle tourne à vide. */
-      tolerance: 0.16,
-      /** Calé : le gel visible avant le départ. La vidéo ne l'isole pas — la
-       *  lance y est déjà presque immobile en fin de visée — mais sans lui le
-       *  départ n'a aucun préavis et la charge devient illisible. */
-      lock: 0.35,
+      /**
+       * Calé : demi-angle du cône d'engagement. La charge ne part que si
+       * l'adversaire est à moins de ça du **cap courant** — donc dans l'axe de
+       * la lance, puisqu'elle le suit.
+       *
+       * **Le serrer améliore la cadence, l'élargir la dégrade** — c'est
+       * l'inverse de l'intuition, et le banc est catégorique : 0,15 → 0,157
+       * coup/s, 0,22 → 0,149, 0,30 → 0,149, 0,45 → 0,137, 0,60 → 0,120. Un
+       * cône large laisse partir des charges mal alignées : elles passent à
+       * côté, et le temps mort qui suit est perdu pour rien. Le taux de
+       * réussite prime sur le nombre de tentatives, exactement comme pour
+       * `minRange`.
+       */
+      cone: 0.15,
       /** Mesuré : ~0,15 s de vitesse élevée (t = 8,70 → 8,84 s). */
       dash: 0.16,
       /** Mesuré : 1 125–1 160 px/s vidéo → ~1 400 en repère jeu, soit 2,6 × la
        *  vitesse de croisière de 540. */
       speed: 2.6,
-      /** Calé : c'est **le** paramètre de cadence du personnage, celui qui
+      /** Calé : temps mort après une charge. Avec `minRange`, c'est ce qui
        *  porte le budget de dégâts relevé (0,181 coup/s, 2,54 PV/s). */
       recover: 0.55,
       /** Calé : le recul propre à la charge, ajouté à `melee.selfRecoil`. La
@@ -1815,17 +1859,16 @@ const DRAGOON = {
       /** Verrou de touche retenu hors charge — n'importe quelle valeur > un pas
        *  de simulation suffit, il est réappliqué à chaque pas. */
       guard: 0.05,
-      lockRing: 'rgba(194,56,90,0.55)',
       dashRing: 'rgba(163,43,74,0.5)',
       hitRing: { to: 96, time: 0.26, color: 'rgba(207,194,240,0.7)' },
     },
-    /** `width: 0` : rien à tracer, toute la lance tient dans `dragoonLance`.
+    /** `width: 0` : rien à tracer, toute la lance tient dans `lancerSpear`.
      *  `length` est **négatif** parce que le talon dépasse derrière le pivot
      *  (**42 px** remesurés en aplatissant la lance, arrondis à 44 pour tomber
      *  sur la grille du sprite) — le blit démarre donc en arrière de la bille,
      *  ce que ne fait aucune autre arme du roster. */
-    handle: { length: -44, width: 0, color: '#2f2636', dark: '#17111f', outline: '#0d0a14', gem: null },
-    head: { sprite: 'dragoonLance', scale: 2, anchorY: 0.5 }, // −44 + 104 × 2 = 164
+    handle: { length: -44, width: 0, color: '#6b3b22', dark: '#4d2815', outline: '#231108', gem: null },
+    head: { sprite: 'lancerSpear', scale: 2, anchorY: 0.5 }, // −44 + 104 × 2 = 164
     /** Seule la lame tranche : elle commence à 52 px du centre (fraction 0,32),
      *  le talon et le manche ne comptent pas. Rayon volontairement fin — une
      *  arme aussi longue touche sans arrêt avec un gros rayon. */
@@ -1846,10 +1889,10 @@ const DRAGOON = {
        * accroche 0,34 fois par seconde là où la vidéo en compte 0,181, et seul
        * un verrou absurde ramenait la cadence. Le mécanisme était faux, pas le
        * chiffre — et le maquillage coûtait au personnage tout son relief, un
-       * Dragoon au métronome qui tuait en 43,2 s exactement quel que soit
+       * Lancier au métronome qui tuait en 43,2 s exactement quel que soit
        * l'adversaire.
        *
-       * La charge (`weapon.lunge`) rend le mécanisme : le Dragoon ne touche
+       * La charge (`weapon.lunge`) rend le mécanisme : le Lancier ne touche
        * plus par hasard en balayant, il touche quand sa charge aboutit. La
        * cadence est désormais portée par `lunge.recover`, et le verrou peut
        * reprendre sa valeur relevée.
@@ -1864,18 +1907,24 @@ const DRAGOON = {
        * = 70, exactement les cinq touches placées.
        *
        * Le plafond, lui, est **déduit** : la vidéo n'en montre aucun, mais elle
-       * s'arrête à 20 parce que le Dragoon meurt, pas parce que la stat bute —
+       * s'arrête à 20 parce que le Lancier meurt, pas parce que la stat bute —
        * et *tous* les combattants à stat croissante du roster en ont un
        * (Araignée 14, Serpent 14, Hors-la-loi 8, Bretteur 3). Sans plafond la
-       * montée est quadratique en durée de duel. À 16, le budget de dégâts
-       * tombe pile sur celui de la vidéo : 2,55 PV/s contre 2,54.
+       * montée est quadratique en durée de duel.
+       *
+       * Il valait 16 du temps de la visée, où le mécanisme donnait peu de
+       * touches et où il fallait bien qu'elles pèsent. La charge sur cap en
+       * donne davantage : à 16 le Lancier monte à **19 victoires sur 30**,
+       * hors bande, et à 14 il tombe à 12. À **15**, il rend 2,43 PV/s et
+       * tient 13 — c'est la valeur qui satisfait la bande sans s'éloigner du
+       * budget relevé.
        */
-      onHit: { stackGain: 2, stackMax: 16 },
+      onHit: { stackGain: 2, stackMax: 15 },
     },
   },
 
   /**
-   * Le Dragoon n'a **aucun pouvoir actif** dans la vidéo : sa seule ligne de
+   * Le Lancier n'a **aucun pouvoir actif** dans la vidéo : sa seule ligne de
    * stat est « Damage », et elle ne bouge qu'aux touches. La montée en dégâts
    * *est* son pouvoir ; elle est décrite dans `weapon.melee.onHit`.
    * Ce cooldown n'est jamais consommé (le module n'arme aucune minuterie),
@@ -1896,7 +1945,10 @@ const DRAGOON = {
     nameRef: 'JUMP',
     barLabel: 'JUMP',
     barLabelFr: 'BOND',
-    barFill: '#594984', // pipette : remplissage de la jauge
+    /** La pipette donne l'indigo `#594984` de la vidéo ; la jauge suit le
+     *  changement de teinte du corps, sans quoi elle restait le dernier
+     *  fragment indigo de l'écran. C'est le cuivre moyen de la hampe. */
+    barFill: '#975938',
     barText: '#ffffff',
     /** Mesuré : +0,10 de remplissage par seconde, donc jauge pleine en ~10 s. */
     chargeRate: 10,
@@ -1904,7 +1956,7 @@ const DRAGOON = {
     chargeOnHit: 8,
     /**
      * Durée totale pendant laquelle la jauge reste vide et le Bond occupe le
-     * Dragoon : 0,45 s d'élan puis 1,5 s hors de l'arène. Chronométré deux
+     * Lancier : 0,45 s d'élan puis 1,5 s hors de l'arène. Chronométré deux
      * fois : jauge vidée à 10,60 s / décollage 11,02 s / retour 12,53 s, puis
      * 19,03 / 19,50 / 21,00.
      */
@@ -1912,14 +1964,14 @@ const DRAGOON = {
     windup: 0.45, // mesuré : 0,42 s et 0,47 s entre la vidange et le décollage
     /**
      * Mesuré : **1,51 s et 1,50 s d'absence**, rechronométré image par image
-     * sur le premier bond (dernière image du Dragoon à 11,03 s, marqueur seul
+     * sur le premier bond (dernière image du Lancier à 11,03 s, marqueur seul
      * jusqu'à 12,53 s). Un temps de vol court — de l'ordre d'une demi-seconde —
      * ne laisserait pas au marqueur le temps d'enfler puis de se resserrer,
      * qui est ce qui annonce la chute et rend le Bond lisible.
      */
     flight: 1.5,
     /**
-     * **Onde de choc au décollage.** Le Dragoon disparaît d'une image à
+     * **Onde de choc au décollage.** Le Lancier disparaît d'une image à
      * l'autre : sans une marque au point de départ, rien ne dit d'où il est
      * parti. Disque gris qui s'ouvre, comme le marqueur d'arrivée — les deux
      * bouts du bond se répondent.
@@ -1928,7 +1980,7 @@ const DRAGOON = {
     /**
      * Chute **collée à l'adversaire** : le décalage vaut cette fraction de la
      * somme des deux rayons. À 0, les deux billes se superposent et
-     * `resolveBodies` les sépare aussitôt, ce qui fait sauter le Dragoon d'une
+     * `resolveBodies` les sépare aussitôt, ce qui fait sauter le Lancier d'une
      * image à l'autre au moment précis où on le regarde.
      */
     landOffset: 0.9,
@@ -1960,7 +2012,7 @@ const DRAGOON = {
     },
   },
 
-  /** Le Dragoon n'a aucun projectile : tout passe par la lance et le Bond. */
+  /** Le Lancier n'a aucun projectile : tout passe par la lance et le Bond. */
   projectiles: {},
 
   /** Mesuré : « Damage: 10.00 » à la première image du duel. */
@@ -1969,7 +2021,7 @@ const DRAGOON = {
   hud: {
     stats: [(f) => `Damage: ${formatHalf(f.stacks)}`],
     statsFr: [(f) => `Dégâts : ${formatHalf(f.stacks)}`],
-    color: '#8c7ec4',
+    color: '#c9905f', // cuivre : la ligne de stat suivait encore l'indigo d'origine
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
@@ -1985,7 +2037,7 @@ export const ELEMENTS = deepFreeze({
   plant: PLANT,
   outlaw: OUTLAW,
   bladesman: BLADESMAN,
-  dragoon: DRAGOON,
+  lancer: LANCER,
 });
 
 /**
@@ -2008,7 +2060,7 @@ export const ROSTER = deepFreeze([
   'plant',
   'outlaw',
   'bladesman',
-  'dragoon',
+  'lancer',
 ]);
 
 /** @param {string} id */
