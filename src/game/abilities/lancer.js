@@ -88,7 +88,7 @@ import { ARENA } from '../../data/tuning.js';
  * aucun sens, et geler l'angle non plus — c'est le cap qui est gele pendant la
  * charge, et l'arme suit.
  *
- * @typedef {'seek'|'dash'|'recover'} LungePhase
+ * @typedef {'seek'|'brace'|'dash'|'recover'} LungePhase
  */
 
 export const lancerAbilities = {
@@ -171,6 +171,30 @@ export const lancerAbilities = {
     f.weaponAngle = wrapAngle(f.heading);
 
     /**
+     * **Ancrage latéral, et son recentrage au moment de la charge.**
+     *
+     * Relevé sur la vidéo, décalage signé de l'axe de la lance au centre de la
+     * bille (rayon 33 px vidéo) : **+20 px au repos**, **+38 px en croisière**,
+     * et **+1 px en pleine charge** — c'est-à-dire pile au centre. La lance
+     * est portée sur le flanc et vient se mettre dans l'axe du corps pour
+     * charger.
+     *
+     * Le premier relevé de ce décalage rendait 6 px partout, régime après
+     * régime, et concluait donc « rien ne bouge ». Il mesurait le **centroïde**
+     * du nuage sombre, et son masque attrapait le **contour de la bille** —
+     * noir et centré, il tirait tout centroïde vers zéro quoi que fasse la
+     * lance. La bonne quantité est la distance du centre à **l'axe ajusté**,
+     * mesurée sur des pixels pris hors du disque.
+     *
+     * Le rapprochement se fait à vitesse bornée plutôt que d'un coup : à
+     * 33 px/image l'arme saute d'un flanc à l'autre, et la charge démarre sur
+     * un clignotement.
+     */
+    const wanted = f.state.phase === 'brace' || f.state.phase === 'dash' ? 0 : L.lateral;
+    const step = L.lateralRate * dt;
+    f.weaponLateral += Math.max(-step, Math.min(step, wanted - f.weaponLateral));
+
+    /**
      * **La lance ne blesse qu'en charge.** Hors charge elle est *portée*, pas
      * poussée : le verrou de touche est retenu à chaque pas, et seule la phase
      * `dash` le laisse courir.
@@ -194,9 +218,24 @@ export const lancerAbilities = {
         if (d > L.range || d < L.minRange) return;
         // l'adversaire doit etre dans l'axe de la lance — c'est-a-dire du cap
         const bear = Math.atan2(target.y - f.y, target.x - f.x);
-        if (Math.abs(wrapAngle(bear - f.heading)) <= L.cone) this.dash(f, game);
+        if (Math.abs(wrapAngle(bear - f.heading)) <= L.cone) this.brace(f);
         break;
       }
+
+      /**
+       * **Le temps d'arrêt avant la charge.** Le corps est cloué sur place et
+       * le cap gelé ; c'est pendant ce battement que la lance se recentre.
+       *
+       * Relevé : la vitesse tombe à **163 px/s une image avant le
+       * déclenchement**, contre ~1 700 juste avant et ~3 100 juste après. Le
+       * personnage se plante, puis part. Sur deux déclenchements seulement —
+       * l'échantillon est mince, et c'est la description de la vidéo qui le
+       * corrobore, pas la statistique seule.
+       */
+      case 'brace':
+        f.heading = f.state.dashAngle;
+        if (f.state.phaseTimer >= L.brace) this.dash(f, game);
+        break;
 
       case 'dash':
         // ligne droite : le cap est reecrit a chaque pas sur l'angle de depart,
@@ -214,11 +253,26 @@ export const lancerAbilities = {
     }
   },
 
+  /**
+   * Entrée en arrêt. Le cap de la charge est figé **ici**, pas au départ du
+   * dash : c'est ce qui fait que l'arrêt vise déjà juste, et que la charge
+   * part exactement là où la lance pointait quand elle s'est immobilisée.
+   */
+  brace(f) {
+    const L = f.el.weapon.lunge;
+    f.state.dashAngle = f.heading;
+    this.setPhase(f, 'brace');
+    // L'arrêt passe par le levier de vitesse **du moteur** (`boost` /
+    // `boostFactor`) plutôt que par un champ à lui : `endDash` les remet déjà
+    // tous les deux, donc l'arrêt hérite gratuitement du point de sortie
+    // unique, au lieu d'ouvrir une seconde chose à oublier.
+    f.boost = L.brace;
+    f.boostFactor = 0;
+  },
+
   /** Départ de la charge : vitesse, cap et traînée sont allumés ensemble. */
   dash(f, game) {
     const L = f.el.weapon.lunge;
-    // le cap de la charge est le cap courant : la lance pointe deja dedans
-    f.state.dashAngle = f.heading;
     this.setPhase(f, 'dash');
     f.boost = L.dash;
     f.boostFactor = L.speed;

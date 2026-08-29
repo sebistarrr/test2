@@ -118,14 +118,24 @@ rebonds du pas courant : l'arme ne traîne jamais d'une image derrière le corps
 
 #### La charge
 
-Trois phases, typées `LungePhase` — il n'y a plus ni visée ni verrouillage,
-puisque la lance est **déjà** dans l'axe du déplacement :
+Quatre phases, typées `LungePhase` — il n'y a toujours ni visée ni
+verrouillage, puisque la lance est **déjà** dans l'axe du déplacement :
 
 | Phase | Ce qui s'y passe |
 | --- | --- |
-| `seek` | déplacement normal ; part en charge si l'adversaire est dans la fenêtre de distance **et** dans le cône du cap |
+| `seek` | déplacement normal ; s'engage si l'adversaire est dans la fenêtre de distance **et** dans le cône du cap |
+| `brace` | **le corps se cloue sur place**, cap gelé, et l'arme se recentre. Mesuré : la vitesse tombe à 163 px/s une image avant le déclenchement, contre ~1 700 juste avant et ~3 100 juste après |
 | `dash` | le corps file à 2,6 × sa vitesse, cap gelé — donc angle d'arme gelé aussi, sans avoir à le geler |
 | `recover` | temps mort après la charge ou la touche |
+
+**L'arrêt se paie sur le taux de réussite, pas sur le temps mort.** Il coûtait
+0,52 PV/s en arrivant, et retoucher `recover` n'y changeait rien (2,00 → 2,07
+en passant de 0,55 à 0,40). La cause est mécanique : pendant l'arrêt
+l'adversaire continue d'avancer, donc la charge part vers où il **était**. Le
+seul levier qui compte est la durée de l'arrêt — 0,10 s → 2,00 PV/s, 0,05 →
+2,25, 0,033 → 2,29 — et à la valeur relevée (0,033 s, une image à 30 fps) le
+moteur rend **0,181 coup/s**, exactement la cadence mesurée. Encore un chiffre
+qu'on n'a pas eu à caler.
 
 Un seul point de sortie, `endDash()`, qui remet ensemble vitesse, facteur de
 vitesse et traînée — c'est le piège du Bretteur.
@@ -271,12 +281,14 @@ sans que ça se voie.
      pour beaucoup — exactement le profil que le bouclier absorbe. Elle les bat
      9-0. Ce n'est pas une dérive, c'est un couplage de fiches ; aucune valeur
      de la Lumière n'a jamais été touchée.
-     Le **Vent tient la bande de justesse à 13**, en perdant 0-3 contre le
-     Lancier, l'Eau et le Hors-la-loi. Il y était déjà à 14 avant la refonte de
-     l'arme ; c'est le combattant que la moindre retouche du Lancier fait
-     sortir, et le premier à surveiller.
-   - Relevé courant : Lumière 21, Feu 17, Ombre 16, Plante 15, Hors-la-loi 15,
-     Glace 14, Bretteur 14, Eau 14, Foudre 13, Vent 13, **Lancier 13**. Dix
+     L'**Eau tient la bande de justesse à 13**, en perdant 0-3 contre l'Ombre,
+     la Lumière et le Lancier. C'est elle que la moindre retouche du Lancier
+     fait sortir, donc la première à surveiller : à `lunge.minRange` 220 il la
+     balaie 3-0 et elle tombe à 12, à 240 il n'en prend que deux et elle
+     revient. Ces 20 px de fenêtre coûtent 0,13 PV/s de fidélité (2,53 contre
+     2,40) — la bande passe avant, c'est un invariant.
+   - Relevé courant : Lumière 21, Hors-la-loi 16, **Lancier 16**, Ombre 15,
+     Glace 15, Foudre 15, Feu 14, Vent 14, Plante 13, Bretteur 13, Eau 13. Dix
      combattants sur onze tiennent dans la bande.
    - **`ROSTER` décide qui est le camp A.** Les paires sont formées en
      `[liste[i], liste[j]]`, et le camp A pèse lourd. Un nouveau venu s'ajoute
@@ -306,9 +318,22 @@ sans que ça se voie.
    `render/flair.js` (six boucles), `physics.js`, `projectiles.js` et le rendu
    de `match.js`. Un oubli laisse un ruban, une nappe ou une hitbox fantôme au
    dernier point connu.
+8. **Un décalage de dessin doit passer par le pivot, jamais par le seul
+   `translate`.** L'arme du Lancier est ancrée **sur le flanc** du corps
+   (`Fighter.weaponLateral`, écrit par son module — encore un compteur
+   générique : à zéro, les dix autres ne changent pas). `weaponPivot()` est lu
+   par `drawWeapon()` **et** par `bladeSegment()` : décaler seulement le dessin
+   ferait mentir le sprite sur l'endroit où il coupe. C'est la même discipline
+   que `handle.length`, dont la somme avec la carte doit retomber sur la portée.
 
 ## Écarts volontaires au relevé
 
+- **L'arme du Lancier passe au-dessus du corps** (`weapon.overBody`) — c'est
+  son relevé, la vidéo montre la lance qui recouvre franchement la bille. Elle
+  passe en revanche **sous le chiffre de PV** : dans un miroir Lancier contre
+  Lancier, ce chiffre est le seul repère qui distingue les deux camps, et une
+  lance de 164 px par-dessus le perdrait. Les dix autres gardent l'arme sous le
+  corps, qui est leur relevé.
 - Fond hors-arène : la vidéo est sur papier crème, le site est en **encre
   sombre `#1c1a26`**. L'arène reste blanche → le pixel-art garde ses contours
   noirs mesurés. Le « chrome » posé sur le fond sombre (titre, lignes de stat)

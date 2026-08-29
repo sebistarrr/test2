@@ -91,11 +91,20 @@ export class Fighter {
     /**
      * Temps restant pendant lequel le combattant **sème des images fantômes**.
      * Générique comme `offstage` : le moteur ne sait pas *pourquoi* il en sème,
-     * seul son module le sait (la charge du Dragoon). C'est `render/flair.js`
+     * seul son module le sait (la charge du Lancier). C'est `render/flair.js`
      * qui le lit, donc allumer ce compteur ne peut rien changer au duel — la
      * mise en scène a son propre aléa et son propre banc de particules.
      */
     this.ghosting = 0;
+
+    /**
+     * Décalage **perpendiculaire** de l'ancrage de l'arme, en px, positif vers
+     * la gauche de l'axe. Même forme que les autres compteurs génériques : un
+     * module l'écrit, `weaponPivot()` s'en sert, et le moteur ne sait pas
+     * pourquoi. À zéro — la valeur par défaut, celle des dix autres
+     * combattants — l'arme reste ancrée au centre du corps.
+     */
+    this.weaponLateral = 0;
 
     this.trailTimer = 0;
     this.boost = 0; // durée restante d'un bonus de vitesse
@@ -270,16 +279,39 @@ export class Fighter {
   /* Géométrie de l'arme                                                 */
   /* ------------------------------------------------------------------ */
 
+  /**
+   * **Pivot de l'arme**, en coordonnées monde.
+   *
+   * `weaponLateral` décale l'ancrage **perpendiculairement à l'axe de l'arme**
+   * — c'est un compteur générique de plus (cf. `ghosting`) : un module
+   * l'allume, le moteur s'en sert, et le moteur ne sait pas pourquoi. À zéro,
+   * qui est la valeur par défaut, rien ne change pour personne.
+   *
+   * `bladeSegment()` et `drawWeapon()` passent **tous les deux** par ici, et
+   * c'est le point : décaler seulement le dessin ferait mentir le sprite sur
+   * l'endroit où il coupe. C'est la même discipline que `handle.length`, dont
+   * la somme avec la carte doit toujours retomber sur la portée.
+   */
+  weaponPivot() {
+    const lat = this.weaponLateral;
+    if (!lat) return { x: this.x, y: this.y };
+    return {
+      x: this.x - Math.sin(this.weaponAngle) * lat,
+      y: this.y + Math.cos(this.weaponAngle) * lat,
+    };
+  }
+
   /** Segment tranchant [a,b] en coordonnées monde + rayon. */
   bladeSegment() {
     const { reach, hitbox } = this.el.weapon;
     const c = Math.cos(this.weaponAngle);
     const s = Math.sin(this.weaponAngle);
+    const o = this.weaponPivot();
     return {
-      ax: this.x + c * reach * hitbox.from,
-      ay: this.y + s * reach * hitbox.from,
-      bx: this.x + c * reach * hitbox.to,
-      by: this.y + s * reach * hitbox.to,
+      ax: o.x + c * reach * hitbox.from,
+      ay: o.y + s * reach * hitbox.from,
+      bx: o.x + c * reach * hitbox.to,
+      by: o.y + s * reach * hitbox.to,
       r: hitbox.radius,
     };
   }
@@ -305,9 +337,17 @@ export class Fighter {
       ctx.fill();
     }
 
-    // un module de pouvoirs peut fournir son propre rendu d'arme
-    if (this.customWeapon) this.customWeapon(ctx);
-    else this.drawWeapon(ctx);
+    /**
+     * Ordre d'affichage. Par défaut l'arme passe **sous** le corps, ce qui est
+     * le relevé de tous les combattants d'origine. `weapon.overBody` la fait
+     * passer par-dessus — c'est le cas du Lancier, dont la vidéo montre la
+     * lance qui recouvre franchement la bille.
+     *
+     * Le drapeau est porté par la **fiche** et non par le moteur : celui-ci ne
+     * connaît toujours aucun combattant, il lit.
+     */
+    const overBody = this.el.weapon.overBody === true;
+    if (!overBody) this.paintWeapon(ctx);
 
     // corps — le flash blanc d'encaissement prime sur tout, puis la teinte
     // d'un contrôle adverse se pose (ou se mélange) sur la couleur d'élément
@@ -355,6 +395,14 @@ export class Fighter {
       ctx.fill();
     }
 
+    /**
+     * L'arme au-dessus du corps se pose ici : après le contour et les anneaux
+     * d'état, **avant le chiffre de PV**. Le chiffre reste donc lisible — dans
+     * un miroir Lancier contre Lancier, c'est le seul repère qui distingue les
+     * deux camps, et le faire recouvrir par une lance de 164 px le perdrait.
+     */
+    if (overBody) this.paintWeapon(ctx);
+
     // points de vie
     ctx.font = look.hpFont;
     ctx.textAlign = 'center';
@@ -370,6 +418,12 @@ export class Fighter {
     return true;
   }
 
+  /** Un module de pouvoirs peut fournir son propre rendu d'arme. */
+  paintWeapon(ctx) {
+    if (this.customWeapon) this.customWeapon(ctx);
+    else this.drawWeapon(ctx);
+  }
+
   /** @param {CanvasRenderingContext2D} ctx */
   drawWeapon(ctx) {
     const w = this.el.weapon;
@@ -377,7 +431,9 @@ export class Fighter {
     const headH = map.h * w.head.scale;
 
     ctx.save();
-    ctx.translate(this.x, this.y);
+    // le pivot, pas le centre du corps : voir `weaponPivot()`
+    const pivot = this.weaponPivot();
+    ctx.translate(pivot.x, pivot.y);
     ctx.rotate(this.weaponAngle);
 
     // manche : rectangle sombre + liseré, comme sur la vidéo.

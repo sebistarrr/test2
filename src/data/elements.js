@@ -1841,7 +1841,29 @@ const LANCER = {
        * pour retrouver le budget relevé. Le balayage est net — 320 → 2,04 PV/s,
        * 300 → 2,26, 280 → 2,35, **265 → 2,52**, 200 → 3,29.
        */
-      minRange: 265,
+      minRange: 240,
+      /**
+       * **Temps d'arrêt avant la charge**, en secondes. Mesuré : la vitesse
+       * tombe à **163 px/s une image avant le déclenchement**, contre ~1 700
+       * juste avant et ~3 100 juste après — le Lancier se plante, puis part.
+       *
+       * L'échantillon est mince (deux déclenchements nets sur la vidéo), et
+       * c'est la description du mouvement qui le corrobore plutôt que la
+       * statistique seule. La durée, elle, est **calée** : à une image (0,033 s)
+       * le battement ne se voit pas à l'œil.
+       */
+      brace: 0.05,
+      /**
+       * **Décalage latéral de l'ancrage de l'arme**, en px logiques, hors
+       * charge. Mesuré : distance signée du centre de la bille à l'axe de la
+       * lance, +20 px vidéo au repos et +38 en croisière, contre **+1 en pleine
+       * charge**. La lance est portée sur le flanc et se recentre pour charger.
+       * Converti en ×1,25 : ~25 à ~47 px logiques, on prend le milieu.
+       */
+      lateral: 36,
+      /** Calé : vitesse de rattrapage du décalage, en px/s. D'un coup, l'arme
+       *  saute d'un flanc à l'autre et la charge démarre sur un clignotement. */
+      lateralRate: 420,
       range: 470,
       /**
        * Calé : demi-angle du cône d'engagement. La charge ne part que si
@@ -1881,6 +1903,18 @@ const LANCER = {
      *  ce que ne fait aucune autre arme du roster. */
     handle: { length: -44, width: 0, color: '#4c2d80', dark: '#210f3e', outline: '#080211', gem: null },
     head: { sprite: 'lancerSpear', scale: 1, anchorY: 0.5 }, // −44 + 208 × 1 = 164
+    /**
+     * **L'arme passe par-dessus la bille.** Mesuré : sur la vidéo, la lance
+     * recouvre franchement le disque, contour compris. C'est l'inverse des dix
+     * autres combattants, dont l'arme passe dessous — d'où le drapeau, porté
+     * par la fiche et non par le moteur.
+     *
+     * `fighter.js` la pose alors après le contour et les anneaux d'état mais
+     * **avant le chiffre de PV** : dans un miroir Lancier contre Lancier, ce
+     * chiffre est le seul repère qui distingue les deux camps, et une lance de
+     * 164 px par-dessus le perdrait.
+     */
+    overBody: true,
     /** Seule la lame tranche : elle commence à 52 px du centre (fraction 0,32),
      *  le talon et le manche ne comptent pas. Rayon volontairement fin — une
      *  arme aussi longue touche sans arrêt avec un gros rayon. */

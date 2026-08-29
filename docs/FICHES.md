@@ -505,14 +505,42 @@ seul les trois comportements visibles image par image :
 Aucun de ces trois nombres n'est écrit dans la fiche. Une hypothèse qui demande
 un paramètre par comportement observé est fausse ; celle-ci n'en demande aucun.
 
-**La charge, en trois phases.** Il n'y a plus ni visée ni verrouillage : la
-lance suivant le cap, elle est *déjà* dans l'axe de la charge.
+**La charge, en quatre phases.** Toujours ni visée ni verrouillage : la lance
+suivant le cap, elle est *déjà* dans l'axe de la charge.
 
 | Phase | Ce qui s'y passe |
 | --- | --- |
-| `seek` | déplacement normal ; part en charge si l'adversaire est dans la fenêtre de distance **et** dans le cône du cap |
+| `seek` | déplacement normal ; s'engage si l'adversaire est dans la fenêtre de distance **et** dans le cône du cap |
+| `brace` | **le corps se cloue sur place**, cap gelé, et l'arme se recentre du flanc vers l'axe |
 | `dash` | le corps file à 2,6 × sa vitesse, cap gelé — donc angle d'arme gelé aussi, sans avoir à le geler |
 | `recover` | temps mort après la charge ou la touche |
+
+**L'arrêt avant la charge est relevé.** La vitesse tombe à **163 px/s une image
+avant le déclenchement**, contre ~1 700 juste avant et ~3 100 juste après : le
+Lancier se plante, puis part. L'échantillon est mince — deux déclenchements
+nets sur la vidéo — et c'est la lecture du mouvement qui le corrobore plutôt
+que la statistique seule.
+
+Il se paie sur le **taux de réussite**, pas sur le temps mort : il coûtait
+0,52 PV/s en arrivant, et retoucher `recover` n'y changeait rien (2,00 → 2,07
+de 0,55 à 0,40). Pendant l'arrêt l'adversaire continue d'avancer, donc la
+charge part vers où il **était**. Le seul levier est la durée de l'arrêt —
+0,10 s → 2,00 PV/s, 0,05 → 2,25, 0,033 → 2,29 — et à la valeur relevée
+(0,033 s) le moteur rend 0,181 coup/s, exactement la cadence mesurée. L'arrêt
+est réglé à 0,05 s, dans l'incertitude d'un échantillonnage à 30 fps et plus
+lisible à l'œil.
+
+**L'arme est ancrée sur le flanc, et se recentre pour charger.** Mesuré :
+distance signée du centre de la bille à l'axe de la lance (rayon 33 px vidéo) —
+**+20 px au repos**, **+38 en croisière**, **+1 en pleine charge**, c'est-à-dire
+pile au centre ; 74 % des images du même côté. Le décalage est un compteur
+générique de plus, `Fighter.weaponLateral`, et `weaponPivot()` est lu par le
+dessin **et** par la hitbox : décaler seulement le dessin ferait mentir le
+sprite sur l'endroit où il coupe.
+
+**L'arme passe au-dessus du corps** (`weapon.overBody`), et **sous le chiffre de
+PV** — dans un miroir Lancier contre Lancier ce chiffre est le seul repère qui
+distingue les deux camps.
 
 La charge a **un seul point de sortie**, `endDash()`, qui remet ensemble
 vitesse, facteur de vitesse et traînée — c'est le piège du Bretteur, dont la
