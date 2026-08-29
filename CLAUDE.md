@@ -124,9 +124,17 @@ verrouillage, puisque la lance est **déjà** dans l'axe du déplacement :
 | Phase | Ce qui s'y passe |
 | --- | --- |
 | `seek` | déplacement normal ; s'engage si l'adversaire est dans la fenêtre de distance **et** dans le cône du cap |
-| `brace` | **le corps se cloue sur place**, cap gelé, et l'arme se recentre. Mesuré : la vitesse tombe à 163 px/s une image avant le déclenchement, contre ~1 700 juste avant et ~3 100 juste après |
-| `dash` | le corps file à 2,6 × sa vitesse, cap gelé — donc angle d'arme gelé aussi, sans avoir à le geler |
-| `recover` | temps mort après la charge ou la touche |
+| `windup` | **moulinet d'élan** : le corps continue, seule l'arme tourne (14 rad/s pendant 0,10 s ≈ 80°). Écart volontaire — voir plus bas |
+| `brace` | **le corps se cloue sur place**, cap gelé, l'arme est **verrouillée d'autorité** sur le cap et se recentre. Mesuré : la vitesse tombe à 163 px/s une image avant le déclenchement, contre ~1 700 juste avant et ~3 100 juste après |
+| `dash` | le corps file à 2,6 × sa vitesse en **ligne droite** : cap réécrit à chaque pas, vitesse constante, et l'impulsion est remise à zéro au départ pour qu'un recul encaissé juste avant n'incurve pas la charge |
+| `recover` | temps mort après la charge ou la touche ; l'arme se replace sur le flanc |
+
+**Le moulinet est le seul moment où l'arme ne suit pas le cap**, et c'est
+assumé : la vidéo ne montre aucune rotation propre (9,6° d'écart médian au cap
+sur 294 images). C'est de la mise en scène demandée, bornée à cette phase. Le
+garde-fou « la lance ne blesse qu'en charge » la couvre gratuitement — sans
+lui, une lance de 164 px qui balaie un tour complet serait l'arme la plus
+meurtrière du jeu.
 
 **L'arrêt se paie sur le taux de réussite, pas sur le temps mort.** Il coûtait
 0,52 PV/s en arrivant, et retoucher `recover` n'y changeait rien (2,00 → 2,07
@@ -287,9 +295,17 @@ sans que ça se voie.
      balaie 3-0 et elle tombe à 12, à 240 il n'en prend que deux et elle
      revient. Ces 20 px de fenêtre coûtent 0,13 PV/s de fidélité (2,53 contre
      2,40) — la bande passe avant, c'est un invariant.
-   - Relevé courant : Lumière 21, Hors-la-loi 16, **Lancier 16**, Ombre 15,
-     Glace 15, Foudre 15, Feu 14, Vent 14, Plante 13, Bretteur 13, Eau 13. Dix
-     combattants sur onze tiennent dans la bande.
+   - **La bande n'est plus tenue, et c'est temporaire et assumé.** Le roster
+     étant réduit au seul Lancier (voir plus haut), le réglage a été mené sur
+     la fidélité au relevé plutôt que sur l'équilibre contre des adversaires
+     désactivés. Relevé courant : Lumière 21, **Lancier 19**, Feu 16, Glace 15,
+     Hors-la-loi 15, Ombre 14, Bretteur 14, Foudre 13, Vent 13, Plante 13,
+     Eau 12.
+   - **À la réactivation, le Lancier est à 19/30 et il faudra le redescendre.**
+     Deux leviers déjà mesurés cette session : `lunge.minRange` 220 → 240 (il
+     cesse de balayer l'Eau 3-0, coût 0,13 PV/s de fidélité) et
+     `onHit.stackMax` 16 → 15. À 240 + 15 il tenait 16/30 avec dix combattants
+     sur onze dans la bande.
    - **`ROSTER` décide qui est le camp A.** Les paires sont formées en
      `[liste[i], liste[j]]`, et le camp A pèse lourd. Un nouveau venu s'ajoute
      donc **en queue** : inséré ailleurs, il déplacerait le camp A
@@ -328,6 +344,12 @@ sans que ça se voie.
 
 ## Écarts volontaires au relevé
 
+- **Le moulinet d'élan du Lancier** (`lunge.windup` / `windupSpin`) et son
+  **recul renforcé** (460 / 200 contre 300 / 95 relevés) sont deux ajouts de
+  mise en scène, pas des mesures. Pour le recul, c'est l'**amplitude** qui est
+  montée et non l'amortissement : celui-ci est global
+  (`PHYSICS.speedRecovery`), le rendre plus sec pour le Lancier le rendrait
+  plus sec pour les onze.
 - **L'arme du Lancier passe au-dessus du corps** (`weapon.overBody`) — c'est
   son relevé, la vidéo montre la lance qui recouvre franchement la bille. Elle
   passe en revanche **sous le chiffre de PV** : dans un miroir Lancier contre

@@ -511,9 +511,26 @@ suivant le cap, elle est *déjà* dans l'axe de la charge.
 | Phase | Ce qui s'y passe |
 | --- | --- |
 | `seek` | déplacement normal ; s'engage si l'adversaire est dans la fenêtre de distance **et** dans le cône du cap |
-| `brace` | **le corps se cloue sur place**, cap gelé, et l'arme se recentre du flanc vers l'axe |
-| `dash` | le corps file à 2,6 × sa vitesse, cap gelé — donc angle d'arme gelé aussi, sans avoir à le geler |
-| `recover` | temps mort après la charge ou la touche |
+| `windup` | **moulinet d'élan** : le corps continue, seule l'arme tourne |
+| `brace` | **le corps se cloue sur place**, cap gelé, l'arme est verrouillée d'autorité sur le cap et se recentre du flanc vers l'axe |
+| `dash` | le corps file à 2,6 × sa vitesse en ligne droite, cap gelé — donc angle d'arme gelé aussi, sans avoir à le geler |
+| `recover` | temps mort ; l'arme se replace sur le flanc |
+
+**Trois ajouts de mise en scène, distincts du relevé.** Le **moulinet** (0,10 s
+à 14 rad/s, soit ~80°) est le seul moment où l'arme ne suit pas le cap ; la
+vidéo n'en montre aucun, et le garde-fou « la lance ne blesse qu'en charge » le
+couvre gratuitement. Le **recul** passe de 300/95 relevés à 460/200 : c'est
+l'amplitude qui monte et non l'amortissement, celui-ci étant global
+(`PHYSICS.speedRecovery`) et donc partagé par les onze. Et la **charge est
+strictement linéaire** — l'impulsion est remise à zéro au départ, sans quoi un
+recul encaissé juste avant l'incurverait sans que rien dans le module ne
+l'explique.
+
+Le moulinet coûte de la cadence, et pour la même raison que l'arrêt : pendant
+qu'il tourne, l'adversaire dérive. 0,18 s → 2,02 PV/s, 0,14 → 2,15, **0,10 →
+2,31**. À 0,10 s le moteur rend **0,180 coup/s** contre 0,181 relevés — la
+cadence tombe juste, et c'est le budget de dégâts (2,39 avec `stackMax` 16) qui
+reste 6 % sous la vidéo.
 
 **L'arrêt avant la charge est relevé.** La vitesse tombe à **163 px/s une image
 avant le déclenchement**, contre ~1 700 juste avant et ~3 100 juste après : le

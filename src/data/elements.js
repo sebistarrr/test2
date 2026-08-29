@@ -1841,7 +1841,7 @@ const LANCER = {
        * pour retrouver le budget relevé. Le balayage est net — 320 → 2,04 PV/s,
        * 300 → 2,26, 280 → 2,35, **265 → 2,52**, 200 → 3,29.
        */
-      minRange: 240,
+      minRange: 220,
       /**
        * **Temps d'arrêt avant la charge**, en secondes. Mesuré : la vitesse
        * tombe à **163 px/s une image avant le déclenchement**, contre ~1 700
@@ -1853,6 +1853,21 @@ const LANCER = {
        * le battement ne se voit pas à l'œil.
        */
       brace: 0.05,
+      /**
+       * **Moulinet d'élan**, en secondes, et sa vitesse en rad/s.
+       *
+       * `déduit` — et c'est un **écart volontaire au relevé**, pas une mesure :
+       * la vidéo ne montre aucune rotation propre de l'arme (9,6° d'écart
+       * médian au cap sur 294 images). C'est de la mise en scène demandée, et
+       * elle est bornée à cette seule phase ; partout ailleurs l'arme suit le
+       * cap.
+       *
+       * 14 rad/s ≈ 2,2 tours/s : sur 0,18 s, un peu moins d'un demi-tour. Assez
+       * pour lire un armement, pas assez pour qu'on perde de vue où pointe la
+       * lance au moment du verrouillage.
+       */
+      windup: 0.1,
+      windupSpin: 14,
       /**
        * **Décalage latéral de l'ancrage de l'arme**, en px logiques, hors
        * charge. Mesuré : distance signée du centre de la bille à l'axe de la
@@ -1886,7 +1901,7 @@ const LANCER = {
       speed: 2.6,
       /** Calé : temps mort après une charge. Avec `minRange`, c'est ce qui
        *  porte le budget de dégâts relevé (0,181 coup/s, 2,54 PV/s). */
-      recover: 0.55,
+      recover: 0.45,
       /** Calé : le recul propre à la charge, ajouté à `melee.selfRecoil`. La
        *  vidéo montre un recul net après chaque touche de lance. */
       recoil: 240,
@@ -1944,8 +1959,21 @@ const LANCER = {
        * reprendre sa valeur relevée.
        */
       cooldown: 1.1,
-      knockback: 300,
-      selfRecoil: 95,
+      /**
+       * **Recul, des deux côtés.** Relevé à 300 / 95 ; monté à 460 / 200 pour
+       * donner du poids à l'impact — écart volontaire de mise en scène.
+       *
+       * C'est l'**amplitude** qu'on augmente et pas l'amortissement, parce que
+       * celui-ci est global (`PHYSICS.speedRecovery`, partagé par les onze) :
+       * le rendre plus sec ici le rendrait plus sec pour tout le monde. Une
+       * impulsion plus grande sous le même amortissement donne exactement le
+       * coup sec cherché — départ franc, résorption inchangée.
+       *
+       * 460 est au-dessus de tout le roster en mêlée (205 à 300) ; c'est
+       * assumé : le Lancier est le seul à frapper lancé à 1 400 px/s.
+       */
+      knockback: 460,
+      selfRecoil: 200,
       /**
        * Mesuré : **+2,00 par touche portée**, relevé au PV près. La stat passe
        * 10 → 12 → 14 → 16 → 18 → 20 aux instants 12,53 / 13,63 / 14,77 /
@@ -1965,7 +1993,7 @@ const LANCER = {
        * tient 13 — c'est la valeur qui satisfait la bande sans s'éloigner du
        * budget relevé.
        */
-      onHit: { stackGain: 2, stackMax: 15 },
+      onHit: { stackGain: 2, stackMax: 16 },
     },
   },
 

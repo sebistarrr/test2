@@ -88,7 +88,7 @@ import { ARENA } from '../../data/tuning.js';
  * aucun sens, et geler l'angle non plus — c'est le cap qui est gele pendant la
  * charge, et l'arme suit.
  *
- * @typedef {'seek'|'brace'|'dash'|'recover'} LungePhase
+ * @typedef {'seek'|'windup'|'brace'|'dash'|'recover'} LungePhase
  */
 
 export const lancerAbilities = {
@@ -168,7 +168,25 @@ export const lancerAbilities = {
      * dessous : l'angle d'arme est donc gelé lui aussi, sans qu'on ait à le
      * geler explicitement.
      */
-    f.weaponAngle = wrapAngle(f.heading);
+    /**
+     * **Écart volontaire, et le seul du personnage : le moulinet d'élan.**
+     *
+     * Pendant `windup`, et pendant lui seul, l'arme tourne sur elle-même au
+     * lieu de suivre le cap. Ce n'est **pas** un relevé : la vidéo ne montre
+     * aucune rotation propre (9,6° d'écart médian au cap sur 294 images), et
+     * c'est une demande de mise en scène assumée comme telle. Tout le reste du
+     * cycle garde `weaponAngle = heading`.
+     *
+     * Le garde-fou « la lance ne blesse qu'en charge » couvre le moulinet
+     * gratuitement : il retient `meleeCd` dans toutes les phases sauf `dash`,
+     * donc une lance de 164 px qui balaie un tour complet ne touche personne.
+     * Sans lui, un moulinet à 14 rad/s serait l'arme la plus meurtrière du jeu.
+     */
+    if (f.state.phase === 'windup') {
+      f.weaponAngle = wrapAngle(f.weaponAngle + L.windupSpin * dt);
+    } else {
+      f.weaponAngle = wrapAngle(f.heading);
+    }
 
     /**
      * **Ancrage latéral, et son recentrage au moment de la charge.**
@@ -218,9 +236,19 @@ export const lancerAbilities = {
         if (d > L.range || d < L.minRange) return;
         // l'adversaire doit etre dans l'axe de la lance — c'est-a-dire du cap
         const bear = Math.atan2(target.y - f.y, target.x - f.x);
-        if (Math.abs(wrapAngle(bear - f.heading)) <= L.cone) this.brace(f);
+        if (Math.abs(wrapAngle(bear - f.heading)) <= L.cone) this.windup(f);
         break;
       }
+
+      /**
+       * **Moulinet d'élan.** Le corps continue sa route, seule l'arme tourne.
+       * Il se termine par un verrouillage franc sur le cap — c'est `brace()`
+       * qui le pose, et le contraste entre le tournoiement et l'arrêt net est
+       * précisément ce qui fait lire l'intention.
+       */
+      case 'windup':
+        if (f.state.phaseTimer >= L.windup) this.brace(f);
+        break;
 
       /**
        * **Le temps d'arrêt avant la charge.** Le corps est cloué sur place et
@@ -258,9 +286,23 @@ export const lancerAbilities = {
    * dash : c'est ce qui fait que l'arrêt vise déjà juste, et que la charge
    * part exactement là où la lance pointait quand elle s'est immobilisée.
    */
+  /** Entrée en moulinet d'élan. Le corps n'est pas touché : seule l'arme
+   *  tourne, et le déplacement continue normalement. */
+  windup(f) {
+    this.setPhase(f, 'windup');
+  },
+
+  /**
+   * Entrée en arrêt. Le cap de la charge est figé **ici** — donc à la fin du
+   * moulinet — et l'arme est **remise d'autorité dans l'axe** : c'est le
+   * verrouillage franc qui clôt le tournoiement. Sans cette ligne, l'arme
+   * reprendrait le cap en douceur à l'image suivante et le moulinet finirait
+   * en glissade au lieu d'un claquement.
+   */
   brace(f) {
     const L = f.el.weapon.lunge;
     f.state.dashAngle = f.heading;
+    f.weaponAngle = wrapAngle(f.heading);
     this.setPhase(f, 'brace');
     // L'arrêt passe par le levier de vitesse **du moteur** (`boost` /
     // `boostFactor`) plutôt que par un champ à lui : `endDash` les remet déjà
@@ -274,6 +316,16 @@ export const lancerAbilities = {
   dash(f, game) {
     const L = f.el.weapon.lunge;
     this.setPhase(f, 'dash');
+    /**
+     * **La charge est strictement linéaire.** Le cap est réécrit à chaque pas
+     * et la vitesse est un facteur constant, donc la trajectoire est déjà une
+     * droite parcourue à vitesse fixe — mais un recul encaissé juste avant
+     * survivrait dans `impulse`, que `Fighter.step` ajoute à la vitesse, et
+     * incurverait la charge sans que rien dans ce module ne l'explique. On
+     * repart donc d'une impulsion nulle.
+     */
+    f.impulseX = 0;
+    f.impulseY = 0;
     f.boost = L.dash;
     f.boostFactor = L.speed;
     // le compteur couvre exactement la charge ; passé zéro, `flair` vide la

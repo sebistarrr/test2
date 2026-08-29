@@ -30,6 +30,13 @@ export class LanceController {
   private phase: ThrustPhase = 'idle';
   private timer = 0;
   private spinTimer = 0;
+  /**
+   * Angle de l'arme, **tenu par le script**. Voir l'en-tête du module : la
+   * rotation n'est pas laissée à Matter.
+   */
+  private angle = 0;
+  /** Vitesse angulaire courante, en rad/s. Amortie ici, pas par le moteur. */
+  private omega = 0;
 
   constructor(
     private readonly spec: WeaponSpec,
@@ -73,7 +80,10 @@ export class LanceController {
     // Un moulinet interrompt un estoc : les deux forces se contrarient.
     this.reset();
     this.spinTimer = this.spec.spin.duration;
-    Body.setAngularVelocity(this.carrier, this.spec.spin.angularVelocity);
+    // La vitesse angulaire de la fiche est en rad **par pas de 1/60 s** :
+    // c'est ce que `Body.setAngularVelocity` attendait. Ici on intègre en
+    // secondes, donc on convertit une fois, au seul endroit qui la lit.
+    this.omega = this.spec.spin.angularVelocity * 60;
     return true;
   }
 
@@ -90,12 +100,31 @@ export class LanceController {
   update(dt: number): void {
     const { thrust, body } = this.spec;
 
+    /**
+     * **La rotation est strictement pilotée par le script.**
+     *
+     * Elle passait par `Body.setAngularVelocity` plus un amortissement, donc
+     * c'est Matter qui intégrait l'angle — et un corps libre en rotation dérive
+     * : il garde un reste de vitesse angulaire après chaque choc, l'arme
+     * flotte au lieu de revenir en place, et rien dans le script ne peut
+     * promettre où elle pointe.
+     *
+     * L'angle est maintenant tenu ici et **imposé** au corps à chaque pas par
+     * `Body.setAngle`. Le corps continue de collisionner normalement ; seule
+     * son orientation cesse d'être une sortie de la physique pour devenir une
+     * entrée.
+     */
     if (this.spinTimer > 0) {
       this.spinTimer = Math.max(0, this.spinTimer - dt);
     } else {
-      // amortissement de la rotation, hors moulinet actif
-      Body.setAngularVelocity(this.carrier, this.carrier.angularVelocity * body.angularDamping);
+      // amortissement exponentiel, exprimé par seconde et non par pas : la
+      // décroissance ne dépend donc plus de la fréquence de simulation
+      this.omega *= Math.pow(body.angularDamping, dt * 60);
+      if (Math.abs(this.omega) < 1e-3) this.omega = 0;
     }
+    this.angle += this.omega * dt;
+    Body.setAngle(this.carrier, this.angle);
+    Body.setAngularVelocity(this.carrier, 0);
 
     if (this.phase === 'idle') return;
 
