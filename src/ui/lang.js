@@ -49,7 +49,7 @@ export const UI = {
     speedLine: (v, turn) => `${v} px/s — ${turn} rad/s turn`,
     /** @param {string} name @param {number} reach @param {string} spin */
     weaponLine: (name, reach, spin) => `${name} — ${reach} px reach, ${spin}`,
-    spinNone: 'locked on target, no spin of its own',
+    spinNone: 'no spin of its own — its angle is commanded',
     /** @param {number} deg */
     spinLine: (deg) => `${deg} °/s spin`,
     /** @param {string} dmg @param {number} cd */
@@ -107,7 +107,7 @@ export const UI = {
     sheetProjectile: 'Projectile',
     speedLine: (v, turn) => `${v} px/s — virage ${turn} rad/s`,
     weaponLine: (name, reach, spin) => `${name} — portée ${reach} px, ${spin}`,
-    spinNone: 'arme braquée, sans rotation propre',
+    spinNone: 'sans rotation propre — son angle est piloté',
     spinLine: (deg) => `rotation ${deg} °/s`,
     meleeLine: (dmg, cd) => `${dmg} toutes les ${cd}s`,
     meleeStack: 'pile courante',

@@ -8,7 +8,7 @@
  * @module ui/select
  */
 
-import { ELEMENTS, ROSTER } from '../data/elements.js';
+import { ELEMENTS, PLAYABLE } from '../data/elements.js';
 import { UI, label } from './lang.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { compilePixelMap } from '../render/pixelart.js';
@@ -27,11 +27,14 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
   const startBtn = root.querySelector('#btn-start');
 
   /** @type {{a:string|null,b:string|null}} */
-  const picks = { a: 'shadow', b: 'ice' }; // duel par défaut : celui de la vidéo
+  // Duel par défaut. Il se prend dans `PLAYABLE` et non en dur : avec un
+  // roster réduit, un défaut codé en dur pointerait sur une carte absente de
+  // la grille, et l'écran s'ouvrirait sur une sélection impossible à défaire.
+  const picks = { a: PLAYABLE[0], b: PLAYABLE[1] ?? PLAYABLE[0] };
   let active = 'a';
 
   // --- cartes du roster
-  for (const id of ROSTER) {
+  for (const id of PLAYABLE) {
     const el = ELEMENTS[id];
     const card = document.createElement('button');
     card.type = 'button';
@@ -139,9 +142,15 @@ function tagline(el, lang) {
 
 /**
  * Ligne « rotation » de la fiche.
- * Une arme à `spin: 0` n'est pas une arme immobile : elle est braquée par son
- * module de pouvoirs (le revolver du Hors-la-loi suit sa cible à chaque image).
- * Afficher « rotation 0 °/s » se lisait comme un bug.
+ * Une arme à `spin: 0` n'est pas une arme immobile : son angle est piloté par
+ * son module de pouvoirs. Afficher « rotation 0 °/s » se lisait comme un bug.
+ *
+ * Le libellé dit « son angle est piloté » et **pas** « braquée sur la cible » :
+ * les deux armes à `spin: 0` ne visent pas la même chose. Le revolver du
+ * Hors-la-loi suit son adversaire à chaque image, la lance du Lancier suit son
+ * **cap de déplacement** — c'est tout le relevé du personnage. L'ancien libellé
+ * était donc devenu faux pour la moitié des armes concernées, et ça ne s'est vu
+ * qu'en réduisant le roster au seul Lancier, où sa fiche passe au premier plan.
  */
 function spinLine(w, t) {
   if (!w.spin) return t.spinNone;
