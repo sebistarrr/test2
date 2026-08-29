@@ -20,6 +20,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Le portage React/TS vit dans `app/` et n'est **pas** publié : la racine
+  # (jeu complet, JS sans build) reste le site. Ce job existe pour que le
+  # portage soit vérifié à chaque push — un portage qui ne compile plus doit
+  # casser le CI tout de suite, pas le jour où on bascule la publication.
+  # Basculer se fera en passant le `path` de l'upload à `app/dist` et en
+  # ajoutant `needs: check-port` au job `deploy`.
+  check-port:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
+      - run: npm run build
+        working-directory: app
+
   deploy:
     environment:
       name: github-pages
