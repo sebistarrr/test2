@@ -37,8 +37,14 @@ export const outlawAbilities = {
     // Blizzard : minuterie propre, sans rapport avec la jauge d'ultime
     f.state.spec = 0; // secondes restantes de Blizzard actif
     f.state.specCd = f.el.special.first;
+    /** Longueur de la fenêtre d'attente en cours. La **première** vaut `first`
+     *  et les suivantes `cooldown` : sans la retenir, la jauge se remplirait
+     *  sur le mauvais dénominateur au premier cycle et démarrerait déjà aux
+     *  deux tiers. */
+    f.state.specSpan = f.el.special.first;
     f.state.fieldTick = 0;
     f.state.snowTimer = 0;
+    f.state.shardTimer = 0;
   },
 
   update(f, dt, now, game) {
@@ -139,9 +145,11 @@ export const outlawAbilities = {
     if (f.state.spec > 0) {
       f.state.spec -= dt;
       this.tickField(f, dt, now, game);
+      this.tickShards(f, dt, game);
       if (f.state.spec <= 0) {
         f.state.spec = 0;
         f.state.specCd = sp.cooldown;
+        f.state.specSpan = sp.cooldown;
       }
       return;
     }
@@ -155,6 +163,7 @@ export const outlawAbilities = {
     const sp = f.el.special;
     f.state.spec = sp.duration;
     f.state.fieldTick = 0;
+    f.state.shardTimer = 0; // la première salve part avec l'onde de choc
 
     const s = sp.shockwave;
     game.fx.ring(f.x, f.y, s.from, s.to, s.time, s.color, s.width, false);
@@ -165,6 +174,37 @@ export const outlawAbilities = {
       life: 0.7,
     });
     game.shake(5, 0.3);
+  },
+
+  /**
+   * **Éclats de givre**, pendant le Blizzard seulement.
+   *
+   * C'est la mécanique `frostShards` de la Glace, à ceci près que chez elle
+   * c'est un pouvoir permanent que le Blizzard *accélère*, alors qu'ici il
+   * n'existe **que** pendant le Blizzard — un pistolero qui tire des éclats en
+   * continu n'est plus un pistolero. Les chiffres sont donc ceux du
+   * `duringUltimate` de la Glace, qui décrit exactement ce régime.
+   *
+   * L'angle de départ passe par `game.rng` et **doit** y passer : il décide où
+   * partent dix projectiles, donc qui prend des dégâts. C'est de la
+   * simulation, pas de la décoration — l'inverse exact de la neige.
+   */
+  tickShards(f, dt, game) {
+    const sh = f.el.special.shards;
+    f.state.shardTimer -= dt;
+    if (f.state.shardTimer > 0) return;
+    f.state.shardTimer = sh.cooldown;
+
+    const base = game.rng.range(0, TAU);
+    for (let i = 0; i < sh.count; i++) {
+      game.projectiles.spawn(f, sh.projectile, base + (TAU * i) / sh.count);
+    }
+    game.fx.burst(f.x, f.y, 10, {
+      color: ['#d8f2ff', '#67b6e0', '#ffffff'],
+      speed: 180,
+      size: 4,
+      life: 0.4,
+    });
   },
 
   /** Neige plein cadre, puis gel et dégâts périodiques sur qui entre. */
@@ -306,5 +346,15 @@ export const outlawAbilities = {
   barValue(f) {
     if (f.ult.active > 0) return f.ult.active / f.el.ultimate.duration;
     return f.ult.charge / 100;
+  },
+
+  /**
+   * Jauge du Blizzard : elle se **remplit** vers la prochaine incantation, puis
+   * se **vide** sur la durée d'activité — la même convention que `barValue`.
+   */
+  specialBar(f) {
+    const sp = f.el.special;
+    if (f.state.spec > 0) return { value: f.state.spec / sp.duration, active: true };
+    return { value: 1 - clamp(f.state.specCd / f.state.specSpan, 0, 1), active: false };
   },
 };

@@ -560,8 +560,13 @@ export class Match {
     ctx.restore();
 
     // 3. HUD
-    drawFighterHud(ctx, this.a, 'left', this.modules.get(this.a).barValue(this.a), this.lang);
-    drawFighterHud(ctx, this.b, 'right', this.modules.get(this.b).barValue(this.b), this.lang);
+    // `specialBar` est optionnel : les neuf combattants sans troisième créneau
+    // de pouvoir ne l'implémentent pas, et n'affichent donc pas de deuxième
+    // jauge — même forme d'accord que `drawUnbounded`.
+    const modA = this.modules.get(this.a);
+    const modB = this.modules.get(this.b);
+    drawFighterHud(ctx, this.a, 'left', modA.barValue(this.a), this.lang, modA.specialBar?.(this.a));
+    drawFighterHud(ctx, this.b, 'right', modB.barValue(this.b), this.lang, modB.specialBar?.(this.b));
 
     if (this.phase === 'intro') this.drawIntro(ctx);
     if (this.debug) this.drawDebugOverlay(ctx);

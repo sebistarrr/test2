@@ -87,6 +87,28 @@ export const HUD = deepFreeze({
     rightX: 681,
     strokeWidth: 5,
   },
+  /**
+   * **Jauges de pouvoir spécial**, sous les lignes de statistique.
+   *
+   * Rien de mesuré ici : la vidéo de référence n'a pas de troisième créneau de
+   * pouvoir, donc pas de troisième jauge. La géométrie est **déduite** de
+   * celle des jauges d'ultime — mêmes `x` et mêmes largeurs, pour que les deux
+   * rangées s'alignent — et posée sous la deuxième ligne de stat (base 1067,
+   * jambages jusqu'à ~1078), qui est le cas le plus chargé du roster.
+   *
+   * Elles sont plus basses et plus discrètes que celles de l'ultime : un
+   * pouvoir greffé ne doit pas se lire comme l'ultime du personnage.
+   */
+  special: {
+    y: 1104,
+    height: 26,
+    width: 268,
+    leftX: 39,
+    rightX: 412,
+    border: 2,
+    labelSize: 17,
+    labelPad: 7,
+  },
 });
 
 /** Physique commune à tous les éléments (le « moteur »). */

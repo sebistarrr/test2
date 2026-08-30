@@ -38,7 +38,13 @@ const CHROME = process.env.CHROME ?? '/opt/pw-browsers/chromium-1194/chrome-linu
  */
 const BLOCKS = [
   { path: ['weapon', 'lunge'], reads: ['L', 'lunge'], skip: [] },
-  { path: ['special'], reads: ['sp', 'special'], skip: ['id', 'name', 'nameRef'] },
+  {
+    path: ['special'],
+    reads: ['sp', 'special'],
+    // identité lue par l'écran de sélection, libellés et teintes lus par
+    // `render/hud.js` — aucun des deux ne passe par le module
+    skip: ['id', 'name', 'nameRef', 'barLabel', 'barLabelFr', 'barFill', 'barText'],
+  },
 ];
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });

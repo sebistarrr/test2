@@ -402,11 +402,22 @@ sans que ça se voie.
      0,506 à 0,439 coup/s. Les charges ne frôlent pas, elles traversent. Les
      vrais leviers sont la fréquence de balayage (`lunge.scanSpin`) et le
      retour à une charge de longueur bornée au lieu d'une traversée.
-   - Relevé courant : Lancier 30, Lumière 18, Hors-la-loi 16, Ombre 14,
-     Feu 14, Glace 13, Vent 13, Plante 13, Eau 12, Foudre 11, Bretteur 11.
-     **Cinq combattants hors bande, contre six avant** : le passage du
-     rechargement à la vrille a resserré l'ensemble sans qu'aucun levier
-     d'équilibrage ne soit touché.
+   - Relevé courant : Lancier 30, **Hors-la-loi 26**, Ombre 15, Lumière 15,
+     Glace 13, Feu 13, Vent 12, Foudre 11, Plante 11, Eau 10, Bretteur 9.
+     **Sept hors bande, contre cinq avant.**
+   - **Le Hors-la-loi à 26/30 est un écart assumé, pas une dérive.** Il est la
+     conséquence directe de trois changements demandés — rechargement ×2 plus
+     rapide, balle ×1,3, éclats de givre — et l'ablation dit lequel pèse :
+     rechargement seul **23**, éclats seuls **28**, vitesse de balle seule 14
+     (soit **rien de mesurable**, deux victoires sur trente sont dans le bruit
+     du banc). C'est cohérent avec l'historique : le tour de rechargement lui
+     coûtait ses touches de mêlée, le diviser par deux les lui rend.
+     Aucun levier disponible ne ramène la bande sans défaire la demande — la
+     cadence du Blizzard est **plate** (25–26 de 11 s à 26 s), celle des éclats
+     ne descend pas sous 23, et `ability.cooldown` comme `magazine` sont
+     `mesuré`. La dispersion y arrive (1,35 rad → 16) mais un cône de 77° fait
+     cesser le canon asservi de se lire comme une visée. Le réglage est
+     documenté dans `docs/FICHES.md` pour qui voudra le rentrer dans la bande.
    - **Les deux pouvoirs greffés ont déplacé sept affrontements sur 66, et
      n'ont fait sortir personne de la bande.** Six sont ceux du Blizzard, un
      celui du Lien. Le Hors-la-loi passe de 16 à 15 — au centre de la bande —
@@ -756,13 +767,25 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   n'être **pas un levier** : à 15 s et 24 s les matrices ne diffèrent que par des
   durées, jamais par un vainqueur. C'est l'invariant 2, et il ne se manifeste pas
   par un plantage mais par un balayage qui ment.
+- **Un banc qui plafonne dit que le levier n'est pas le bon.** La dispersion du
+  Hors-la-loi est *le* paramètre de sa précision, et pourtant la pousser de 0,75
+  à 1,35 rad ne faisait tomber le banc que de 1,11 à 0,86 coup/s, jamais aux
+  0,65 relevés. Cause : une part croissante de ses touches venait des **éclats
+  de givre**, que la dispersion n'affecte pas du tout. Quand un levier connu
+  cesse de répondre, chercher ce qui a changé de *source* plutôt que pousser le
+  levier plus loin.
 - **Un pouvoir s'ajoute sur un troisième créneau, il ne remplace pas l'ultime.**
   Le Blizzard et le Lien d'essence sont greffés via un bloc `special` et un
   compteur `f.state.spec` de la forme des compteurs génériques du `Fighter` —
   rien ne passe par `f.ult`, donc HIGH NOON et le Bond sont intacts. La
-  contrepartie est qu'il **n'y a pas de jauge** : le HUD n'en porte qu'une, et
-  elle appartient à l'ultime. Un pouvoir sans jauge doit donc s'annoncer par sa
-  mise en scène.
+  contrepartie était qu'il **n'avait pas de jauge**, le HUD n'en portant qu'une.
+  Il en porte maintenant **deux rangées** : `HUD.special` ajoute une seconde
+  barre, plus basse et plus discrète, sous les lignes de statistique. Sa
+  géométrie est **déduite** de celle des jauges d'ultime (mêmes `x`, même
+  largeur) et non relevée — la vidéo de référence n'a pas de troisième créneau
+  de pouvoir. Un module l'alimente par `specialBar(f)`, méthode **optionnelle** :
+  les neuf combattants sans troisième créneau ne l'implémentent pas, et
+  n'affichent donc pas un cadre vide.
 - **Regrouper autrement les mêmes produits change le résultat.** En réécrivant
   `bladeSegment()` pour y loger la vrille, `c * reach * hitbox.from` est devenu
   `c * (reach * hitbox.from)`. La multiplication flottante **n'est pas

@@ -511,18 +511,31 @@ exactement la forme des compteurs génériques du `Fighter` (`offstage`, `boost`
 l'interprète. Rien ne passe par `f.ult`, donc ni la jauge, ni la charge, ni la
 durée des deux ultimes existants ne sont touchées.
 
-**Contrepartie assumée : pas de jauge.** Le HUD n'en porte qu'une, et elle
-appartient à l'ultime. Les pouvoirs spéciaux tournent donc sur horloge fixe et
-s'annoncent par leur mise en scène — onde de choc et disque de givre pour l'un,
-dôme et rayon pour l'autre — pas par un remplissage. L'écran de sélection les
-liste sur une ligne « Special ».
+**Ils ont leur propre jauge, sur une seconde rangée.** Le HUD n'en portait
+qu'une, celle de l'ultime ; `HUD.special` en ajoute une deuxième, plus basse et
+plus discrète, sous les lignes de statistique. Sa géométrie est **déduite** de
+celle des jauges d'ultime — mêmes `x`, mêmes largeurs, pour que les deux
+rangées s'alignent — et non relevée : la vidéo de référence n'a pas de
+troisième créneau de pouvoir.
+
+Elle dit **deux choses avec le même remplissage**, comme les jauges d'ultime :
+elle se remplit vers la prochaine incantation, puis se vide sur la durée
+d'activité. Ce qui distingue les deux régimes n'est pas la jauge mais le
+**libellé** — inversé sur fond plein pendant l'activité, posé sur la plaque
+crème sinon. Sans ça, une jauge à moitié pleine ne dirait pas si le pouvoir
+arrive ou s'en va.
+
+Le module l'alimente par `specialBar(f)`, méthode **optionnelle** de la même
+forme que `drawUnbounded` : les neuf combattants sans troisième créneau ne
+l'implémentent pas, et n'affichent donc pas un cadre vide. L'écran de sélection
+les liste en plus sur une ligne « Special ».
 
 | | Blizzard (Hors-la-loi) | Lien d'essence (Lancier) |
 | --- | --- | --- |
 | Origine | ultime de la Glace | ultime de l'Ombre |
 | Durée | 5,2 s (mesuré sur la Glace) | 5,65 s (mesuré sur l'Ombre) |
 | Horloge | première à 4 s, puis toutes les **11 s** — `calé` | première à 5 s, puis toutes les **11 s** — `calé` |
-| Effet | champ de givre de 130 px **qui suit** le porteur : ralentit de 35 % et retire 1 PV toutes les 0,7 s | dôme de 200 px **figé** au point d'incantation + rayon qui ralentit de 15 % et draine 1 PV toutes les 0,5 s |
+| Effet | champ de givre de 130 px **qui suit** le porteur : ralentit de 35 % et retire 1 PV toutes les 0,7 s, **plus une salve de 7 éclats toutes les 2,4 s** | dôme de 200 px **figé** au point d'incantation + rayon qui ralentit de 15 % et draine 1 PV toutes les 0,5 s |
 | Retouches | aucune | rayon 265 → **200** et drain 0,4 → **0,5 s** |
 
 Les deux retouches du Lien ont la même cause. À 265 px le dôme couvrait plus de
@@ -554,6 +567,59 @@ Lancier gagne ses trente duels de toute façon.
 
 *La Glace et l'Ombre font encore l'inverse dans leurs propres modules. Le
 corriger là-bas déplacerait leur matrice ; c'est un autre chantier.*
+
+#### Les éclats de givre, et ce que l'ablation a montré
+
+Les **éclats de givre** (`frostShards` de la Glace) sont greffés sur le
+Blizzard — avec une différence : chez la Glace c'est un pouvoir *permanent* que
+le Blizzard accélère, ici il n'existe **que** pendant le Blizzard. Un pistolero
+qui tire des éclats en continu n'est plus un pistolero.
+
+Les projectiles étant lus dans la fiche du **porteur**
+(`owner.el.projectiles[key]`), l'`iceShard` est **recopié** dans la fiche du
+Hors-la-loi, pas référencé.
+
+Trois changements sont arrivés ensemble — rechargement ×2 plus rapide, vitesse
+de balle ×1,3, éclats — et le Hors-la-loi est passé de 16 à 26 victoires sur
+30. Une ablation, un changement à la fois, dit lequel pèse :
+
+| Configuration | Hors-la-loi |
+| --- | --- |
+| référence du tour précédent | 16 / 30 |
+| rechargement ×2 seul | **23 / 30** |
+| vitesse de balle ×1,3 seule | 14 / 30 |
+| éclats seuls | 28 / 30 |
+| les trois ensemble | 28 / 30 |
+
+Deux enseignements. D'abord, **la vitesse de balle n'apporte rien de mesurable**
+— 14 contre 16, soit deux victoires sur trente réparties sur dix
+affrontements à trois graines : c'est dans le bruit du banc, pas un effet.
+Ensuite, **le rechargement est le vrai moteur**, et c'est cohérent avec
+l'historique du personnage : le tour de rechargement lui coûtait ses touches de
+mêlée (le bout du canon porte la hitbox de contact, et pendant la recharge
+l'arme n'est plus asservie), ce qui l'avait fait tomber de 15 à 9. Diviser la
+recharge par deux lui rend l'essentiel de ce qu'elle lui coûtait.
+
+**Aucun levier ne ramène la bande sans défaire ce qui a été demandé.** Ce qui a
+été essayé, mesuré :
+
+| Levier | Résultat |
+| --- | --- |
+| cadence du Blizzard, 11 → 26 s | **plate** : 25–26 quel que soit le réglage |
+| cadence des éclats, 10×1,2 s → 5×5 s | 28 → 23, jamais en dessous |
+| dispersion, 0,75 → 1,35 rad | 26 → 16, mais 1,35 rad = un cône de 77° |
+| `ability.cooldown`, `magazine` | **mesurés** — hors d'atteinte (invariant 5) |
+
+La dispersion plafonne parce qu'une part croissante des touches vient des
+**éclats**, qu'elle n'affecte pas : le banc tombe de 1,11 à 0,86 coup/s et pas
+plus bas, contre 0,65 relevé. Et à 1,35 rad le canon asservi à la cible cesse
+de se lire comme une visée — le personnage devient un fusil à pompe. C'est un
+prix de conception payé pour masquer un changement demandé ; il n'a pas été
+payé, et le 26 / 30 est **documenté plutôt que caché**, comme le 30 / 30 du
+Lancier.
+
+Pour le rentrer dans la bande si on le souhaite : `ability.spread` à **1,35** et
+`special.shards` à **5 éclats toutes les 5 s** donnent 16 / 30.
 
 #### La traînée de glace du Hors-la-loi
 

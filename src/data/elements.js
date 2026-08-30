@@ -1502,7 +1502,11 @@ const OUTLAW = {
     /** Mesuré : ~18 images entre deux décréments d'`Ammo` à 30 fps. */
     cooldown: 0.6,
     magazine: 6, // mesuré : le HUD affiche « Ammo: n/6 »
-    reload: 1.4, // calé : le rechargement est le trou observé entre 0/6 et 6/6
+    /** Le rechargement est le trou observé entre `0/6` et `6/6` : 1,4 s
+     *  mesuré. **Divisé par deux sur demande** — c'est donc un écart assumé au
+     *  relevé, pas une nouvelle mesure. Le tour de vrille du pistolet suit
+     *  automatiquement, son angle étant calculé depuis l'avancement. */
+    reload: 0.7,
     projectile: 'shot',
     recoil: 119, // mesuré : 95 px/s → ×1,25, appliqué à chaque tir
     /**
@@ -1567,6 +1571,13 @@ const OUTLAW = {
     id: 'blizzard',
     name: 'Blizzard',
     nameRef: 'Blizzard',
+    /** Jauge propre, sous celle de l'ultime — voir `HUD.special`. Le pouvoir
+     *  greffé n'en avait pas au départ ; c'est ce qui manquait pour qu'on voie
+     *  venir son déclenchement au lieu de le subir. */
+    barLabel: 'BLIZZARD',
+    barLabelFr: 'BLIZZARD',
+    barFill: '#67d6ec',
+    barText: '#083344',
     /** Calé : les duels du roster réduit durent 10 à 20 s. À 14 s d'horloge
      *  le Blizzard ne partait presque jamais et ne se voyait qu'en duel long ;
      *  à 5 s il tourne en continu. 9 s laisse deux incantations dans un duel
@@ -1595,9 +1606,35 @@ const OUTLAW = {
       tickDamage: 1,
     },
     snow: { count: 90, fall: 46, drift: 22, color: 'rgba(186,230,253,0.9)' },
+    /**
+     * **Éclats de givre** — la mécanique `frostShards` de la Glace, greffée
+     * sur le Blizzard. Chez la Glace c'est un pouvoir *permanent* que le
+     * Blizzard accélère ; ici il n'existe **que** pendant le Blizzard, sinon
+     * le Hors-la-loi aurait deux armes en permanence et cesserait d'être un
+     * pistolero. Les chiffres sont ceux du `duringUltimate` de la Glace, qui
+     * décrit précisément le régime « pendant Blizzard ».
+     */
+    shards: { count: 7, cooldown: 2.4, projectile: 'iceShard' },
   },
 
   projectiles: {
+    /** Éclat repris tel quel de la fiche de la Glace : les projectiles sont
+     *  lus dans la fiche du **porteur** (`owner.el.projectiles[key]`), donc un
+     *  emprunt se recopie, il ne se référence pas. */
+    iceShard: {
+      label: 'Éclat de givre',
+      labelRef: 'Frost Shard',
+      sprite: 'iceShard',
+      scale: 2.4,
+      speed: 380,
+      damage: 2,
+      radius: 10,
+      life: 3.4,
+      bounces: 2, // les éclats ricochent sur les murs (observé sur la Glace)
+      knockback: 45,
+      onHit: { slow: 0.12, slowDuration: 1.6 },
+      trail: { color: 'rgba(186,230,253,0.55)', every: 0.035, life: 0.5, dotted: true },
+    },
     shot: {
       label: 'Balle de glace',
       labelRef: 'Ice Bullet',
@@ -1607,9 +1644,11 @@ const OUTLAW = {
        *  c'est un grossissement purement visuel. */
       scale: 1.5,
       /** Calé : à 30 fps la vidéo ne montre que le sillage, jamais la balle.
-       *  720 px/s laisse à l'adversaire de quoi sortir de la ligne de tir —
-       *  c'est l'autre moitié de la précision relevée, avec la dispersion. */
-      speed: 720,
+       *  720 px/s laissait à l'adversaire de quoi sortir de la ligne de tir —
+       *  c'était l'autre moitié de la précision relevée, avec la dispersion.
+       *  Porté à **936 (×1,3)** sur demande : la balle traverse donc plus vite
+       *  et la dispersion redevient le seul garde-fou de la précision. */
+      speed: 936,
       /** Mêmes dégâts que le coup à bout portant : c'est la même stat. */
       damage: (f) => Math.max(3, Math.round(f.stacks)),
       radius: 8, // calé avec la dispersion et la vitesse, pour 0,60 coup/s au banc
@@ -2350,6 +2389,10 @@ const LANCER = {
     id: 'essenceTether',
     name: 'Lien d’essence',
     nameRef: 'Essence Tether',
+    barLabel: 'ESSENCE TETHER',
+    barLabelFr: 'LIEN D’ESSENCE',
+    barFill: '#7c3aed',
+    barText: '#f3e8ff',
     /** Calé, comme le Blizzard, sur la durée des duels du roster réduit. */
     cooldown: 11,
     first: 5,

@@ -110,6 +110,10 @@ export const lancerAbilities = {
     // Lien d'essence : minuterie propre, sans rapport avec la jauge du Bond
     f.state.spec = 0; // secondes restantes de lien actif
     f.state.specCd = f.el.special.first;
+    /** Longueur de la fenêtre d'attente en cours : `first` pour la première,
+     *  `cooldown` ensuite. Sans elle, la jauge se remplirait sur le mauvais
+     *  dénominateur au premier cycle. */
+    f.state.specSpan = f.el.special.first;
     f.state.tetherTick = 0;
     f.state.dome = null;
     f.state.domeSparks = [];
@@ -559,6 +563,7 @@ export const lancerAbilities = {
         f.state.spec = 0;
         f.state.dome = null;
         f.state.specCd = sp.cooldown;
+        f.state.specSpan = sp.cooldown;
       }
       return;
     }
@@ -731,5 +736,15 @@ export const lancerAbilities = {
   barValue(f) {
     if (f.ult.active > 0) return 0;
     return f.ult.charge / 100;
+  },
+
+  /**
+   * Jauge du Lien : elle se **remplit** vers la prochaine incantation, puis se
+   * **vide** sur la durée d'activité — même convention que `barValue`.
+   */
+  specialBar(f) {
+    const sp = f.el.special;
+    if (f.state.spec > 0) return { value: f.state.spec / sp.duration, active: true };
+    return { value: 1 - clamp(f.state.specCd / f.state.specSpan, 0, 1), active: false };
   },
 };
