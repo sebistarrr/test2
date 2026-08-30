@@ -82,7 +82,67 @@ qui tienne sur toute la vidéo.
 | Vitesse | 432 px/s vidéo → **540** | gardée telle quelle |
 | Bond | 0,45 s d'élan, **1,5 s hors de l'arène**, marqueur gris, chute dans 110 px | `ultimate.windup / flight / marker / impact` |
 
-#### La lance suit le cap — et les deux relevés précédents étaient faux
+#### L'angle d'arme : ce qui est mesuré, et ce qui ne l'est pas
+
+**Cette section a affirmé trois choses différentes. La quatrième mesure, faite
+sur les *deux* vidéos avec un détecteur corrigé, ne tranche pas — et c'est le
+résultat honnête.**
+
+Ce qui a été trouvé en reprenant la mesure sur les deux enregistrements :
+
+| Méthode | A (vs Magia) | B (vs Outlaw) |
+| --- | --- | --- |
+| ACP, composante connexe, > 300 px/s | cap 31,7° / adversaire 12,4° | cap 26,6° / adversaire 12,9° |
+| Vecteur bille → pointe | cap 44,7° / adversaire 27,6° | cap 41,4° / adversaire 38,1° |
+| Corrélation des variations | r = +0,06 / −0,09 | r = −0,04 / +0,26 |
+
+Aucune des deux hypothèses ne descend sous 25° avec la méthode du vecteur
+pointe ; les corrélations sont nulles ; et les verdicts par bande de vitesse
+s'inversent d'une bande à l'autre. **Une mécanique ne fait pas ça, une mesure
+polluée si.**
+
+**Le chiffre « 6,6° au cap contre 37,9° à l'adversaire » qui figurait ici est
+retiré.** Il venait d'un détecteur qui prenait tous les pixels sombres dans un
+rayon de 130 px, sans exclure le **cadre noir de l'arène** — une droite
+parfaite, que l'ACP privilégie précisément parce qu'elle cherche la direction
+la plus allongée, et que le test d'allongement *sélectionnait* au lieu de
+filtrer. Il tournait en outre sur le sous-ensemble d'images où un détecteur
+global retrouvait la bille, soit 490 sur 747 dans la vidéo B.
+
+L'implémentation garde `weaponAngle = heading` **par défaut**, faute de mieux
+établi — mais ce n'est plus présenté comme un relevé. Pour trancher il faudrait
+une lecture image par image sur un jeu d'images choisies à la main, ou une
+source de meilleure définition.
+
+#### Ce qui, lui, est mesuré — et concorde sur les deux vidéos
+
+| Mesure | A (vs Magia) | B (vs Outlaw) | Le jeu |
+| --- | --- | --- | --- |
+| Vitesse de croisière | 423 px/s | 413 px/s | **432** |
+| Une charge toutes les | 1,7 s | 0,9 s | **2,3 s** |
+| Distance parcourue par charge | 137 px logiques | (bruitée) | **136** |
+| Pic de vitesse en charge | 1392 px/s | 1770 px/s | **1555** |
+| Cadence de touche | 0,181 coup/s | — | **0,184** |
+
+Ces cinq-là sont pris avec le **même code** des deux côtés, la conversion
+×1,25 appliquée, et un suivi temporel de la bille — pas une détection par
+image, qui perdait la bille 257 fois sur 747 pendant les charges.
+
+**Ce que la comparaison a révélé, et qui était le vrai défaut :** le Dragoon
+**charge souvent et rate souvent** — une charge toutes les 1 à 1,7 s, dont
+environ une sur trois porte. Le Lancier chargeait toutes les 4,3 secondes et
+touchait presque à chaque fois. Les deux rendaient la **même cadence de
+touche**, ce qui masquait complètement l'écart, mais rien à voir à l'œil.
+
+**L'arrêt avant la charge n'est pas mesuré non plus.** Le « 163 px/s une image
+avant le déclenchement » venait d'un détecteur qui ne retenait un déclenchement
+que si `v[i-1] < 0,35 × v[i]` — il *sélectionnait* les images précédées d'un
+creux, puis rapportait qu'il y avait un creux. Avec un seuil neutre, la vitesse
+avant charge vaut 732 px/s (A) et 413 (B) : pas d'arrêt. La phase `brace` est
+conservée parce qu'elle a été **demandée** comme effet de jeu, pas parce qu'elle
+est relevée.
+
+#### Les trois relevés précédents de l'angle
 
 C'est **la** mécanique du personnage, et elle a demandé trois relevés.
 
@@ -295,9 +355,9 @@ sans que ça se voie.
      balaie 3-0 et elle tombe à 12, à 240 il n'en prend que deux et elle
      revient. Ces 20 px de fenêtre coûtent 0,13 PV/s de fidélité (2,53 contre
      2,40) — la bande passe avant, c'est un invariant.
-   - Relevé courant : Lumière 20, **Lancier 17**, Ombre 16, Glace 15, Feu 15,
-     Hors-la-loi 15, Foudre 14, Bretteur 14, Vent 13, Plante 13, Eau 13. Dix
-     combattants sur onze tiennent dans la bande.
+   - Relevé courant : Lumière 21, Glace 17, Hors-la-loi 16, Ombre 15, Feu 15,
+     **Lancier 15**, Plante 14, Eau 14, Vent 13, Bretteur 13, Foudre 12. Neuf
+     combattants sur onze tiennent dans la bande — le Lancier en fait partie.
    - **Le recul symétrique a ramené le Lancier dans la bande tout seul**, de 19
      à 17, sans qu'aucun levier d'équilibrage ne soit touché : un attaquant
      repoussé aussi fort que sa cible met plus longtemps à revenir au contact.

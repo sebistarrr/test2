@@ -1894,7 +1894,7 @@ const LANCER = {
        * pour retrouver le budget relevé. Le balayage est net — 320 → 2,04 PV/s,
        * 300 → 2,26, 280 → 2,35, **265 → 2,52**, 200 → 3,29.
        */
-      minRange: 220,
+      minRange: 250,
       /**
        * **Temps d'arrêt avant la charge**, en secondes. Mesuré : la vitesse
        * tombe à **163 px/s une image avant le déclenchement**, contre ~1 700
@@ -1902,22 +1902,23 @@ const LANCER = {
        *
        * L'échantillon est mince (deux déclenchements nets sur la vidéo), et
        * c'est la description du mouvement qui le corrobore plutôt que la
-       * statistique seule. La durée, elle, est **calée** : à une image (0,033 s)
-       * le battement ne se voit pas à l'œil.
+       * **Cette mesure est retirée.** Le « 163 px/s une image avant le
+       * déclenchement » venait d'un détecteur qui ne retenait un déclenchement
+       * que si `v[i-1] < 0,35 × v[i]` : il *sélectionnait* les images précédées
+       * d'un creux, puis rapportait qu'il y avait un creux. Avec un seuil
+       * neutre, la vitesse avant charge vaut 732 px/s sur A et 413 sur B — il
+       * n'y a pas d'arrêt.
+       *
+       * La phase est conservée parce qu'elle a été **demandée** comme effet de
+       * jeu, et elle est donc `déduit`, pas `mesuré`.
        */
       brace: 0.05,
       /**
        * **Moulinet d'élan**, en secondes, et sa vitesse en rad/s.
        *
-       * `déduit` — et c'est un **écart volontaire au relevé**, pas une mesure :
-       * la vidéo ne montre aucune rotation propre de l'arme (9,6° d'écart
-       * médian au cap sur 294 images). C'est de la mise en scène demandée, et
-       * elle est bornée à cette seule phase ; partout ailleurs l'arme suit le
-       * cap.
-       *
-       * 14 rad/s ≈ 2,2 tours/s : sur 0,18 s, un peu moins d'un demi-tour. Assez
-       * pour lire un armement, pas assez pour qu'on perde de vue où pointe la
-       * lance au moment du verrouillage.
+       * `déduit` — **écart volontaire, demandé comme effet de jeu**, et non un
+       * relevé. Il est borné à cette seule phase ; partout ailleurs l'arme
+       * suit le cap.
        */
       windup: 0.1,
       /**
@@ -1936,27 +1937,36 @@ const LANCER = {
       lateral: 36,
       range: 470,
       /**
-       * Calé : demi-angle du cône d'engagement. La charge ne part que si
-       * l'adversaire est à moins de ça du **cap courant** — donc dans l'axe de
-       * la lance, puisqu'elle le suit.
+       * Demi-angle du cône d'engagement, calé **sur la fréquence de charge
+       * relevée**. Il valait 0,15, réglé à l'époque où l'on optimisait la
+       * cadence de touche : à cette valeur le Lancier ne chargeait qu'une fois
+       * toutes les 4,3 s, contre **une fois toutes les 1 à 1,7 s** mesurées sur
+       * les deux vidéos. Élargi à 0,8, il charge toutes les 2,3 s.
        *
-       * **Le serrer améliore la cadence, l'élargir la dégrade** — c'est
-       * l'inverse de l'intuition, et le banc est catégorique : 0,15 → 0,157
-       * coup/s, 0,22 → 0,149, 0,30 → 0,149, 0,45 → 0,137, 0,60 → 0,120. Un
-       * cône large laisse partir des charges mal alignées : elles passent à
-       * côté, et le temps mort qui suit est perdu pour rien. Le taux de
-       * réussite prime sur le nombre de tentatives, exactement comme pour
-       * `minRange`.
+       * L'ancien commentaire disait « le serrer améliore la cadence » : c'était
+       * vrai, et c'est précisément ce qui égarait. Un cône serré donne peu de
+       * charges qui portent presque toutes ; la vidéo montre l'inverse —
+       * beaucoup de charges dont environ une sur trois porte. Les deux rendent
+       * la même cadence de touche, et c'est ce qui a masqué l'écart si
+       * longtemps.
        */
-      cone: 0.15,
-      /** Mesuré : ~0,15 s de vitesse élevée (t = 8,70 → 8,84 s). */
-      dash: 0.16,
-      /** Mesuré : 1 125–1 160 px/s vidéo → ~1 400 en repère jeu, soit 2,6 × la
-       *  vitesse de croisière de 540. */
-      speed: 2.6,
+      cone: 0.8,
+      /**
+       * Calé sur la **distance parcourue**, qui est la seule mesure de charge
+       * insensible à l'échantillonnage : 137 px logiques relevés sur la vidéo A,
+       * 136 rendus ici (0,07 × 3,6 × 540). La « durée » se compare mal — à
+       * 30 images/s une charge de 60 ms n'occupe que deux images.
+       */
+      dash: 0.07,
+      /**
+       * Pic de vitesse en charge. Mesuré **1 392 px/s vidéo sur A et 1 770 sur
+       * B** ; 3,6 × 540 = 1 944 logiques, soit 1 555 en repère vidéo — dans la
+       * fourchette. Il valait 2,6, calé sur un relevé antérieur plus étroit.
+       */
+      speed: 3.6,
       /** Calé : temps mort après une charge. Avec `minRange`, c'est ce qui
        *  porte le budget de dégâts relevé (0,181 coup/s, 2,54 PV/s). */
-      recover: 0.25,
+      recover: 0.08,
       /** Calé : le recul propre à la charge, ajouté à `melee.selfRecoil`. La
        *  vidéo montre un recul net après chaque touche de lance. */
       recoil: 240,

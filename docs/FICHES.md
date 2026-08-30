@@ -532,7 +532,24 @@ qu'il tourne, l'adversaire dérive. 0,18 s → 2,02 PV/s, 0,14 → 2,15, **0,10 
 cadence tombe juste, et c'est le budget de dégâts (2,39 avec `stackMax` 16) qui
 reste 6 % sous la vidéo.
 
-**L'arrêt avant la charge est relevé.** La vitesse tombe à **163 px/s une image
+**Le rythme de charge, mesuré sur les deux vidéos.** Une charge toutes les
+**1,0 à 1,7 s**, parcourant **137 px logiques**, à un pic de **1 392 à
+1 770 px/s vidéo**, pour une cadence de touche de 0,181 coup/s. Autrement dit
+le Dragoon **charge souvent et rate souvent** : environ une charge sur trois
+porte. Le Lancier chargeait toutes les 4,3 s et touchait presque à chaque fois —
+même cadence de touche, comportement sans rapport. C'est cet écart-là qui
+faisait « mou et désynchronisé », et il était invisible tant qu'on ne comparait
+que la cadence.
+
+**L'arrêt avant la charge n'est pas relevé — cette mesure est retirée.** Le
+« 163 px/s une image avant le déclenchement » venait d'un détecteur qui ne
+retenait un déclenchement que si la vitesse précédente valait moins de 35 % de
+la suivante : il sélectionnait les images précédées d'un creux, puis rapportait
+qu'il y avait un creux. Avec un seuil neutre, la vitesse avant charge vaut
+732 px/s (A) et 413 (B). La phase est gardée parce qu'elle a été demandée comme
+effet de jeu.
+
+**Ce que disait l'ancienne version :** La vitesse tombe à **163 px/s une image
 avant le déclenchement**, contre ~1 700 juste avant et ~3 100 juste après : le
 Lancier se plante, puis part. L'échantillon est mince — deux déclenchements
 nets sur la vidéo — et c'est la lecture du mouvement qui le corrobore plutôt
