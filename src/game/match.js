@@ -45,7 +45,7 @@ export class Match {
     this.debug = debug;
     this.onEnd = onEnd;
 
-    this.fx = new Effects(rng);
+    this.fx = new Effects(rng, this.viewRng);
     // Mise en scène : banc de particules et aléa **séparés**, pilotés par
     // viewRng. Rien de ce qu'elle fait ne peut décaler la simulation.
     this.flair = new Flair(this.viewRng);

@@ -9,6 +9,7 @@
  */
 
 import { ARENA } from '../data/tuning.js';
+import { hash01 } from '../core/math.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { TAU, dist } from '../core/math.js';
 import { drawSpriteCentered } from '../render/sprites.js';
@@ -46,7 +47,55 @@ export class Projectiles {
       life: def.life,
       bounces: def.bounces,
       trailTimer: 0,
+      /** Compteur d'émissions, seule entrée du hachage de dispersion : il
+       *  avance d'un pas fixe, donc la poudre est identique à graine égale. */
+      trailSeed: 0,
     });
+  }
+
+  /**
+   * Une émission de traînée.
+   *
+   * Par défaut, un point unique sur la trajectoire — c'est le comportement
+   * historique, et celui des dix autres combattants.
+   *
+   * Avec `trail.puff`, l'émission devient une **bouffée** : plusieurs grains
+   * dispersés autour du point, décalés perpendiculairement à la vitesse et
+   * étalés le long d'elle. Un projectile ne laissait qu'un chapelet de points
+   * isolés, ce qui se lit comme des perles plutôt que comme un sillage.
+   *
+   * **Ceci est du code de simulation**, appelé depuis `update` : la dispersion
+   * vient donc d'un **hachage pur** de (compteur d'émission, indice de grain),
+   * jamais d'un tirage. `fx.dot` ne consomme aucun aléa non plus — c'est ce qui
+   * rend l'enrichissement gratuit du point de vue du déterminisme.
+   *
+   * @param {*} p projectile
+   */
+  _emitTrail(p) {
+    const t = p.def.trail;
+    const base = t.dotted ? 2 : 3.5;
+    if (!t.puff) {
+      this.fx.dot(p.x, p.y, t.color, t.life, base);
+      return;
+    }
+    const sp = Math.hypot(p.vx, p.vy) || 1;
+    const nx = -p.vy / sp;
+    const ny = p.vx / sp;
+    const k = p.trailSeed++;
+    for (let g = 0; g < t.puff.count; g++) {
+      const h1 = hash01(k * 7.31 + g * 41.7);
+      const h2 = hash01(k * 19.7 + g * 3.19);
+      const h3 = hash01(k * 2.53 + g * 61.3);
+      const off = (h1 - 0.5) * 2 * t.puff.spread;
+      const back = -h2 * t.puff.trailBack;
+      this.fx.dot(
+        p.x + nx * off + (p.vx / sp) * back,
+        p.y + ny * off + (p.vy / sp) * back,
+        h3 > 0.7 && t.puff.core ? t.puff.core : t.color,
+        t.life * (0.6 + 0.8 * h3),
+        base * (0.5 + 0.9 * h3),
+      );
+    }
   }
 
   /**
@@ -69,7 +118,7 @@ export class Projectiles {
         p.trailTimer -= dt;
         if (p.trailTimer <= 0) {
           p.trailTimer = p.def.trail.every;
-          this.fx.dot(p.x, p.y, p.def.trail.color, p.def.trail.life, p.def.trail.dotted ? 2 : 3.5);
+          this._emitTrail(p);
         }
       }
 

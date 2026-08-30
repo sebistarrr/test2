@@ -60,5 +60,23 @@ export function segmentPointDistance(ax, ay, bx, by, px, py) {
   return { d: Math.hypot(px - x, py - y), t, x, y };
 }
 
+/**
+ * **Aléa pur** — `hash01(x)` rend toujours la même valeur pour le même `x`.
+ *
+ * C'est l'outil à préférer dès qu'une *décoration* a besoin de désordre. Un
+ * tirage consommé dans une méthode de dessin dépend du nombre d'images
+ * affichées, qui n'est pas le nombre de pas de simulation : deux machines au
+ * même `?seed=` verraient alors des décorations différentes. Et un tirage
+ * consommé dans un chemin de simulation décale tout ce qui suit.
+ *
+ * Un hachage n'a ni l'un ni l'autre défaut, d'où ses trois emplacements :
+ * `render/flair.js` (traînées, arcs, poudre), `abilities/plant.js`, et
+ * `game/projectiles.js` pour la dispersion des bouffées de traînée.
+ */
+export function hash01(x) {
+  const v = Math.sin(x) * 43758.5453;
+  return v - Math.floor(v);
+}
+
 /** Arrondi « propre » pour l'affichage des dixièmes de seconde. */
 export const round1 = (v) => Math.round(v * 10) / 10;

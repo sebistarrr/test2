@@ -14,8 +14,16 @@ import { TAU } from '../core/math.js';
 const MAX = 900;
 
 export class Effects {
-  constructor(rng) {
+  /**
+   * @param {*} rng flux de **simulation** — tout ce qui peut décider d'un duel
+   * @param {*} [viewRng] flux réservé au **rendu**. Les générateurs purement
+   *   décoratifs y puisent, faute de quoi ils décalent la simulation. Sans lui,
+   *   on retombe sur `rng` : c'est le comportement historique des dix autres
+   *   combattants, laissé tel quel pour ne pas déplacer leur matrice.
+   */
+  constructor(rng, viewRng) {
     this.rng = rng;
+    this.viewRng = viewRng ?? rng;
     /** @type {Array<any>} */
     this.pool = [];
     for (let i = 0; i < MAX; i++) this.pool.push({ alive: false });
@@ -85,11 +93,22 @@ export class Effects {
     this.spawn({ kind: 'dot', x, y, color, life, size, drag: 1.2 });
   }
 
+  /**
+   * Chute de neige — **décoration pure**, donc `viewRng`.
+   *
+   * C'est ici que se jouait un piège coûteux. Le Blizzard sème 90 flocons par
+   * seconde et chacun consomme **quatre** tirages : dans le flux de
+   * simulation, cela décale tout ce qui suit, et la recharge du Blizzard cesse
+   * d'être un levier pour devenir un brasseur de graines. La correction
+   * précédente n'avait déplacé que les **positions** passées en argument ;
+   * l'intérieur de cette méthode continuait de puiser dans la simulation. Une
+   * décoration se corrige jusqu'au bout, sinon elle n'est pas corrigée.
+   */
   snow(x, y, fall, drift, color) {
     this.spawn({
       kind: 'snow', x, y,
-      vx: this.rng.spread(drift), vy: fall * this.rng.range(0.7, 1.4),
-      life: this.rng.range(1.4, 3.2), size: this.rng.range(1.4, 3), color,
+      vx: this.viewRng.spread(drift), vy: fall * this.viewRng.range(0.7, 1.4),
+      life: this.viewRng.range(1.4, 3.2), size: this.viewRng.range(1.4, 3), color,
     });
   }
 

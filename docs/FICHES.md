@@ -565,6 +565,25 @@ celle du Lien se révèle n'être **pas un levier du tout** : à 15 s et à 24 s
 matrices ne diffèrent que par des **durées**, jamais par un vainqueur — le
 Lancier gagne ses trente duels de toute façon.
 
+> **Cette correction était incomplète, et la suite le prouve.** Seules les
+> **positions** passées en argument avaient changé de flux. `Effects.snow`, lui,
+> continuait de tirer **quatre** fois dans `game.rng` par flocon — 360 tirages
+> par seconde de Blizzard. La monotonie observée avait fait croire l'affaire
+> réglée : elle ne prouvait rien, elle était seulement moins erratique qu'avant.
+>
+> `Effects` reçoit maintenant un second flux à la construction
+> (`new Effects(rng, viewRng)`), dont les générateurs purement décoratifs se
+> servent. Corriger cela a déplacé **cinq affrontements**, dont trois de la
+> **Glace** — son propre Blizzard sème la même neige. Le Hors-la-loi passe de 26
+> à 25, la Glace de 13 à 15.
+>
+> La leçon : **vérifier une correction à la source, pas au symptôme.** Un
+> balayage redevenu monotone n'est pas une preuve que le flux est propre.
+>
+> Reste au tableau : `fx.burst` tire encore 4 fois par particule dans le flux de
+> simulation, et cela vaut pour les onze combattants. Le corriger déplacerait
+> toutes leurs matrices d'un coup — c'est un chantier à part, pas un oubli.
+
 *La Glace et l'Ombre font encore l'inverse dans leurs propres modules. Le
 corriger là-bas déplacerait leur matrice ; c'est un autre chantier.*
 
@@ -620,6 +639,73 @@ Lancier.
 
 Pour le rentrer dans la bande si on le souhaite : `ability.spread` à **1,35** et
 `special.shards` à **5 éclats toutes les 5 s** donnent 16 / 30.
+
+#### De l'éclair de glace à la poudre de glace
+
+![Poudre de glace](capture-poudre.png)
+
+*Les deux balles laissent une bouffée granuleuse au lieu d'un chapelet de
+points ; le Hors-la-loi (à droite) traîne son propre sillage de poudre, et le
+canon porte une poussière au lieu d'arcs.*
+
+Le Hors-la-loi avait la suite d'effets du Lancier **recolorée** en bleu : un
+tracé électrique, des arcs le long du canon. Le dessin disait donc la foudre là
+où le personnage gèle. Un mode `powder` remplace le mode `electric`, et chacune
+de ses règles est **l'inverse** d'une règle du tracé électrique :
+
+| | `electric` | `powder` |
+| --- | --- | --- |
+| Forme | un **trait** continu, cassé | des **grains isolés**, non reliés |
+| Écart | s'annule au point le plus récent | **s'ouvre en s'éloignant** du combattant |
+| `rate` | 11–16 paliers/s : ça doit grésiller | 5–6 : ça doit **tenir en place** |
+| Liant | aucun | une **nappe** large et très transparente sous les grains |
+
+Relier des points écartés était l'exigence du tracé électrique — un chemin dont
+les points sont espacés de 200 px se referme en chapelet de perles s'il est
+dessiné segment par segment. Pour la poudre, c'est exactement l'inverse : les
+grains **doivent** être séparés. Et une poudre se disperse en retombant, donc
+l'écart s'ouvre vers l'arrière au lieu de s'annuler au combattant.
+
+La nappe n'est pas un ornement : sans elle les grains se lisent comme des taches
+détachées, et c'est elle qui les rassemble en sillage.
+
+Le long du canon, les arcs deviennent une **poussière** (`weaponArc.powder`) —
+même ancrage sur `bladeSegment()`, même hachage pur, mais des grains isolés au
+lieu de polylignes, dont le panache s'ouvre vers la pointe.
+
+**Deux erreurs commises, et toutes deux déjà au tableau.**
+
+D'abord l'aura : la largeur des passes était calculée en `1/k`, donc la
+**dernière** passe — celle qui porte le cœur à pleine opacité — faisait 54 px au
+lieu de 8. Elle délavait tout autour de l'arme au lieu de la cerner, ce qui est
+mot pour mot le défaut de « gélule » déjà corrigé sur la lance. La passe la plus
+large vient en premier, le noyau étroit en dernier.
+
+Ensuite la gamme : premier réglage en `#e8f7ff` sur `#7cc3e4`, **invisible**.
+L'arène est blanche, et un grain quasi blanc de 3 px n'y existe pas. C'est la
+leçon des jaunes clairs du Lancier, refaite à l'envers — « poudre » avait
+suggéré « pâle », alors que la contrainte de fond n'a pas changé. La gamme est
+en bleus **tenus** (`#2f8ec6`, `#1d78ad`), le cœur en `#8fd0ee` et non en blanc.
+
+#### La traînée des projectiles
+
+Un projectile n'émettait qu'un point isolé toutes les 30 ms. À 936 px/s, cela
+laisse 28 px entre deux marques : un chapelet de perles, pas un sillage.
+
+`trail.puff` transforme chaque émission en **bouffée** — plusieurs grains
+dispersés perpendiculairement à la vitesse et traînant vers l'arrière — et
+`every` descend en même temps (0,03 → 0,018). Les deux comptent : c'est
+l'espacement des émissions qui décide de la continuité, pas leur richesse.
+
+**Ce code est dans le chemin de simulation** (`projectiles.update`), donc la
+dispersion vient d'un **hachage pur** de (compteur d'émission, indice de grain),
+jamais d'un tirage — et `fx.dot` ne consomme aucun aléa non plus. C'est ce qui
+rend l'enrichissement gratuit : la matrice est **identique au fichier près**
+après l'ajout, ce qui a été vérifié.
+
+À cette occasion `hash01` est remonté de `render/flair.js` vers `core/math.js`,
+d'où `flair.js` et `projectiles.js` l'importent tous deux — plutôt qu'une
+troisième copie de la même fonction.
 
 #### La traînée de glace du Hors-la-loi
 

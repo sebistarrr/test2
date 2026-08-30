@@ -1389,35 +1389,77 @@ const OUTLAW = {
        * bleu clair *encore teinté* — jamais du blanc.
        */
       ribbon: {
-        color: '#2f8ec6',
-        width: 13,
+        color: '#3f97c9',
+        width: 15,
         /** Mêmes opacités que le Lancier (0,55 / 0,40) : c'est la **teinte**
          *  qui a dû descendre, pas l'alpha. Sur l'arène blanche un bleu porte
          *  moins qu'un ambre à luminosité égale — au premier réglage
          *  (`#bfeaff` sur `#2a7fae`) la traînée se lisait comme une volute
          *  grise. Les deux tons sont donc descendus d'un cran. */
-        alpha: 0.55,
-        electric: { core: '#8fd8ff', glow: '#1d78ad', coreWidth: 2.4, jitter: 16, rate: 16 },
+        alpha: 0.72,
+        /**
+         * **Poudre de givre** plutôt qu'éclair de givre. Le tracé électrique
+         * disait la foudre, ce qui n'est pas ce que dit ce personnage : il gèle,
+         * il ne foudroie pas. Les grains sont serrés au ras du canon et
+         * s'ouvrent vers l'arrière — une poudre se disperse en retombant.
+         *
+         * `rate` bas (6 contre 16 pour l'éclair) : la poudre doit **tenir en
+         * place** assez longtemps pour se lire comme de la matière en
+         * suspension. À 16 paliers par seconde elle sautillait et redonnait du
+         * bruit, exactement ce que le tracé électrique cherchait, lui, à
+         * produire.
+         */
+        powder: {
+          color: '#2f8ec6',
+          /** **Le cœur reste un bleu, pas un blanc.** Premier réglage :
+           *  `#e8f7ff` sur `#7cc3e4`, invisible — l'arène est blanche, et un
+           *  grain quasi blanc à 3 px n'y existe pas. C'est exactement la leçon
+           *  déjà payée sur les jaunes clairs du Lancier, refaite à l'envers. */
+          core: '#8fd0ee',
+          haze: '#5fb0d8',
+          hazeAlpha: 0.42,
+          grains: 4,
+          spread: 17,
+          size: 4.4,
+          rate: 6,
+        },
       },
       /** Le fuseau derrière la bille : large et peu opaque là où le ruban est
        *  fin et vif. Cassure plus ample et plus lente que celle du ruban,
        *  sinon les deux tracés grésillent à l'identique et se lisent comme un
        *  seul trait épais (leçon payée sur le Lancier). */
       smear: {
-        color: '#1d78ad',
-        width: 30,
-        alpha: 0.4,
-        electric: { core: '#2f8ec6', glow: '#175d85', coreWidth: 5, jitter: 34, rate: 11 },
+        color: '#2a7fae',
+        width: 34,
+        alpha: 0.52,
+        /** Le fuseau porte le corps du sillage : grains plus gros, plus
+         *  nombreux et plus étalés que ceux du ruban, sur une nappe plus large.
+         *  Graine de hachage différente (7.3), sinon les deux nuages se
+         *  superposent exactement et l'on n'en voit qu'un. */
+        powder: {
+          color: '#1d78ad',
+          core: '#5fb0d8',
+          haze: '#4a9fd0',
+          hazeAlpha: 0.34,
+          grains: 5,
+          spread: 29,
+          size: 6.4,
+          rate: 5,
+        },
       },
       /** Aura le long du canon, tracée sur `bladeSegment()` — donc solidaire
        *  de la portée. `boostAlpha` la gonfle pendant HIGH NOON. */
+      /** `powder` étale l'aura sur six passes très transparentes au lieu de
+       *  trois larges : le bord net d'une gélule convient à une lame
+       *  électrifiée, pas à du givre en suspension. */
       weaponAura: {
-        color: '#3f97c9',
-        core: '#d6f1ff',
-        width: 12,
+        color: '#5fb0d8',
+        core: '#cfeeff',
+        width: 8,
         alpha: 0.2,
-        boostAlpha: 0.38,
-        pulse: 5.5,
+        boostAlpha: 0.36,
+        pulse: 3.2,
+        powder: true,
       },
       /**
        * Arcs de givre le long du canon. Même règle que sur la lance :
@@ -1427,18 +1469,24 @@ const OUTLAW = {
        * épaisseur — d'où 32, le même rapport que les 38 de la lance sur ses
        * 55 px.
        */
+      /**
+       * **Poussière de givre le long du canon**, à la place des arcs. Même
+       * ancrage, même hachage, mais des grains isolés au lieu de polylignes.
+       *
+       * `jitter` garde la contrainte des arcs : il doit dépasser la
+       * demi-épaisseur du sprite (23 px pour un revolver de 46 px de haut),
+       * sinon les grains restent dans la silhouette, qui les recouvre.
+       */
       weaponArc: {
-        count: 6,
-        steps: 6,
-        span: 0.4,
-        jitter: 32,
-        rate: 18,
-        boost: 1.6,
-        core: '#e6f7ff',
-        glow: '#3f97c9',
-        coreWidth: 2,
-        glowWidth: 6.5,
-        alpha: 0.8,
+        powder: true,
+        count: 30,
+        jitter: 30,
+        size: 4.2,
+        rate: 9,
+        boost: 1.5,
+        core: '#a8dcf2',
+        glow: '#2f8ec6',
+        alpha: 0.85,
       },
       /** Pas de `pierce` : l'onde de pénétration est conditionnée à
        *  `Fighter.boost`, que le Hors-la-loi allume pendant HIGH NOON — un
@@ -1633,7 +1681,16 @@ const OUTLAW = {
       bounces: 2, // les éclats ricochent sur les murs (observé sur la Glace)
       knockback: 45,
       onHit: { slow: 0.12, slowDuration: 1.6 },
-      trail: { color: 'rgba(186,230,253,0.55)', every: 0.035, life: 0.5, dotted: true },
+      /** Les éclats vont moitié moins vite que la balle (380 contre 936) :
+       *  bouffée plus étalée et plus lente, mais moins dense — sinon dix éclats
+       *  simultanés saturent le banc de particules à eux seuls. */
+      trail: {
+        color: 'rgba(186,230,253,0.5)',
+        every: 0.03,
+        life: 0.55,
+        dotted: true,
+        puff: { count: 3, spread: 7, trailBack: 10, core: 'rgba(245,253,255,0.7)' },
+      },
     },
     shot: {
       label: 'Balle de glace',
@@ -1657,7 +1714,23 @@ const OUTLAW = {
       knockback: 45,
       /** Mesuré frame 300 : un trait **pâle** de 2 px, (213,182,153) à
        *  (236,206,177) — pas un rond sombre. */
-      trail: { color: 'rgba(206,235,250,0.6)', every: 0.03, life: 0.2, dotted: true },
+      /**
+       * **Bouffée de poudre** plutôt qu'un point isolé. Un point toutes les
+       * 30 ms à 936 px/s laisse 28 px entre deux marques : ça se lit comme un
+       * chapelet de perles, pas comme un sillage. `puff` en sème cinq autour de
+       * chaque marque, étalées perpendiculairement et traînant vers l'arrière.
+       *
+       * `every` descend en même temps (0,03 → 0,018), sinon les bouffées
+       * restent séparées quelle que soit leur densité — c'est l'espacement des
+       * émissions qui décide de la continuité, pas leur richesse.
+       */
+      trail: {
+        color: 'rgba(160,214,240,0.55)',
+        every: 0.018,
+        life: 0.34,
+        dotted: true,
+        puff: { count: 5, spread: 6, trailBack: 16, core: 'rgba(240,252,255,0.75)' },
+      },
       /**
        * **Gel.** `slow` et `slowDuration` sont lus par `Match.damage` et
        * passés à `Fighter.applySlow` : le moteur savait déjà le faire, c'est le

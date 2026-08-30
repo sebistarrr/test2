@@ -402,9 +402,11 @@ sans que ça se voie.
      0,506 à 0,439 coup/s. Les charges ne frôlent pas, elles traversent. Les
      vrais leviers sont la fréquence de balayage (`lunge.scanSpin`) et le
      retour à une charge de longueur bornée au lieu d'une traversée.
-   - Relevé courant : Lancier 30, **Hors-la-loi 26**, Ombre 15, Lumière 15,
-     Glace 13, Feu 13, Vent 12, Foudre 11, Plante 11, Eau 10, Bretteur 9.
-     **Sept hors bande, contre cinq avant.**
+   - Relevé courant : Lancier 30, **Hors-la-loi 25**, Ombre 15, Lumière 15,
+     Glace 15, Feu 13, Vent 12, Plante 11, Foudre 10, Eau 10, Bretteur 9.
+     **Sept hors bande.** La Glace remonte de 13 à 15 en même temps que le
+     Hors-la-loi descend de 26 à 25 : c'est la correction du flux de la neige,
+     que leurs deux Blizzards sèment.
    - **Le Hors-la-loi à 26/30 est un écart assumé, pas une dérive.** Il est la
      conséquence directe de trois changements demandés — rechargement ×2 plus
      rapide, balle ×1,3, éclats de givre — et l'ablation dit lequel pèse :
@@ -525,6 +527,19 @@ sans que ça se voie.
   blanche**, donc un jaune pâle y serait invisible — la gamme est en ambres
   saturés (`#f0b400`, `#c98a00`), pas en jaunes clairs. C'est la même leçon que
   le mode additif, qui ne fonctionnait que sur le cadre sombre.
+- **Deux modes de traînée, `electric` et `powder`, et chaque règle de l'un est
+  l'inverse de l'autre.** L'électrique est un **trait** continu et cassé, dont
+  l'écart s'annule au point le plus récent, à `rate` élevé pour grésiller. La
+  poudre est un nuage de **grains isolés**, dont l'écart **s'ouvre** en
+  s'éloignant du combattant (une poudre se disperse en retombant), à `rate` bas
+  pour tenir en place, posée sur une **nappe** large et transparente sans
+  laquelle les grains se lisent comme des taches détachées. Le Lancier porte le
+  premier (foudre), le Hors-la-loi le second (givre). Deux erreurs à ne pas
+  refaire, toutes deux déjà au tableau ailleurs : la largeur des passes d'aura
+  calculée en `1/k` mettait la passe **la plus large en dernier**, donc le cœur
+  opaque délavait l'arme au lieu de la cerner (le défaut de « gélule ») ; et
+  « poudre » avait suggéré « pâle », alors que **l'arène est blanche** — un
+  grain quasi blanc de 3 px n'y existe pas, la gamme doit rester en bleus tenus.
 - **La traînée est électrique** : `ribbon.electric` et `smear.electric`
   remplacent le trait lisse par un tracé **cassé**, en un seul trait continu et
   en deux passes. Trois choses le font tenir, et chacune a été payée : le trait
@@ -767,6 +782,18 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   n'être **pas un levier** : à 15 s et 24 s les matrices ne diffèrent que par des
   durées, jamais par un vainqueur. C'est l'invariant 2, et il ne se manifeste pas
   par un plantage mais par un balayage qui ment.
+- **Une décoration se corrige jusqu'au bout, sinon elle n'est pas corrigée.**
+  Suite directe du piège ci-dessus, et la correction elle-même était fausse.
+  Seules les **positions** passées en argument avaient été déplacées vers
+  `viewRng` ; `Effects.snow` continuait de tirer **quatre** fois dans le flux de
+  simulation par flocon, soit 360 tirages par seconde de Blizzard. La monotonie
+  observée après coup avait fait croire l'affaire réglée — elle ne prouvait
+  rien, elle était seulement moins erratique. `Effects` reçoit désormais un
+  second flux (`new Effects(rng, viewRng)`) dont les générateurs purement
+  décoratifs se servent. **Vérifier la correction à la source, pas au symptôme.**
+  Note pour la suite : `fx.burst` tire encore 4 fois par particule dans le flux
+  de simulation, pour les onze combattants. Le corriger déplacerait toutes leurs
+  matrices d'un coup — c'est un chantier à part, pas un oubli.
 - **Un banc qui plafonne dit que le levier n'est pas le bon.** La dispersion du
   Hors-la-loi est *le* paramètre de sa précision, et pourtant la pousser de 0,75
   à 1,35 rad ne faisait tomber le banc que de 1,11 à 0,86 coup/s, jamais aux

@@ -24,21 +24,7 @@
  */
 
 import { ARENA } from '../data/tuning.js';
-import { TAU } from '../core/math.js';
-
-/**
- * Aléa **pur** — même fonction que dans `abilities/plant.js`.
- *
- * Le rendu a droit à `viewRng`, mais s'en passer vaut mieux quand un hachage
- * suffit : un tirage consommé dans une méthode de *dessin* dépend du nombre
- * d'images affichées, qui n'est pas le nombre de pas de simulation. Deux
- * machines au même `?seed=` verraient alors des décorations différentes. Un
- * hachage de (indice, temps quantifié) rend la même chose partout.
- */
-function hash01(x) {
-  const v = Math.sin(x) * 43758.5453;
-  return v - Math.floor(v);
-}
+import { TAU, hash01 } from '../core/math.js';
 
 const MAX_MOTES = 260;
 const MAX_POPS = 24;
@@ -454,9 +440,15 @@ export class Flair {
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    // décalé d'une graine dans les deux cas : sans ça le fuseau et le ruban
+    // grésillent exactement de la même façon et se lisent comme un seul trait
+    if (spec.powder) {
+      this._drawPowderTrail(ctx, this._trailPoints(r, SMEAR), spec, spec.powder, now, 7.3);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+      return;
+    }
     if (spec.electric) {
-      // décalé d'une graine : sans ça le fuseau et le ruban zigzaguent
-      // exactement de la même façon et se lisent comme un seul trait épais
       this._drawElectricTrail(ctx, this._trailPoints(r, SMEAR), spec, spec.electric, now, 7.3);
       ctx.restore();
       ctx.globalAlpha = 1;
@@ -651,6 +643,79 @@ export class Flair {
   }
 
   /**
+   * **Tracé de poudre** — l'alternative « givre » au tracé électrique, partagée
+   * elle aussi par le ruban de pointe et le fuseau.
+   *
+   * Là où l'électricité est un **trait** cassé, la poudre est un **nuage de
+   * grains**. Trois règles la font tenir, et chacune est l'inverse d'une règle
+   * du tracé électrique :
+   *
+   *  1. **l'écart s'ouvre en s'éloignant du combattant**, au lieu de s'annuler
+   *     au point le plus récent. Une poudre se disperse en retombant ; la
+   *     garder serrée sur toute la longueur donne un ruban granuleux, pas un
+   *     sillage ;
+   *  2. **les grains ne sont pas reliés.** C'est le point : relier des points
+   *     écartés était l'exigence du tracé électrique, la casser est l'exigence
+   *     de celui-ci. Chaque grain est un disque isolé ;
+   *  3. **le palier de temps est lent** (`rate` bas). Vite, les grains
+   *     sautillent et donnent du bruit ; lentement, ils tiennent en place assez
+   *     longtemps pour se lire comme de la matière en suspension.
+   *
+   * Une **nappe** large et très transparente passe d'abord sous les grains :
+   * seuls, ils se lisent comme des taches détachées, et c'est elle qui les
+   * rassemble en un sillage.
+   *
+   * Comme le tracé électrique, tout vient d'un **hachage pur** de (indice,
+   * temps quantifié) : aucun tirage consommé au dessin, donc deux machines à la
+   * même graine voient la même poudre.
+   */
+  _drawPowderTrail(ctx, pts, spec, p, now, seed) {
+    const n = pts.length;
+    if (n < 2) return;
+    const tick = Math.floor(now * p.rate);
+
+    // nappe : le liant, sans lequel les grains flottent séparément
+    ctx.globalAlpha = spec.alpha * p.hazeAlpha;
+    ctx.strokeStyle = p.haze ?? spec.color;
+    ctx.lineWidth = spec.width;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const [x, y] = pts[i];
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // grains
+    for (let i = 0; i < n; i++) {
+      const [px, py] = pts[i];
+      const [qx, qy] = pts[Math.min(i + 1, n - 1)];
+      const dx = qx - px;
+      const dy = qy - py;
+      const len = Math.hypot(dx, dy) || 1;
+      const age = i / (n - 1); // 0 = le plus ancien, 1 = collé au combattant
+      const away = 1 - age; // la dispersion s'ouvre en s'éloignant
+      for (let g = 0; g < p.grains; g++) {
+        const h1 = hash01(i * 7.31 + g * 41.7 + tick * 0.53 + seed);
+        const h2 = hash01(i * 19.7 + g * 3.19 + tick * 0.91 + seed);
+        const h3 = hash01(i * 2.53 + g * 61.3 + seed);
+        // perpendiculaire à la trajectoire : c'est ce qui étale le sillage
+        // plutôt que de l'allonger
+        const off = (h1 - 0.5) * 2 * p.spread * away;
+        const along = (h2 - 0.5) * p.spread * 0.5 * away;
+        const x = px - (dy / len) * off + (dx / len) * along;
+        const y = py + (dx / len) * off + (dy / len) * along;
+        ctx.globalAlpha = spec.alpha * (0.25 + 0.75 * age) * (0.4 + 0.6 * h3);
+        ctx.fillStyle = h3 > 0.72 ? p.core : p.color ?? spec.color;
+        const rad = p.size * (0.35 + 0.65 * h3) * (0.45 + 0.55 * age);
+        ctx.beginPath();
+        ctx.arc(x, y, rad, 0, TAU);
+        ctx.fill();
+      }
+    }
+  }
+
+  /**
    * **Traînée de pointe.** Deux tracés au choix de la fiche.
    *
    * Par défaut, un trait lisse segment par segment : c'est le relevé des
@@ -675,7 +740,9 @@ export class Flair {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    if (spec.electric) {
+    if (spec.powder) {
+      this._drawPowderTrail(ctx, this._trailPoints(r, RIBBON), spec, spec.powder, now, 0);
+    } else if (spec.electric) {
       this._drawElectricTrail(ctx, this._trailPoints(r, RIBBON), spec, spec.electric, now, 0);
     } else {
       // du plus ancien au plus récent : le trait s'épaissit et s'opacifie
@@ -724,11 +791,31 @@ export class Flair {
 
     ctx.save();
     ctx.lineCap = 'round';
-    for (let pass = 0; pass < 3; pass++) {
-      const k = 1 - pass / 3;
-      ctx.globalAlpha = alpha * (pass === 2 ? 1 : 0.4);
+    /**
+     * `powder` : la même aura, mais **étalée**. Trois passes larges donnent un
+     * bord net — une gélule — qui convient à une lame électrifiée ; du givre en
+     * suspension demande l'inverse, beaucoup de passes très transparentes qui
+     * s'élargissent, ce qui approche un dégradé perpendiculaire que Canvas ne
+     * sait pas tracer sur une ligne.
+     */
+    const passes = spec.powder ? 6 : 3;
+    for (let pass = 0; pass < passes; pass++) {
+      const last = pass === passes - 1;
+      /**
+       * Dans les deux modes la passe **la plus large vient en premier** et la
+       * dernière est le noyau étroit. Un premier réglage de `powder` inversait
+       * l'ordre (largeur en `1/k`) : la dernière passe, celle qui porte le
+       * cœur à pleine opacité, faisait alors 54 px et délavait tout autour de
+       * l'arme au lieu de la cerner.
+       */
+      const k = spec.powder
+        ? 1 + (passes - 1 - pass) * 0.75 // 4,75 → 1, du halo au noyau
+        : 1 - pass / passes;
+      ctx.globalAlpha = spec.powder
+        ? alpha * (last ? 1 : 0.2)
+        : alpha * (last ? 1 : 0.4);
       ctx.lineWidth = spec.width * k * (1 + 0.35 * hot);
-      ctx.strokeStyle = pass === 2 ? spec.core : spec.color;
+      ctx.strokeStyle = last ? spec.core : spec.color;
       ctx.beginPath();
       ctx.moveTo(b.ax, b.ay);
       ctx.lineTo(b.bx, b.by);
@@ -757,6 +844,10 @@ export class Flair {
   _drawWeaponArcs(ctx, f, now) {
     const spec = f.el.look.flair?.weaponArc;
     if (!spec) return;
+    if (spec.powder) {
+      this._drawWeaponDust(ctx, f, now, spec);
+      return;
+    }
     const b = f.bladeSegment();
     const dx = b.bx - b.ax;
     const dy = b.by - b.ay;
@@ -790,6 +881,49 @@ export class Flair {
         }
         ctx.stroke();
       }
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  /**
+   * **Poussière de givre le long de l'arme** — la variante « poudre » des arcs.
+   *
+   * Même ancrage qu'eux (`f.bladeSegment()`, donc solidaire de la portée et du
+   * décalage latéral), même hachage pur, mais des **grains isolés** au lieu de
+   * polylignes. Ils dérivent perpendiculairement à l'arme, plus loin et plus
+   * pâles vers la pointe : c'est ce qui donne le panache, alors qu'une nuée
+   * uniforme se lit comme du bruit posé sur le sprite.
+   *
+   * La leçon des arcs vaut ici telle quelle : **l'écart doit dépasser la
+   * demi-épaisseur du sprite**, sinon les grains restent dans la silhouette,
+   * qui les recouvre — ils sont dessinés derrière l'arme.
+   */
+  _drawWeaponDust(ctx, f, now, spec) {
+    const b = f.bladeSegment();
+    const dx = b.bx - b.ax;
+    const dy = b.by - b.ay;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const tick = Math.floor(now * spec.rate);
+    const hot = f.boost > 0 ? spec.boost : 1;
+
+    ctx.save();
+    for (let i = 0; i < spec.count; i++) {
+      const h1 = hash01(i * 12.99 + tick * 0.317);
+      const h2 = hash01(i * 78.23 + tick * 0.911);
+      const h3 = hash01(i * 3.71 + tick * 1.13);
+      const t = h1; // position le long de l'arme
+      // le panache s'ouvre vers la pointe
+      const j = (h2 - 0.5) * 2 * spec.jitter * (0.3 + 0.7 * t) * hot;
+      const x = b.ax + dx * t + nx * j;
+      const y = b.ay + dy * t + ny * j;
+      ctx.globalAlpha = spec.alpha * (0.3 + 0.7 * h3) * (1 - 0.45 * t);
+      ctx.fillStyle = h3 > 0.7 ? spec.core : spec.glow;
+      ctx.beginPath();
+      ctx.arc(x, y, spec.size * (0.4 + 0.6 * h3), 0, TAU);
+      ctx.fill();
     }
     ctx.restore();
     ctx.globalAlpha = 1;
