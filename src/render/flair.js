@@ -26,6 +26,20 @@
 import { ARENA } from '../data/tuning.js';
 import { TAU } from '../core/math.js';
 
+/**
+ * Aléa **pur** — même fonction que dans `abilities/plant.js`.
+ *
+ * Le rendu a droit à `viewRng`, mais s'en passer vaut mieux quand un hachage
+ * suffit : un tirage consommé dans une méthode de *dessin* dépend du nombre
+ * d'images affichées, qui n'est pas le nombre de pas de simulation. Deux
+ * machines au même `?seed=` verraient alors des décorations différentes. Un
+ * hachage de (indice, temps quantifié) rend la même chose partout.
+ */
+function hash01(x) {
+  const v = Math.sin(x) * 43758.5453;
+  return v - Math.floor(v);
+}
+
 const MAX_MOTES = 260;
 const MAX_POPS = 24;
 /** Longueur du ruban d'arme, en pas de simulation (120 Hz). */
@@ -519,6 +533,7 @@ export class Flair {
       this._drawRibbon(ctx, f);
       this._drawPierce(ctx, f);
       this._drawWeaponAura(ctx, f, now);
+      this._drawWeaponArcs(ctx, f, now);
     }
     for (const m of this.motes) {
       if (!m.alive) continue;
@@ -631,6 +646,63 @@ export class Flair {
       ctx.moveTo(b.ax, b.ay);
       ctx.lineTo(b.bx, b.by);
       ctx.stroke();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  /**
+   * **Arcs électriques le long de la lame.**
+   *
+   * Opt-in par `look.flair.weaponArc`. Chaque arc part de la lame et y revient :
+   * son amplitude est modulée par un sinus qui s'annule aux deux bouts, donc il
+   * décolle et se recolle au lieu de flotter à côté.
+   *
+   * Le tracé est **entièrement déterminé par un hachage** de (indice, temps
+   * quantifié) : aucun tirage n'est consommé, et le grésillement vient du saut
+   * de `tick` d'un palier à l'autre. Quantifier est ce qui fait la différence
+   * entre de l'électricité et du bruit — à 60 images par seconde, un tracé
+   * retiré à chaque image donne du grain de télévision.
+   *
+   * Comme l'aura, l'intensité monte pendant la charge via `Fighter.boost`, un
+   * compteur générique : le rendu ne sait pas ce qu'est une charge.
+   */
+  _drawWeaponArcs(ctx, f, now) {
+    const spec = f.el.look.flair?.weaponArc;
+    if (!spec) return;
+    const b = f.bladeSegment();
+    const dx = b.bx - b.ax;
+    const dy = b.by - b.ay;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const tick = Math.floor(now * spec.rate);
+    const hot = f.boost > 0 ? spec.boost : 1;
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (let pass = 0; pass < 2; pass++) {
+      ctx.strokeStyle = pass === 0 ? spec.glow : spec.core;
+      ctx.lineWidth = (pass === 0 ? spec.glowWidth : spec.coreWidth) * hot;
+      ctx.globalAlpha = spec.alpha * (pass === 0 ? 0.5 : 1) * hot;
+      for (let i = 0; i < spec.count; i++) {
+        const t0 = hash01(i * 12.9898 + tick * 0.317) * (1 - spec.span);
+        const t1 = t0 + spec.span * (0.4 + 0.6 * hash01(i * 78.233 + tick * 0.911));
+        ctx.beginPath();
+        for (let k = 0; k <= spec.steps; k++) {
+          const u = k / spec.steps;
+          const t = t0 + (t1 - t0) * u;
+          // enveloppe en sinus : l'arc quitte la lame et y revient
+          const env = Math.sin(u * Math.PI);
+          const j = (hash01(i * 3.71 + k * 91.7 + tick * 1.13) - 0.5) * 2 * spec.jitter * env;
+          const px = b.ax + dx * t + nx * j;
+          const py = b.ay + dy * t + ny * j;
+          if (k === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
     }
     ctx.restore();
     ctx.globalAlpha = 1;

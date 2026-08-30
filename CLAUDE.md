@@ -75,7 +75,7 @@ qui tienne sur toute la vidéo.
 | Portée | centre → pointe = **164 px**, la plus longue du roster | `weapon.reach: 164` |
 | Talon | dépasse de 42 px **derrière** le pivot | `handle.length: -44` — −44 + 104 × 2 = 164 |
 | **Angle d'arme** | **la lance suit le cap de déplacement** : 6,6° d'écart médian sur 141 images, contre 37,9° du cap vers l'adversaire | `weapon.spin: 0`, et `abilities/lancer.js` recopie `heading` |
-| Traînée | cinq effets : boucles de pointe, fuseau, **images fantômes pendant la charge**, **aura d'arme** le long de la lame et **onde de pénétration** à la pointe — le tout en violet électrique | `look.flair.ribbon`, `.smear`, `.ghost`, `.weaponAura`, `.pierce` |
+| Traînée | six effets, **en jaune de foudre** : boucles de pointe, fuseau, images fantômes pendant la charge, aura d'arme, **arcs électriques le long de la lame** et onde de pénétration | `look.flair.ribbon`, `.smear`, `.ghost`, `.weaponAura`, `.weaponArc`, `.pierce` |
 | Charge | **~1 400 px/s pendant ~0,15 s**, contre 540 en croisière | `weapon.lunge.speed: 2.6`, `.dash: 0.16` |
 | Cadence relevée | **5 touches en 27,6 s = 0,181 coup/s**, budget 2,54 PV/s | le moteur rend 0,195 et **2,52** |
 | Dégâts | 10, **+2 par touche portée** | `stack: 10`, `stackGain: 2`, plafond `déduit` à 15 |
@@ -470,10 +470,22 @@ sans que ça se voie.
   sombre `#1c1a26`**. L'arène reste blanche → le pixel-art garde ses contours
   noirs mesurés. Le « chrome » posé sur le fond sombre (titre, lignes de stat)
   passe à un liseré crème `STAGE.outline` ; les jauges gardent une plaque crème.
-- **La traînée du Lancier est passée du cramoisi au violet électrique.** Le
-  cramoisi `#c2385a` / `#a32b4a` est **mesuré**, mais une traînée cramoisie
-  derrière une lance violette se lisait comme deux personnages superposés. Même
-  lot que la bille et la jauge.
+- **La traînée du Lancier est jaune de foudre.** Le cramoisi `#c2385a` /
+  `#a32b4a` est **mesuré** ; il est passé au violet avec l'arme, puis au jaune
+  pour dire la foudre. Contrainte de fond à ne pas oublier : **l'arène est
+  blanche**, donc un jaune pâle y serait invisible — la gamme est en ambres
+  saturés (`#f0b400`, `#c98a00`), pas en jaunes clairs. C'est la même leçon que
+  le mode additif, qui ne fonctionnait que sur le cadre sombre.
+- **Les arcs électriques le long de la lame** (`look.flair.weaponArc`) sont
+  tracés par un **hachage pur** de (indice, temps quantifié), pas par un tirage :
+  un aléa consommé dans une méthode de *dessin* dépendrait du nombre d'images
+  affichées, qui n'est pas le nombre de pas de simulation, et deux machines au
+  même `?seed=` verraient des décorations différentes. Deux réglages appris à
+  l'image : `rate` décide si c'est de l'électricité ou du bruit (retiré à chaque
+  image, le tracé donne du grain de télévision ; à 18 paliers par seconde l'œil
+  suit chaque arc), et l'amplitude doit **dépasser la demi-épaisseur du sprite**
+  — à 13 px sur une lance de 55 px de haut, les arcs restaient entièrement dans
+  la silhouette, qui les recouvrait, et on ne voyait rien.
 - **L'aura d'arme et l'onde de pénétration sont des ajouts**, pas des relevés.
   Tous deux vivent dans `render/flair.js`, donc ils ne peuvent rien changer au
   duel — c'est exactement ce que cette porte d'entrée sert à garantir, et la

@@ -1724,7 +1724,13 @@ const LANCER = {
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
-      color: 'rgba(112,70,172,0.5)',
+      /**
+       * Halo de la bille, passé au **jaune de foudre**. Attention au fond :
+       * l'arène est **blanche**, donc un jaune pâle y serait invisible — c'est
+       * la même leçon que le mode additif, qui ne marchait que sur le cadre
+       * sombre. On prend donc un ambre saturé, pas un jaune clair.
+       */
+      color: 'rgba(240,176,0,0.5)',
       radius: 1.66,
       pulse: 2.2,
       showWhen: 'ultimate-ready', // halo cuivre quand le Bond est chargé
@@ -1749,12 +1755,12 @@ const LANCER = {
       // 0,16 s, donc deux points de ruban consécutifs sont très écartés et un
       // trait épais à bouts ronds se referme en **barres pâles** détachées du
       // combattant. À 13, la traînée redevient un trait.
-      ribbon: { color: '#a674e8', width: 13, alpha: 0.5 },
+      ribbon: { color: '#f0b400', width: 13, alpha: 0.55 },
       /** Le fuseau **derrière la bille**, l'autre moitié de sa signature, et
        *  ce que le premier portage avait oublié : le ruban ne suit que la
        *  pointe d'arme. Seul combattant du roster à en porter un. Mesuré
        *  `#a32b4a` au cœur, large au ras du corps et effilé vers l'arrière. */
-      smear: { color: '#6b3fa8', width: 46, alpha: 0.44 },
+      smear: { color: '#c98a00', width: 46, alpha: 0.46 },
       /**
        * **Images fantômes de la charge.** Mesuré : pendant une charge, la
        * traînée n'est pas un trait mais une **bande de billes qui se
@@ -1765,7 +1771,7 @@ const LANCER = {
        * `render/flair.js` qui les dessine, donc ils ne peuvent rien changer au
        * duel.
        */
-      ghost: { color: '#8b5cf6', every: 0.03, alpha: 0.5, lance: 20 },
+      ghost: { color: '#e0a800', every: 0.03, alpha: 0.5, lance: 20 },
       /**
        * **Aura d'arme** — halo le long de la lame, tracé sur `bladeSegment()`,
        * donc solidaire de la portée *et* du décalage latéral de l'arme.
@@ -1776,8 +1782,8 @@ const LANCER = {
        * tirage — inutile de consommer `viewRng` pour ça.
        */
       weaponAura: {
-        color: '#7046ac',
-        core: '#d7bcff',
+        color: '#e0a800',
+        core: '#fff3a8',
         /**
          * Calé au rendu, et resserré depuis 26 : à cette largeur, les trois
          * passes formaient une **gélule** opaque qui délavait la hampe au lieu
@@ -1790,14 +1796,44 @@ const LANCER = {
         pulse: 5.5,
       },
       /**
+       * **Arcs électriques le long de la lame.** Ils quittent la lame et y
+       * reviennent — l'amplitude est modulée par un sinus qui s'annule aux deux
+       * bouts — et grésillent au rythme de `rate` paliers par seconde.
+       *
+       * `rate` est le paramètre qui décide si c'est de l'électricité ou du
+       * bruit : retiré à chaque image (60/s), le tracé donne du grain de
+       * télévision. À 18 paliers par seconde, l'œil suit chaque arc assez
+       * longtemps pour le lire comme un éclair.
+       */
+      weaponArc: {
+        count: 7,
+        steps: 6,
+        span: 0.42,
+        /**
+         * Amplitude, en px. **Elle doit dépasser la demi-épaisseur du sprite**
+         * — la lance fait ~55 px de haut dessinée, donc 27 de demi-épaisseur.
+         * À 13, les arcs restaient entièrement dans la silhouette et on ne
+         * voyait rien du tout : ils sont dessinés derrière l'arme, qui les
+         * recouvrait intégralement.
+         */
+        jitter: 38,
+        rate: 18,
+        boost: 1.6,
+        core: '#fff6c0',
+        glow: '#f0b400',
+        coreWidth: 2,
+        glowWidth: 6.5,
+        alpha: 0.85,
+      },
+      /**
        * **Onde de pénétration**, pendant la charge seulement (conditionnée à
        * `Fighter.boost`). Un sillage en coin ouvert **vers l'arrière** depuis la
        * pointe — ouvert vers l'avant, il se lirait comme un projectile — et un
        * arc de proue juste devant elle.
        */
       pierce: {
-        color: 'rgba(167,116,232,0.55)',
-        core: '#f0e2ff',
+        color: 'rgba(240,176,0,0.5)',
+        core: '#fff6c0',
         // Long et étroit : au premier réglage (60 × 26) le coin se lisait
         // comme une **boule** collée à la pointe. C'est l'élancement qui fait
         // lire « ça transperce ».
@@ -1808,13 +1844,13 @@ const LANCER = {
         bowGap: 9,
         bowWidth: 2.5,
       },
-      motes: { rate: 10, size: 9, drift: 24, rise: -18, colors: ['#c4a2f5', '#7046ac', '#f8e6ff'] },
-      impact: ['#f8e6ff', '#ffffff', '#a674e8'],
+      motes: { rate: 10, size: 9, drift: 24, rise: -18, colors: ['#ffd83d', '#c98a00', '#fff6c0'] },
+      impact: ['#fff6c0', '#ffffff', '#e0a800'],
       shape: 'spark',
-      castFlash: 'rgba(160,110,240,0.6)',
+      castFlash: 'rgba(240,190,40,0.6)',
     },
-    trail: { color: 'rgba(112,70,172,0.30)', every: 0.04, life: 0.32 },
-    accent: '#a674e8',
+    trail: { color: 'rgba(201,138,0,0.30)', every: 0.04, life: 0.32 },
+    accent: '#f0b400',
   },
 
   /** Mesuré 432 px/s (médiane de 37 segments rectilignes, bille isolée par
@@ -1926,8 +1962,8 @@ const LANCER = {
       lateral: 36,
       /** Calé : le recul propre à la charge, ajouté à `melee.selfRecoil`. */
       recoil: 240,
-      dashRing: 'rgba(160,110,240,0.55)',
-      hitRing: { to: 96, time: 0.26, color: 'rgba(215,188,255,0.7)' },
+      dashRing: 'rgba(240,176,0,0.55)',
+      hitRing: { to: 96, time: 0.26, color: 'rgba(255,230,150,0.75)' },
     },
     /** `width: 0` : rien à tracer, toute la lance tient dans `lancerSpear`.
      *  `length` est **négatif** parce que le talon dépasse derrière le pivot
