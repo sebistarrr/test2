@@ -1935,7 +1935,10 @@ const LANCER = {
      *  sur la grille du sprite) — le blit démarre donc en arrière de la bille,
      *  ce que ne fait aucune autre arme du roster. */
     handle: { length: -44, width: 0, color: '#4c2d80', dark: '#210f3e', outline: '#080211', gem: null },
-    head: { sprite: 'lancerSpear', scale: 1, anchorY: 0.5 }, // −44 + 208 × 1 = 164
+    /** `scale` n'est plus rond parce que la carte fait la taille de l'artwork
+     *  et non celle d'un cadre choisi : 201 × 1,03483 = 208,0 px logiques, donc
+     *  la pointe tombe à −44 + 208 = **164**, la portée relevée. */
+    head: { sprite: 'lancerSpear', scale: 1.03483, anchorY: 0.5 },
     /**
      * **L'arme passe par-dessus la bille.** Mesuré : sur la vidéo, la lance
      * recouvre franchement le disque, contour compris. C'est l'inverse des dix
