@@ -58,7 +58,7 @@ commentaire.
 
 | Personnage | Archétype | Signature | Module |
 | --- | --- | --- | --- |
-| `outlaw` Hors-la-loi | Pistolero | canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, dégâts +0,10 par balle au but | `abilities/outlaw.js` |
+| `outlaw` Hors-la-loi | Pistolero | **revolver de cristal** transcrit d'une maquette, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, dégâts +0,10 par balle au but | `abilities/outlaw.js` |
 | `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin` | `abilities/bladesman.js` |
 | `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène | `abilities/lancer.js` |
 
@@ -646,6 +646,15 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   « recharge Infinitys ». `select.js` teste maintenant `Number.isFinite` et
   écrit « passif ». Le moteur, lui, s'en moque : le module n'arme aucune
   minuterie.
+- **Une maquette ne contient pas toujours ce qu'on vient y chercher.** Celle
+  du Hors-la-loi montre ses munitions en **paquet** : six rounds dont les
+  pointes se chevauchent et forment une seule masse connexe. Aucun recadrage
+  rectangulaire n'en isole un, et une composante connexe en attrape deux — les
+  deux ont été essayés. Le revolver est donc **transcrit** (85 × 46, réduction
+  par moyenne d'aire à alpha prémultiplié) et la balle **composée** avec les
+  couleurs pipettées et le profil de la maquette. Transcrire quand c'est
+  possible, composer quand la source ne s'y prête pas, et le dire dans le
+  commentaire de la carte.
 - **Générer un sprite par une formule au lieu de transcrire la maquette.** La
   première lance livrée était une **feuille arrondie** là où la maquette montre
   une **pointe de flèche à bords droits**. Deux causes, et aucune n'était un

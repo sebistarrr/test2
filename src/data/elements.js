@@ -1399,7 +1399,8 @@ const OUTLAW = {
      *  rien dessiner, `length` ne sert plus qu'à décoller le sprite du centre
      *  (37 px, soit 4 px sous le bord de la bille). */
     handle: { length: 37, width: 0, color: '#5d3a20', dark: '#3a2413', outline: '#100b16', gem: null },
-    head: { sprite: 'outlawRevolver', scale: 2.5, anchorY: 0.5 },
+    // 37 + 85 × 1 = 122, la portée relevée — inchangée par le nouveau dessin
+    head: { sprite: 'outlawRevolver', scale: 1, anchorY: 0.5 },
     /** Seul le bout du canon frappe : à bout portant, c'est un tir. */
     hitbox: { from: 0.62, to: 1, radius: 12 },
     melee: {
@@ -1473,7 +1474,7 @@ const OUTLAW = {
       label: 'Balle',
       labelRef: 'Bullet',
       sprite: 'outlawShot',
-      scale: 3.2,
+      scale: 1, // carte 30 × 9 : 30 × 9 px dessinés, comme les 28,8 × 9,6 d'avant
       /** Calé : à 30 fps la vidéo ne montre que le sillage, jamais la balle.
        *  720 px/s laisse à l'adversaire de quoi sortir de la ligne de tir —
        *  c'est l'autre moitié de la précision relevée, avec la dispersion. */
