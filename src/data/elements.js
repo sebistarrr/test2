@@ -2195,7 +2195,6 @@ export const DISABLED = deepFreeze([
   'lightning',
   'wind',
   'plant',
-  'outlaw',
   'bladesman',
 ]);
 
