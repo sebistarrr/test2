@@ -1736,14 +1736,25 @@ const LANCER = {
      * rendu ici par le ruban de pointe d'arme.
      */
     flair: {
-      /** Les boucles roses qui entourent la lance : c'est la **pointe d'arme**
-       *  qui les trace en tournant. Mesuré `#c2385a`. */
-      ribbon: { color: '#c2385a', width: 18, alpha: 0.55 },
+      /**
+       * Les boucles qui entourent la lance : c'est la **pointe d'arme** qui les
+       * trace en tournant.
+       *
+       * Mesuré cramoisi `#c2385a` sur la vidéo. Passé au **violet électrique**
+       * avec l'arme : une traînée cramoisie derrière une lance violette lisait
+       * comme deux personnages superposés. C'est un écart volontaire, du même
+       * lot que la bille et la jauge.
+       */
+      // Affiné depuis 18 : pendant une charge la pointe parcourt 224 px en
+      // 0,16 s, donc deux points de ruban consécutifs sont très écartés et un
+      // trait épais à bouts ronds se referme en **barres pâles** détachées du
+      // combattant. À 13, la traînée redevient un trait.
+      ribbon: { color: '#a674e8', width: 13, alpha: 0.5 },
       /** Le fuseau **derrière la bille**, l'autre moitié de sa signature, et
        *  ce que le premier portage avait oublié : le ruban ne suit que la
        *  pointe d'arme. Seul combattant du roster à en porter un. Mesuré
        *  `#a32b4a` au cœur, large au ras du corps et effilé vers l'arrière. */
-      smear: { color: '#a32b4a', width: 46, alpha: 0.42 },
+      smear: { color: '#6b3fa8', width: 46, alpha: 0.44 },
       /**
        * **Images fantômes de la charge.** Mesuré : pendant une charge, la
        * traînée n'est pas un trait mais une **bande de billes qui se
@@ -1754,14 +1765,56 @@ const LANCER = {
        * `render/flair.js` qui les dessine, donc ils ne peuvent rien changer au
        * duel.
        */
-      ghost: { color: '#c2385a', every: 0.03, alpha: 0.5, lance: 20 },
-      motes: { rate: 10, size: 9, drift: 24, rise: -18, colors: ['#c9905f', '#a32b4a', '#f0dcc6'] },
-      impact: ['#e8c9a8', '#ffffff', '#a32b4a'],
+      ghost: { color: '#8b5cf6', every: 0.03, alpha: 0.5, lance: 20 },
+      /**
+       * **Aura d'arme** — halo le long de la lame, tracé sur `bladeSegment()`,
+       * donc solidaire de la portée *et* du décalage latéral de l'arme.
+       *
+       * `boostAlpha` est l'intensité pendant la charge : l'aura se gonfle quand
+       * la lance part, ce qui annonce le coup sans qu'aucune valeur d'attaque
+       * ne soit lue par le rendu. Le battement est un `sin` du temps, pas un
+       * tirage — inutile de consommer `viewRng` pour ça.
+       */
+      weaponAura: {
+        color: '#7046ac',
+        core: '#d7bcff',
+        /**
+         * Calé au rendu, et resserré depuis 26 : à cette largeur, les trois
+         * passes formaient une **gélule** opaque qui délavait la hampe au lieu
+         * de la cerner — l'aura mangeait le sprite qu'elle est censée mettre
+         * en valeur. À 14, elle le borde.
+         */
+        width: 14,
+        alpha: 0.22,
+        boostAlpha: 0.4,
+        pulse: 5.5,
+      },
+      /**
+       * **Onde de pénétration**, pendant la charge seulement (conditionnée à
+       * `Fighter.boost`). Un sillage en coin ouvert **vers l'arrière** depuis la
+       * pointe — ouvert vers l'avant, il se lirait comme un projectile — et un
+       * arc de proue juste devant elle.
+       */
+      pierce: {
+        color: 'rgba(167,116,232,0.55)',
+        core: '#f0e2ff',
+        // Long et étroit : au premier réglage (60 × 26) le coin se lisait
+        // comme une **boule** collée à la pointe. C'est l'élancement qui fait
+        // lire « ça transperce ».
+        length: 82,
+        width: 12,
+        alpha: 0.34,
+        bow: 16,
+        bowGap: 9,
+        bowWidth: 2.5,
+      },
+      motes: { rate: 10, size: 9, drift: 24, rise: -18, colors: ['#c4a2f5', '#7046ac', '#f8e6ff'] },
+      impact: ['#f8e6ff', '#ffffff', '#a674e8'],
       shape: 'spark',
-      castFlash: 'rgba(232,201,168,0.6)',
+      castFlash: 'rgba(160,110,240,0.6)',
     },
-    trail: { color: 'rgba(163,43,74,0.30)', every: 0.04, life: 0.32 },
-    accent: '#c2385a',
+    trail: { color: 'rgba(112,70,172,0.30)', every: 0.04, life: 0.32 },
+    accent: '#a674e8',
   },
 
   /** Mesuré 432 px/s (médiane de 37 segments rectilignes, bille isolée par

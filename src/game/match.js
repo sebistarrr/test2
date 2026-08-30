@@ -507,7 +507,7 @@ export class Match {
     ctx.rect(inner.left, inner.top, inner.right - inner.left, inner.bottom - inner.top);
     ctx.clip();
     this.flair.drawWake(ctx, this.fighters, this.time);
-    this.flair.drawUnder(ctx, this.fighters);
+    this.flair.drawUnder(ctx, this.fighters, this.time);
     this.fx.draw(ctx, true);
     this.projectiles.draw(ctx);
     // dès la parade, le perdant a quitté l'arène

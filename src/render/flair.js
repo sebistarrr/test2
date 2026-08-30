@@ -509,13 +509,16 @@ export class Flair {
   /* ------------------------------------------------------------------ */
 
   /** Rubans d'arme + poussière : sous les combattants. */
-  drawUnder(ctx, fighters) {
+  drawUnder(ctx, fighters, now = 0) {
     for (const f of fighters) {
       if (!f.onStage) continue;
-      // les fantômes tout au fond, puis le fuseau, puis le ruban d'arme
+      // les fantômes tout au fond, puis le fuseau, puis le ruban d'arme,
+      // puis l'onde de pénétration et l'aura d'arme au plus près du sprite
       this._drawGhosts(ctx, f);
       this._drawSmear(ctx, f);
       this._drawRibbon(ctx, f);
+      this._drawPierce(ctx, f);
+      this._drawWeaponAura(ctx, f, now);
     }
     for (const m of this.motes) {
       if (!m.alive) continue;
@@ -587,6 +590,97 @@ export class Flair {
       ctx.lineTo(r.pts[b * 2], r.pts[b * 2 + 1]);
       ctx.stroke();
     }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  /**
+   * **Aura d'arme** — un halo le long de la lame.
+   *
+   * Opt-in par `look.flair.weaponAura` : un combattant sans ce bloc n'en a pas.
+   * Le tracé suit `f.bladeSegment()`, donc l'aura ne peut pas se désaccorder de
+   * la portée ni du décalage latéral de l'arme — c'est le même segment qui
+   * décide où l'arme coupe.
+   *
+   * Trois passes de largeur décroissante plutôt qu'un dégradé : sur une ligne,
+   * Canvas ne sait pas dégrader perpendiculairement au tracé, et empiler des
+   * traits est ce qui donne le noyau clair cerné d'un halo.
+   *
+   * Le battement est une fonction **pure** du temps, pas un tirage : la
+   * décoration a droit à `viewRng`, mais s'en passer quand un `sin` suffit
+   * garde le flux intact pour ce qui en a vraiment besoin.
+   */
+  _drawWeaponAura(ctx, f, now) {
+    const spec = f.el.look.flair?.weaponAura;
+    if (!spec) return;
+    const b = f.bladeSegment();
+    // la charge fait monter l'aura : c'est `Fighter.boost`, un compteur
+    // générique, donc rien ici ne sait ce qu'est une charge
+    const hot = f.boost > 0 ? 1 : 0;
+    const beat = 0.82 + 0.18 * Math.sin(now * spec.pulse);
+    const alpha = (spec.alpha + (spec.boostAlpha - spec.alpha) * hot) * beat;
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    for (let pass = 0; pass < 3; pass++) {
+      const k = 1 - pass / 3;
+      ctx.globalAlpha = alpha * (pass === 2 ? 1 : 0.4);
+      ctx.lineWidth = spec.width * k * (1 + 0.35 * hot);
+      ctx.strokeStyle = pass === 2 ? spec.core : spec.color;
+      ctx.beginPath();
+      ctx.moveTo(b.ax, b.ay);
+      ctx.lineTo(b.bx, b.by);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  /**
+   * **Onde de pénétration** — ce que la pointe écarte pendant la charge.
+   *
+   * Opt-in par `look.flair.pierce`, et **seulement pendant la charge** :
+   * l'effet est conditionné à `f.boost`, encore un compteur générique. Le
+   * module allume, le rendu lit, et le rendu ne sait pas ce qu'est une charge.
+   *
+   * Deux morceaux : un **sillage en coin** qui part de la pointe vers
+   * l'arrière — c'est lui qui donne la lecture « ça transperce » plutôt que
+   * « ça pousse » — et un **arc de proue** juste devant la pointe. Le coin
+   * s'ouvre vers l'arrière parce qu'un coin ouvert vers l'avant se lit comme
+   * un projectile, pas comme une pénétration.
+   */
+  _drawPierce(ctx, f) {
+    const spec = f.el.look.flair?.pierce;
+    if (!spec || f.boost <= 0) return;
+    const b = f.bladeSegment();
+    const c = Math.cos(f.weaponAngle);
+    const s = Math.sin(f.weaponAngle);
+    const nx = -s;
+    const ny = c;
+
+    ctx.save();
+
+    // sillage en coin, de la pointe vers l'arrière
+    ctx.globalAlpha = spec.alpha;
+    ctx.fillStyle = spec.color;
+    ctx.beginPath();
+    ctx.moveTo(b.bx, b.by);
+    ctx.lineTo(b.bx - c * spec.length + nx * spec.width, b.by - s * spec.length + ny * spec.width);
+    ctx.lineTo(b.bx - c * spec.length * 0.55, b.by - s * spec.length * 0.55);
+    ctx.lineTo(b.bx - c * spec.length - nx * spec.width, b.by - s * spec.length - ny * spec.width);
+    ctx.closePath();
+    ctx.fill();
+
+    // arc de proue, devant la pointe
+    ctx.globalAlpha = spec.alpha * 1.5;
+    ctx.strokeStyle = spec.core;
+    ctx.lineWidth = spec.bowWidth;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(b.bx + c * spec.bowGap, b.by + s * spec.bowGap, spec.bow,
+      f.weaponAngle - 1.15, f.weaponAngle + 1.15);
+    ctx.stroke();
+
     ctx.restore();
     ctx.globalAlpha = 1;
   }

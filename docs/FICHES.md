@@ -559,6 +559,19 @@ sprite sur l'endroit où il coupe.
 PV** — dans un miroir Lancier contre Lancier ce chiffre est le seul repère qui
 distingue les deux camps.
 
+**Cinq effets de traînée, tous dans `render/flair.js`.** Les trois d'origine —
+boucles de pointe, fuseau, images fantômes — passent du cramoisi mesuré au
+**violet électrique**, pour ne pas lire comme deux personnages superposés
+derrière une lance violette. S'y ajoutent une **aura d'arme** tracée sur
+`bladeSegment()`, donc solidaire de la portée et du décalage latéral, et une
+**onde de pénétration** conditionnée à `Fighter.boost` : un sillage en coin
+ouvert vers l'arrière depuis la pointe — ouvert vers l'avant il se lirait comme
+un projectile — plus un arc de proue devant elle.
+
+Aucun des deux ne touche la simulation : `flair.js` a son propre aléa et son
+propre banc de particules, et la matrice est vérifiée **identique** après
+l'ajout. C'est précisément ce que cette porte d'entrée sert à garantir.
+
 La charge a **un seul point de sortie**, `endDash()`, qui remet ensemble
 vitesse, facteur de vitesse et traînée — c'est le piège du Bretteur, dont la
 ruée avait déjà laissé un éventail large accroché derrière la lame pour les

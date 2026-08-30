@@ -75,7 +75,7 @@ qui tienne sur toute la vidéo.
 | Portée | centre → pointe = **164 px**, la plus longue du roster | `weapon.reach: 164` |
 | Talon | dépasse de 42 px **derrière** le pivot | `handle.length: -44` — −44 + 104 × 2 = 164 |
 | **Angle d'arme** | **la lance suit le cap de déplacement** : 6,6° d'écart médian sur 141 images, contre 37,9° du cap vers l'adversaire | `weapon.spin: 0`, et `abilities/lancer.js` recopie `heading` |
-| Traînée | trois effets : boucles de pointe, fuseau cramoisi, **images fantômes pendant la charge** | `look.flair.ribbon`, `.smear`, `.ghost` |
+| Traînée | cinq effets : boucles de pointe, fuseau, **images fantômes pendant la charge**, **aura d'arme** le long de la lame et **onde de pénétration** à la pointe — le tout en violet électrique | `look.flair.ribbon`, `.smear`, `.ghost`, `.weaponAura`, `.pierce` |
 | Charge | **~1 400 px/s pendant ~0,15 s**, contre 540 en croisière | `weapon.lunge.speed: 2.6`, `.dash: 0.16` |
 | Cadence relevée | **5 touches en 27,6 s = 0,181 coup/s**, budget 2,54 PV/s | le moteur rend 0,195 et **2,52** |
 | Dégâts | 10, **+2 par touche portée** | `stack: 10`, `stackGain: 2`, plafond `déduit` à 15 |
@@ -360,6 +360,20 @@ sans que ça se voie.
   sombre `#1c1a26`**. L'arène reste blanche → le pixel-art garde ses contours
   noirs mesurés. Le « chrome » posé sur le fond sombre (titre, lignes de stat)
   passe à un liseré crème `STAGE.outline` ; les jauges gardent une plaque crème.
+- **La traînée du Lancier est passée du cramoisi au violet électrique.** Le
+  cramoisi `#c2385a` / `#a32b4a` est **mesuré**, mais une traînée cramoisie
+  derrière une lance violette se lisait comme deux personnages superposés. Même
+  lot que la bille et la jauge.
+- **L'aura d'arme et l'onde de pénétration sont des ajouts**, pas des relevés.
+  Tous deux vivent dans `render/flair.js`, donc ils ne peuvent rien changer au
+  duel — c'est exactement ce que cette porte d'entrée sert à garantir, et la
+  matrice le vérifie. Deux réglages appris à l'image : l'aura à 26 px de large
+  formait une **gélule** qui délavait la hampe au lieu de la cerner (14 la
+  borde), et le coin de pénétration à 60 × 26 se lisait comme une **boule**
+  collée à la pointe (82 × 12 le rend élancé). Le ruban, lui, est passé de 18 à
+  13 px : pendant une charge la pointe parcourt 224 px en 0,16 s, donc deux
+  points consécutifs sont très écartés et un trait épais à bouts ronds se
+  referme en barres pâles détachées du combattant.
 - **Le Lancier ne ressemble plus à sa vidéo, et c'est demandé.** Son **arme**
   est la **lance électrique** d'une maquette fournie — pommeau doré, hampe
   violette parcourue de fissures blanches, tête hérissée à gemme — là où la
