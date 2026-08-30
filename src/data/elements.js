@@ -1755,12 +1755,38 @@ const LANCER = {
       // 0,16 s, donc deux points de ruban consécutifs sont très écartés et un
       // trait épais à bouts ronds se referme en **barres pâles** détachées du
       // combattant. À 13, la traînée redevient un trait.
-      ribbon: { color: '#f0b400', width: 13, alpha: 0.55 },
+      /**
+       * `electric` : la traînée est **cassée** au lieu d'être lisse, et tracée
+       * d'un seul trait continu en deux passes — halo ambre puis cœur clair.
+       *
+       * L'amplitude s'annule au point le plus récent, sinon la traînée se
+       * décrocherait de la pointe de l'arme et flotterait à côté du
+       * combattant. `rate` a le même rôle que sur les arcs de lame : à 60
+       * paliers par seconde on obtient du grain, à 16 on lit un éclair.
+       */
+      ribbon: {
+        color: '#f0b400',
+        width: 13,
+        alpha: 0.55,
+        electric: { core: '#fff6c0', glow: '#e0a800', coreWidth: 2.4, jitter: 16, rate: 16 },
+      },
       /** Le fuseau **derrière la bille**, l'autre moitié de sa signature, et
        *  ce que le premier portage avait oublié : le ruban ne suit que la
        *  pointe d'arme. Seul combattant du roster à en porter un. Mesuré
        *  `#a32b4a` au cœur, large au ras du corps et effilé vers l'arrière. */
-      smear: { color: '#c98a00', width: 46, alpha: 0.46 },
+      /**
+       * Le fuseau devient lui aussi électrique. Il est **large et peu opaque**
+       * là où le ruban est fin et vif : c'est lui qui donne le corps de la
+       * traînée, le ruban qui donne le nerf. Sa cassure est plus ample et plus
+       * lente, sinon les deux tracés grésillent à l'identique et se lisent
+       * comme un seul trait épais.
+       */
+      smear: {
+        color: '#c98a00',
+        width: 30,
+        alpha: 0.4,
+        electric: { core: '#f0b400', glow: '#c98a00', coreWidth: 5, jitter: 34, rate: 11 },
+      },
       /**
        * **Images fantômes de la charge.** Mesuré : pendant une charge, la
        * traînée n'est pas un trait mais une **bande de billes qui se

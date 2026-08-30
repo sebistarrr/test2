@@ -476,6 +476,20 @@ sans que ça se voie.
   blanche**, donc un jaune pâle y serait invisible — la gamme est en ambres
   saturés (`#f0b400`, `#c98a00`), pas en jaunes clairs. C'est la même leçon que
   le mode additif, qui ne fonctionnait que sur le cadre sombre.
+- **La traînée est électrique** : `ribbon.electric` et `smear.electric`
+  remplacent le trait lisse par un tracé **cassé**, en un seul trait continu et
+  en deux passes. Trois choses le font tenir, et chacune a été payée : le trait
+  doit être **continu** (dessinés segment par segment avec des bouts ronds, des
+  points très écartés — pendant une charge la pointe parcourt plus de 200 px en
+  une fraction de seconde — se referment en chapelet de perles) ; la cassure
+  doit être **perpendiculaire** à la trajectoire, sinon le trait s'allonge au
+  lieu de zigzaguer ; et son amplitude doit **s'annuler au point le plus
+  récent**, sinon la traînée se décroche du combattant et flotte à côté. Les
+  deux tracés partagent le même code mais pas la même graine : à graine égale
+  ils grésillent à l'identique et se lisent comme un seul trait épais. Le
+  fuseau est large et peu opaque (le corps), le ruban fin et vif (le nerf).
+  **Les onze combattants passent par ce code** ; seul celui qui déclare
+  `electric` prend la branche, les dix autres gardent leur trait lisse.
 - **Les arcs électriques le long de la lame** (`look.flair.weaponArc`) sont
   tracés par un **hachage pur** de (indice, temps quantifié), pas par un tirage :
   un aléa consommé dans une méthode de *dessin* dépendrait du nombre d'images

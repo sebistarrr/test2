@@ -447,12 +447,21 @@ export class Flair {
    * du corps, effilé et transparent vers l'arrière. C'est une écharpe, pas un
    * trait — d'où le trapèze plutôt qu'un `lineTo`.
    */
-  _drawSmear(ctx, f) {
+  _drawSmear(ctx, f, now = 0) {
     const spec = f.el.look.flair?.smear;
     const r = this.smears.get(f);
     if (!spec || !r || r.n < 4) return;
     ctx.save();
     ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (spec.electric) {
+      // décalé d'une graine : sans ça le fuseau et le ruban zigzaguent
+      // exactement de la même façon et se lisent comme un seul trait épais
+      this._drawElectricTrail(ctx, this._trailPoints(r, SMEAR), spec, spec.electric, now, 7.3);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+      return;
+    }
     ctx.strokeStyle = spec.color;
     for (let i = 1; i < r.n; i++) {
       const a = (r.head - r.n + i - 1 + SMEAR * 2) % SMEAR;
@@ -529,8 +538,8 @@ export class Flair {
       // les fantômes tout au fond, puis le fuseau, puis le ruban d'arme,
       // puis l'onde de pénétration et l'aura d'arme au plus près du sprite
       this._drawGhosts(ctx, f);
-      this._drawSmear(ctx, f);
-      this._drawRibbon(ctx, f);
+      this._drawSmear(ctx, f, now);
+      this._drawRibbon(ctx, f, now);
       this._drawPierce(ctx, f);
       this._drawWeaponAura(ctx, f, now);
       this._drawWeaponArcs(ctx, f, now);
@@ -585,25 +594,103 @@ export class Flair {
     ctx.globalAlpha = 1;
   }
 
-  _drawRibbon(ctx, f) {
+  /**
+   * Lit un tampon circulaire de traînée, du plus ancien au plus récent.
+   * @returns {number[][]} liste de points [x, y]
+   */
+  _trailPoints(r, size) {
+    const pts = [];
+    for (let i = 0; i < r.n; i++) {
+      const idx = (r.head - r.n + i + size * 2) % size;
+      pts.push([r.pts[idx * 2], r.pts[idx * 2 + 1]]);
+    }
+    return pts;
+  }
+
+  /**
+   * **Tracé électrique d'une traînée** — partagé par le ruban de pointe et le
+   * fuseau, qui ne diffèrent que par leurs réglages.
+   *
+   * Trois choses le distinguent d'un trait ordinaire :
+   *
+   *  1. **un seul trait continu**, pas segment par segment. Dessinés
+   *     séparément avec des bouts ronds, des points très écartés — pendant une
+   *     charge, la pointe parcourt plus de 200 px en une fraction de seconde —
+   *     se referment en chapelet de perles ;
+   *  2. **la cassure est perpendiculaire** à la trajectoire locale, sinon le
+   *     trait s'allonge au lieu de zigzaguer ;
+   *  3. **l'amplitude s'annule au point le plus récent**, sinon la traînée se
+   *     décroche du combattant et flotte à côté de lui.
+   *
+   * Le décalage vient d'un **hachage pur** de (indice, temps quantifié), comme
+   * les arcs de lame : aucun tirage consommé dans une méthode de dessin, donc
+   * le rendu ne dépend pas du nombre d'images affichées.
+   */
+  _drawElectricTrail(ctx, pts, spec, e, now, seed) {
+    const tick = Math.floor(now * e.rate);
+    for (let pass = 0; pass < 2; pass++) {
+      ctx.strokeStyle = pass === 0 ? e.glow ?? spec.color : e.core;
+      ctx.lineWidth = pass === 0 ? spec.width : e.coreWidth;
+      ctx.globalAlpha = spec.alpha * (pass === 0 ? 0.5 : 1);
+      ctx.beginPath();
+      for (let i = 0; i < pts.length; i++) {
+        const [px, py] = pts[i];
+        const [qx, qy] = pts[Math.min(i + 1, pts.length - 1)];
+        const dx = qx - px;
+        const dy = qy - py;
+        const len = Math.hypot(dx, dy) || 1;
+        const age = i / Math.max(1, pts.length - 1); // 0 = ancien, 1 = récent
+        const j = (hash01(i * 17.13 + tick * 0.719 + seed) - 0.5) * 2 * e.jitter * age;
+        const x = px - (dy / len) * j;
+        const y = py + (dx / len) * j;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  /**
+   * **Traînée de pointe.** Deux tracés au choix de la fiche.
+   *
+   * Par défaut, un trait lisse segment par segment : c'est le relevé des
+   * « boucles » que la pointe d'arme dessine en tournant.
+   *
+   * Avec `ribbon.electric`, le même chemin est **cassé** — chaque point est
+   * décalé perpendiculairement à la trajectoire, et le tout est tracé d'un
+   * seul trait continu en deux passes. Le trait continu compte autant que la
+   * cassure : dessiné segment par segment avec des bouts ronds, un chemin dont
+   * les points sont très écartés — pendant une charge la pointe parcourt plus
+   * de 200 px en une fraction de seconde — se referme en chapelet de perles.
+   *
+   * Le décalage vient d'un **hachage pur** de (indice, temps quantifié), comme
+   * les arcs de lame : aucun tirage consommé dans une méthode de dessin, donc
+   * le rendu ne dépend pas du nombre d'images affichées.
+   */
+  _drawRibbon(ctx, f, now = 0) {
     const r = this.ribbons.get(f);
     const spec = f.el.look.flair?.ribbon;
     if (!r || r.n < 3 || !spec) return;
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    // du plus ancien au plus récent : le trait s'épaissit et s'opacifie
-    for (let i = 1; i < r.n; i++) {
-      const a = (r.head - r.n + i - 1 + RIBBON * 2) % RIBBON;
-      const b = (r.head - r.n + i + RIBBON * 2) % RIBBON;
-      const k = i / r.n;
-      ctx.globalAlpha = spec.alpha * k * k;
-      ctx.strokeStyle = spec.color;
-      ctx.lineWidth = spec.width * k;
-      ctx.beginPath();
-      ctx.moveTo(r.pts[a * 2], r.pts[a * 2 + 1]);
-      ctx.lineTo(r.pts[b * 2], r.pts[b * 2 + 1]);
-      ctx.stroke();
+
+    if (spec.electric) {
+      this._drawElectricTrail(ctx, this._trailPoints(r, RIBBON), spec, spec.electric, now, 0);
+    } else {
+      // du plus ancien au plus récent : le trait s'épaissit et s'opacifie
+      for (let i = 1; i < r.n; i++) {
+        const a = (r.head - r.n + i - 1 + RIBBON * 2) % RIBBON;
+        const b = (r.head - r.n + i + RIBBON * 2) % RIBBON;
+        const k = i / r.n;
+        ctx.globalAlpha = spec.alpha * k * k;
+        ctx.strokeStyle = spec.color;
+        ctx.lineWidth = spec.width * k;
+        ctx.beginPath();
+        ctx.moveTo(r.pts[a * 2], r.pts[a * 2 + 1]);
+        ctx.lineTo(r.pts[b * 2], r.pts[b * 2 + 1]);
+        ctx.stroke();
+      }
     }
     ctx.restore();
     ctx.globalAlpha = 1;
