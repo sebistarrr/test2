@@ -385,14 +385,12 @@ sans que ça se voie.
      balaie 3-0 et elle tombe à 12, à 240 il n'en prend que deux et elle
      revient. Ces 20 px de fenêtre coûtent 0,13 PV/s de fidélité (2,53 contre
      2,40) — la bande passe avant, c'est un invariant.
-   - **Le Hors-la-loi est tombé à 9/30 en passant au type glace**, et la cause
-     n'est pas le gel : c'est le **tour de rechargement**. Pendant 1,4 s l'arme
-     n'est plus asservie à la cible, donc le bout du canon — qui porte la
-     hitbox de mêlée (`hitbox.from: 0,62`) — balaie au lieu de pointer. Il perd
-     ses touches de contact sur toute la recharge, et le ralentissement ne
-     compense pas : cinq affrontements ont basculé, aucun dans l'autre sens.
-     C'est le coût assumé d'un effet demandé ; les leviers si on veut le
-     rattraper sont `projectiles.shot.onHit.slow` et `ability.reload`.
+   - **Le tour de rechargement du Hors-la-loi lui coûte ses touches de mêlée.**
+     Pendant 1,4 s l'arme n'est plus asservie, or le bout du canon porte la
+     hitbox de contact (`hitbox.from: 0,62`) : il balaie au lieu de pointer. Le
+     personnage était tombé de 15 à **9/30** en gagnant l'effet. Porter le gel
+     de 0,30 à **0,50** l'a ramené à **16/30** — plus que compensé, donc, et
+     c'est le levier à retenir : `projectiles.shot.onHit.slow`.
    - **Le Lancier est à 30/30 — il gagne tous ses duels.** C'est le piège de
      l'arme braquée dans sa forme la plus pure : une charge qui traverse toute
      l'arène, contre dix adversaires qui pilotent vers lui et entrent donc dans
@@ -403,8 +401,8 @@ sans que ça se voie.
      0,506 à 0,439 coup/s. Les charges ne frôlent pas, elles traversent. Les
      vrais leviers sont la fréquence de balayage (`lunge.scanSpin`) et le
      retour à une charge de longueur bornée au lieu d'une traversée.
-   - Relevé courant : Lancier 30, Lumière 18, Hors-la-loi 15, Ombre 14,
-     Glace 14, Feu 14, Foudre 12, Vent 12, Plante 12, Bretteur 12, Eau 12.
+   - Relevé courant : Lancier 29, Lumière 18, Ombre 16, Hors-la-loi 16,
+     Glace 15, Plante 14, Feu 13, Vent 12, Foudre 11, Bretteur 11, Eau 10.
    - **Le recul symétrique a ramené le Lancier dans la bande tout seul**, de 19
      à 17, sans qu'aucun levier d'équilibrage ne soit touché : un attaquant
      repoussé aussi fort que sa cible met plus longtemps à revenir au contact.
@@ -438,14 +436,25 @@ sans que ça se voie.
    `render/flair.js` (six boucles), `physics.js`, `projectiles.js` et le rendu
    de `match.js`. Un oubli laisse un ruban, une nappe ou une hitbox fantôme au
    dernier point connu.
-8. **Un ancrage d'arme se pose, il ne s'interpole pas.** `weaponLateral`
+8. **Une clé de fiche que plus personne ne lit ne crie pas.** Deux régressions
+   du même type, toutes deux silencieuses : `lunge.recoil` et `lunge.hitRing`
+   supprimés alors que le module les lisait encore — `push(..., undefined)`
+   donnait NaN et la position partait en NaN dès la première touche ; puis
+   l'écriture de `weaponLateral` perdue dans une réécriture de la machine
+   d'états, `lunge.lateral` restant dans la fiche sans lecteur. Le premier cas
+   plante bruyamment, **le second jamais** : l'arme cesse simplement de se
+   décaler, sans erreur ni test rouge. `tools/fiche-check.mjs` recoupe
+   désormais les deux sens. Il ne couvre que `weapon.lunge`, et c'est
+   délibéré — `ability` a été essayé et criait à tort dix-neuf fois, or un
+   garde-fou qui crie à tort n'est plus lu.
+9. **Un ancrage d'arme se pose, il ne s'interpole pas.** `weaponLateral`
    bascule entre `lunge.lateral` et zéro **dans l'image même** où la phase
    change. La première version le rapprochait à vitesse bornée (420 px/s) pour
    éviter un saut : c'était une erreur de lecture, parce qu'une interpolation,
    si rapide soit-elle, fait *glisser* l'arme pendant la charge — donc elle
    court après la bille au lieu de former un bloc avec elle. Le saut est
    exactement ce qu'on veut voir.
-9. **Un décalage de dessin doit passer par le pivot, jamais par le seul
+10. **Un décalage de dessin doit passer par le pivot, jamais par le seul
    `translate`.** L'arme du Lancier est ancrée **sur le flanc** du corps
    (`Fighter.weaponLateral`, écrit par son module — encore un compteur
    générique : à zéro, les dix autres ne changent pas). `weaponPivot()` est lu
@@ -548,6 +557,10 @@ python3 -m http.server 8085 &            # requis par les outils Playwright
 
 node tools/matrix.mjs                    # 66 affrontements x 3 seeds, sans rendu
 node tools/matrix.mjs > /tmp/a.txt && diff tools/matrix-reference.txt /tmp/a.txt
+
+node tools/fiche-check.mjs               # garde-fou des fiches : chaque clé de
+                                         # `weapon.lunge` doit être lue par son
+                                         # module, et chaque lecture avoir sa clé
 
 node tools/lang-check.mjs                # garde-fou de la langue : les deux tables
                                          # de ui/lang.js doivent porter les mêmes clés,

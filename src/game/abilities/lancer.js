@@ -192,6 +192,24 @@ export const lancerAbilities = {
     }
 
     /**
+     * **Ancrage latéral, binaire.** Hors charge la lance est portée **sur le
+     * flanc** ; dès le verrouillage elle **saute** au centre du corps et y
+     * reste pendant toute la charge.
+     *
+     * Relevé : distance signée du centre de la bille à l'axe de la lance —
+     * +20 px vidéo au repos, +38 en croisière, **+1 en pleine charge**.
+     *
+     * Posé, jamais interpolé. Un rapprochement borné en vitesse, si rapide
+     * soit-il, fait *glisser* l'arme pendant la charge : elle court après la
+     * bille au lieu de former un bloc avec elle. Le saut est ce qu'on veut voir.
+     *
+     * `weaponPivot()` est lu par `drawWeapon()` **et** par `bladeSegment()` :
+     * le décalage bouge donc le dessin et la hitbox ensemble, jamais l'un sans
+     * l'autre.
+     */
+    f.weaponLateral = f.state.phase === 'brace' || f.state.phase === 'dash' ? 0 : L.lateral;
+
+    /**
      * **La lance ne blesse qu'en charge.** Hors charge elle est *portée*, pas
      * poussée : le verrou de touche est retenu à chaque pas, et seule la phase
      * `dash` le laisse courir.

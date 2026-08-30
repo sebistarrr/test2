@@ -1481,7 +1481,10 @@ const OUTLAW = {
       label: 'Balle de glace',
       labelRef: 'Ice Bullet',
       sprite: 'outlawShot',
-      scale: 1, // carte 30 × 9 : 30 × 9 px dessinés, comme les 28,8 × 9,6 d'avant
+      /** ×1,5 sur l'ancienne taille : carte 30 × 9 dessinée 45 × 13,5. La
+       *  collision ne suit pas — `radius: 8` ne dépend pas du sprite — donc
+       *  c'est un grossissement purement visuel. */
+      scale: 1.5,
       /** Calé : à 30 fps la vidéo ne montre que le sillage, jamais la balle.
        *  720 px/s laisse à l'adversaire de quoi sortir de la ligne de tir —
        *  c'est l'autre moitié de la précision relevée, avec la dispersion. */
@@ -1506,7 +1509,7 @@ const OUTLAW = {
        *
        * `stackGain` reste **mesuré** : +0,10 par balle au but.
        */
-      onHit: { stackGain: 0.1, stackMax: 8, slow: 0.3, slowDuration: 1.6 },
+      onHit: { stackGain: 0.1, stackMax: 8, slow: 0.5, slowDuration: 1.6 },
     },
   },
 
@@ -1912,7 +1915,7 @@ const LANCER = {
    * propres charges. C'est ce qui distingue ce personnage des dix autres, qui
    * pilotent tous vers leur cible.
    */
-  movement: { speed: 522, turnRate: 1.85, seek: 0, mass: 1 },
+  movement: { speed: 430, turnRate: 1.85, seek: 0, mass: 1 },
 
   weapon: {
     name: 'Lance électrique',
@@ -1987,7 +1990,7 @@ const LANCER = {
        * longue. Le moulinet a disparu : le balayage de `seek` le remplace,
        * l'arme tourne déjà en permanence.
        */
-      brace: 0.04,
+      brace: 0.18,
       /**
        * Garde-fou de durée de charge. La charge s'arrête normalement **au mur**
        * (`Fighter.wall`) ; ce plafond n'existe que pour qu'une charge lancée le
