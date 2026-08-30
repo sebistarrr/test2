@@ -88,7 +88,7 @@ import { ARENA } from '../../data/tuning.js';
  * aucun sens, et geler l'angle non plus — c'est le cap qui est gele pendant la
  * charge, et l'arme suit.
  *
- * @typedef {'seek'|'windup'|'brace'|'dash'|'recover'} LungePhase
+ * @typedef {'seek'|'brace'|'dash'|'recover'} LungePhase
  */
 
 export const lancerAbilities = {
@@ -169,47 +169,27 @@ export const lancerAbilities = {
      * geler explicitement.
      */
     /**
-     * **Écart volontaire, et le seul du personnage : le moulinet d'élan.**
+     * **Le corps va tout droit, seule la lance tourne.**
      *
-     * Pendant `windup`, et pendant lui seul, l'arme tourne sur elle-même au
-     * lieu de suivre le cap. Ce n'est **pas** un relevé : la vidéo ne montre
-     * aucune rotation propre (9,6° d'écart médian au cap sur 294 images), et
-     * c'est une demande de mise en scène assumée comme telle. Tout le reste du
-     * cycle garde `weaponAngle = heading`.
+     * C'est la mécanique du personnage, et elle explique pourquoi l'angle
+     * d'arme n'a jamais pu être mesuré : les deux hypothèses testées — « elle
+     * suit le cap » et « elle vise » — étaient fausses toutes les deux, donc
+     * aucune ne pouvait ressortir. La lance **balaie**, indépendamment du
+     * déplacement, jusqu'à croiser l'adversaire.
      *
-     * Le garde-fou « la lance ne blesse qu'en charge » couvre le moulinet
-     * gratuitement : il retient `meleeCd` dans toutes les phases sauf `dash`,
-     * donc une lance de 164 px qui balaie un tour complet ne touche personne.
-     * Sans lui, un moulinet à 14 rad/s serait l'arme la plus meurtrière du jeu.
+     * Le corps, lui, ne pilote plus du tout : `movement.seek` vaut zéro, donc
+     * `Fighter.step` ne le fait plus tourner vers l'adversaire. Il file droit
+     * et rebondit sur les murs — le déplacement est rectiligne par morceaux, et
+     * rien d'autre.
+     *
+     * Hors `seek`, l'angle est **gelé** sur celui du verrouillage : c'est la
+     * direction de la charge, et la lance pointe dedans du début à la fin.
      */
-    if (f.state.phase === 'windup') {
-      f.weaponAngle = wrapAngle(f.weaponAngle + L.windupSpin * dt);
+    if (f.state.phase === 'seek') {
+      f.weaponAngle = wrapAngle(f.weaponAngle + L.scanSpin * dt);
     } else {
-      f.weaponAngle = wrapAngle(f.heading);
+      f.weaponAngle = wrapAngle(f.state.dashAngle);
     }
-
-    /**
-     * **Ancrage latéral — binaire, jamais interpolé.**
-     *
-     * Relevé sur la vidéo, décalage signé de l'axe de la lance au centre de la
-     * bille (rayon 33 px vidéo) : **+20 px au repos**, **+38 px en croisière**,
-     * et **+1 px en pleine charge**, c'est-à-dire pile au centre.
-     *
-     * Le premier relevé de ce décalage rendait 6 px partout, régime après
-     * régime, et concluait donc « rien ne bouge ». Il mesurait le **centroïde**
-     * du nuage sombre, et son masque attrapait le **contour de la bille** —
-     * noir et centré, il tirait tout centroïde vers zéro quoi que fasse la
-     * lance. La bonne quantité est la distance du centre à **l'axe ajusté**,
-     * mesurée sur des pixels pris hors du disque.
-     *
-     * Le rapprochement était d'abord borné en vitesse (420 px/s). C'était une
-     * erreur de lecture : une interpolation, si rapide soit-elle, fait *glisser*
-     * l'arme pendant la charge — donc elle « court après » la bille au lieu de
-     * former un bloc avec elle. Le décalage est maintenant **posé**, pas
-     * interpolé : il vaut `lateral` ou zéro, et il bascule dans l'image même où
-     * la phase change.
-     */
-    f.weaponLateral = f.state.phase === 'brace' || f.state.phase === 'dash' ? 0 : L.lateral;
 
     /**
      * **La lance ne blesse qu'en charge.** Hors charge elle est *portée*, pas
@@ -228,26 +208,19 @@ export const lancerAbilities = {
     switch (f.state.phase) {
       case 'seek': {
         if (!target || !target.onStage) return;
-        const d = Math.hypot(target.x - f.x, target.y - f.y);
-        // **fenetre d'engagement**, bornee des deux cotes : un lancier charge
-        // de loin. Trop pres, il embroche a coup sur et la charge n'est plus
-        // qu'une formalite ; trop loin, il n'arrive jamais au contact.
-        if (d > L.range || d < L.minRange) return;
-        // l'adversaire doit etre dans l'axe de la lance — c'est-a-dire du cap
+        /**
+         * **Le déclenchement est un croisement, pas une condition d'angle
+         * tenue.** La lance balaie ; dès que son axe passe sur l'adversaire —
+         * à `L.aim` près — elle se verrouille et la charge part.
+         *
+         * Pas de fenêtre de distance : la charge va jusqu'au bord du terrain,
+         * donc il n'y a plus de « trop loin ». Le `minRange` d'avant existait
+         * pour une charge de longueur fixe, qui n'a plus cours.
+         */
         const bear = Math.atan2(target.y - f.y, target.x - f.x);
-        if (Math.abs(wrapAngle(bear - f.heading)) <= L.cone) this.windup(f);
+        if (Math.abs(wrapAngle(bear - f.weaponAngle)) <= L.aim) this.brace(f, bear);
         break;
       }
-
-      /**
-       * **Moulinet d'élan.** Le corps continue sa route, seule l'arme tourne.
-       * Il se termine par un verrouillage franc sur le cap — c'est `brace()`
-       * qui le pose, et le contraste entre le tournoiement et l'arrêt net est
-       * précisément ce qui fait lire l'intention.
-       */
-      case 'windup':
-        if (f.state.phaseTimer >= L.windup) this.brace(f);
-        break;
 
       /**
        * **Le temps d'arrêt avant la charge.** Le corps est cloué sur place et
@@ -265,10 +238,21 @@ export const lancerAbilities = {
         break;
 
       case 'dash':
-        // ligne droite : le cap est reecrit a chaque pas sur l'angle de depart,
-        // sinon le pilotage automatique de `Fighter.step` incurverait la charge
+        /**
+         * **La charge court jusqu'au bord du terrain.**
+         *
+         * `Fighter.step` pose `f.wall` quand il vient de rebondir, et il tourne
+         * **avant** ce module : le drapeau vaut donc pour le pas courant. On
+         * teste avant de réécrire le cap, sinon on renverrait le combattant
+         * dans le mur dont il vient de repartir.
+         *
+         * `dashMax` n'est qu'un garde-fou : une charge lancée le long d'un mur
+         * peut mettre longtemps à en croiser un autre, et rien ne doit pouvoir
+         * bloquer la machine d'états.
+         */
+        if (f.wall) { this.endDash(f); break; }
         f.heading = f.state.dashAngle;
-        if (f.state.phaseTimer >= L.dash) this.endDash(f);
+        if (f.state.phaseTimer >= L.dashMax) this.endDash(f);
         break;
 
       case 'recover':
@@ -285,12 +269,6 @@ export const lancerAbilities = {
    * dash : c'est ce qui fait que l'arrêt vise déjà juste, et que la charge
    * part exactement là où la lance pointait quand elle s'est immobilisée.
    */
-  /** Entrée en moulinet d'élan. Le corps n'est pas touché : seule l'arme
-   *  tourne, et le déplacement continue normalement. */
-  windup(f) {
-    this.setPhase(f, 'windup');
-  },
-
   /**
    * Entrée en arrêt. Le cap de la charge est figé **ici** — donc à la fin du
    * moulinet — et l'arme est **remise d'autorité dans l'axe** : c'est le
@@ -298,10 +276,12 @@ export const lancerAbilities = {
    * reprendrait le cap en douceur à l'image suivante et le moulinet finirait
    * en glissade au lieu d'un claquement.
    */
-  brace(f) {
+  brace(f, bear) {
     const L = f.el.weapon.lunge;
-    f.state.dashAngle = f.heading;
-    f.weaponAngle = wrapAngle(f.heading);
+    // le cap de charge est celui de la VISEE, pas le cap de deplacement : le
+    // corps allait ailleurs, il part maintenant dans l'axe de la lance
+    f.state.dashAngle = wrapAngle(bear);
+    f.weaponAngle = f.state.dashAngle;
     this.setPhase(f, 'brace');
     // L'arrêt passe par le levier de vitesse **du moteur** (`boost` /
     // `boostFactor`) plutôt que par un champ à lui : `endDash` les remet déjà
@@ -325,12 +305,12 @@ export const lancerAbilities = {
      */
     f.impulseX = 0;
     f.impulseY = 0;
-    f.boost = L.dash;
+    f.boost = L.dashMax;
     f.boostFactor = L.speed;
     // le compteur couvre exactement la charge ; passé zéro, `flair` vide la
     // file par le plus ancien, donc la traînée se résorbe derrière lui au lieu
     // de disparaître d'un coup
-    f.ghosting = L.dash;
+    f.ghosting = L.dashMax;
     game.fx.ring(f.x, f.y, f.radius * 0.9, f.radius * 2.6, 0.22, L.dashRing, 5, true);
   },
 

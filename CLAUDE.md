@@ -82,7 +82,25 @@ qui tienne sur toute la vidéo.
 | Vitesse | 432 px/s vidéo → **540** | gardée telle quelle |
 | Bond | 0,45 s d'élan, **1,5 s hors de l'arène**, marqueur gris, chute dans 110 px | `ultimate.windup / flight / marker / impact` |
 
-#### L'angle d'arme : ce qui est mesuré, et ce qui ne l'est pas
+#### Le mécanisme, et pourquoi l'angle d'arme était immesurable
+
+**Le corps va tout droit, seule la lance tourne.** `movement.seek: 0` — le
+Lancier est le seul du roster à ne pas piloter vers sa cible : il file droit et
+ne change de direction qu'aux rebonds de mur et à ses propres charges. Pendant
+ce temps la lance **balaie** à 5,5 rad/s, indépendamment du déplacement. Dès
+que son axe croise l'adversaire (à 0,1 rad près), elle se verrouille, marque un
+battement de 0,04 s, et le corps part **en ligne droite jusqu'au bord du
+terrain**. Puis ça recommence.
+
+**C'est ce mécanisme qui explique trois relevés d'angle contradictoires.** Les
+deux hypothèses testées — « la lance suit le cap » et « la lance vise » —
+étaient fausses **toutes les deux**, donc aucune ne pouvait ressortir, et les
+verdicts s'inversaient d'une bande de vitesse à l'autre. Une lance qui balaie
+n'est corrélée ni au cap de déplacement ni au cap adverse : elle n'est corrélée
+qu'à elle-même. Aucune quantité de mesure n'aurait tranché entre deux mauvaises
+réponses ; c'est la description du comportement qui l'a fait.
+
+#### Ce que valaient les mesures d'angle
 
 **Cette section a affirmé trois choses différentes. La quatrième mesure, faite
 sur les *deux* vidéos avec un détecteur corrigé, ne tranche pas — et c'est le
@@ -127,6 +145,14 @@ source de meilleure définition.
 Ces cinq-là sont pris avec le **même code** des deux côtés, la conversion
 ×1,25 appliquée, et un suivi temporel de la bille — pas une détection par
 image, qui perdait la bille 257 fois sur 747 pendant les charges.
+
+**Mesurer contre le bon adversaire.** `tools/probe.mjs` fait affronter au
+Lancier les dix autres, qui **pilotent vers lui** et entrent donc d'eux-mêmes
+dans le couloir de charge : il y rend 0,506 coup/s. Dans le **miroir** — le
+seul duel jouable aujourd'hui, et le plus proche de la vidéo, où l'adversaire
+se déplace de son côté — il rend **0,202 coup/s pour 2,43 PV/s**, contre 0,181
+et 2,54 relevés. Le même personnage, deux chiffres qui diffèrent d'un facteur
+2,5 : la cadence d'un combattant n'a de sens qu'en nommant l'adversaire.
 
 **Ce que la comparaison a révélé, et qui était le vrai défaut :** le Dragoon
 **charge souvent et rate souvent** — une charge toutes les 1 à 1,7 s, dont
@@ -355,9 +381,18 @@ sans que ça se voie.
      balaie 3-0 et elle tombe à 12, à 240 il n'en prend que deux et elle
      revient. Ces 20 px de fenêtre coûtent 0,13 PV/s de fidélité (2,53 contre
      2,40) — la bande passe avant, c'est un invariant.
-   - Relevé courant : Lumière 21, Glace 17, Hors-la-loi 16, Ombre 15, Feu 15,
-     **Lancier 15**, Plante 14, Eau 14, Vent 13, Bretteur 13, Foudre 12. Neuf
-     combattants sur onze tiennent dans la bande — le Lancier en fait partie.
+   - **Le Lancier est à 30/30 — il gagne tous ses duels.** C'est le piège de
+     l'arme braquée dans sa forme la plus pure : une charge qui traverse toute
+     l'arène, contre dix adversaires qui pilotent vers lui et entrent donc dans
+     le couloir. Le roster étant réduit à lui seul et le duel par défaut étant
+     un miroir, ça ne se voit pas en jouant — mais **il faudra le traiter avant
+     toute réactivation**.
+     Le rayon de hitbox n'est pas le levier : de 12 à 3 il ne descend que de
+     0,506 à 0,439 coup/s. Les charges ne frôlent pas, elles traversent. Les
+     vrais leviers sont la fréquence de balayage (`lunge.scanSpin`) et le
+     retour à une charge de longueur bornée au lieu d'une traversée.
+   - Relevé courant : Lancier 30, Lumière 18, Hors-la-loi 15, Ombre 14,
+     Glace 14, Feu 14, Foudre 12, Vent 12, Plante 12, Bretteur 12, Eau 12.
    - **Le recul symétrique a ramené le Lancier dans la bande tout seul**, de 19
      à 17, sans qu'aucun levier d'équilibrage ne soit touché : un attaquant
      repoussé aussi fort que sa cible met plus longtemps à revenir au contact.

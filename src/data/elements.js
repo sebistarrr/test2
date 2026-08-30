@@ -1824,7 +1824,14 @@ const LANCER = {
    *  à 470 — sa vitesse n'est pas ce qui le rend fort, c'est sa portée et ses
    *  dégâts. Aucune raison de toucher un `mesuré` qui ne casse rien.
    *  C'est le combattant le plus rapide du roster après le Bretteur. */
-  movement: { speed: 540, turnRate: 1.85, seek: 0.4, mass: 1 },
+  /**
+   * **`seek: 0` — le déplacement est rectiligne.** `Fighter.step` ne fait
+   * tourner le corps vers l'adversaire que si `seek > 0` ; à zéro, le Lancier
+   * file droit et ne change de direction qu'aux rebonds sur les murs et à ses
+   * propres charges. C'est ce qui distingue ce personnage des dix autres, qui
+   * pilotent tous vers leur cible.
+   */
+  movement: { speed: 522, turnRate: 1.85, seek: 0, mass: 1 },
 
   weapon: {
     name: 'Lance électrique',
@@ -1877,104 +1884,50 @@ const LANCER = {
      */
     lunge: {
       /**
-       * **Fenêtre d'engagement**, bornée des deux côtés — c'est le paramètre
-       * de cadence du personnage, et il a remplacé une rustine : allonger la
-       * pause entre deux charges ramenait bien la cadence de touche à
-       * 0,181 coup/s, mais à 2,5 s de temps mort, là où la vidéo montre **une
-       * charge par seconde environ, dont une sur cinq porte**. Le bon levier
-       * n'est pas la fréquence des charges mais leur **taux de réussite**.
+       * **Vitesse de balayage de la lance**, en rad/s. C'est le seul mouvement
+       * propre du personnage hors charge : le corps va tout droit, la lance
+       * tourne, et la charge part quand l'axe croise l'adversaire.
        *
-       * La géométrie le dit : la charge couvre 1 400 × 0,16 = 224 px, et la
-       * lance en ajoute 164. Engagée à moins de ~250 px, elle touche presque à
-       * coup sûr ; engagée au-delà de ~430, elle n'arrive jamais.
-       *
-       * Calé à **265** au banc, contre 320 du temps de la visée : la charge
-       * partant maintenant sur un cône étroit plutôt que sur un angle corrigé,
-       * elle s'engage moins souvent, et il faut rouvrir la fenêtre par le bas
-       * pour retrouver le budget relevé. Le balayage est net — 320 → 2,04 PV/s,
-       * 300 → 2,26, 280 → 2,35, **265 → 2,52**, 200 → 3,29.
+       * Calée sur la **fréquence de charge relevée** — une toutes les 1,0 à
+       * 1,7 s sur les deux vidéos. Un demi-tour à 4 rad/s prend 0,79 s, et
+       * comme l'adversaire bouge aussi, on croise un peu plus souvent que ça.
        */
-      minRange: 250,
+      scanSpin: 5.5,
       /**
-       * **Temps d'arrêt avant la charge**, en secondes. Mesuré : la vitesse
-       * tombe à **163 px/s une image avant le déclenchement**, contre ~1 700
-       * juste avant et ~3 100 juste après — le Lancier se plante, puis part.
-       *
-       * L'échantillon est mince (deux déclenchements nets sur la vidéo), et
-       * c'est la description du mouvement qui le corrobore plutôt que la
-       * **Cette mesure est retirée.** Le « 163 px/s une image avant le
-       * déclenchement » venait d'un détecteur qui ne retenait un déclenchement
-       * que si `v[i-1] < 0,35 × v[i]` : il *sélectionnait* les images précédées
-       * d'un creux, puis rapportait qu'il y avait un creux. Avec un seuil
-       * neutre, la vitesse avant charge vaut 732 px/s sur A et 413 sur B — il
-       * n'y a pas d'arrêt.
-       *
-       * La phase est conservée parce qu'elle a été **demandée** comme effet de
-       * jeu, et elle est donc `déduit`, pas `mesuré`.
+       * Tolérance de verrouillage, en radians. Le balayage avance de
+       * `scanSpin × dt` = 0,067 rad par pas à 60 Hz : en dessous de ça,
+       * l'axe pourrait enjamber l'adversaire sans jamais le « croiser ».
        */
-      brace: 0.05,
+      aim: 0.1,
       /**
-       * **Moulinet d'élan**, en secondes, et sa vitesse en rad/s.
-       *
-       * `déduit` — **écart volontaire, demandé comme effet de jeu**, et non un
-       * relevé. Il est borné à cette seule phase ; partout ailleurs l'arme
-       * suit le cap.
+       * **Temps de verrouillage avant la charge**, en secondes. Court : c'est
+       * le battement qui rend l'intention lisible, pas une attente. Il valait
+       * 0,05 plus un moulinet de 0,10 — soit 0,15 de pause cumulée, jugée trop
+       * longue. Le moulinet a disparu : le balayage de `seek` le remplace,
+       * l'arme tourne déjà en permanence.
        */
-      windup: 0.1,
+      brace: 0.04,
       /**
-       * 26 rad/s ≈ 4,1 tours/s. Monté depuis 14 : à cette vitesse le moulinet
-       * se lisait comme une arme qui pivote, pas comme un armement nerveux.
-       * Sur 0,10 s ça fait un peu moins d'un demi-tour, mais assené.
+       * Garde-fou de durée de charge. La charge s'arrête normalement **au mur**
+       * (`Fighter.wall`) ; ce plafond n'existe que pour qu'une charge lancée le
+       * long d'une paroi ne puisse pas bloquer la machine d'états. À 540 × 3,6
+       * = 1 944 px/s, 0,6 s couvre 1 166 px, soit près de deux fois la diagonale
+       * de l'arène.
        */
-      windupSpin: 26,
-      /**
-       * **Décalage latéral de l'ancrage de l'arme**, en px logiques, hors
-       * charge. Mesuré : distance signée du centre de la bille à l'axe de la
-       * lance, +20 px vidéo au repos et +38 en croisière, contre **+1 en pleine
-       * charge**. La lance est portée sur le flanc et se recentre pour charger.
-       * Converti en ×1,25 : ~25 à ~47 px logiques, on prend le milieu.
-       */
-      lateral: 36,
-      range: 470,
-      /**
-       * Demi-angle du cône d'engagement, calé **sur la fréquence de charge
-       * relevée**. Il valait 0,15, réglé à l'époque où l'on optimisait la
-       * cadence de touche : à cette valeur le Lancier ne chargeait qu'une fois
-       * toutes les 4,3 s, contre **une fois toutes les 1 à 1,7 s** mesurées sur
-       * les deux vidéos. Élargi à 0,8, il charge toutes les 2,3 s.
-       *
-       * L'ancien commentaire disait « le serrer améliore la cadence » : c'était
-       * vrai, et c'est précisément ce qui égarait. Un cône serré donne peu de
-       * charges qui portent presque toutes ; la vidéo montre l'inverse —
-       * beaucoup de charges dont environ une sur trois porte. Les deux rendent
-       * la même cadence de touche, et c'est ce qui a masqué l'écart si
-       * longtemps.
-       */
-      cone: 0.8,
-      /**
-       * Calé sur la **distance parcourue**, qui est la seule mesure de charge
-       * insensible à l'échantillonnage : 137 px logiques relevés sur la vidéo A,
-       * 136 rendus ici (0,07 × 3,6 × 540). La « durée » se compare mal — à
-       * 30 images/s une charge de 60 ms n'occupe que deux images.
-       */
-      dash: 0.07,
-      /**
-       * Pic de vitesse en charge. Mesuré **1 392 px/s vidéo sur A et 1 770 sur
-       * B** ; 3,6 × 540 = 1 944 logiques, soit 1 555 en repère vidéo — dans la
-       * fourchette. Il valait 2,6, calé sur un relevé antérieur plus étroit.
-       */
+      dashMax: 0.6,
+      /** Mesuré **1 392 px/s vidéo sur A et 1 770 sur B** ; 3,6 × 540 = 1 944
+       *  logiques, soit 1 555 en repère vidéo — dans la fourchette. */
       speed: 3.6,
-      /** Calé : temps mort après une charge. Avec `minRange`, c'est ce qui
-       *  porte le budget de dégâts relevé (0,181 coup/s, 2,54 PV/s). */
+      /** Temps mort après la charge. Court : la vidéo enchaîne. */
       recover: 0.08,
-      /** Calé : le recul propre à la charge, ajouté à `melee.selfRecoil`. La
-       *  vidéo montre un recul net après chaque touche de lance. */
-      recoil: 240,
-      /** Verrou de touche retenu hors charge — n'importe quelle valeur > un pas
-       *  de simulation suffit, il est réappliqué à chaque pas. */
+      /** Verrou de touche hors charge — voir le garde-fou dans le module. */
       guard: 0.05,
-      dashRing: 'rgba(163,43,74,0.5)',
-      hitRing: { to: 96, time: 0.26, color: 'rgba(207,194,240,0.7)' },
+      /** Décalage latéral de l'ancrage, hors charge. */
+      lateral: 36,
+      /** Calé : le recul propre à la charge, ajouté à `melee.selfRecoil`. */
+      recoil: 240,
+      dashRing: 'rgba(160,110,240,0.55)',
+      hitRing: { to: 96, time: 0.26, color: 'rgba(215,188,255,0.7)' },
     },
     /** `width: 0` : rien à tracer, toute la lance tient dans `lancerSpear`.
      *  `length` est **négatif** parce que le talon dépasse derrière le pivot

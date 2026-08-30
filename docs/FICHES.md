@@ -532,6 +532,24 @@ qu'il tourne, l'adversaire dérive. 0,18 s → 2,02 PV/s, 0,14 → 2,15, **0,10 
 cadence tombe juste, et c'est le budget de dégâts (2,39 avec `stackMax` 16) qui
 reste 6 % sous la vidéo.
 
+**Le mécanisme, tel qu'il est décrit et implémenté.** Le corps va **tout
+droit** (`movement.seek: 0`, seul du roster) ; la **lance balaie** à 5,5 rad/s,
+indépendamment du déplacement ; dès que son axe croise l'adversaire elle se
+verrouille, marque 0,04 s, et le corps part en ligne droite **jusqu'au bord du
+terrain**. Puis ça recommence.
+
+C'est ce mécanisme qui rend compte des trois relevés d'angle contradictoires :
+les deux hypothèses testées — « suit le cap », « vise » — étaient fausses toutes
+les deux, donc aucune ne pouvait ressortir d'une mesure, si soignée soit-elle.
+Une lance qui balaie n'est corrélée qu'à elle-même.
+
+**Le sprite est 1,5 fois plus épais**, sans être plus long : la maquette est
+ré-échantillonnée en blocs 3 × **2** au lieu de 3 × 3, donc 208 × 64 au lieu de
+208 × 43. La largeur dessinée vaut `map.w × scale` et ne bouge pas ; la hauteur
+vaut `map.h × scale`. On ne dilate pas un sprite existant, on retourne à la
+source et on l'échantillonne plus fin en vertical — ce qui ajoute du détail au
+lieu d'en étirer.
+
 **Le rythme de charge, mesuré sur les deux vidéos.** Une charge toutes les
 **1,0 à 1,7 s**, parcourant **137 px logiques**, à un pic de **1 392 à
 1 770 px/s vidéo**, pour une cadence de touche de 0,181 coup/s. Autrement dit
