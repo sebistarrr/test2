@@ -106,6 +106,25 @@ export class Fighter {
      */
     this.weaponLateral = 0;
 
+    /**
+     * Rotation **propre** de l'arme, en radians, autour du centre de sa propre
+     * carte — à ne pas confondre avec `weaponAngle`, qui est la direction dans
+     * laquelle l'arme *pointe depuis le corps*.
+     *
+     * La différence est toute la demande du rechargement du Hors-la-loi :
+     * faire tourner `weaponAngle` fait **orbiter** l'arme autour de la bille
+     * comme une aiguille d'horloge, alors qu'on veut un pistolet qui reste où
+     * il est et **tourne sur lui-même**. Les deux se composent : l'ancrage et
+     * l'orientation d'ensemble restent à `weaponAngle`, la vrille s'applique
+     * par-dessus, autour du milieu de la carte.
+     *
+     * Encore un compteur générique : un module l'écrit, `drawWeapon()` et
+     * `bladeSegment()` s'en servent, le moteur ne sait pas pourquoi. À zéro —
+     * la valeur par défaut, celle des dix autres combattants — rien ne change
+     * pour personne.
+     */
+    this.weaponTwirl = 0;
+
     this.trailTimer = 0;
     this.boost = 0; // durée restante d'un bonus de vitesse
     this.boostFactor = 1;
@@ -301,17 +320,74 @@ export class Fighter {
     };
   }
 
+  /**
+   * Milieu de la carte d'arme sur l'axe, en distance depuis le pivot — le
+   * centre autour duquel `weaponTwirl` fait tourner l'arme.
+   *
+   * Il est **déduit de la portée**, pas mesuré sur le sprite : la règle du
+   * dépôt veut que `handle.length + carte dessinée = reach`, donc le milieu de
+   * la carte tombe à mi-chemin entre le talon et la pointe. C'est ce qui
+   * permet à `bladeSegment()` de le calculer sans connaître `PIXEL_MAPS` — et
+   * si un jour la somme cessait de retomber sur la portée, ce centre serait
+   * faux **en même temps** que la pointe, donc l'erreur resterait cohérente.
+   */
+  weaponMid() {
+    const w = this.el.weapon;
+    return (w.handle.length + w.reach) / 2;
+  }
+
   /** Segment tranchant [a,b] en coordonnées monde + rayon. */
   bladeSegment() {
     const { reach, hitbox } = this.el.weapon;
     const c = Math.cos(this.weaponAngle);
     const s = Math.sin(this.weaponAngle);
     const o = this.weaponPivot();
+
+    /**
+     * **Sans vrille, l'expression d'origine, mot pour mot.**
+     *
+     * Ce n'est pas de la micro-optimisation, c'est du déterminisme. La forme
+     * générale ci-dessous regroupe autrement les mêmes produits
+     * (`c * (reach * from)` au lieu de `(c * reach) * from`), or la
+     * multiplication flottante **n'est pas associative** : le résultat diffère
+     * du dernier bit. Ça suffit à faire basculer une collision limite, et la
+     * première version de cette méthode a déplacé `fire vs bladesman` et
+     * `light vs wind` — deux affrontements où le Hors-la-loi n'est même pas.
+     * Les dix combattants qui ne vrillent jamais doivent repasser par le
+     * chemin exact d'avant.
+     */
+    const t = this.weaponTwirl;
+    if (!t) {
+      return {
+        ax: o.x + c * reach * hitbox.from,
+        ay: o.y + s * reach * hitbox.from,
+        bx: o.x + c * reach * hitbox.to,
+        by: o.y + s * reach * hitbox.to,
+        r: hitbox.radius,
+      };
+    }
+
+    /**
+     * La vrille tourne le segment autour du milieu de la carte, exactement
+     * comme `drawWeapon()` tourne le sprite. Ne la passer qu'au dessin ferait
+     * mentir le sprite sur l'endroit où il porte — c'est la même discipline
+     * que `weaponLateral`, et elle a déjà été payée une fois.
+     */
+    const mid = this.weaponMid();
+    const ct = Math.cos(t);
+    const st = Math.sin(t);
+    const a0 = reach * hitbox.from - mid;
+    const b0 = reach * hitbox.to - mid;
+    const ax = mid + a0 * ct;
+    const ay = a0 * st;
+    const bx = mid + b0 * ct;
+    const by = b0 * st;
+
     return {
-      ax: o.x + c * reach * hitbox.from,
-      ay: o.y + s * reach * hitbox.from,
-      bx: o.x + c * reach * hitbox.to,
-      by: o.y + s * reach * hitbox.to,
+      ax: o.x + c * ax - s * ay,
+      ay: o.y + s * ax + c * ay,
+      bx: o.x + c * bx - s * by,
+      by: o.y + s * bx + c * by,
       r: hitbox.radius,
     };
   }
@@ -440,6 +516,15 @@ export class Fighter {
     const pivot = this.weaponPivot();
     ctx.translate(pivot.x, pivot.y);
     ctx.rotate(this.weaponAngle);
+
+    // vrille : l'arme tourne sur elle-même, autour du milieu de sa carte, sans
+    // quitter sa place. `bladeSegment()` applique exactement la même rotation.
+    if (this.weaponTwirl) {
+      const mid = this.weaponMid();
+      ctx.translate(mid, 0);
+      ctx.rotate(this.weaponTwirl);
+      ctx.translate(-mid, 0);
+    }
 
     // manche : rectangle sombre + liseré, comme sur la vidéo.
     // `width: 0` = arme posée à même la boule (shuriken du Vent) : rien à tracer,

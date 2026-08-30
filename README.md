@@ -26,7 +26,7 @@ leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
-| **Hors-la-loi** | Revolver | **canon asservi à la cible** — il ne tourne pas ; barillet de 6 et dégâts qui montent de 0,10 par balle au but | Plein soleil / HIGH NOON (cadence doublée, recul ×8) |
+| **Hors-la-loi** | Revolver de glace | **canon asservi à la cible** — il ne tourne pas ; barillet de 6, balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Plein soleil / HIGH NOON (cadence doublée, recul ×8) |
 | **Bretteur** | Sabre dentelé | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
 | **Lancier** | Lance électrique (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 

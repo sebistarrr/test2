@@ -450,7 +450,7 @@ citée entre parenthèses.
 | Arme et munitions | même dessin, **teinte de glace** : chaque couleur des deux cartes est convertie à teinte fixe (~199°) en **conservant sa luminosité**, qui porte tout le modelé. Le revolver reste celui de la maquette, seule sa gamme bouge |
 | Bille et chrome | `#3f97c9`, un bleu **moyen** et non pâle : le chiffre de PV est crème (mesuré), et un bleu clair le noierait — c'est la leçon du cuivre clair du Lancier, qui avait forcé son chiffre en brun sombre |
 | Gel à la touche | `onHit.slow: 0.30` pendant 1,6 s. Le moteur savait déjà le faire : `Match.damage` lit `slow`/`slowDuration` et appelle `Fighter.applySlow`, comme pour l'Ombre et la Glace. `slowFactor` retient le **pire** ralentissement actif et le plafonne à 0,75, donc deux balles coup sur coup prolongent au lieu de s'empiler |
-| Rechargement | l'arme quitte sa cible et fait **un tour complet** sur les 1,4 s de recharge. L'angle est calculé depuis l'avancement et non incrémenté image par image : une accumulation dériverait et le tour ne retomberait pas sur l'angle de départ |
+| Rechargement | le pistolet **reste où il est** et fait **un tour complet sur lui-même**, en sens antihoraire, sur les 1,4 s de recharge. L'angle est calculé depuis l'avancement et non incrémenté image par image : une accumulation dériverait et le tour ne se refermerait pas exactement sur zéro |
 | Tir | **déjà linéaire, déjà détruit au contact et au mur** — rien à écrire. `projectiles.js` intègre `vx`/`vy` sans pilotage, `bounces: 0` tue la balle au mur, et le contact d'un combattant la tue aussi |
 
 **Ce que le tour de rechargement coûte, et ce n'est pas le gel.** Le Hors-la-loi
@@ -460,6 +460,42 @@ il balaie au lieu de pointer, et perd ses touches de contact sur toute la
 recharge. Cinq affrontements ont basculé, aucun dans l'autre sens — le
 ralentissement ne compense pas. C'est le coût assumé d'un effet demandé ; les
 leviers pour le rattraper sont `onHit.slow` et `ability.reload`.
+
+#### Vriller n'est pas orbiter
+
+![Le rechargement du Hors-la-loi](capture-recharge.png)
+
+*Trois instants d'un même rechargement. Le revolver garde sa place par rapport
+à la bille — qui traverse pourtant l'arène de x = 162 à x = 509 — et seule son
+orientation propre change : −64°, −163°, −261°.*
+
+Le moteur porte maintenant **deux** rotations d'arme, et les confondre donne
+deux animations très différentes :
+
+| | `weaponAngle` | `weaponTwirl` |
+| --- | --- | --- |
+| Ce que c'est | la direction dans laquelle l'arme **pointe depuis le corps** | la rotation **propre** de l'arme, autour du milieu de sa carte |
+| Ce que ça donne en tournant | l'arme **orbite** autour de la bille, comme une aiguille d'horloge | l'arme **vrille sur place** |
+| Qui l'écrit | `Fighter.step` (rotation de fiche), ou un module pour une arme braquée | un module seulement |
+
+La première version du tour de rechargement utilisait `weaponAngle` : ce
+n'était pas un pistolet qu'on recharge, c'était un pistolet qu'on fait
+tournoyer au bout d'un bras. `weaponTwirl` est un compteur générique de plus —
+le module l'écrit, `drawWeapon()` et `bladeSegment()` s'en servent, le moteur
+ne sait pas pourquoi, et à zéro les dix autres combattants ne changent pas.
+
+**Le centre de vrille est déduit, pas mesuré.** La règle du dépôt veut que
+`handle.length + carte dessinée = reach` ; le milieu de la carte tombe donc à
+`(handle.length + reach) / 2`, soit 79,5 px pour le revolver. `bladeSegment()`
+le calcule ainsi sans jamais lire `PIXEL_MAPS` — et si la somme cessait un jour
+de retomber sur la portée, le centre serait faux **en même temps** que la
+pointe, donc l'erreur resterait cohérente.
+
+**La hitbox vrille avec le sprite**, sinon le dessin mentirait sur l'endroit où
+l'arme porte — même discipline que `weaponLateral`. Conséquence de jeu : le
+canon balaie désormais un petit cercle de 42,5 px autour de l'arme au lieu d'un
+grand cercle de 122 px autour de la bille. Cinq affrontements changent de
+score, **tous avec le Hors-la-loi**, et il passe de 15 à 16 victoires sur 30.
 
 ### Les pouvoirs greffés — Blizzard et Lien d'essence
 

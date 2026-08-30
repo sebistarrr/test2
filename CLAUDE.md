@@ -59,7 +59,7 @@ commentaire.
 
 | Personnage | Archétype | Signature | Module |
 | --- | --- | --- | --- |
-| `outlaw` Hors-la-loi | Pistolero de **glace** | **revolver de givre** transcrit d'une maquette, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et un **tour complet de l'arme au rechargement**. Porte en plus le **Blizzard** de la Glace, greffé | `abilities/outlaw.js` |
+| `outlaw` Hors-la-loi | Pistolero de **glace** | **revolver de givre** transcrit d'une maquette, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`Fighter.weaponTwirl`, antihoraire — l'arme ne quitte pas sa place, elle vrille). Porte en plus le **Blizzard** de la Glace, greffé | `abilities/outlaw.js` |
 | `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin` | `abilities/bladesman.js` |
 | `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence** de l'Ombre, greffé | `abilities/lancer.js` |
 
@@ -402,8 +402,11 @@ sans que ça se voie.
      0,506 à 0,439 coup/s. Les charges ne frôlent pas, elles traversent. Les
      vrais leviers sont la fréquence de balayage (`lunge.scanSpin`) et le
      retour à une charge de longueur bornée au lieu d'une traversée.
-   - Relevé courant : Lancier 30, Lumière 18, Ombre 17, Hors-la-loi 15,
-     Glace 13, Feu 13, Vent 13, Plante 12, Bretteur 12, Foudre 11, Eau 11.
+   - Relevé courant : Lancier 30, Lumière 18, Hors-la-loi 16, Ombre 14,
+     Feu 14, Glace 13, Vent 13, Plante 13, Eau 12, Foudre 11, Bretteur 11.
+     **Cinq combattants hors bande, contre six avant** : le passage du
+     rechargement à la vrille a resserré l'ensemble sans qu'aucun levier
+     d'équilibrage ne soit touché.
    - **Les deux pouvoirs greffés ont déplacé sept affrontements sur 66, et
      n'ont fait sortir personne de la bande.** Six sont ceux du Blizzard, un
      celui du Lien. Le Hors-la-loi passe de 16 à 15 — au centre de la bande —
@@ -423,19 +426,29 @@ sans que ça se voie.
      de fiche n'ait bougé.
 4. **Le décor ne bouge jamais** (cahier des charges) — rasterisé une fois dans
    `scene.js`, blitté en un `drawImage`.
-5. **Convention de commentaire dans les fiches** : chaque valeur porte
+5. **Deux rotations d'arme, à ne jamais confondre.** `weaponAngle` est la
+   direction dans laquelle l'arme **pointe depuis le corps** : la faire tourner
+   fait *orbiter* l'arme autour de la bille, comme une aiguille d'horloge.
+   `weaponTwirl` est la rotation **propre** de l'arme autour du milieu de sa
+   carte : elle la fait *vriller sur place*. Le rechargement du Hors-la-loi a
+   été écrit avec la première avant d'être repris avec la seconde — c'est
+   `weaponTwirl` qui donne un pistolet qu'on recharge plutôt qu'un pistolet
+   qu'on fait tournoyer au bout d'un bras. Le centre de vrille est **déduit de
+   la portée** (`(handle.length + reach) / 2`), pas mesuré sur le sprite, ce
+   qui le garde cohérent avec la pointe.
+6. **Convention de commentaire dans les fiches** : chaque valeur porte
    `mesuré` (relevé vidéo), `calé` (ajusté par simulation) ou `déduit`.
    Ne jamais changer une valeur `mesuré` sans nouveau relevé. Et ne pas caler
    par réflexe : la vitesse du Lancier a été mesurée à 540 px/s et **gardée**,
    parce que le banc a montré qu'elle ne cassait rien (15/30 contre 16/30 à
    470). Un `calé` doit être justifié par une mesure, pas par une intuition.
-6. **Les compteurs génériques du `Fighter`.** `offstage`, `invulnerable`,
-   `boost` et `ghosting` ont tous la même forme : un module les allume, le
+7. **Les compteurs génériques du `Fighter`.** `offstage`, `invulnerable`,
+   `boost`, `ghosting`, `weaponLateral` et `weaponTwirl` ont tous la même forme : un module les allume, le
    moteur les décompte, et le moteur **ne sait pas pourquoi**. `ghosting` est
    le plus récent — il dit « sème des images fantômes », il n'est lu que par
    `render/flair.js`, donc l'allumer ne peut rien changer au duel. C'est la
    forme à reprendre pour tout nouvel effet accroché à un état de module.
-7. **`alive` ≠ `onStage`.** Un combattant peut être vivant *et absent* :
+8. **`alive` ≠ `onStage`.** Un combattant peut être vivant *et absent* :
    `Fighter.offstage` (secondes restantes hors du plateau) le retire du
    déplacement, des collisions, des touches, des projectiles, du rendu et de
    toute la mise en scène. Le moteur ne sait pas *pourquoi* il est parti — seul
@@ -444,7 +457,7 @@ sans que ça se voie.
    `render/flair.js` (six boucles), `physics.js`, `projectiles.js` et le rendu
    de `match.js`. Un oubli laisse un ruban, une nappe ou une hitbox fantôme au
    dernier point connu.
-8. **Une clé de fiche que plus personne ne lit ne crie pas.** Deux régressions
+9. **Une clé de fiche que plus personne ne lit ne crie pas.** Deux régressions
    du même type, toutes deux silencieuses : `lunge.recoil` et `lunge.hitRing`
    supprimés alors que le module les lisait encore — `push(..., undefined)`
    donnait NaN et la position partait en NaN dès la première touche ; puis
@@ -455,14 +468,14 @@ sans que ça se voie.
    désormais les deux sens. Il ne couvre que `weapon.lunge`, et c'est
    délibéré — `ability` a été essayé et criait à tort dix-neuf fois, or un
    garde-fou qui crie à tort n'est plus lu.
-9. **Un ancrage d'arme se pose, il ne s'interpole pas.** `weaponLateral`
+10. **Un ancrage d'arme se pose, il ne s'interpole pas.** `weaponLateral`
    bascule entre `lunge.lateral` et zéro **dans l'image même** où la phase
    change. La première version le rapprochait à vitesse bornée (420 px/s) pour
    éviter un saut : c'était une erreur de lecture, parce qu'une interpolation,
    si rapide soit-elle, fait *glisser* l'arme pendant la charge — donc elle
    court après la bille au lieu de former un bloc avec elle. Le saut est
    exactement ce qu'on veut voir.
-10. **Un décalage de dessin doit passer par le pivot, jamais par le seul
+11. **Un décalage de dessin doit passer par le pivot, jamais par le seul
    `translate`.** L'arme du Lancier est ancrée **sur le flanc** du corps
    (`Fighter.weaponLateral`, écrit par son module — encore un compteur
    générique : à zéro, les dix autres ne changent pas). `weaponPivot()` est lu
@@ -750,6 +763,16 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   contrepartie est qu'il **n'y a pas de jauge** : le HUD n'en porte qu'une, et
   elle appartient à l'ultime. Un pouvoir sans jauge doit donc s'annoncer par sa
   mise en scène.
+- **Regrouper autrement les mêmes produits change le résultat.** En réécrivant
+  `bladeSegment()` pour y loger la vrille, `c * reach * hitbox.from` est devenu
+  `c * (reach * hitbox.from)`. La multiplication flottante **n'est pas
+  associative** : un bit d'écart sur une coordonnée de hitbox a suffi à faire
+  basculer `fire vs bladesman` et `light vs wind` — deux affrontements où le
+  Hors-la-loi, seul concerné par le changement, n'est même pas. Le garde-fou
+  n'est pas la relecture du code mais la **matrice** : un changement confiné à
+  un combattant ne doit déplacer que **ses** affrontements, et une ligne
+  déplacée ailleurs est un bug, pas un effet de bord acceptable. La méthode
+  garde donc l'expression d'origine mot pour mot sur le chemin sans vrille.
 - **Rééquilibrer un combattant affaibli** : ne toucher que ses paramètres `calé`
   ou `déduit`, jamais les `mesuré`.
 - **`imageSmoothingQuality = 'high'`** sur le rééchantillonnage de l'export

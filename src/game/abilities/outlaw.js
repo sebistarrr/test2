@@ -25,7 +25,7 @@
  * @module game/abilities/outlaw
  */
 
-import { TAU, clamp, wrapAngle } from '../../core/math.js';
+import { TAU, clamp } from '../../core/math.js';
 import { ARENA } from '../../data/tuning.js';
 
 export const outlawAbilities = {
@@ -76,19 +76,30 @@ export const outlawAbilities = {
     if (f.state.reload > 0) {
       f.state.reload -= dt;
       /**
-       * **Un tour complet pendant le rechargement.** L'arme quitte sa cible et
-       * pivote de 360° sur toute la durée : c'est ce qui rend le rechargement
-       * lisible, là où le barillet vide ne se voyait que dans le HUD.
+       * **Un tour complet pendant le rechargement — sur lui-même, pas autour
+       * de la bille.**
+       *
+       * La première version faisait tourner `weaponAngle`, ce qui fait
+       * **orbiter** l'arme autour du corps comme une aiguille d'horloge. Ce
+       * n'est pas un pistolet qu'on recharge, c'est un pistolet qu'on fait
+       * tournoyer au bout d'un bras. Le revolver garde donc sa direction
+       * (`weaponAngle` gelé sur l'angle de départ) et c'est `weaponTwirl` qui
+       * le fait pivoter **autour du milieu de sa propre carte**.
+       *
+       * Le sens est **antihoraire**, donc négatif : l'axe des y du canevas
+       * descend, un angle positif y tourne dans le sens des aiguilles.
        *
        * L'angle est **calculé depuis l'avancement**, pas incrémenté image par
        * image : une accumulation dériverait au fil des pas et le tour ne
-       * retomberait pas exactement sur l'angle de départ. Ici il s'y referme
-       * par construction, et la visée reprend sans saut.
+       * retomberait pas exactement sur zéro. Ici il s'y referme par
+       * construction, et la visée reprend sans saut.
        */
       const done = 1 - Math.max(0, f.state.reload) / el.ability.reload;
-      f.weaponAngle = wrapAngle(f.state.reloadFrom + TAU * done);
+      f.weaponAngle = f.state.reloadFrom;
+      f.weaponTwirl = -TAU * done;
       if (f.state.reload <= 0) {
         f.state.reload = 0;
+        f.weaponTwirl = 0; // le tour se referme exactement sur zéro
         f.stacks2 = el.ability.magazine; // le HUD repasse de 0/6 à 6/6
         f.ability.timer = el.ability.cooldown;
       }
