@@ -189,13 +189,11 @@ export const lancerAbilities = {
     }
 
     /**
-     * **Ancrage latéral, et son recentrage au moment de la charge.**
+     * **Ancrage latéral — binaire, jamais interpolé.**
      *
      * Relevé sur la vidéo, décalage signé de l'axe de la lance au centre de la
      * bille (rayon 33 px vidéo) : **+20 px au repos**, **+38 px en croisière**,
-     * et **+1 px en pleine charge** — c'est-à-dire pile au centre. La lance
-     * est portée sur le flanc et vient se mettre dans l'axe du corps pour
-     * charger.
+     * et **+1 px en pleine charge**, c'est-à-dire pile au centre.
      *
      * Le premier relevé de ce décalage rendait 6 px partout, régime après
      * régime, et concluait donc « rien ne bouge ». Il mesurait le **centroïde**
@@ -204,13 +202,14 @@ export const lancerAbilities = {
      * lance. La bonne quantité est la distance du centre à **l'axe ajusté**,
      * mesurée sur des pixels pris hors du disque.
      *
-     * Le rapprochement se fait à vitesse bornée plutôt que d'un coup : à
-     * 33 px/image l'arme saute d'un flanc à l'autre, et la charge démarre sur
-     * un clignotement.
+     * Le rapprochement était d'abord borné en vitesse (420 px/s). C'était une
+     * erreur de lecture : une interpolation, si rapide soit-elle, fait *glisser*
+     * l'arme pendant la charge — donc elle « court après » la bille au lieu de
+     * former un bloc avec elle. Le décalage est maintenant **posé**, pas
+     * interpolé : il vaut `lateral` ou zéro, et il bascule dans l'image même où
+     * la phase change.
      */
-    const wanted = f.state.phase === 'brace' || f.state.phase === 'dash' ? 0 : L.lateral;
-    const step = L.lateralRate * dt;
-    f.weaponLateral += Math.max(-step, Math.min(step, wanted - f.weaponLateral));
+    f.weaponLateral = f.state.phase === 'brace' || f.state.phase === 'dash' ? 0 : L.lateral;
 
     /**
      * **La lance ne blesse qu'en charge.** Hors charge elle est *portée*, pas

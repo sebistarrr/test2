@@ -225,6 +225,29 @@ export class Match {
     // recul de l'attaquant (il repart en arrière, observé sur la vidéo)
     attacker.push(-hit.nx, -hit.ny, melee.selfRecoil);
 
+    /**
+     * **Décollement à l'impact.** Le recul est une impulsion : elle décide de
+     * la vitesse, pas de la position, donc à bout portant les deux corps
+     * restent imbriqués le temps que l'impulsion les sépare — et le coup se lit
+     * comme spongieux plutôt que sec.
+     *
+     * On les écarte donc franchement, dans l'image même de la touche, jusqu'à
+     * ce qu'ils ne se chevauchent plus. `resolveBodies` fait le même calcul au
+     * pas suivant ; le faire ici évite l'image d'interpénétration entre les
+     * deux, qui est justement celle où l'œil juge le choc.
+     */
+    const dx = target.x - attacker.x;
+    const dy = target.y - attacker.y;
+    const d = Math.hypot(dx, dy);
+    const min = attacker.radius + target.radius;
+    if (d > 0 && d < min) {
+      const k = (min - d) / 2 / d;
+      attacker.x -= dx * k;
+      attacker.y -= dy * k;
+      target.x += dx * k;
+      target.y += dy * k;
+    }
+
     // effets à la touche décrits dans la fiche (piles, brûlure, marquage…)
     const onHit = melee.onHit;
     if (onHit) {

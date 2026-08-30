@@ -511,8 +511,8 @@ suivant le cap, elle est *déjà* dans l'axe de la charge.
 | Phase | Ce qui s'y passe |
 | --- | --- |
 | `seek` | déplacement normal ; s'engage si l'adversaire est dans la fenêtre de distance **et** dans le cône du cap |
-| `windup` | **moulinet d'élan** : le corps continue, seule l'arme tourne |
-| `brace` | **le corps se cloue sur place**, cap gelé, l'arme est verrouillée d'autorité sur le cap et se recentre du flanc vers l'axe |
+| `windup` | **moulinet d'élan** : le corps continue, seule l'arme tourne, à 26 rad/s |
+| `brace` | **le corps se cloue sur place**, cap gelé, l'arme est verrouillée d'autorité sur le cap et **saute** du flanc vers l'axe — sans interpolation |
 | `dash` | le corps file à 2,6 × sa vitesse en ligne droite, cap gelé — donc angle d'arme gelé aussi, sans avoir à le geler |
 | `recover` | temps mort ; l'arme se replace sur le flanc |
 
@@ -546,6 +546,12 @@ charge part vers où il **était**. Le seul levier est la durée de l'arrêt —
 (0,033 s) le moteur rend 0,181 coup/s, exactement la cadence mesurée. L'arrêt
 est réglé à 0,05 s, dans l'incertitude d'un échantillonnage à 30 fps et plus
 lisible à l'œil.
+
+**L'ancrage est binaire.** Il était d'abord rapproché à vitesse bornée
+(420 px/s) pour éviter un saut — une erreur de lecture : une interpolation, si
+rapide soit-elle, fait *glisser* l'arme pendant la charge, donc elle court après
+la bille au lieu de former un bloc avec elle. Le saut est exactement ce qu'on
+veut voir, et il tombe dans l'image même où la phase change.
 
 **L'arme est ancrée sur le flanc, et se recentre pour charger.** Mesuré :
 distance signée du centre de la bille à l'axe de la lance (rayon 33 px vidéo) —

@@ -395,20 +395,25 @@ export class Fighter {
       ctx.fill();
     }
 
-    /**
-     * L'arme au-dessus du corps se pose ici : après le contour et les anneaux
-     * d'état, **avant le chiffre de PV**. Le chiffre reste donc lisible — dans
-     * un miroir Lancier contre Lancier, c'est le seul repère qui distingue les
-     * deux camps, et le faire recouvrir par une lance de 164 px le perdrait.
-     */
-    if (overBody) this.paintWeapon(ctx);
-
     // points de vie
     ctx.font = look.hpFont;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = look.hpColor;
     ctx.fillText(String(Math.max(0, Math.ceil(this.hp))), this.x, this.y + look.hpOffsetY);
+
+    /**
+     * `weapon.overBody` : l'arme est peinte **en dernier**, après le corps,
+     * les anneaux d'état *et* le chiffre de PV — donc strictement au-dessus de
+     * la balle, en permanence.
+     *
+     * Elle passait auparavant juste avant le chiffre, pour garder celui-ci
+     * lisible ; mais les digits traversaient alors la lance, ce qui se lit
+     * exactement comme une arme *derrière* la balle. Un demi-dessus se lit
+     * comme un dessous : c'est tout ou rien. Contrepartie assumée — pendant une
+     * charge, la lance peut masquer une partie du chiffre.
+     */
+    if (overBody) this.paintWeapon(ctx);
   }
 
   auraVisible() {

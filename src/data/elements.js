@@ -1920,7 +1920,12 @@ const LANCER = {
        * lance au moment du verrouillage.
        */
       windup: 0.1,
-      windupSpin: 14,
+      /**
+       * 26 rad/s ≈ 4,1 tours/s. Monté depuis 14 : à cette vitesse le moulinet
+       * se lisait comme une arme qui pivote, pas comme un armement nerveux.
+       * Sur 0,10 s ça fait un peu moins d'un demi-tour, mais assené.
+       */
+      windupSpin: 26,
       /**
        * **Décalage latéral de l'ancrage de l'arme**, en px logiques, hors
        * charge. Mesuré : distance signée du centre de la bille à l'axe de la
@@ -1929,9 +1934,6 @@ const LANCER = {
        * Converti en ×1,25 : ~25 à ~47 px logiques, on prend le milieu.
        */
       lateral: 36,
-      /** Calé : vitesse de rattrapage du décalage, en px/s. D'un coup, l'arme
-       *  saute d'un flanc à l'autre et la charge démarre sur un clignotement. */
-      lateralRate: 420,
       range: 470,
       /**
        * Calé : demi-angle du cône d'engagement. La charge ne part que si
@@ -1954,7 +1956,7 @@ const LANCER = {
       speed: 2.6,
       /** Calé : temps mort après une charge. Avec `minRange`, c'est ce qui
        *  porte le budget de dégâts relevé (0,181 coup/s, 2,54 PV/s). */
-      recover: 0.45,
+      recover: 0.25,
       /** Calé : le recul propre à la charge, ajouté à `melee.selfRecoil`. La
        *  vidéo montre un recul net après chaque touche de lance. */
       recoil: 240,
@@ -2026,7 +2028,12 @@ const LANCER = {
        * assumé : le Lancier est le seul à frapper lancé à 1 400 px/s.
        */
       knockback: 460,
-      selfRecoil: 200,
+      /**
+       * **Symétrique** : action et réaction. Il valait 200 contre 460 encaissés,
+       * et un choc qui pousse deux fois plus fort d'un côté se lit comme un coup
+       * absorbé, pas comme un impact.
+       */
+      selfRecoil: 460,
       /**
        * Mesuré : **+2,00 par touche portée**, relevé au PV près. La stat passe
        * 10 → 12 → 14 → 16 → 18 → 20 aux instants 12,53 / 13,63 / 14,77 /

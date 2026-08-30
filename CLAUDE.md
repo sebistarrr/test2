@@ -124,8 +124,8 @@ verrouillage, puisque la lance est **déjà** dans l'axe du déplacement :
 | Phase | Ce qui s'y passe |
 | --- | --- |
 | `seek` | déplacement normal ; s'engage si l'adversaire est dans la fenêtre de distance **et** dans le cône du cap |
-| `windup` | **moulinet d'élan** : le corps continue, seule l'arme tourne (14 rad/s pendant 0,10 s ≈ 80°). Écart volontaire — voir plus bas |
-| `brace` | **le corps se cloue sur place**, cap gelé, l'arme est **verrouillée d'autorité** sur le cap et se recentre. Mesuré : la vitesse tombe à 163 px/s une image avant le déclenchement, contre ~1 700 juste avant et ~3 100 juste après |
+| `windup` | **moulinet d'élan** : le corps continue, seule l'arme tourne (26 rad/s pendant 0,10 s ≈ 150°). Écart volontaire — voir plus bas |
+| `brace` | **le corps se cloue sur place**, cap gelé, l'arme est **verrouillée d'autorité** sur le cap et **saute** au centre. Mesuré : la vitesse tombe à 163 px/s une image avant le déclenchement, contre ~1 700 juste avant et ~3 100 juste après |
 | `dash` | le corps file à 2,6 × sa vitesse en **ligne droite** : cap réécrit à chaque pas, vitesse constante, et l'impulsion est remise à zéro au départ pour qu'un recul encaissé juste avant n'incurve pas la charge |
 | `recover` | temps mort après la charge ou la touche ; l'arme se replace sur le flanc |
 
@@ -295,17 +295,14 @@ sans que ça se voie.
      balaie 3-0 et elle tombe à 12, à 240 il n'en prend que deux et elle
      revient. Ces 20 px de fenêtre coûtent 0,13 PV/s de fidélité (2,53 contre
      2,40) — la bande passe avant, c'est un invariant.
-   - **La bande n'est plus tenue, et c'est temporaire et assumé.** Le roster
-     étant réduit au seul Lancier (voir plus haut), le réglage a été mené sur
-     la fidélité au relevé plutôt que sur l'équilibre contre des adversaires
-     désactivés. Relevé courant : Lumière 21, **Lancier 19**, Feu 16, Glace 15,
-     Hors-la-loi 15, Ombre 14, Bretteur 14, Foudre 13, Vent 13, Plante 13,
-     Eau 12.
-   - **À la réactivation, le Lancier est à 19/30 et il faudra le redescendre.**
-     Deux leviers déjà mesurés cette session : `lunge.minRange` 220 → 240 (il
-     cesse de balayer l'Eau 3-0, coût 0,13 PV/s de fidélité) et
-     `onHit.stackMax` 16 → 15. À 240 + 15 il tenait 16/30 avec dix combattants
-     sur onze dans la bande.
+   - Relevé courant : Lumière 20, **Lancier 17**, Ombre 16, Glace 15, Feu 15,
+     Hors-la-loi 15, Foudre 14, Bretteur 14, Vent 13, Plante 13, Eau 13. Dix
+     combattants sur onze tiennent dans la bande.
+   - **Le recul symétrique a ramené le Lancier dans la bande tout seul**, de 19
+     à 17, sans qu'aucun levier d'équilibrage ne soit touché : un attaquant
+     repoussé aussi fort que sa cible met plus longtemps à revenir au contact.
+     C'est un réglage de mise en scène qui a rendu un équilibre — l'inverse
+     arrive plus souvent.
    - **`ROSTER` décide qui est le camp A.** Les paires sont formées en
      `[liste[i], liste[j]]`, et le camp A pèse lourd. Un nouveau venu s'ajoute
      donc **en queue** : inséré ailleurs, il déplacerait le camp A
@@ -334,7 +331,14 @@ sans que ça se voie.
    `render/flair.js` (six boucles), `physics.js`, `projectiles.js` et le rendu
    de `match.js`. Un oubli laisse un ruban, une nappe ou une hitbox fantôme au
    dernier point connu.
-8. **Un décalage de dessin doit passer par le pivot, jamais par le seul
+8. **Un ancrage d'arme se pose, il ne s'interpole pas.** `weaponLateral`
+   bascule entre `lunge.lateral` et zéro **dans l'image même** où la phase
+   change. La première version le rapprochait à vitesse bornée (420 px/s) pour
+   éviter un saut : c'était une erreur de lecture, parce qu'une interpolation,
+   si rapide soit-elle, fait *glisser* l'arme pendant la charge — donc elle
+   court après la bille au lieu de former un bloc avec elle. Le saut est
+   exactement ce qu'on veut voir.
+9. **Un décalage de dessin doit passer par le pivot, jamais par le seul
    `translate`.** L'arme du Lancier est ancrée **sur le flanc** du corps
    (`Fighter.weaponLateral`, écrit par son module — encore un compteur
    générique : à zéro, les dix autres ne changent pas). `weaponPivot()` est lu
@@ -345,17 +349,24 @@ sans que ça se voie.
 ## Écarts volontaires au relevé
 
 - **Le moulinet d'élan du Lancier** (`lunge.windup` / `windupSpin`) et son
-  **recul renforcé** (460 / 200 contre 300 / 95 relevés) sont deux ajouts de
-  mise en scène, pas des mesures. Pour le recul, c'est l'**amplitude** qui est
-  montée et non l'amortissement : celui-ci est global
+  **recul renforcé et symétrique** (460 / 460 contre 300 / 95 relevés) sont
+  deux ajouts de mise en scène, pas des mesures. Le recul de l'attaquant valait
+  200 contre 460 encaissés, et un choc qui pousse deux fois plus fort d'un côté
+  se lit comme un coup absorbé plutôt que comme un impact. Une **séparation
+  franche** est en outre appliquée dans l'image même de la touche : une
+  impulsion décide de la vitesse, pas de la position, donc à bout portant les
+  deux corps restaient imbriqués le temps qu'elle les écarte — et c'est
+  précisément l'image où l'œil juge le choc. Pour l'amplitude, c'est elle qui
+  est montée et non l'amortissement : celui-ci est global
   (`PHYSICS.speedRecovery`), le rendre plus sec pour le Lancier le rendrait
   plus sec pour les onze.
 - **L'arme du Lancier passe au-dessus du corps** (`weapon.overBody`) — c'est
   son relevé, la vidéo montre la lance qui recouvre franchement la bille. Elle
-  passe en revanche **sous le chiffre de PV** : dans un miroir Lancier contre
-  Lancier, ce chiffre est le seul repère qui distingue les deux camps, et une
-  lance de 164 px par-dessus le perdrait. Les dix autres gardent l'arme sous le
-  corps, qui est leur relevé.
+  est peinte **en dernier**, après le chiffre de PV compris : elle passait
+  auparavant juste avant, pour garder le chiffre lisible, mais les digits
+  traversaient alors la lance et **un demi-dessus se lit comme un dessous**.
+  Contrepartie assumée : pendant une charge, la lance peut masquer une partie du
+  chiffre. Les dix autres gardent l'arme sous le corps, qui est leur relevé.
 - Fond hors-arène : la vidéo est sur papier crème, le site est en **encre
   sombre `#1c1a26`**. L'arène reste blanche → le pixel-art garde ses contours
   noirs mesurés. Le « chrome » posé sur le fond sombre (titre, lignes de stat)
