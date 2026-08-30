@@ -443,6 +443,24 @@ citée entre parenthèses.
 
 ## 🐲 DRAGOON — `lancer` (affiché « DRAGOON »)
 
+### Le Hors-la-loi passe au type glace
+
+| Ce qui change | Détail |
+| --- | --- |
+| Arme et munitions | même dessin, **teinte de glace** : chaque couleur des deux cartes est convertie à teinte fixe (~199°) en **conservant sa luminosité**, qui porte tout le modelé. Le revolver reste celui de la maquette, seule sa gamme bouge |
+| Bille et chrome | `#3f97c9`, un bleu **moyen** et non pâle : le chiffre de PV est crème (mesuré), et un bleu clair le noierait — c'est la leçon du cuivre clair du Lancier, qui avait forcé son chiffre en brun sombre |
+| Gel à la touche | `onHit.slow: 0.30` pendant 1,6 s. Le moteur savait déjà le faire : `Match.damage` lit `slow`/`slowDuration` et appelle `Fighter.applySlow`, comme pour l'Ombre et la Glace. `slowFactor` retient le **pire** ralentissement actif et le plafonne à 0,75, donc deux balles coup sur coup prolongent au lieu de s'empiler |
+| Rechargement | l'arme quitte sa cible et fait **un tour complet** sur les 1,4 s de recharge. L'angle est calculé depuis l'avancement et non incrémenté image par image : une accumulation dériverait et le tour ne retomberait pas sur l'angle de départ |
+| Tir | **déjà linéaire, déjà détruit au contact et au mur** — rien à écrire. `projectiles.js` intègre `vx`/`vy` sans pilotage, `bounces: 0` tue la balle au mur, et le contact d'un combattant la tue aussi |
+
+**Ce que le tour de rechargement coûte, et ce n'est pas le gel.** Le Hors-la-loi
+passe de 15 à **9 victoires sur 30**. Pendant 1,4 s l'arme n'est plus asservie à
+la cible, or le bout du canon porte la hitbox de mêlée (`hitbox.from: 0,62`) :
+il balaie au lieu de pointer, et perd ses touches de contact sur toute la
+recharge. Cinq affrontements ont basculé, aucun dans l'autre sens — le
+ralentissement ne compense pas. C'est le coût assumé d'un effet demandé ; les
+leviers pour le rattraper sont `onHit.slow` et `ability.reload`.
+
 > Chargeur — pointe en avant, frappe de plus en plus fort, et tombe du ciel.
 >
 > *Anciennement « Dragoon ». Renommé, redessiné d'après une maquette d'arme,

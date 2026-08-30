@@ -1342,13 +1342,20 @@ const OUTLAW = {
   id: 'outlaw',
   name: 'HORS-LA-LOI',
   nameRef: 'OUTLAW',
-  tagline: 'Pistolero — vise, tire, recule, et affûte ses dégâts balle après balle',
-  taglineRef: 'Gunslinger — aims, fires, kicks back, and sharpens every bullet',
+  tagline: 'Pistolero de glace — vise, tire, et gèle sa cible balle après balle',
+  taglineRef: 'Ice gunslinger — aims, fires, and freezes its mark with every bullet',
   icon: 'iconRevolver',
 
   look: {
     radius: 41, // mesuré : bille de rayon 32 sur la vidéo 576 → ×1,25 = 40
-    body: '#8a5934', // pipette : (138,89,52), médiane érodée titre + bille + jauge
+    /**
+     * **Bleu de glace.** La pipette donne le brun `#8a5934` de la vidéo ; le
+     * personnage est passé au type glace, et sa bille suit son arme, comme
+     * celle du Lancier suit la sienne. Bleu **moyen** et non pâle : le chiffre
+     * de PV est crème (mesuré), et un bleu clair le noierait — c'est la leçon
+     * du cuivre clair du Lancier, qui avait forcé son chiffre en brun sombre.
+     */
+    body: '#3f97c9',
     bodyHit: '#e4e4e6', // mesuré frames 223/224/225 : le disque touché blanchit
     outline: '#181008', // pipette : (24,13,7), contour des billes
     outlineWidth: 5,
@@ -1358,7 +1365,7 @@ const OUTLAW = {
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
-      color: 'rgba(232,201,138,0.45)',
+      color: 'rgba(143,208,238,0.5)',
       radius: 1.58,
       pulse: 2.2,
       /** Le barillet se recharge toutes les secondes : un halo branché sur le
@@ -1368,14 +1375,14 @@ const OUTLAW = {
     flair: {
       /** Le revolver ne tourne pas (il est asservi à l'adversaire) : le ruban
        *  de pointe d'arme trace donc sa ligne de visée, pas une spirale. */
-      ribbon: { color: '#c98a4b', width: 13, alpha: 0.42 },
-      motes: { rate: 8, size: 8, drift: 30, rise: -8, colors: ['#8a5934', '#c98a4b', '#e8c98a'] },
-      impact: ['#e8c98a', '#ffffff', '#8a5934'],
+      ribbon: { color: '#8fd0ee', width: 13, alpha: 0.45 },
+      motes: { rate: 8, size: 8, drift: 30, rise: -8, colors: ['#3f97c9', '#8fd0ee', '#dff2fb'] },
+      impact: ['#dff2fb', '#ffffff', '#3f97c9'],
       shape: 'streak',
       castFlash: 'rgba(253,247,237,0.65)', // mesuré : l'arène vire au crème sous HIGH NOON
     },
-    trail: { color: 'rgba(138,89,52,0.26)', every: 0.04, life: 0.28 },
-    accent: '#d2a15e',
+    trail: { color: 'rgba(63,151,201,0.26)', every: 0.04, life: 0.28 },
+    accent: '#8fd0ee',
   },
 
   /** Mesuré 483 px/s (médiane de 57 segments rectilignes) → ×1,25 = 604.
@@ -1384,8 +1391,8 @@ const OUTLAW = {
   movement: { speed: 455, turnRate: 1.9, seek: 0.44, mass: 1 },
 
   weapon: {
-    name: 'Revolver',
-    nameRef: 'Revolver',
+    name: 'Revolver de glace',
+    nameRef: 'Ice Revolver',
     /** Mesuré : pointe du canon à 97 px du centre sur la vidéo 576 → ×1,25.
      *  Elle **découle** du sprite : 37 (garde) + 34 cellules × 2,5. */
     reach: 122,
@@ -1398,7 +1405,7 @@ const OUTLAW = {
     /** Le sprite porte sa propre crosse : `width: 0` demande au moteur de ne
      *  rien dessiner, `length` ne sert plus qu'à décoller le sprite du centre
      *  (37 px, soit 4 px sous le bord de la bille). */
-    handle: { length: 37, width: 0, color: '#5d3a20', dark: '#3a2413', outline: '#100b16', gem: null },
+    handle: { length: 37, width: 0, color: '#26566f', dark: '#153546', outline: '#0b1620', gem: null },
     // 37 + 85 × 1 = 122, la portée relevée — inchangée par le nouveau dessin
     head: { sprite: 'outlawRevolver', scale: 1, anchorY: 0.5 },
     /** Seul le bout du canon frappe : à bout portant, c'est un tir. */
@@ -1451,7 +1458,7 @@ const OUTLAW = {
     nameRef: 'HIGH NOON',
     barLabel: 'HIGH NOON',
     barLabelFr: 'PLEIN SOLEIL',
-    barFill: '#8a5934',
+    barFill: '#3f97c9',
     barText: '#fdf7ed',
     /** Mesuré : charge linéaire de 1,13 px/image sur 238 px utiles → 7,0 s.
      *  C'est une **horloge pure** : la jauge gauche ne réagit pas aux coups. */
@@ -1471,8 +1478,8 @@ const OUTLAW = {
 
   projectiles: {
     shot: {
-      label: 'Balle',
-      labelRef: 'Bullet',
+      label: 'Balle de glace',
+      labelRef: 'Ice Bullet',
       sprite: 'outlawShot',
       scale: 1, // carte 30 × 9 : 30 × 9 px dessinés, comme les 28,8 × 9,6 d'avant
       /** Calé : à 30 fps la vidéo ne montre que le sillage, jamais la balle.
@@ -1487,8 +1494,19 @@ const OUTLAW = {
       knockback: 45,
       /** Mesuré frame 300 : un trait **pâle** de 2 px, (213,182,153) à
        *  (236,206,177) — pas un rond sombre. */
-      trail: { color: 'rgba(206,174,142,0.55)', every: 0.03, life: 0.2, dotted: true },
-      onHit: { stackGain: 0.1, stackMax: 8 }, // mesuré : +0,10 par balle AU BUT
+      trail: { color: 'rgba(206,235,250,0.6)', every: 0.03, life: 0.2, dotted: true },
+      /**
+       * **Gel.** `slow` et `slowDuration` sont lus par `Match.damage` et
+       * passés à `Fighter.applySlow` : le moteur savait déjà le faire, c'est le
+       * mécanisme de l'Ombre et de la Glace. Rien à écrire ailleurs.
+       *
+       * 0,30 pendant 1,6 s : assez pour se voir et pour compter, pas assez
+       * pour immobiliser — `slowFactor` retient le pire ralentissement actif,
+       * donc deux balles coup sur coup ne s'empilent pas, elles prolongent.
+       *
+       * `stackGain` reste **mesuré** : +0,10 par balle au but.
+       */
+      onHit: { stackGain: 0.1, stackMax: 8, slow: 0.3, slowDuration: 1.6 },
     },
   },
 
@@ -1504,7 +1522,7 @@ const OUTLAW = {
       (f) => `Dégâts : ${formatHalf(f.stacks)}`,
       (f) => `Balles : ${Math.round(f.stacks2)}/6`,
     ],
-    color: '#8a5934',
+    color: '#6fc3e8', // bleu clair : la ligne de stat est posée sur l'encre sombre
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };

@@ -25,21 +25,24 @@
  * @module game/abilities/outlaw
  */
 
-import { TAU, clamp } from '../../core/math.js';
+import { TAU, clamp, wrapAngle } from '../../core/math.js';
 
 export const outlawAbilities = {
   id: 'outlaw',
 
   init(f) {
     f.state.reload = 0; // > 0 : barillet vide, on recharge
+    f.state.reloadFrom = 0; // angle d'arme au debut du tour de rechargement
   },
 
   update(f, dt, now, game) {
     const el = f.el;
 
     // --- visée : le canon suit l'adversaire, sans lissage (mesuré)
+    // Pendant le rechargement l'arme fait un tour complet et n'est donc plus
+    // asservie : on n'écrit pas l'angle deux fois pour le même pas.
     const target = f.opponent;
-    if (target && target.alive) {
+    if (target && target.alive && f.state.reload <= 0) {
       f.weaponAngle = Math.atan2(target.y - f.y, target.x - f.x);
     }
 
@@ -63,6 +66,18 @@ export const outlawAbilities = {
     if (game.phase !== 'fight') return;
     if (f.state.reload > 0) {
       f.state.reload -= dt;
+      /**
+       * **Un tour complet pendant le rechargement.** L'arme quitte sa cible et
+       * pivote de 360° sur toute la durée : c'est ce qui rend le rechargement
+       * lisible, là où le barillet vide ne se voyait que dans le HUD.
+       *
+       * L'angle est **calculé depuis l'avancement**, pas incrémenté image par
+       * image : une accumulation dériverait au fil des pas et le tour ne
+       * retomberait pas exactement sur l'angle de départ. Ici il s'y referme
+       * par construction, et la visée reprend sans saut.
+       */
+      const done = 1 - Math.max(0, f.state.reload) / el.ability.reload;
+      f.weaponAngle = wrapAngle(f.state.reloadFrom + TAU * done);
       if (f.state.reload <= 0) {
         f.state.reload = 0;
         f.stacks2 = el.ability.magazine; // le HUD repasse de 0/6 à 6/6
@@ -113,6 +128,8 @@ export const outlawAbilities = {
     if (f.stacks2 <= 0) {
       f.stacks2 = 0;
       f.state.reload = a.reload;
+      // l'angle de depart du tour : il s'y referme exactement
+      f.state.reloadFrom = f.weaponAngle;
       return;
     }
     // pendant HIGH NOON la cadence double (mesuré)

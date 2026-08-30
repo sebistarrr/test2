@@ -58,7 +58,7 @@ commentaire.
 
 | Personnage | Archétype | Signature | Module |
 | --- | --- | --- | --- |
-| `outlaw` Hors-la-loi | Pistolero | **revolver de cristal** transcrit d'une maquette, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, dégâts +0,10 par balle au but | `abilities/outlaw.js` |
+| `outlaw` Hors-la-loi | Pistolero de **glace** | **revolver de givre** transcrit d'une maquette, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et un **tour complet de l'arme au rechargement** | `abilities/outlaw.js` |
 | `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin` | `abilities/bladesman.js` |
 | `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène | `abilities/lancer.js` |
 
@@ -385,6 +385,14 @@ sans que ça se voie.
      balaie 3-0 et elle tombe à 12, à 240 il n'en prend que deux et elle
      revient. Ces 20 px de fenêtre coûtent 0,13 PV/s de fidélité (2,53 contre
      2,40) — la bande passe avant, c'est un invariant.
+   - **Le Hors-la-loi est tombé à 9/30 en passant au type glace**, et la cause
+     n'est pas le gel : c'est le **tour de rechargement**. Pendant 1,4 s l'arme
+     n'est plus asservie à la cible, donc le bout du canon — qui porte la
+     hitbox de mêlée (`hitbox.from: 0,62`) — balaie au lieu de pointer. Il perd
+     ses touches de contact sur toute la recharge, et le ralentissement ne
+     compense pas : cinq affrontements ont basculé, aucun dans l'autre sens.
+     C'est le coût assumé d'un effet demandé ; les leviers si on veut le
+     rattraper sont `projectiles.shot.onHit.slow` et `ability.reload`.
    - **Le Lancier est à 30/30 — il gagne tous ses duels.** C'est le piège de
      l'arme braquée dans sa forme la plus pure : une charge qui traverse toute
      l'arène, contre dix adversaires qui pilotent vers lui et entrent donc dans
