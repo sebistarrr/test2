@@ -30,6 +30,14 @@ leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
 | **Bretteur** | Sabre dentelé | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
 | **Lancier** | Lance électrique (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 
+Les deux invités jouables portent en plus un **pouvoir spécial greffé**, sur
+horloge propre et sans jauge : le **Blizzard** de la Glace pour le Hors-la-loi
+(champ de givre qui le suit, ralentit et grignote) et le **Lien d'essence** de
+l'Ombre pour le Lancier (dôme figé + rayon qui draine). Ils s'ajoutent à leur
+ultime, ils ne le remplacent pas — voir [`docs/FICHES.md`](docs/FICHES.md).
+
+<sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png).</sup>
+
 ![Lumière contre Feu](docs/capture-duel.png)
 
 <sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png), [la brûlure du Feu](docs/capture-feu.png), [l'écran de sélection](docs/capture-selection.png), [le Hors-la-loi sous HIGH NOON](docs/capture-horsloi.png), [la ruée du Bretteur](docs/capture-bretteur.png), [le Bond du Lancier](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>

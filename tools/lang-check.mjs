@@ -46,6 +46,10 @@ const rapport = await page.evaluate(async () => {
   for (const id of ROSTER) {
     const el = ELEMENTS[id];
     const trous = requis(el).filter(([, v]) => !v).map(([k]) => k);
+    // `special` est facultatif — seuls les deux invités en portent un — mais
+    // dès qu'une fiche en a un, il doit venir avec sa moitié anglaise, sinon
+    // l'écran de sélection retombe en français au milieu d'une liste anglaise.
+    if (el.special && !el.special.nameRef) trous.push('special.nameRef');
     for (const [k, p] of Object.entries(el.projectiles ?? {})) {
       if (!p.labelRef) trous.push(`projectiles.${k}.labelRef`);
     }

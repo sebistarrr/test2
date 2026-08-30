@@ -461,6 +461,87 @@ recharge. Cinq affrontements ont basculé, aucun dans l'autre sens — le
 ralentissement ne compense pas. C'est le coût assumé d'un effet demandé ; les
 leviers pour le rattraper sont `onHit.slow` et `ability.reload`.
 
+### Les pouvoirs greffés — Blizzard et Lien d'essence
+
+Deux pouvoirs **repris tels quels** d'autres fiches et posés sur les deux
+invités : le **Blizzard** de la Glace sur le Hors-la-loi, le **Lien d'essence**
+de l'Ombre sur le Lancier. Ni relevés ni mesurés — ce sont des ajouts demandés.
+
+**Ils s'ajoutent, ils ne remplacent pas.** Les deux combattants avaient déjà un
+ultime (HIGH NOON, Bond) ; il fallait donc un **troisième créneau**. Chaque
+fiche porte un bloc `special`, et chaque module un compteur `f.state.spec` qui a
+exactement la forme des compteurs génériques du `Fighter` (`offstage`, `boost`,
+`ghosting`) : le module l'allume et le décompte, personne d'autre ne
+l'interprète. Rien ne passe par `f.ult`, donc ni la jauge, ni la charge, ni la
+durée des deux ultimes existants ne sont touchées.
+
+**Contrepartie assumée : pas de jauge.** Le HUD n'en porte qu'une, et elle
+appartient à l'ultime. Les pouvoirs spéciaux tournent donc sur horloge fixe et
+s'annoncent par leur mise en scène — onde de choc et disque de givre pour l'un,
+dôme et rayon pour l'autre — pas par un remplissage. L'écran de sélection les
+liste sur une ligne « Special ».
+
+| | Blizzard (Hors-la-loi) | Lien d'essence (Lancier) |
+| --- | --- | --- |
+| Origine | ultime de la Glace | ultime de l'Ombre |
+| Durée | 5,2 s (mesuré sur la Glace) | 5,65 s (mesuré sur l'Ombre) |
+| Horloge | première à 4 s, puis toutes les **11 s** — `calé` | première à 5 s, puis toutes les **11 s** — `calé` |
+| Effet | champ de givre de 130 px **qui suit** le porteur : ralentit de 35 % et retire 1 PV toutes les 0,7 s | dôme de 200 px **figé** au point d'incantation + rayon qui ralentit de 15 % et draine 1 PV toutes les 0,5 s |
+| Retouches | aucune | rayon 265 → **200** et drain 0,4 → **0,5 s** |
+
+Les deux retouches du Lien ont la même cause. À 265 px le dôme couvrait plus de
+la moitié d'une arène de 640 px de côté : les deux combattants y restaient en
+permanence et il cessait d'être un lieu. Et le Lancier gagnait déjà 29 duels sur
+30 — lui ajouter 2,5 PV/s gratuits n'avait pas besoin d'être mesuré pour qu'on
+sache où ça allait.
+
+#### Le piège : une décoration qui tirait dans le flux de simulation
+
+**Le premier balayage de recharge a rendu des chiffres impossibles.** Un
+Blizzard *plus rare* rendait le Hors-la-loi *plus fort* — 19 victoires à 18 s de
+recharge contre 17 à 13 s — et la recharge du Lien ne changeait strictement
+rien. Aucune mécanique n'a cette forme.
+
+La cause : la **neige** du Blizzard (90 flocons/s × 2 tirages) et la
+**poussière** du dôme (90 grains × 6 tirages, plus une ré-injection continue)
+tiraient dans `game.rng`, le flux de **simulation**. Chaque valeur de recharge
+décalait donc tout le tirage de tous les duels au lieu de changer la force du
+personnage : le balayage mesurait du bruit, pas un levier.
+
+Les deux sont passés à `game.viewRng`. Rien ne lit ces positions à part le
+dessin — c'est de la décoration, et la décoration passe par `viewRng` ou par un
+hachage pur, jamais par le flux du duel. Après correction, la recharge du
+Blizzard redevient monotone (9 s → 17 victoires, 11 s → 15, 18 s → 14), et
+celle du Lien se révèle n'être **pas un levier du tout** : à 15 s et à 24 s les
+matrices ne diffèrent que par des **durées**, jamais par un vainqueur — le
+Lancier gagne ses trente duels de toute façon.
+
+*La Glace et l'Ombre font encore l'inverse dans leurs propres modules. Le
+corriger là-bas déplacerait leur matrice ; c'est un autre chantier.*
+
+#### La traînée de glace du Hors-la-loi
+
+Le Hors-la-loi reprend **la suite d'effets du Lancier en mode glace** : ruban et
+fuseau `electric`, aura d'arme, arcs le long du canon. Le code est partagé —
+c'est tout l'intérêt de `render/flair.js` : seule la gamme change, et la matrice
+reste identique au fichier près.
+
+Deux réglages appris à l'image :
+
+- **l'amplitude des arcs doit dépasser la demi-épaisseur du sprite.** Le
+  revolver fait 46 px de haut dessiné, soit 23 de demi-épaisseur — d'où 32,
+  le même rapport que les 38 de la lance sur ses 55 px ;
+- **c'est la teinte qui descend, pas l'opacité.** Les alphas sont ceux du
+  Lancier (0,55 / 0,40) ; au premier réglage (`#bfeaff` sur `#2a7fae`) la
+  traînée se lisait comme une volute grise, parce que sur l'arène blanche un
+  bleu porte moins qu'un ambre à luminosité égale. Les deux tons sont
+  descendus d'un cran.
+
+**Pas de `pierce`.** L'onde de pénétration est conditionnée à `Fighter.boost`,
+que le Hors-la-loi allume pendant HIGH NOON : un coin de charge planté devant un
+pistolero qui recule à chaque tir se lirait comme un bug. C'est le seul effet de
+la suite qui ne se transpose pas.
+
 > Chargeur — pointe en avant, frappe de plus en plus fort, et tombe du ciel.
 >
 > *Anciennement « Dragoon ». Renommé, redessiné d'après une maquette d'arme,

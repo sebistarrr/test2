@@ -107,6 +107,12 @@ export const lancerAbilities = {
     f.state.jumpTimer = 0;
     /** Position du marqueur (suit l'adversaire) + son rayon courant. */
     f.state.mark = null;
+    // Lien d'essence : minuterie propre, sans rapport avec la jauge du Bond
+    f.state.spec = 0; // secondes restantes de lien actif
+    f.state.specCd = f.el.special.first;
+    f.state.tetherTick = 0;
+    f.state.dome = null;
+    f.state.domeSparks = [];
   },
 
   /**
@@ -117,6 +123,16 @@ export const lancerAbilities = {
    */
   update(f, dt, now, game) {
     const ult = f.el.ultimate;
+
+    /**
+     * **Le Lien d'essence tourne avant le Bond, et volontairement.** Placé
+     * après le `return` de l'ultime, son horloge se figerait pendant les deux
+     * secondes du vol — c'est exactement le piège des minuteurs gelés par
+     * `offstage`, déjà payé une fois sur le verrou de touche. Le drain et le
+     * dessin, eux, se gardent sur `onStage` : le lien ne peut pas partir d'un
+     * Lancier absent du plateau.
+     */
+    if (game.phase === 'fight') this.tickTether(f, dt, now, game);
 
     if (f.ult.active > 0) {
       f.ult.active -= dt;
@@ -521,7 +537,152 @@ export const lancerAbilities = {
     game.shake(imp.shake, 0.4);
   },
 
+  /* ------------------------------------------------------------------ */
+  /*  LIEN D'ESSENCE — pouvoir spécial, sur horloge propre                */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Horloge, incantation et entretien du lien.
+   *
+   * `f.state.spec` a la forme des compteurs génériques du `Fighter` : un
+   * décompte en secondes que ce module allume et décrémente seul. Il ne passe
+   * pas par `f.ult`, donc le Bond n'est touché en rien — ni sa jauge, ni sa
+   * charge, ni sa durée.
+   */
+  tickTether(f, dt, now, game) {
+    const sp = f.el.special;
+
+    if (f.state.spec > 0) {
+      f.state.spec -= dt;
+      this.drainTether(f, dt, now, game);
+      if (f.state.spec <= 0) {
+        f.state.spec = 0;
+        f.state.dome = null;
+        f.state.specCd = sp.cooldown;
+      }
+      return;
+    }
+
+    f.state.specCd -= dt;
+    // Ne pas incanter depuis le vide : pendant le Bond, le dôme se poserait au
+    // dernier point connu, c'est-à-dire nulle part.
+    if (f.state.specCd <= 0 && f.onStage) this.castTether(f, game);
+  },
+
+  /** Incantation : le dôme se fige à l'endroit où le Lancier se trouve. */
+  castTether(f, game) {
+    const sp = f.el.special;
+    f.state.spec = sp.duration;
+    f.state.tetherTick = 0;
+    f.state.dome = { x: f.x, y: f.y, r: sp.dome.radius };
+
+    /**
+     * **La poussière tire dans `viewRng`.** 90 grains × 6 tirages à
+     * l'incantation, plus une ré-injection à chaque grain qui sort du dôme :
+     * dans `game.rng` ça décalerait tout le flux du duel, et la recharge du
+     * lien cesserait d'être un levier lisible. Rien ne lit ces positions à
+     * part le dessin — c'est de la décoration, elle passe par la porte prévue.
+     */
+    f.state.domeSparks = [];
+    for (let i = 0; i < sp.dome.sparks; i++) {
+      const ang = game.viewRng.range(0, TAU);
+      const rad = Math.sqrt(game.viewRng.next()) * sp.dome.radius;
+      f.state.domeSparks.push({
+        x: f.state.dome.x + Math.cos(ang) * rad,
+        y: f.state.dome.y + Math.sin(ang) * rad,
+        vx: game.viewRng.spread(16),
+        vy: game.viewRng.spread(16),
+        size: game.viewRng.range(2, 4),
+        color: game.viewRng.pick(sp.dome.sparkColors),
+      });
+    }
+    game.fx.ring(f.x, f.y, 10, sp.dome.radius, 0.45, sp.dome.edge, 8, true);
+    game.shake(6, 0.35);
+  },
+
+  /** Dérive de la poussière, ralentissement et drain périodique. */
+  drainTether(f, dt, now, game) {
+    const sp = f.el.special;
+    const t = sp.tether;
+
+    const dome = f.state.dome;
+    if (dome) {
+      for (const s of f.state.domeSparks) {
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        const dx = s.x - dome.x;
+        const dy = s.y - dome.y;
+        if (dx * dx + dy * dy > dome.r * dome.r) {
+          // ré-injection au centre pour garder une densité constante
+          const ang = game.viewRng.range(0, TAU);
+          const rad = Math.sqrt(game.viewRng.next()) * dome.r * 0.8;
+          s.x = dome.x + Math.cos(ang) * rad;
+          s.y = dome.y + Math.sin(ang) * rad;
+        }
+      }
+    }
+
+    // `onStage` des deux côtés : ni un Lancier en plein Bond ni un adversaire
+    // absent ne doivent tenir un lien (invariant 7).
+    const target = f.opponent;
+    if (!f.onStage || !target || !target.onStage) return;
+
+    target.applySlow(t.slow, 0.2, now);
+
+    f.state.tetherTick -= dt;
+    if (f.state.tetherTick <= 0) {
+      f.state.tetherTick = t.tickInterval;
+      game.damage(target, t.tickDamage, f, { kind: 'tether', silent: true });
+      // particules qui remontent le lien vers le Lancier
+      // les particules du lien sont décoratives elles aussi
+      for (let i = 0; i < 3; i++) {
+        const k = game.viewRng.next();
+        game.fx.spawn({
+          kind: 'dot',
+          x: target.x + (f.x - target.x) * k,
+          y: target.y + (f.y - target.y) * k,
+          vx: (f.x - target.x) * 0.5,
+          vy: (f.y - target.y) * 0.5,
+          life: 0.35,
+          size: 3,
+          color: t.core,
+          drag: 1.5,
+        });
+      }
+    }
+  },
+
   /* ---------- rendu ---------- */
+
+  /**
+   * Dôme du Lien d'essence : dessiné **hors du cadre de l'arène**, il la
+   * déborde — c'est ce que fait celui de l'Ombre, et le rogner en ferait un
+   * disque au sol au lieu d'un volume.
+   */
+  drawUnbounded(ctx, f) {
+    const dome = f.state.dome;
+    if (!dome || f.state.spec <= 0) return;
+    const d = f.el.special.dome;
+    const fade = Math.min(1, f.state.spec / 0.5);
+
+    ctx.save();
+    ctx.globalAlpha = fade;
+    ctx.beginPath();
+    ctx.arc(dome.x, dome.y, dome.r, 0, TAU);
+    ctx.fillStyle = d.fill;
+    ctx.fill();
+    ctx.lineWidth = d.edgeWidth;
+    ctx.strokeStyle = d.edge;
+    ctx.stroke();
+
+    ctx.clip();
+    for (const s of f.state.domeSparks) {
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = fade * 0.85;
+      ctx.fillRect(s.x - s.size / 2, s.y - s.size / 2, s.size, s.size);
+    }
+    ctx.restore();
+  },
 
   /** Marqueur au sol : sous les combattants, jamais devant. */
   drawUnder(ctx, f) {
@@ -539,7 +700,29 @@ export const lancerAbilities = {
     ctx.restore();
   },
 
-  drawOver() {},
+  /** Rayon de drain : au-dessus des combattants, sinon la bille le masque. */
+  drawOver(ctx, f, game, now) {
+    if (f.state.spec <= 0 || !f.onStage) return;
+    const t = f.el.special.tether;
+    const target = f.opponent;
+    if (!target || !target.onStage) return;
+
+    // Battement en `sin` du temps, pas un tirage : une décoration ne consomme
+    // ni `game.rng` (elle décalerait la simulation) ni `viewRng` inutilement.
+    const pulse = 0.75 + 0.25 * Math.sin(now * 18);
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = t.color;
+    ctx.lineWidth = t.width * pulse;
+    ctx.beginPath();
+    ctx.moveTo(f.x, f.y);
+    ctx.lineTo(target.x, target.y);
+    ctx.stroke();
+    ctx.strokeStyle = t.core;
+    ctx.lineWidth = Math.max(1, t.width * 0.25);
+    ctx.stroke();
+    ctx.restore();
+  },
 
   /**
    * Jauge : elle se vide d'un coup à l'élan et reste à zéro tout le bond,

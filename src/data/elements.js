@@ -1373,9 +1373,78 @@ const OUTLAW = {
       showWhen: 'ultimate-ready',
     },
     flair: {
-      /** Le revolver ne tourne pas (il est asservi à l'adversaire) : le ruban
-       *  de pointe d'arme trace donc sa ligne de visée, pas une spirale. */
-      ribbon: { color: '#8fd0ee', width: 13, alpha: 0.45 },
+      /**
+       * Le revolver ne tourne pas (il est asservi à l'adversaire) : le ruban
+       * de pointe d'arme trace donc sa ligne de visée, pas une spirale.
+       *
+       * **Même suite d'effets que le Lancier, en glace au lieu de foudre** :
+       * ruban et fuseau `electric`, aura d'arme, arcs le long du canon. Le
+       * code est partagé, seule la gamme change — c'est tout l'intérêt d'avoir
+       * mis ces effets dans `render/flair.js`, ils ne peuvent rien changer au
+       * duel.
+       *
+       * **La gamme est en bleus saturés, pas en bleus pâles.** L'arène est
+       * blanche : `#dff2fb` y serait invisible, exactement comme les jaunes
+       * clairs du Lancier l'étaient. Le halo porte le bleu franc, le cœur un
+       * bleu clair *encore teinté* — jamais du blanc.
+       */
+      ribbon: {
+        color: '#2f8ec6',
+        width: 13,
+        /** Mêmes opacités que le Lancier (0,55 / 0,40) : c'est la **teinte**
+         *  qui a dû descendre, pas l'alpha. Sur l'arène blanche un bleu porte
+         *  moins qu'un ambre à luminosité égale — au premier réglage
+         *  (`#bfeaff` sur `#2a7fae`) la traînée se lisait comme une volute
+         *  grise. Les deux tons sont donc descendus d'un cran. */
+        alpha: 0.55,
+        electric: { core: '#8fd8ff', glow: '#1d78ad', coreWidth: 2.4, jitter: 16, rate: 16 },
+      },
+      /** Le fuseau derrière la bille : large et peu opaque là où le ruban est
+       *  fin et vif. Cassure plus ample et plus lente que celle du ruban,
+       *  sinon les deux tracés grésillent à l'identique et se lisent comme un
+       *  seul trait épais (leçon payée sur le Lancier). */
+      smear: {
+        color: '#1d78ad',
+        width: 30,
+        alpha: 0.4,
+        electric: { core: '#2f8ec6', glow: '#175d85', coreWidth: 5, jitter: 34, rate: 11 },
+      },
+      /** Aura le long du canon, tracée sur `bladeSegment()` — donc solidaire
+       *  de la portée. `boostAlpha` la gonfle pendant HIGH NOON. */
+      weaponAura: {
+        color: '#3f97c9',
+        core: '#d6f1ff',
+        width: 12,
+        alpha: 0.2,
+        boostAlpha: 0.38,
+        pulse: 5.5,
+      },
+      /**
+       * Arcs de givre le long du canon. Même règle que sur la lance :
+       * l'amplitude doit **dépasser la demi-épaisseur du sprite**, sinon les
+       * arcs restent dans la silhouette qui les recouvre. Le revolver fait
+       * 46 px de haut dessiné (`map.h 46 × scale 1`), soit 23 de demi-
+       * épaisseur — d'où 32, le même rapport que les 38 de la lance sur ses
+       * 55 px.
+       */
+      weaponArc: {
+        count: 6,
+        steps: 6,
+        span: 0.4,
+        jitter: 32,
+        rate: 18,
+        boost: 1.6,
+        core: '#e6f7ff',
+        glow: '#3f97c9',
+        coreWidth: 2,
+        glowWidth: 6.5,
+        alpha: 0.8,
+      },
+      /** Pas de `pierce` : l'onde de pénétration est conditionnée à
+       *  `Fighter.boost`, que le Hors-la-loi allume pendant HIGH NOON — un
+       *  coin de charge planté devant un pistolero qui recule à chaque tir se
+       *  lirait comme un bug. C'est le seul effet de la suite du Lancier qui
+       *  ne se transpose pas. */
       motes: { rate: 8, size: 8, drift: 30, rise: -8, colors: ['#3f97c9', '#8fd0ee', '#dff2fb'] },
       impact: ['#dff2fb', '#ffffff', '#3f97c9'],
       shape: 'streak',
@@ -1474,6 +1543,58 @@ const OUTLAW = {
      *  rasterisé une fois et ne bouge jamais (cahier des charges) : la lumière
      *  se pose donc **au sol, sous le pistolero** (voir abilities/outlaw.js). */
     glow: { radius: 250, color: 'rgba(253,247,237,0.34)', edge: 'rgba(232,201,138,0.5)' },
+  },
+
+  /**
+   * **BLIZZARD — pouvoir spécial, repris tel quel de la Glace.**
+   *
+   * Troisième créneau de pouvoir, à côté d'`ability` (le barillet) et
+   * d'`ultimate` (HIGH NOON), et **il ne les touche ni l'un ni l'autre** : il
+   * porte sa propre minuterie et son propre état de module. C'était la seule
+   * façon de l'*ajouter* sans remplacer HIGH NOON.
+   *
+   * Conséquence assumée : **il n'a pas de jauge**. Le HUD n'en porte qu'une,
+   * et elle appartient à l'ultime. Le Blizzard s'annonce donc par son onde de
+   * choc et par le disque de givre au sol, pas par un remplissage — ce qui,
+   * pour un pouvoir sur horloge fixe, suffit à le lire.
+   *
+   * Le champ, l'onde et la neige sont **copiés de la fiche de la Glace** sans
+   * retouche : c'est le même pouvoir, pas une variante. Seul le rythme est
+   * `calé` ici, parce que la Glace le charge à la jauge et que le Hors-la-loi
+   * le déclenche à l'horloge.
+   */
+  special: {
+    id: 'blizzard',
+    name: 'Blizzard',
+    nameRef: 'Blizzard',
+    /** Calé : les duels du roster réduit durent 10 à 20 s. À 14 s d'horloge
+     *  le Blizzard ne partait presque jamais et ne se voyait qu'en duel long ;
+     *  à 5 s il tourne en continu. 9 s laisse deux incantations dans un duel
+     *  moyen. */
+    cooldown: 11,
+    /** Calé plus court que le cycle : le premier Blizzard doit tomber assez
+     *  tôt pour peser sur un duel qui se décide en 12 s. */
+    first: 4,
+    duration: 5.2, // repris de la Glace, mesuré sur sa vidéo
+    shockwave: {
+      // onde cyan qui dépasse largement l'arène au déclenchement (observé)
+      from: 40,
+      to: 900,
+      time: 0.95,
+      color: 'rgba(103,214,236,0.85)',
+      width: 6,
+    },
+    field: {
+      radius: 130, // mesuré sur la Glace : disque cyan de ~130 px
+      fill: 'rgba(224,247,255,0.55)',
+      edge: 'rgba(103,214,236,0.75)',
+      edgeWidth: 3,
+      follows: true, // le champ suit le porteur
+      slow: 0.35,
+      tickInterval: 0.7,
+      tickDamage: 1,
+    },
+    snow: { count: 90, fall: 46, drift: 22, color: 'rgba(186,230,253,0.9)' },
   },
 
   projectiles: {
@@ -2195,6 +2316,64 @@ const LANCER = {
       flash: 'rgba(255,255,255,0.55)', // l'arène blanchit d'un coup à la chute
       shake: 14,
       sparks: 34,
+    },
+  },
+
+  /**
+   * **LIEN D'ESSENCE — pouvoir spécial, repris tel quel de l'Ombre.**
+   *
+   * Même montage que le Blizzard du Hors-la-loi : un troisième créneau, sa
+   * propre minuterie, aucun contact avec `ability` ni avec le Bond. Pas de
+   * jauge non plus, pour la même raison — le HUD n'en a qu'une.
+   *
+   * **Le dôme est figé à l'endroit de l'incantation** (`anchored`), et c'est
+   * ce qui compte pour ce combattant-ci : le Lancier traverse l'arène en
+   * charge, un dôme qui le suivrait balaierait tout le terrain. Ancré, il
+   * marque le point d'où le lien part, et le lien s'étire quand le Lancier
+   * charge — ce qui donne au drain une lecture que l'Ombre, immobile, n'a
+   * jamais eue.
+   *
+   * Deux différences avec la fiche de l'Ombre, et seulement deux :
+   *
+   *   - le **rayon du dôme** tombe de 265 à 200. À 265 il couvrait plus de la
+   *     moitié de l'arène (640 px de côté), donc les deux combattants
+   *     restaient dedans en permanence et le dôme cessait d'être un lieu ;
+   *   - le **drain** passe de 1 PV / 0,4 s à 1 PV / 0,5 s. Le Lancier gagnait
+   *     déjà 29 duels sur 30 ; lui ajouter 2,5 PV/s gratuits n'aurait pas
+   *     demandé de mesure pour savoir où ça allait.
+   *
+   * La teinte, elle, reste **celle de l'Ombre** : violet `#7c3aed`. C'est
+   * fortuit mais commode — le Lancier est déjà violet, le lien se lit comme
+   * le sien et non comme un emprunt.
+   */
+  special: {
+    id: 'essenceTether',
+    name: 'Lien d’essence',
+    nameRef: 'Essence Tether',
+    /** Calé, comme le Blizzard, sur la durée des duels du roster réduit. */
+    cooldown: 11,
+    first: 5,
+    duration: 5.65, // repris de l'Ombre, mesuré deux fois sur sa vidéo
+    dome: {
+      radius: 200,
+      /** Le dôme **déborde de l'arène** : dans la vidéo de l'Ombre il
+       *  recouvre le HUD. Il est donc dessiné par `drawUnbounded`. */
+      clipToArena: false,
+      fill: 'rgba(30,24,45,0.88)', // pipette sur la vidéo de l'Ombre
+      edge: 'rgba(76,29,149,0.95)',
+      edgeWidth: 4,
+      sparks: 90, // poussière violette qui dérive dans le dôme
+      sparkColors: ['#a855f7', '#c4b5fd', '#ffffff', '#6d28d9'],
+      anchored: true,
+    },
+    tether: {
+      color: '#7c3aed',
+      core: 'rgba(255,255,255,0.55)',
+      width: 5,
+      tickInterval: 0.5,
+      tickDamage: 1,
+      slow: 0.15, // ralentit la cible tant que le lien tient
+      motes: 26,
     },
   },
 

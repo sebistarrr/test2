@@ -26,16 +26,19 @@ const CHROME = process.env.CHROME ?? '/opt/pw-browsers/chromium-1194/chrome-linu
 /**
  * Blocs de fiche vérifiés, et le préfixe sous lequel le module les lit.
  *
- * **Seul `weapon.lunge` s'y prête, et c'est délibéré.** Le recoupement n'a de
- * sens que pour un bloc lu par **un seul** module : `ability` a été essayé et
- * produit du bruit — `id`, `name` et `nameRef` sont lus par l'interface,
- * `cooldownStep` par `match.js`, et `f.ability.timer` est de l'état
- * d'exécution qui n'a jamais eu de clé de fiche. Un garde-fou qui crie à tort
- * dix-neuf fois ne sera plus lu ; mieux vaut qu'il ne couvre qu'un bloc et
- * qu'on le croie.
+ * **Le recoupement n'a de sens que pour un bloc lu par un seul module.**
+ * `ability` a été essayé et produit du bruit — `id`, `name` et `nameRef` sont
+ * lus par l'interface, `cooldownStep` par `match.js`, et `f.ability.timer` est
+ * de l'état d'exécution qui n'a jamais eu de clé de fiche. Un garde-fou qui
+ * crie à tort dix-neuf fois ne sera plus lu.
+ *
+ * `weapon.lunge` (Lancier) et `special` (pouvoirs greffés des deux invités)
+ * remplissent tous deux la condition. `skip` porte le peu qui échappe au
+ * module : l'identité, lue par l'écran de sélection.
  */
 const BLOCKS = [
-  { path: ['weapon', 'lunge'], reads: ['L', 'lunge'] },
+  { path: ['weapon', 'lunge'], reads: ['L', 'lunge'], skip: [] },
+  { path: ['special'], reads: ['sp', 'special'], skip: ['id', 'name', 'nameRef'] },
 ];
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
@@ -58,7 +61,7 @@ for (const [id, el] of Object.entries(fiches)) {
     continue; // pas de module dédié : rien à recouper
   }
 
-  for (const { path, reads } of BLOCKS) {
+  for (const { path, reads, skip } of BLOCKS) {
     let block = el;
     for (const key of path) block = block?.[key];
     if (!block || typeof block !== 'object') continue;
@@ -78,7 +81,7 @@ for (const [id, el] of Object.entries(fiches)) {
     if (used.size === 0) continue; // le module n'utilise pas ce préfixe
 
     const label = `${id}.${path.join('.')}`;
-    const dead = Object.keys(block).filter((k) => !used.has(k));
+    const dead = Object.keys(block).filter((k) => !used.has(k) && !skip.includes(k));
     const missing = [...used].filter((k) => !(k in block));
 
     // `missing` est le cas qui plante : le module lit une clé absente, donc

@@ -44,6 +44,7 @@ export const UI = {
     sheetMelee: 'Melee',
     sheetAbility: 'Ability',
     sheetUltimate: 'Ultimate',
+    sheetSpecial: 'Special',
     sheetProjectile: 'Projectile',
     /** @param {number} v @param {number} turn */
     speedLine: (v, turn) => `${v} px/s — ${turn} rad/s turn`,
@@ -63,6 +64,10 @@ export const UI = {
     abilityPassive: (name) => `${name} — passive`,
     /** @param {string} name @param {number} d */
     ultimateLine: (name, d) => `${name} — ${d}s`,
+    /** Le pouvoir spécial n'a pas de jauge : sa recharge est la seule chose
+     *  qui le décrit à l'écran de sélection. */
+    specialLine: (name, d, cd) => `${name} — ${d}s, every ${cd}s`,
+    specialNone: 'none',
     projectileNone: 'none — everything goes through the weapon and the zones',
     /** @param {string} label @param {string} dmg @param {number} speed */
     projectileLine: (label, dmg, speed) => `${label} — ${dmg}, ${speed} px/s`,
@@ -104,6 +109,7 @@ export const UI = {
     sheetMelee: 'Corps à corps',
     sheetAbility: 'Pouvoir',
     sheetUltimate: 'Ultime',
+    sheetSpecial: 'Spécial',
     sheetProjectile: 'Projectile',
     speedLine: (v, turn) => `${v} px/s — virage ${turn} rad/s`,
     weaponLine: (name, reach, spin) => `${name} — portée ${reach} px, ${spin}`,
@@ -115,6 +121,8 @@ export const UI = {
     abilityLine: (name, cd) => `${name} — recharge ${cd}s`,
     abilityPassive: (name) => `${name} — passif`,
     ultimateLine: (name, d) => `${name} — ${d}s`,
+    specialLine: (name, d, cd) => `${name} — ${d}s, toutes les ${cd}s`,
+    specialNone: 'aucun',
     projectileNone: 'aucun — tout passe par l’arme et les zones',
     projectileLine: (label, dmg, speed) => `${label} — ${dmg}, ${speed} px/s`,
     winner: (name) => `${name} L’EMPORTE`,

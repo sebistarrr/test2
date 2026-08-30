@@ -26,6 +26,7 @@
  */
 
 import { TAU, clamp, wrapAngle } from '../../core/math.js';
+import { ARENA } from '../../data/tuning.js';
 
 export const outlawAbilities = {
   id: 'outlaw',
@@ -33,6 +34,11 @@ export const outlawAbilities = {
   init(f) {
     f.state.reload = 0; // > 0 : barillet vide, on recharge
     f.state.reloadFrom = 0; // angle d'arme au debut du tour de rechargement
+    // Blizzard : minuterie propre, sans rapport avec la jauge d'ultime
+    f.state.spec = 0; // secondes restantes de Blizzard actif
+    f.state.specCd = f.el.special.first;
+    f.state.fieldTick = 0;
+    f.state.snowTimer = 0;
   },
 
   update(f, dt, now, game) {
@@ -64,6 +70,9 @@ export const outlawAbilities = {
 
     /* ---------- barillet ------------------------------------------------- */
     if (game.phase !== 'fight') return;
+
+    this.tickBlizzard(f, dt, now, game);
+
     if (f.state.reload > 0) {
       f.state.reload -= dt;
       /**
@@ -98,6 +107,103 @@ export const outlawAbilities = {
     f.boostFactor = ult.speedBonus;
     game.fx.ring(f.x, f.y, 20, ult.glow.radius, 0.5, ult.glow.edge, 8, true);
     game.shake(6, 0.35);
+  },
+
+  /* ------------------------------------------------------------------ */
+  /*  BLIZZARD — pouvoir spécial, sur horloge propre                     */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Horloge, incantation et entretien du Blizzard, en un seul point.
+   *
+   * Le compteur `f.state.spec` a **exactement la forme des compteurs
+   * génériques du `Fighter`** (`offstage`, `boost`, `ghosting`) : un décompte
+   * en secondes que le module allume et décrémente, et que personne d'autre
+   * n'interprète. Il ne passe pas par `f.ult` — c'est ce qui garantit que
+   * HIGH NOON n'est touché en rien.
+   */
+  tickBlizzard(f, dt, now, game) {
+    const sp = f.el.special;
+
+    if (f.state.spec > 0) {
+      f.state.spec -= dt;
+      this.tickField(f, dt, now, game);
+      if (f.state.spec <= 0) {
+        f.state.spec = 0;
+        f.state.specCd = sp.cooldown;
+      }
+      return;
+    }
+
+    f.state.specCd -= dt;
+    if (f.state.specCd <= 0) this.castBlizzard(f, game);
+  },
+
+  /** Incantation : onde de choc qui déborde l'arène, puis le champ s'ouvre. */
+  castBlizzard(f, game) {
+    const sp = f.el.special;
+    f.state.spec = sp.duration;
+    f.state.fieldTick = 0;
+
+    const s = sp.shockwave;
+    game.fx.ring(f.x, f.y, s.from, s.to, s.time, s.color, s.width, false);
+    game.fx.burst(f.x, f.y, 26, {
+      color: ['#d8f2ff', '#ffffff', '#67b6e0'],
+      speed: 380,
+      size: 6,
+      life: 0.7,
+    });
+    game.shake(5, 0.3);
+  },
+
+  /** Neige plein cadre, puis gel et dégâts périodiques sur qui entre. */
+  tickField(f, dt, now, game) {
+    const sp = f.el.special;
+    const field = sp.field;
+    const snow = sp.snow;
+
+    /**
+     * **La neige tire dans `viewRng`, pas dans `game.rng`.** À 90 flocons par
+     * seconde et deux tirages chacun, c'est 180 appels par seconde injectés au
+     * milieu du flux de simulation : tout ce qui suit se décale, et **chaque
+     * valeur de `cooldown` rebat le tirage de tous les duels** au lieu de
+     * changer la force du personnage. Mesuré au banc : à 18 s de recharge le
+     * Hors-la-loi montait à 19 victoires, contre 17 à 13 s — un Blizzard *plus
+     * rare* qui rend *plus fort*, ce qui n'est la forme d'aucune mécanique.
+     *
+     * C'est l'invariant de déterminisme, et il coûte cher à retrouver : la
+     * décoration passe par `viewRng` ou par un hachage pur, jamais par le flux
+     * du duel. La Glace fait encore l'inverse dans sa propre fiche ; le
+     * corriger là-bas déplacerait sa matrice, c'est un autre chantier.
+     */
+    f.state.snowTimer -= dt;
+    if (f.state.snowTimer <= 0) {
+      f.state.snowTimer = 1 / snow.count;
+      const i = ARENA.inner;
+      game.fx.snow(
+        game.viewRng.range(i.left, i.right),
+        game.viewRng.range(i.top, i.top + (i.bottom - i.top) * 0.65),
+        snow.fall,
+        snow.drift,
+        snow.color,
+      );
+    }
+
+    // `onStage` et non `alive` : pendant un Bond, l'adversaire est vivant mais
+    // absent du plateau — le champ ne doit pas le geler à son dernier point
+    // connu (invariant 7).
+    const target = f.opponent;
+    if (!target || !target.onStage) return;
+    const inside = Math.hypot(target.x - f.x, target.y - f.y) <= field.radius + target.radius;
+    if (!inside) return;
+
+    target.applySlow(field.slow, 0.25, now);
+    f.state.fieldTick -= dt;
+    if (f.state.fieldTick <= 0) {
+      f.state.fieldTick = field.tickInterval;
+      game.damage(target, field.tickDamage, f, { kind: 'field', silent: true });
+      game.fx.burst(target.x, target.y, 4, { color: '#d8f2ff', speed: 90, size: 3, life: 0.3 });
+    }
   },
 
   /** Un coup : une balle vers l'adversaire, et le recul qui va avec. */
@@ -145,6 +251,7 @@ export const outlawAbilities = {
    * laisse en outre derrière les combattants.
    */
   drawUnder(ctx, f) {
+    this._drawField(ctx, f);
     if (f.ult.active <= 0) return;
     const glow = f.el.ultimate.glow;
     const fade = Math.min(1, f.ult.active / 0.6);
@@ -157,6 +264,29 @@ export const outlawAbilities = {
     ctx.beginPath();
     ctx.arc(f.x, f.y, glow.radius, 0, TAU);
     ctx.fill();
+    ctx.restore();
+  },
+
+  /**
+   * Champ de givre du Blizzard, au sol.
+   *
+   * Il est peint **avant** la lumière de HIGH NOON, dans le même `drawUnder` :
+   * les deux peuvent être actifs en même temps, et c'est la lumière chaude qui
+   * doit passer par-dessus le disque froid, jamais l'inverse.
+   */
+  _drawField(ctx, f) {
+    if (f.state.spec <= 0 || !f.onStage) return;
+    const field = f.el.special.field;
+    const fade = Math.min(1, f.state.spec / 0.6);
+    ctx.save();
+    ctx.globalAlpha = fade;
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, field.radius, 0, TAU);
+    ctx.fillStyle = field.fill;
+    ctx.fill();
+    ctx.lineWidth = field.edgeWidth;
+    ctx.strokeStyle = field.edge;
+    ctx.stroke();
     ctx.restore();
   },
 

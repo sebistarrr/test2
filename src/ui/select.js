@@ -91,6 +91,11 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
     const ability = Number.isFinite(el.ability.cooldown)
       ? t.abilityLine(label(el.ability, lang), el.ability.cooldown)
       : t.abilityPassive(label(el.ability, lang));
+    // troisième créneau de pouvoir, porté par les deux invités seulement :
+    // une fiche sans `special` ne doit pas trouer la liste
+    const special = el.special
+      ? t.specialLine(label(el.special, lang), el.special.duration, el.special.cooldown)
+      : t.specialNone;
     sheetEl.hidden = false;
     sheetEl.style.setProperty('--accent', el.look.body);
     sheetEl.innerHTML = `
@@ -102,6 +107,7 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
         <dt>${t.sheetMelee}</dt><dd>${t.meleeLine(dmg, w.melee.cooldown)}</dd>
         <dt>${t.sheetAbility}</dt><dd>${ability}</dd>
         <dt>${t.sheetUltimate}</dt><dd>${t.ultimateLine(label(el.ultimate, lang), el.ultimate.duration)}</dd>
+        <dt>${t.sheetSpecial}</dt><dd>${special}</dd>
         <dt>${t.sheetProjectile}</dt><dd>${projectileLine(el, t)}</dd>
       </dl>`;
   }

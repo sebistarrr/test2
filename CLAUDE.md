@@ -23,6 +23,7 @@ Va droit au fichier concerné, en `grep` ciblé plutôt qu'en lecture intégrale
 | Déroulé du duel, dégâts, rendu global | `src/game/match.js` |
 | Entité combattant (état + dessin) | `src/game/fighter.js` |
 | Pouvoirs d'un combattant | `src/game/abilities/<id>.js` |
+| Pouvoir **spécial** greffé (3<sup>e</sup> créneau) | bloc `special` de la fiche + `f.state.spec` dans le module |
 | Mise en scène (rubans, fuseaux, nappes, ondes, nombres) | `src/render/flair.js` + `look.flair` de chaque fiche |
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
 | Libellés d'interface (les deux langues) | `src/ui/lang.js` |
@@ -58,9 +59,9 @@ commentaire.
 
 | Personnage | Archétype | Signature | Module |
 | --- | --- | --- | --- |
-| `outlaw` Hors-la-loi | Pistolero de **glace** | **revolver de givre** transcrit d'une maquette, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et un **tour complet de l'arme au rechargement** | `abilities/outlaw.js` |
+| `outlaw` Hors-la-loi | Pistolero de **glace** | **revolver de givre** transcrit d'une maquette, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et un **tour complet de l'arme au rechargement**. Porte en plus le **Blizzard** de la Glace, greffé | `abilities/outlaw.js` |
 | `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin` | `abilities/bladesman.js` |
-| `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène | `abilities/lancer.js` |
+| `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence** de l'Ombre, greffé | `abilities/lancer.js` |
 
 ### Le Lancier en détail
 
@@ -401,8 +402,15 @@ sans que ça se voie.
      0,506 à 0,439 coup/s. Les charges ne frôlent pas, elles traversent. Les
      vrais leviers sont la fréquence de balayage (`lunge.scanSpin`) et le
      retour à une charge de longueur bornée au lieu d'une traversée.
-   - Relevé courant : Lancier 29, Lumière 18, Ombre 16, Hors-la-loi 16,
-     Glace 15, Plante 14, Feu 13, Vent 12, Foudre 11, Bretteur 11, Eau 10.
+   - Relevé courant : Lancier 30, Lumière 18, Ombre 17, Hors-la-loi 15,
+     Glace 13, Feu 13, Vent 13, Plante 12, Bretteur 12, Foudre 11, Eau 11.
+   - **Les deux pouvoirs greffés ont déplacé sept affrontements sur 66, et
+     n'ont fait sortir personne de la bande.** Six sont ceux du Blizzard, un
+     celui du Lien. Le Hors-la-loi passe de 16 à 15 — au centre de la bande —
+     une fois la recharge calée à 11 s. Le nombre de combattants hors bande
+     est le même qu'avant (six), et les deux plus gros écarts, Lancier 30 et
+     Lumière 18, sont les deux anomalies déjà documentées : elles sont
+     inchangées.
    - **Le recul symétrique a ramené le Lancier dans la bande tout seul**, de 19
      à 17, sans qu'aucun levier d'équilibrage ne soit touché : un attaquant
      repoussé aussi fort que sa cible met plus longtemps à revenir au contact.
@@ -723,6 +731,25 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
 - **Seuil d'arrondi.** `Math.round(stat/18)` → `stat/15` a doublé des dégâts
   (round(1,33)=1 vs round(1,6)=2) et fait passer le Vent de 5 à 19 victoires.
   Toujours repasser la matrice après un changement de formule.
+- **Une décoration qui tire dans `game.rng` transforme un levier en bruit.** Le
+  premier balayage de la recharge du Blizzard rendait des chiffres impossibles :
+  un Blizzard *plus rare* rendait le Hors-la-loi *plus fort* (19 victoires à
+  18 s contre 17 à 13 s), et la recharge du Lien ne changeait rien. Cause : la
+  **neige** (90 flocons/s × 2 tirages) et la **poussière du dôme** (90 grains
+  × 6, plus ré-injection continue) tiraient dans le flux de **simulation**, donc
+  chaque valeur de recharge rebattait le tirage de tous les duels au lieu de
+  changer la force du personnage. Passées à `viewRng`, la recharge du Blizzard
+  redevient monotone (9 s → 17, 11 s → 15, 18 s → 14) et celle du Lien se révèle
+  n'être **pas un levier** : à 15 s et 24 s les matrices ne diffèrent que par des
+  durées, jamais par un vainqueur. C'est l'invariant 2, et il ne se manifeste pas
+  par un plantage mais par un balayage qui ment.
+- **Un pouvoir s'ajoute sur un troisième créneau, il ne remplace pas l'ultime.**
+  Le Blizzard et le Lien d'essence sont greffés via un bloc `special` et un
+  compteur `f.state.spec` de la forme des compteurs génériques du `Fighter` —
+  rien ne passe par `f.ult`, donc HIGH NOON et le Bond sont intacts. La
+  contrepartie est qu'il **n'y a pas de jauge** : le HUD n'en porte qu'une, et
+  elle appartient à l'ultime. Un pouvoir sans jauge doit donc s'annoncer par sa
+  mise en scène.
 - **Rééquilibrer un combattant affaibli** : ne toucher que ses paramètres `calé`
   ou `déduit`, jamais les `mesuré`.
 - **`imageSmoothingQuality = 'high'`** sur le rééchantillonnage de l'export
