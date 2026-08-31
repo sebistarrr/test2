@@ -431,7 +431,7 @@ citée entre parenthèses.
 | Sprite | 40 × 16 cellules ×2,68. Garde **orange vif** (232,160,40), petite croix trapue. Lame **asymétrique** — bande gris-brun sur l'arête haute, corps ivoire en bas — et **fuselée** : une lame à côtés parallèles donne un bout carré que le relevé n'a pas. Les deux arêtes sont dentées, d'où l'aspect scie | mesuré |
 | **Rotation** | plancher **0,80** tour/s, plafond **3,00**, jamais franchis. Montée passive **+0,21/s**, sauts discrets de **+0,15** — un par coup porté. Au plafond : palier d'environ **1,8 s** (55 images), puis effondrement à **−3,0/s** jusqu'au plancher, et le cycle repart. Quatre cycles visibles : plafonds aux images 231, 441, 681, 951 | mesuré |
 | Ce qui déclenche l'effondrement | **non identifiable sur la vidéo** : il ne coïncide ni avec BLADE RUSH, ni avec HIGH NOON. Le modèle de surchauffe après palier reproduit exactement la courbe — c'est un `calé`, pas un `mesuré` | calé |
-| Corps à corps | `Damage = 2,00 × Spin Speed`, **exact et sans exception**, soit 2 à 6 PV. Verrou de 1 000 ms entre deux touches | mesuré |
+| Corps à corps | `Damage = 2,00 × Spin Speed`, **exact et sans exception**, soit 2 à 6 PV. Verrou de 1 000 ms entre deux touches. **Ajout demandé** : brûlure d'un tic à l'impact — voir « Brûlure et Rage infernale » | mesuré + demandé |
 | Ultime | *Ruée de lame* (`BLADE RUSH`) — horloge de 9 s **+ 6 % par coup porté** : les cycles relevés font 273, 214 et 333 images, donc pas une simple horloge. Ruée de 1,5 s minutée, vitesse ×1,55 (939 px/s contre 605), verrou de touche à **115 ms** | mesuré |
 | Deux régimes de la ruée | **loin**, cap asservi sur l'adversaire à pleine vitesse ; **à portée** (120 px), la lame **orbite**. Foncer droit dessus traverse la zone utile en une centaine de millisecondes — au banc d'origine la lame n'y restait que 57 % de la ruée pour un seul coup porté | mesuré + calé |
 | **Éventail vert** | `#B1C404` à 55 % — mesuré image 643 : le cœur rend (211,219,109) sur l'arène crème. Ouverture bornée **en angle** : 1,6 rad en régime normal, 3,0 rad pendant la ruée, où il vire au vert fluo. L'aire verte passe de ~3 500 px² à 18 488 px² au pic, un facteur 5,3 : l'éventail **s'ouvre**, il ne fait pas que changer de teinte | mesuré |
@@ -462,13 +462,55 @@ mesuré image 643 : c'est un effet vidéo, pas une couleur de thème, et rien
 dans la demande ne portait dessus. Le combattant affiche donc un corps et une
 aura en rouge-orangé avec un swing d'ultime resté vert — assumé, pas oublié.
 
-**Bilan de matrice.** Rejoindre le roster jouable fait passer `tools/matrix.mjs`
-de 3 à 6 affrontements (3 combattants, paires `i ≤ j`, 3 seeds — 18 duels) ;
-`tools/matrix-reference.txt` a été régénéré. Le Bretteur perd ses six duels
-contre le Hors-la-loi et le Lancier (0/6) — c'est le relevé de sa fiche
-d'origine (9/30 dans l'historique à onze combattants), inchangé par le reskin.
-Aucun paramètre `calé` n'a été retouché pour le remonter : ce n'était pas
-demandé, et le toucher signifierait s'écarter du relevé sans nouvelle mesure.
+**Bilan de matrice, au moment du reskin.** Rejoindre le roster jouable fait
+passer `tools/matrix.mjs` de 3 à 6 affrontements (3 combattants, paires
+`i ≤ j`, 3 seeds — 18 duels). Le Bretteur perdait alors ses six duels contre le
+Hors-la-loi et le Lancier (0/6) — le relevé de sa fiche d'origine (9/30 dans
+l'historique à onze combattants), inchangé par ce reskin purement visuel.
+Aucun paramètre `calé` n'avait été retouché pour le remonter : ce n'était pas
+demandé, et le toucher aurait signifié s'écarter du relevé sans nouvelle
+mesure. **Ce qui suit — brûlure au contact et Rage infernale — est un ajout
+ultérieur, distinct du reskin, qui touche cette fois au gameplay : voir
+« Brûlure et Rage infernale » ci-dessous.**
+
+### Brûlure et Rage infernale
+
+**Deux ajouts demandés, après le reskin — cette fois du gameplay, pas
+seulement du visuel.** Contrairement au reskin ci-dessus, dont le bilan de
+matrice était resté à l'identique, ces deux-là déplacent la matrice — c'est
+attendu et documenté, pas une dérive.
+
+| Ajout | Détail | Source |
+| --- | --- | --- |
+| Brûlure au contact | `weapon.melee.onHit.dot` — chaque coup de lame marque la cible d'un tic de brûlure, `Math.max(1, round(Spin Speed))`, sur 1 s | demandé, calé |
+| Rage infernale | pouvoir **greffé** en troisième créneau (`special.infernalRage`), même patron que le Blizzard et le Lien d'essence — voir la section suivante | demandé |
+| Aura et sillage | `look.aura` et `look.trail` passent du vert-jaune/or terne aux teintes exactes de l'aura du Feu (`#f97316`) | écart assumé |
+
+**La brûlure est le vrai levier, la Rage infernale presque pas.** Premier
+essai à 2 s de durée (deux tics par coup porté) : le Bretteur balayait les
+deux autres actifs, 5/6 contre 0/6 avant l'ajout — la brûlure s'additionnait à
+des dégâts au contact déjà mesurés (`Damage = 2 × Spin`) sans que sa cadence de
+touche n'ait bougé. Isoler la Rage infernale seule (brûlure quasi neutralisée,
+`duration: 0.01`) reproduisait quasi exactement la matrice d'avant l'ajout —
+la preuve que l'aura de la Rage infernale (`tickDamage: 1` toutes les 0,6 s)
+ne pesait presque rien à côté. Ramener la brûlure à **1 s (un seul tic)**
+donne 2/6 : le Bretteur gagne un vrai avantage sur son relevé d'origine, sans
+en devenir le plus fort du roster réduit.
+
+**La Rage infernale n'utilise ni `f.boost` ni `f.boostFactor`.** BLADE RUSH
+s'en sert déjà pour son propre sprint (vitesse ×1,55 pendant la ruée) ; lui
+faire partager le même compteur générique aurait fait qu'une ruée qui se
+termine coupe une Rage infernale encore active, ou l'inverse. Les deux
+horloges (`f.ult.active` et `f.state.spec`) tournent donc indépendamment, et
+peuvent être actives en même temps — l'aura brûlante se dessine alors
+**avant** l'éventail de BLADE RUSH dans `drawUnder`, comme la lumière de HIGH
+NOON passe par-dessus le champ de givre du Blizzard chez le Hors-la-loi.
+
+**Relevé de matrice, après ces deux ajouts :** le Bretteur perd toujours 0/3
+contre le Hors-la-loi (le duel par défaut reste donc à l'image de son relevé
+d'origine), mais gagne 2/3 contre le Lancier — soit **2/6**, contre 0/6 avant.
+`tools/matrix-reference.txt` a été régénérée ; seules les quatre lignes qui
+impliquent le Bretteur ont bougé.
 
 ---
 

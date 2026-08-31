@@ -60,7 +60,7 @@ commentaire.
 | Personnage | Archétype | Signature | Module |
 | --- | --- | --- | --- |
 | `outlaw` Hors-la-loi | Pistolero de **glace** | **revolver de givre** transcrit d'une maquette, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`Fighter.weaponTwirl`, antihoraire — l'arme ne quitte pas sa place, elle vrille). Porte en plus le **Blizzard** de la Glace, greffé | `abilities/outlaw.js` |
-| `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin` | `abilities/bladesman.js` |
+| `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale** du Feu, greffée | `abilities/bladesman.js` |
 | `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence** de l'Ombre, greffé | `abilities/lancer.js` |
 
 ### Le Lancier en détail
@@ -308,10 +308,40 @@ Ce que la désactivation touche, et ce qu'elle ne touche pas :
 **L'accès par URL reste disponible** (`?a=fire&b=ice`) pour la consultation
 archivistique, mais sans validation ni équilibre.
 
-Le duel par défaut est **Hors-la-loi contre Bretteur**. Le Bretteur perd ses
-duels contre les deux autres actifs (0/6 dans la matrice courante) — c'est
-son relevé d'origine (9/30 dans l'historique à onze combattants), que le
-reskin n'a pas touché : voir `docs/FICHES.md`.
+Le duel par défaut est **Hors-la-loi contre Bretteur**.
+
+**Le Bretteur porte désormais trois ajouts demandés, distincts du reskin
+visuel : une brûlure au contact, et la Rage infernale du Feu greffée en
+troisième créneau (`special`, même patron que le Blizzard et le Lien
+d'essence — invariant 7).** Contrairement au reskin « lame de braise », qui
+n'avait rien touché à l'équilibre, ce sont des ajouts de **gameplay**, donc la
+matrice a bougé — et c'est voulu :
+
+- **Brûlure au contact** (`weapon.melee.onHit.dot`) : chaque coup de lame
+  marque la cible d'un tic de brûlure dérivé de la pile de Spin Speed. `calé`
+  au banc, pas à l'estime — à 2 s de durée (deux tics par coup), le Bretteur
+  balayait les deux autres actifs (5/6, contre 0/6 avant l'ajout) : la
+  brûlure s'ajoutait à des dégâts au contact déjà mesurés sans que sa cadence
+  de touche n'ait bougé. Ramenée à **1 s (un seul tic)**, il gagne 2/6 — un
+  vrai gain sur son relevé d'origine sans en faire le plus fort du roster.
+- **Rage infernale** (`special.infernalRage`) : nova, ailes de flammes et
+  aura brûlante repris de `abilities/fire.js`, sur l'horloge des pouvoirs
+  greffés (cooldown 11 s, durée 5,2 s, comme le Blizzard et le Lien
+  d'essence — calée sur la durée des duels du roster réduit, pas sur le cycle
+  de ~26 s du Feu). N'utilise ni `f.boost` ni `f.boostFactor` : BLADE RUSH
+  s'en sert déjà pour son propre sprint, et les deux horloges (`f.ult` et
+  `f.state.spec`) tournent indépendamment. Au banc, ce levier a peu pesé —
+  c'est la brûlure au contact qui a fait presque tout l'écart.
+- **Aura et sillage passent aux flammes** (`look.aura`, `look.trail`) :
+  écart visuel assumé, comme le reste du reskin — voir `docs/FICHES.md`.
+
+**Relevé courant : le Bretteur perd toujours 0/3 contre le Hors-la-loi, mais
+gagne 2/3 contre le Lancier — soit 2/6, contre 0/6 avant ces trois ajouts.**
+Le duel par défaut (Hors-la-loi vs Bretteur) reste donc à l'image de son
+relevé d'origine (9/30 dans l'historique à onze combattants) ; c'est contre
+le Lancier que l'écart se voit. `tools/matrix-reference.txt` a été régénérée
+en conséquence — seules les quatre lignes qui impliquent le Bretteur ont
+bougé, jamais `outlaw vs outlaw`, `outlaw vs lancer` ni `lancer vs lancer`.
 
 ---
 

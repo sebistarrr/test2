@@ -30,6 +30,12 @@
  *    zéro étaient dispersées, une fin de partie en pleine ruée laissait
  *    l'éventail large accroché derrière la lame.
  *
+ *  • Rage infernale — pouvoir **greffé**, demandé, sur le même patron que le
+ *    Blizzard du Hors-la-loi et le Lien d'essence du Lancier : une horloge
+ *    propre (`f.state.spec`), sans rapport avec la jauge de BLADE RUSH, qui
+ *    reste intacte. Nova, ailes de flammes et aura brûlante sont repris de
+ *    `abilities/fire.js`, dont c'est l'ultime d'origine.
+ *
  * @module game/abilities/bladesman
  */
 
@@ -42,6 +48,14 @@ export const bladesmanAbilities = {
     f.state.plateau = 0; // temps passé au plafond
     f.state.overheat = false; // true = la lame s'effondre vers le plancher
     f.state.rush = false;
+    // Rage infernale : minuterie propre, sans rapport avec la jauge d'ultime
+    f.state.spec = 0; // secondes restantes de Rage infernale active
+    f.state.specCd = f.el.special.first;
+    /** Longueur de la fenêtre d'attente en cours — voir `outlaw.js`, même
+     *  champ pour la même raison : la **première** vaut `first`, pas
+     *  `cooldown`, sinon la jauge démarre déjà aux deux tiers. */
+    f.state.specSpan = f.el.special.first;
+    f.state.rageAuraTick = 0;
   },
 
   update(f, dt, now, game) {
@@ -61,6 +75,8 @@ export const bladesmanAbilities = {
       f.ult.ready = f.ult.charge >= 100;
       if (f.ult.ready) this.castRush(f, game);
     }
+
+    if (game.phase === 'fight') this.tickInfernalRage(f, dt, now, game);
   },
 
   /**
@@ -148,6 +164,108 @@ export const bladesmanAbilities = {
     if (f.ult.active > 0) f.meleeCd = Math.min(f.meleeCd, f.el.ultimate.hitLock);
   },
 
+  /* ------------------------------------------------------------------ */
+  /*  RAGE INFERNALE — pouvoir greffé, sur horloge propre                */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Horloge, incantation et entretien de la Rage infernale — même charpente
+   * que `tickBlizzard` dans `outlaw.js`. Ne touche ni `f.boost` ni
+   * `f.boostFactor` : BLADE RUSH les utilise déjà pour son propre sprint, et
+   * les deux pouvoirs peuvent être actifs en même temps (l'un sur `f.ult`,
+   * l'autre sur `f.state.spec`) sans se marcher dessus.
+   */
+  tickInfernalRage(f, dt, now, game) {
+    const sp = f.el.special;
+
+    if (f.state.spec > 0) {
+      f.state.spec -= dt;
+      this.tickRageAura(f, dt, now, game);
+      if (f.state.spec <= 0) {
+        f.state.spec = 0;
+        f.state.specCd = sp.cooldown;
+        f.state.specSpan = sp.cooldown;
+      }
+      return;
+    }
+
+    f.state.specCd -= dt;
+    if (f.state.specCd <= 0) this.castInfernalRage(f, game);
+  },
+
+  /** Incantation : nova de cubes orange, reprise de `fire.js` (`castRage`). */
+  castInfernalRage(f, game) {
+    const sp = f.el.special;
+    f.state.spec = sp.duration;
+    f.state.rageAuraTick = 0;
+
+    const n = sp.nova;
+    for (let i = 0; i < n.count; i++) {
+      const ang = game.rng.range(0, TAU);
+      const v = n.speed * game.rng.range(0.25, 1);
+      game.fx.spawn({
+        kind: 'spark',
+        x: f.x,
+        y: f.y,
+        vx: Math.cos(ang) * v,
+        vy: Math.sin(ang) * v,
+        life: n.life * game.rng.range(0.6, 1.25),
+        size: n.size * game.rng.range(0.45, 1.15),
+        color: game.rng.pick(n.colors),
+        drag: 2.1,
+      });
+    }
+    game.fx.ring(f.x, f.y, 20, sp.aura.radius, 0.5, 'rgba(220,80,20,0.85)', 8, true);
+    game.shake(5, 0.3);
+  },
+
+  /**
+   * Braises qui montent du corps + aura brûlante : reprise du `tickRage` de
+   * `fire.js`, sans la partie qui ne concerne que l'ultime du Feu (pas de
+   * bonus de vitesse ici, voir `tickInfernalRage`). `onStage` et non `alive` :
+   * pendant le Bond du Lancier, l'adversaire est vivant mais absent du
+   * plateau, l'aura ne doit pas le mordre à son dernier point connu
+   * (invariant 8).
+   */
+  tickRageAura(f, dt, now, game) {
+    const sp = f.el.special;
+
+    if (game.rng.chance(dt * 22)) {
+      game.fx.spawn({
+        kind: 'spark',
+        x: f.x + game.rng.spread(f.radius),
+        y: f.y + game.rng.spread(f.radius),
+        vx: game.rng.spread(40),
+        vy: -game.rng.range(40, 110),
+        life: game.rng.range(0.3, 0.7),
+        size: game.rng.range(4, 9),
+        color: game.rng.pick(sp.nova.colors),
+        drag: 1.4,
+      });
+    }
+
+    const target = f.opponent;
+    if (!target || !target.onStage) return;
+    const inside = Math.hypot(target.x - f.x, target.y - f.y) <= sp.aura.radius + target.radius;
+    if (!inside) return;
+
+    f.state.rageAuraTick -= dt;
+    if (f.state.rageAuraTick <= 0) {
+      f.state.rageAuraTick = sp.aura.tickInterval;
+      game.damage(target, sp.aura.tickDamage, f, { kind: 'aura', silent: true });
+      target.applyDot(
+        {
+          damage: Math.max(1, Math.round(f.stacks)),
+          interval: 1,
+          duration: 2,
+          source: f,
+          tint: { color: '#f97316', alpha: 0.72 },
+        },
+        now,
+      );
+    }
+  },
+
   /**
    * Éventail vert de BLADE RUSH.
    *
@@ -160,7 +278,9 @@ export const bladesmanAbilities = {
    * En régime normal, l'éventail est déjà rendu par le ruban de pointe d'arme
    * (`look.flair.ribbon`) : on ne dessine ici que le surcroît d'ouverture.
    */
-  drawUnder(ctx, f) {
+  drawUnder(ctx, f, game, now) {
+    this._drawRageAura(ctx, f, now);
+
     if (f.ult.active <= 0) return;
     const ult = f.el.ultimate;
     const w = f.el.weapon;
@@ -181,10 +301,69 @@ export const bladesmanAbilities = {
     ctx.restore();
   },
 
+  /**
+   * Cercle brûlant au sol pendant la Rage infernale — repris de `fire.js`
+   * (`drawUnder`), dessiné **avant** l'éventail de BLADE RUSH : les deux
+   * peuvent être actifs ensemble, et l'éventail vert doit rester lisible
+   * par-dessus la nappe orange, jamais l'inverse.
+   */
+  _drawRageAura(ctx, f, now) {
+    if (f.state.spec <= 0 || !f.onStage) return;
+    const sp = f.el.special;
+    const fade = Math.min(1, f.state.spec / 0.6);
+    const g = ctx.createRadialGradient(f.x, f.y, f.radius, f.x, f.y, sp.aura.radius);
+    g.addColorStop(0, `rgba(220,80,20,${0.3 * fade})`);
+    g.addColorStop(1, 'rgba(220,80,20,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, sp.aura.radius, 0, TAU);
+    ctx.fill();
+    this._drawRageWings(ctx, f, now);
+  },
+
+  /** Ailes de flammes : reprises telles quelles de `fire.js` (`drawWings`). */
+  _drawRageWings(ctx, f, now) {
+    const w = f.el.special.wings;
+    const flap = 0.22 * Math.sin(now * w.flap);
+    const r = f.radius;
+
+    ctx.save();
+    ctx.translate(f.x, f.y);
+    for (const side of [-1, 1]) {
+      ctx.save();
+      ctx.scale(1, side);
+      ctx.rotate(flap);
+      for (let i = 0; i < 4; i++) {
+        const t = i / 3;
+        const len = r * w.span * (1 - 0.18 * i);
+        ctx.beginPath();
+        ctx.moveTo(-r * 0.2, 0);
+        ctx.quadraticCurveTo(-r * 0.9, -len * 0.55 - t * 8, -r * 0.15 - len, -len * 0.28 - t * 6);
+        ctx.quadraticCurveTo(-r * 0.5, -len * 0.2, -r * 0.2, 0);
+        ctx.fillStyle = i % 2 ? w.core : w.color;
+        ctx.globalAlpha = 0.85 - i * 0.15;
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  },
+
   drawOver() {},
 
   barValue(f) {
     if (f.ult.active > 0) return f.ult.active / f.el.ultimate.duration;
     return f.ult.charge / 100;
+  },
+
+  /**
+   * Jauge de la Rage infernale : se **remplit** vers la prochaine incantation,
+   * puis se **vide** sur la durée d'activité — même convention que `barValue`
+   * et que `specialBar` dans `outlaw.js`.
+   */
+  specialBar(f) {
+    const sp = f.el.special;
+    if (f.state.spec > 0) return { value: f.state.spec / sp.duration, active: true };
+    return { value: 1 - clamp(f.state.specCd / f.state.specSpan, 0, 1), active: false };
   },
 };

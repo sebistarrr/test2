@@ -1794,10 +1794,12 @@ const BLADESMAN = {
     hpColor: '#2a0e05',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
-    /** **Écart assumé au relevé.** L'aura passive était vert-jaune
-     *  (172,226,22) ; elle passe au rouge-orangé pour suivre la lame de
-     *  braise — demandé. */
-    aura: { color: 'rgba(255,69,0,0.45)', radius: 1.6, pulse: 2.8, showWhen: 'ultimate-ready' },
+    /** **Écart assumé au relevé, poussé plus loin — demandé.** L'aura passive
+     *  était vert-jaune (172,226,22), puis rouge-orangé pour suivre la lame de
+     *  braise ; elle reprend maintenant la teinte exacte de l'aura du Feu
+     *  (`#f97316`) pour que le reskin « lame de braise » se lise comme des
+     *  flammes plutôt que comme un simple filtre de couleur. */
+    aura: { color: 'rgba(249,115,22,0.5)', radius: 1.7, pulse: 3, showWhen: 'ultimate-ready' },
     flair: {
       /** **C'est l'éventail vert.** Mesuré frame 643 : le cœur rend
        *  (211,219,109) sur l'arène crème, soit `#B1C404` posé à 55 %. Ici il
@@ -1809,7 +1811,10 @@ const BLADESMAN = {
       shape: 'streak',
       castFlash: 'rgba(172,226,22,0.7)', // mesuré : l'éventail vire au vert fluo sous BLADE RUSH
     },
-    trail: { color: 'rgba(220,196,98,0.3)', every: 0.035, life: 0.3 },
+    /** **Écart assumé, demandé.** Le sillage de vitesse était en or terne
+     *  (220,196,98) ; il reprend la même teinte flamme que l'aura, cohérente
+     *  avec `special.nova` plus bas. */
+    trail: { color: 'rgba(249,115,22,0.32)', every: 0.035, life: 0.32 },
     accent: '#b1c404',
   },
 
@@ -1858,8 +1863,32 @@ const BLADESMAN = {
       knockback: 250,
       selfRecoil: 85,
       /** Mesuré : sauts discrets de +0,15 sur la courbe de rotation, un par
-       *  coup d'épée porté, et jamais au-delà du plafond de 3,00. */
-      onHit: { stackGain: 0.15, stackMax: 3 },
+       *  coup d'épée porté, et jamais au-delà du plafond de 3,00.
+       *
+       *  **Brûlure à l'impact — demandé, pas mesuré.** Même mécanisme que le
+       *  Feu (`applyDot`, lu par `Match.resolveMelee`) : chaque coup de lame
+       *  marque la cible d'un tic de brûlure, dérivé de la pile courante de
+       *  Spin Speed (0,8 à 3,00) plutôt que d'une valeur fixe.
+       *
+       *  `duration` est `calé` au banc (`tools/matrix.mjs`), pas choisi à
+       *  l'estime : à 2 s (deux tics par coup) le Bretteur balayait les deux
+       *  autres actifs (5/6, contre 0/6 avant cet ajout) — la brûlure
+       *  s'ajoutait à des dégâts au contact déjà mesurés, sans que la cadence
+       *  de touche n'ait bougé. Ramenée à **1 s (un seul tic)**, il gagne 2/6 :
+       *  un vrai gain sur son relevé d'origine, sans en faire le plus fort du
+       *  roster réduit. Voir aussi `special.aura.tickDamage`, qui n'a quasiment
+       *  pas pesé dans ce banc — le levier est ici, pas là-bas. */
+      onHit: {
+        stackGain: 0.15,
+        stackMax: 3,
+        dot: {
+          damage: (self) => Math.max(1, Math.round(self.stacks)),
+          interval: 1,
+          duration: 1,
+          ring: '#e8621b',
+          tint: { color: '#e8621b', alpha: 0.65 },
+        },
+      },
     },
   },
 
@@ -1909,6 +1938,43 @@ const BLADESMAN = {
      *  jamais en nombre d'images : un compteur d'images donne trois tours
      *  complets de vert. Déjà fait, déjà corrigé. */
     fan: { normal: 1.6, rush: 3, color: 'rgba(172,226,22,0.72)' },
+  },
+
+  /**
+   * **Rage infernale — pouvoir greffé, demandé.** Troisième créneau, sur le
+   * même patron que le Blizzard du Hors-la-loi et le Lien d'essence du
+   * Lancier (invariant 7 du `CLAUDE.md`) : une horloge propre
+   * (`f.state.spec`), sans rapport avec la jauge de BLADE RUSH, qui reste
+   * intacte. Nova, ailes de flammes et aura brûlante sont repris de
+   * `abilities/fire.js`, dont c'est l'ultime d'origine — voir ce module pour
+   * le calcul du burst et des ailes, recopiés tels quels.
+   *
+   * Cadence et durée sont calées comme les deux pouvoirs greffés existants,
+   * sur la durée des duels du roster réduit (10 à 20 s) — pas sur le cycle de
+   * ~26 s du Feu, taillé pour un roster de onze où le Feu n'a que ça.
+   */
+  special: {
+    id: 'infernalRage',
+    name: 'Rage infernale',
+    nameRef: 'Infernal Rage',
+    barLabel: 'INFERNAL RAGE',
+    barLabelFr: 'RAGE INFERNALE',
+    barFill: '#dc2626',
+    barText: '#fff1f0',
+    cooldown: 11,
+    first: 5,
+    duration: 5.2, // repris du Blizzard/Lien d'essence, mesuré sur la Glace/l'Ombre
+    /** Nova de cubes orange à l'incantation — reprise du Feu, effectifs réduits
+     *  de moitié : la Rage infernale s'ajoute ici à BLADE RUSH plutôt que
+     *  d'être l'unique pouvoir du combattant. */
+    nova: { count: 45, speed: 420, size: 11, life: 0.9, colors: ['#f97316', '#ea580c', '#fbbf24', '#dc2626'] },
+    /** Ailes de flammes autour du corps pendant toute la durée — reprises du Feu. */
+    wings: { color: '#f97316', core: '#fbbf24', span: 2.1, flap: 6 },
+    /** Aura brûlante : tout adversaire trop près prend un tic de dégâts et un
+     *  rafraîchissement de la brûlure ci-dessus. Calé au banc (`matrix.mjs`) :
+     *  à 2 dégâts/0,6 s elle cumulait avec la brûlure au contact et balayait
+     *  les deux autres actifs (5/6). */
+    aura: { radius: 140, tickInterval: 0.6, tickDamage: 1 },
   },
 
   /** Le Bretteur n'a aucun projectile : tout passe par la lame. */
