@@ -807,12 +807,16 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   rien ne passe par `f.ult`, donc HIGH NOON et le Bond sont intacts. La
   contrepartie était qu'il **n'avait pas de jauge**, le HUD n'en portant qu'une.
   Il en porte maintenant **deux rangées** : `HUD.special` ajoute une seconde
-  barre, plus basse et plus discrète, sous les lignes de statistique. Sa
-  géométrie est **déduite** de celle des jauges d'ultime (mêmes `x`, même
-  largeur) et non relevée — la vidéo de référence n'a pas de troisième créneau
-  de pouvoir. Un module l'alimente par `specialBar(f)`, méthode **optionnelle** :
-  les neuf combattants sans troisième créneau ne l'implémentent pas, et
-  n'affichent donc pas un cadre vide.
+  barre **collée sous celle de l'ultime**, et **identique** à elle — mêmes
+  largeur, hauteur, abscisses, cadre et taille de libellé. Les deux passent par
+  le **même tracé** (`drawGauge` dans `render/hud.js`), donc elles ne peuvent
+  pas diverger : la première version en avait deux copies, dont l'une avait
+  déjà dérivé. Les lignes de statistique descendent d'autant (base 1036 → 1076,
+  soit exactement la hauteur de la jauge plus son écart) — écart assumé au
+  relevé, c'est le bloc entier qui glisse. Un module alimente la jauge par
+  `specialBar(f)`, méthode **optionnelle** : les neuf combattants sans
+  troisième créneau ne l'implémentent pas, et n'affichent donc pas un cadre
+  vide.
 - **Regrouper autrement les mêmes produits change le résultat.** En réécrivant
   `bladeSegment()` pour y loger la vrille, `c * reach * hitbox.from` est devenu
   `c * (reach * hitbox.from)`. La multiplication flottante **n'est pas

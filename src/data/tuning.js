@@ -76,38 +76,45 @@ export const HUD = deepFreeze({
     labelSize: 22,
     labelPad: 8,
   },
-  // Lignes de statistique sous les jauges : glyphes 1005→1038.
-  // Certains éléments en affichent deux (Lumière : dégâts + recul,
-  // Eau : dégâts + taille) — interligne mesuré sur ces vidéos : 31 px.
+  /**
+   * **Jauge de pouvoir spécial, collée sous celle de l'ultime.**
+   *
+   * Tout est recopié de `bar` sauf `y` : mêmes largeur, hauteur, abscisses,
+   * cadre et libellé. C'est voulu — les deux rangées doivent se lire comme une
+   * paire, pas comme une jauge et son petit frère. `render/hud.js` les trace
+   * d'ailleurs avec **la même fonction**, donc l'égalité ne peut pas se perdre
+   * dans une retouche.
+   *
+   * `y` vaut 1005 : le bas de la jauge d'ultime (965 + 35) plus les 5 px
+   * d'écart que la vidéo laisse entre cette jauge et la ligne de stat.
+   */
+  special: {
+    y: 1005,
+    height: 35,
+    width: 268,
+    leftX: 39,
+    rightX: 412,
+    border: 2,
+    labelSize: 22,
+    labelPad: 8,
+  },
+  /**
+   * Lignes de statistique. Glyphes mesurés 1005→1038, soit une base à 1036 ;
+   * interligne mesuré 31 px sur les vidéos à deux lignes (Lumière, Eau).
+   *
+   * **La base descend de 1036 à 1076**, écart assumé au relevé : la seconde
+   * jauge occupe désormais la bande où les glyphes tombaient. Le décalage vaut
+   * exactement la hauteur de cette jauge plus son écart (35 + 5), donc les
+   * proportions relevées entre jauge et texte sont conservées — c'est le bloc
+   * entier qui glisse, pas l'espacement qui change.
+   */
   stat: {
-    baseline: 1036,
+    baseline: 1076,
     lineHeight: 31,
     fontSize: 30,
     leftX: 39,
     rightX: 681,
     strokeWidth: 5,
-  },
-  /**
-   * **Jauges de pouvoir spécial**, sous les lignes de statistique.
-   *
-   * Rien de mesuré ici : la vidéo de référence n'a pas de troisième créneau de
-   * pouvoir, donc pas de troisième jauge. La géométrie est **déduite** de
-   * celle des jauges d'ultime — mêmes `x` et mêmes largeurs, pour que les deux
-   * rangées s'alignent — et posée sous la deuxième ligne de stat (base 1067,
-   * jambages jusqu'à ~1078), qui est le cas le plus chargé du roster.
-   *
-   * Elles sont plus basses et plus discrètes que celles de l'ultime : un
-   * pouvoir greffé ne doit pas se lire comme l'ultime du personnage.
-   */
-  special: {
-    y: 1104,
-    height: 26,
-    width: 268,
-    leftX: 39,
-    rightX: 412,
-    border: 2,
-    labelSize: 17,
-    labelPad: 7,
   },
 });
 

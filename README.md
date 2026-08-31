@@ -31,7 +31,7 @@ leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
 | **Lancier** | Lance électrique (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 
 Les deux invités jouables portent en plus un **pouvoir spécial greffé**, sur
-horloge propre, avec leur propre jauge sous les lignes de stat : le
+horloge propre, avec leur propre jauge juste sous celle de l'ultime : le
 **Blizzard** de la Glace pour le Hors-la-loi
 (champ de givre qui le suit, ralentit et grignote) et le **Lien d'essence** de
 l'Ombre pour le Lancier (dôme figé + rayon qui draine). Ils s'ajoutent à leur

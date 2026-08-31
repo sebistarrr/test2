@@ -511,19 +511,31 @@ exactement la forme des compteurs génériques du `Fighter` (`offstage`, `boost`
 l'interprète. Rien ne passe par `f.ult`, donc ni la jauge, ni la charge, ni la
 durée des deux ultimes existants ne sont touchées.
 
-**Ils ont leur propre jauge, sur une seconde rangée.** Le HUD n'en portait
-qu'une, celle de l'ultime ; `HUD.special` en ajoute une deuxième, plus basse et
-plus discrète, sous les lignes de statistique. Sa géométrie est **déduite** de
-celle des jauges d'ultime — mêmes `x`, mêmes largeurs, pour que les deux
-rangées s'alignent — et non relevée : la vidéo de référence n'a pas de
-troisième créneau de pouvoir.
+**Ils ont leur propre jauge, collée sous celle de l'ultime.**
 
-Elle dit **deux choses avec le même remplissage**, comme les jauges d'ultime :
+![Les deux rangées de jauges](capture-jauges.png)
+
+`HUD.special` recopie `HUD.bar` **à l'ordonnée près** : mêmes largeur, hauteur,
+abscisses, cadre, taille et retrait de libellé. Les deux rangées doivent se
+lire comme une paire, pas comme une jauge et son petit frère.
+
+Et l'égalité n'est pas une copie de constantes : `render/hud.js` trace les deux
+avec **la même fonction** (`drawGauge`), appelée avec deux géométries. Une
+retouche de style les touche donc toutes les deux par construction. La première
+version en avait deux tracés séparés, et l'un avait déjà dérivé — libellé plus
+petit, couleur du texte inversée selon l'état. Retoucher l'un sans l'autre est
+exactement le genre d'écart qui ne crie jamais.
+
+**Les lignes de statistique descendent de 1036 à 1076.** C'est un écart assumé
+au relevé : la seconde jauge occupe la bande où les glyphes tombaient. Le
+décalage vaut exactement la hauteur de la jauge plus son écart (35 + 5), donc
+les proportions relevées entre jauge et texte sont conservées — c'est le bloc
+entier qui glisse, pas l'espacement qui change.
+
+La jauge dit **deux choses avec le même remplissage**, comme celles d'ultime :
 elle se remplit vers la prochaine incantation, puis se vide sur la durée
-d'activité. Ce qui distingue les deux régimes n'est pas la jauge mais le
-**libellé** — inversé sur fond plein pendant l'activité, posé sur la plaque
-crème sinon. Sans ça, une jauge à moitié pleine ne dirait pas si le pouvoir
-arrive ou s'en va.
+d'activité. C'est la convention du jeu (`barValue` fait exactement ça), donc
+rien de nouveau à apprendre.
 
 Le module l'alimente par `specialBar(f)`, méthode **optionnelle** de la même
 forme que `drawUnbounded` : les neuf combattants sans troisième créneau ne

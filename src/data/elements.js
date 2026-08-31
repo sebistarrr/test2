@@ -1624,8 +1624,11 @@ const OUTLAW = {
      *  venir son déclenchement au lieu de le subir. */
     barLabel: 'BLIZZARD',
     barLabelFr: 'BLIZZARD',
-    barFill: '#67d6ec',
-    barText: '#083344',
+    /** Même traitement de libellé que les jauges d'ultime — texte clair cerné
+     *  de noir — donc le fond doit être assez tenu pour le porter : `#67d6ec`
+     *  était trop pâle une fois le libellé passé à la taille de l'ultime. */
+    barFill: '#3fbde0',
+    barText: '#f2fdff',
     /** Calé : les duels du roster réduit durent 10 à 20 s. À 14 s d'horloge
      *  le Blizzard ne partait presque jamais et ne se voyait qu'en duel long ;
      *  à 5 s il tourne en continu. 9 s laisse deux incantations dans un duel

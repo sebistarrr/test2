@@ -1,8 +1,12 @@
 /**
- * HUD bas d'écran : deux jauges d'ultime, la ligne de statistique de chaque
- * combattant, et — pour qui en porte un — une jauge de **pouvoir spécial**.
- * La géométrie des deux premiers est relevée au pixel sur la vidéo ; celle de
- * la troisième est déduite (voir `HUD.special` dans data/tuning.js).
+ * HUD bas d'écran : par combattant, une jauge d'ultime, une jauge de **pouvoir
+ * spécial** juste en dessous pour qui en porte un, puis ses lignes de
+ * statistique.
+ *
+ * Les deux jauges passent par **le même tracé** (`drawGauge`) : elles ne se
+ * ressemblent pas, elles sont identiques par construction. Seule leur
+ * géométrie diffère, et encore : `HUD.special` recopie `HUD.bar` à l'ordonnée
+ * près.
  *
  * @module render/hud
  */
@@ -12,7 +16,6 @@ import { clamp } from '../core/math.js';
 import { drawFittedText } from './text.js';
 
 const BAR_FONT = `700 ${HUD.bar.labelSize}px "Oswald", "Arial Narrow", sans-serif`;
-const SPEC_FONT = `700 ${HUD.special.labelSize}px "Oswald", "Arial Narrow", sans-serif`;
 const STAT_FONT = `700 ${HUD.stat.fontSize}px "Oswald", "Arial Narrow", sans-serif`;
 
 /**
@@ -26,85 +29,69 @@ const STAT_FONT = `700 ${HUD.stat.fontSize}px "Oswald", "Arial Narrow", sans-ser
  *   pas de deuxième jauge, ils ne laissent pas un cadre vide.
  */
 export function drawFighterHud(ctx, f, side, value, lang, spec) {
-  drawBar(ctx, f, side, value, lang);
+  drawGauge(ctx, HUD.bar, side, value, {
+    fill: f.el.ultimate.barFill,
+    text: f.el.ultimate.barText,
+    label: (lang === 'fr' && f.el.ultimate.barLabelFr) || f.el.ultimate.barLabel,
+    anchorRight: (f.el.ultimate.barAnchor ?? 'left') === 'right',
+  });
+  if (spec) {
+    drawGauge(ctx, HUD.special, side, spec.value, {
+      fill: f.el.special.barFill,
+      text: f.el.special.barText,
+      label: (lang === 'fr' && f.el.special.barLabelFr) || f.el.special.barLabel,
+    });
+  }
   drawStat(ctx, f, side, lang);
-  if (spec) drawSpecialBar(ctx, f, side, spec, lang);
 }
 
-function drawBar(ctx, f, side, value, lang) {
-  const b = HUD.bar;
-  const ult = f.el.ultimate;
-  const x = side === 'left' ? b.leftX : b.rightX;
+/**
+ * **Une jauge, et une seule fonction pour les deux rangées.**
+ *
+ * L'ultime et le pouvoir spécial partagent le même dessin : plaque crème,
+ * remplissage, cadre noir, libellé cerné de noir. Les deux rangées n'ont donc
+ * pas deux tracés qui se ressemblent — elles ont **le même**, appelé avec deux
+ * géométries. C'est ce qui garantit qu'elles ne peuvent plus diverger : une
+ * retouche de style les touche toutes les deux par construction.
+ *
+ * La première version en avait deux copies, dont l'une avait dérivé (libellé
+ * plus petit, couleur inversée selon l'état). Retoucher l'une sans l'autre est
+ * exactement le genre d'écart qui ne crie jamais.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {{y:number,height:number,width:number,leftX:number,rightX:number,border:number,labelPad:number}} g géométrie
+ * @param {'left'|'right'} side
+ * @param {number} value 0..1
+ * @param {{fill:string, text:string, label:string, anchorRight?:boolean}} style
+ */
+function drawGauge(ctx, g, side, value, style) {
+  const x = side === 'left' ? g.leftX : g.rightX;
   const v = clamp(value, 0, 1);
-  const anchorRight = (ult.barAnchor ?? 'left') === 'right';
 
   // plaque crème : l'intérieur de la jauge reste celui de la vidéo, même sur
   // le fond sombre — le libellé peut donc garder son contour noir
   ctx.fillStyle = STAGE.plate;
-  ctx.fillRect(x, b.y, b.width, b.height);
+  ctx.fillRect(x, g.y, g.width, g.height);
 
   // remplissage
-  const w = b.width * v;
-  ctx.fillStyle = ult.barFill;
-  ctx.fillRect(anchorRight ? x + b.width - w : x, b.y, w, b.height);
+  const w = g.width * v;
+  ctx.fillStyle = style.fill;
+  ctx.fillRect(style.anchorRight ? x + g.width - w : x, g.y, w, g.height);
 
   // cadre
   ctx.lineJoin = 'miter';
-  ctx.lineWidth = b.border;
+  ctx.lineWidth = g.border;
   ctx.strokeStyle = '#000000';
-  ctx.strokeRect(x + b.border / 2, b.y + b.border / 2, b.width - b.border, b.height - b.border);
+  ctx.strokeRect(x + g.border / 2, g.y + g.border / 2, g.width - g.border, g.height - g.border);
 
   // libellé
   ctx.font = BAR_FONT;
   ctx.textBaseline = 'middle';
   ctx.textAlign = side === 'left' ? 'left' : 'right';
-  const tx = side === 'left' ? x + b.labelPad : x + b.width - b.labelPad;
-  const label = (lang === 'fr' && ult.barLabelFr) || ult.barLabel;
-  drawFittedText(ctx, label, tx, b.y + b.height / 2 + 1, b.width - b.labelPad * 2, {
-    fill: ult.barText,
+  const tx = side === 'left' ? x + g.labelPad : x + g.width - g.labelPad;
+  drawFittedText(ctx, style.label, tx, g.y + g.height / 2 + 1, g.width - g.labelPad * 2, {
+    fill: style.text,
     stroke: '#000000',
-    strokeWidth: 3,
-  });
-}
-
-/**
- * Jauge du pouvoir spécial.
- *
- * Elle dit **deux choses avec le même remplissage**, et c'est voulu : hors
- * activité elle se remplit vers la prochaine incantation, pendant l'activité
- * elle se vide sur la durée restante. C'est la convention des jauges d'ultime
- * du jeu (`barValue` fait exactement ça), donc rien de nouveau à apprendre.
- *
- * Ce qui distingue les deux régimes n'est pas la jauge mais le **libellé** :
- * inversé sur fond plein pendant l'activité, posé sur la plaque crème sinon.
- * Sans ça, une jauge à moitié pleine ne dit pas si le pouvoir arrive ou s'en
- * va.
- */
-function drawSpecialBar(ctx, f, side, spec, lang) {
-  const b = HUD.special;
-  const sp = f.el.special;
-  const x = side === 'left' ? b.leftX : b.rightX;
-  const v = clamp(spec.value, 0, 1);
-
-  ctx.fillStyle = STAGE.plate;
-  ctx.fillRect(x, b.y, b.width, b.height);
-
-  ctx.fillStyle = sp.barFill;
-  ctx.fillRect(x, b.y, b.width * v, b.height);
-
-  ctx.lineJoin = 'miter';
-  ctx.lineWidth = b.border;
-  ctx.strokeStyle = '#000000';
-  ctx.strokeRect(x + b.border / 2, b.y + b.border / 2, b.width - b.border, b.height - b.border);
-
-  ctx.font = SPEC_FONT;
-  ctx.textBaseline = 'middle';
-  ctx.textAlign = side === 'left' ? 'left' : 'right';
-  const tx = side === 'left' ? x + b.labelPad : x + b.width - b.labelPad;
-  const label = (lang === 'fr' && sp.barLabelFr) || sp.barLabel;
-  drawFittedText(ctx, label, tx, b.y + b.height / 2 + 1, b.width - b.labelPad * 2, {
-    fill: spec.active ? sp.barText : '#1c1a26',
-    stroke: spec.active ? '#000000' : STAGE.plate,
     strokeWidth: 3,
   });
 }
