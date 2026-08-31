@@ -1801,21 +1801,22 @@ const BLADESMAN = {
      *  flammes plutôt que comme un simple filtre de couleur. */
     aura: { color: 'rgba(249,115,22,0.5)', radius: 1.7, pulse: 3, showWhen: 'ultimate-ready' },
     flair: {
-      /** **C'est l'éventail vert.** Mesuré frame 643 : le cœur rend
-       *  (211,219,109) sur l'arène crème, soit `#B1C404` posé à 55 %. Ici il
-       *  est rendu par le ruban de pointe d'arme, qui est exactement le
-       *  secteur balayé par la lame. */
-      ribbon: { color: '#b1c404', width: 26, alpha: 0.55 },
-      motes: { rate: 7, size: 8, drift: 34, rise: -10, colors: ['#b1c404', '#dcc462', '#8d7b62'] },
-      impact: ['#dcc462', '#ffffff', '#b1c404'],
+      /** **Écart assumé, demandé.** L'éventail balayé par la lame était vert
+       *  mesuré (frame 643 : (211,219,109) sur l'arène crème, `#B1C404` posé
+       *  à 55 %) ; il reprend désormais la palette flamme du Feu (`#f97316`,
+       *  `#fbbf24`, `#ffffff` — voir `abilities/fire.js`), cohérente avec
+       *  l'aura, le sillage et la Rage infernale greffée plus bas. */
+      ribbon: { color: '#f97316', width: 26, alpha: 0.55 },
+      motes: { rate: 7, size: 8, drift: 34, rise: -10, colors: ['#f97316', '#fbbf24', '#ffffff'] },
+      impact: ['#fbbf24', '#ffffff', '#f97316'],
       shape: 'streak',
-      castFlash: 'rgba(172,226,22,0.7)', // mesuré : l'éventail vire au vert fluo sous BLADE RUSH
+      castFlash: 'rgba(249,115,22,0.7)', // écart assumé : l'éventail virait au vert fluo sous BLADE RUSH, désormais à l'orange flamme
     },
     /** **Écart assumé, demandé.** Le sillage de vitesse était en or terne
      *  (220,196,98) ; il reprend la même teinte flamme que l'aura, cohérente
      *  avec `special.nova` plus bas. */
     trail: { color: 'rgba(249,115,22,0.32)', every: 0.035, life: 0.32 },
-    accent: '#b1c404',
+    accent: '#f97316',
   },
 
   /** Mesuré 605 px/s (médiane de 49 segments rectilignes) → ×1,25 = 756.
@@ -1932,12 +1933,13 @@ const BLADESMAN = {
      *  franchie en une centaine de millisecondes, et au banc d'origine la lame
      *  n'y était alignée que 15 images sur 149, pour un seul coup porté. */
     orbit: 120,
-    /** Mesuré frame 643 : l'aire verte passe de ~3 500 px² à 18 488 px² au
-     *  pic, un facteur 5,3 — l'éventail **s'ouvre**, il ne fait pas que
-     *  changer de teinte. Ouverture bornée en **angle** (1,6 rad → 3,0 rad),
-     *  jamais en nombre d'images : un compteur d'images donne trois tours
-     *  complets de vert. Déjà fait, déjà corrigé. */
-    fan: { normal: 1.6, rush: 3, color: 'rgba(172,226,22,0.72)' },
+    /** Mesuré frame 643 : l'aire de l'éventail passe de ~3 500 px² à
+     *  18 488 px² au pic, un facteur 5,3 — l'éventail **s'ouvre**, il ne fait
+     *  pas que changer de teinte. Ouverture bornée en **angle**
+     *  (1,6 rad → 3,0 rad), jamais en nombre d'images. **Couleur : écart
+     *  assumé, demandé** — vert mesuré à l'origine, passé à la palette flamme
+     *  comme le reste du reskin. */
+    fan: { normal: 1.6, rush: 3, color: 'rgba(249,115,22,0.72)' },
   },
 
   /**

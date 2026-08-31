@@ -119,7 +119,7 @@ export const bladesmanAbilities = {
     f.state.rush = true;
     f.boost = ult.duration;
     f.boostFactor = ult.speedBonus;
-    game.fx.ring(f.x, f.y, 20, 300, 0.45, 'rgba(172,226,22,0.9)', 8, true);
+    game.fx.ring(f.x, f.y, 20, 300, 0.45, 'rgba(249,115,22,0.9)', 8, true);
     game.shake(5, 0.3);
   },
 
