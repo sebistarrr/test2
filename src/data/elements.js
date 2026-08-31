@@ -1890,8 +1890,14 @@ const BLADESMAN = {
     spin: 5.03,
     spinDir: 1,
     /** La garde est déjà dans le sprite ; `length` la pose à r 45 × 1,3 = 58,5,
-     *  au-delà du bord de la bille dans la même proportion que sur la vidéo. */
-    handle: { length: 58.5, width: 0, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
+     *  au-delà du bord de la bille dans la même proportion que sur la vidéo.
+     *  **Écart visuel assumé, demandé** : à cette distance du bord de la bille
+     *  (radius 41), le sprite laissait un vide de 17,5 px avant l'agrandissement
+     *  ×1,3 — trop grand pour rester discret comme les 4 px d'avant. `width`
+     *  passe de 0 à 9 pour poser une manche qui comble ce vide, dans les tons
+     *  déjà présents dans la garde du sprite (palette `A: #89523c`). Pur
+     *  changement de dessin : `length` et donc la portée/hitbox ne bougent pas. */
+    handle: { length: 58.5, width: 9, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
     /** `scale` × 1,3 = 1,448958 : 96 × 1,448958 = 139,1, plus `handle.length`
      *  58,5 = 197,6, exactement la nouvelle portée ci-dessus — la pointe
      *  dessinée ne ment toujours pas sur la hitbox (invariant 5). */
