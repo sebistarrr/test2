@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command' | grep -q '^git commit' && (git checkout main && git pull origin main && git merge --no-edit - && git push origin main && git checkout -) || true",
+            "statusMessage": "Auto-merging to main..."
+          }
+        ]
+      }
+    ]
+  }
+}
