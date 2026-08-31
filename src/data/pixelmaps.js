@@ -828,14 +828,18 @@ export const OUTLAW_SHOT = deepFreeze({
  * ------------------------------------------------------------------ */
 export const BLADESMAN_FLAMEBLADE = deepFreeze({
   /**
-   * **Manche ajoutée, demandée.** Les 40 premières colonnes sont une manche
-   * tressée dessinée (pas transcrite : la maquette fournie pour la manche est
+   * **Manche ajoutée, demandée, reprise sur la maquette au second passage.**
+   * Le premier essai (tressage en bandes diagonales) ne reproduisait pas le
+   * motif de la maquette — un **chevron** (chaque « V » pointe vers le
+   * pommeau), pas une diagonale. Les 40 premières colonnes redessinent ce
+   * chevron : toujours dessiné, pas transcrit pixel à pixel (la maquette est
    * une image bruitée — JPEG sur damier de transparence — bien plus fine que
-   * la trame de ce sprite, un ré-échantillonnage direct y donnait du bruit
-   * poivre-et-sel). Mêmes proportions que la maquette : cylindre étroit qui
-   * s'évase vers la garde. Le pommeau dorée à gemme de la maquette n'est pas
-   * dessiné : il tomberait entièrement derrière la bille (rayon 41), les
-   * ~28 premières colonnes de la manche le sont déjà.
+   * la trame de ce sprite), mais la **forme** du motif suit maintenant la
+   * maquette, pas une approximation. Couleurs reprises par percentile sur la
+   * zone de manche de la maquette (la médiane JPEG bruite, voir la méthode de
+   * relevé documentée dans `CLAUDE.md`). Le pommeau doré à gemme de la
+   * maquette n'est pas dessiné : il tomberait entièrement derrière la bille
+   * (rayon 41), les ~28 premières colonnes de la manche le sont déjà.
    */
   w: 136,
   h: 35,
@@ -862,9 +866,9 @@ export const BLADESMAN_FLAMEBLADE = deepFreeze({
     K: '#12080a', // contour (partagé avec la manche)
     L: '#64000a',
     M: '#000000', // creux entre les langues de flamme
-    N: '#1a1720', // manche : cuir tressé, ton de base
-    O: '#100d14', // manche : creux du tressage
-    P: '#2b2632', // manche : fil clair du tressage
+    N: '#1c1a24', // manche : cuir du chevron, ton de base — médiane de la maquette
+    O: '#0a0910', // manche : creux du chevron — 5e percentile de la maquette
+    P: '#3a3948', // manche : arête claire du chevron — 80e percentile de la maquette
   },
   rows: [
     '..................................................KK....................................................................................',
@@ -873,29 +877,29 @@ export const BLADESMAN_FLAMEBLADE = deepFreeze({
     '............................................KKKLJIM.............6359AA6.................................................................',
     '...........................................KKLEJIA..............BABBA...................................................................',
     '.......................................KMMIEJJLJKI..............96EDCE..................................................................',
-    '.....................................KKPMHELJJJKII.........BE6HA137EA96.AB..............................................................',
-    '...................................KKNOP.IHJIIKIBM........BE5E98439BBA9AA.............................BAB...............................',
-    '.................................KKPNOPNKJIKKHAIH.........H9D5D73E59EABB66.......BBAB....BA..........B97EAAA............................',
-    '...............................KKOPNNOPNLJIKHIIIH.....HHI.ADFGC4H.BEEA.AE6....IA95334BBAA9AAA........A1379EA............................',
-    '.............................KKNNOPNOPNNJJKHIHBB....HDFL.KDFGGC5K..........II5458822BAJB66..........A33AAA..............................',
-    '...........................KKOPNOPNNOPNOIIIIIBBIKMKGFLFEHDFGGLDC8HHK....KH958C4CD22K.............IAE31213AB..............AAB............',
-    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKOPNNOPNOPNNOKMHIHIKIJJGGLLLFFGLLGGDDC8777545448DD9FF8421K........KK323733721HAB.............A559A...........',
-    'KKKKKKKKKKKKKKKKKKKKKKKKKKNNOPNOPNNOPNOPMIIAIKKHLLGGLGGLLLGGFFDCFFC87778CCCDDCCCDC4311HMMMMB2234885C731K........IIIIH..63234EEEA........',
-    'PNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPKIAIIKIIJJLLLLLGGLLGGLGDCFFDFFFFFCDD77558CC74322334478C844888416M....BA11111112AAABA9EBB........',
-    'PNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNIB6IIIHIIHJJIIJLJJLLGFFFFFCFDFDCCDFCCCCCC88D8877778C87424457C84211HH11433333222116HB....AAAA....',
-    'NNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNJJJABK37FIIIHHHHHHBBAGFCFFFFFDCFFC858CCC788CD87DD8875337534458854333333444444432211AHJJE9557EB..',
-    'NOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNJJEFJ1B27DF999FFGGJHBA66DFFCFFFFCCCCCC8CC8888DDD77887788C8743358775434555453221222222444424779A.',
-    'NOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOJJLH6K3DFLIIJJIIHHHBBEFFDDDFDCCCCCCCCFFD88888887888C8CCCCCC7545733345773336MMMM3112111125AEBAAEB',
-    'OPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOIAAIIHEJIHIJIIHLJHGFDDDDDFDCFFDCCCCDFC77888844888D85C5433378845555754412B..........IKKKKA.....AB',
-    'OPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPKIAIIKBIJJLLLJLGGDDDFCCDDFFFDDDD8CDFC8887CC85854775C422223223532232211A.........................',
-    'KKKKKKKKKKKKKKKKKKKKKKKKKKNOPNNOPNOPNNOPMII6IIIJLLLGLLLGFFGLLLLFCDFGFDFFFF8444444458CC834CC41BI...II11122211B...........................',
-    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKPNOPNNOPNOPNKKHIAIIBJLLLGGLGGLLDCCCGFDFDFFDC854433HHH6234CCC45832...JAA...IIIHII............................',
-    '..........................KKKNOPNOPNNOPNIKHIMBHIIMJGGLLDGGD88778DDDDCCF854AM.......KA33555C823363E3A....................................',
-    '...........................KKKKNNOPNOPNNKJKHIBBB...IFGLFFD9BBBBA5C75FDCC43B..A........MA22244116BBEEB...................................',
-    '.............................KKKKPNNOPNOJJIHHKIIK...KEGGDCBBBBBBBB9445CC81AHA9A..6A......A934AAAEAA.....................................',
-    '...............................KKKKOPNNOKLIMIBBHH....HEFGD9HEABBBBB4EBB775215ABBAAA.......A13559E6A.....................................',
-    '.................................KKKKNOP.IIIKIKIBM.....IEDC8756BBBBA6B.EE5239AE9EE.........A329A........................................',
-    '...................................KKKKPKBLJIHHKHK.......JA6ABJB36BBBLA..B92259AABB.........AAA.........................................',
+    '.....................................KKNMHELJJJKII.........BE6HA137EA96.AB..............................................................',
+    '...................................KKOON.IHJIIKIBM........BE5E98439BBA9AA.............................BAB...............................',
+    '.................................KKNNPOOKJIKKHAIH.........H9D5D73E59EABB66.......BBAB....BA..........B97EAAA............................',
+    '...............................KKPONNNPOLJIKHIIIH.....HHI.ADFGC4H.BEEA.AE6....IA95334BBAA9AAA........A1379EA............................',
+    '.............................KKNNNPONNNPJJKHIHBB....HDFL.KDFGGC5K..........II5458822BAJB66..........A33AAA..............................',
+    '...........................KKNPONNNPONNNIIIIIBBIKMKGFLFEHDFGGLDC8HHK....KH958C4CD22K.............IAE31213AB..............AAB............',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKNNNPONNNPONNKMHIHIKIJJGGLLLFFGLLGGDDC8777545448DD9FF8421K........KK323733721HAB.............A559A...........',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKNPONNNPONNNPONMIIAIKKHLLGGLGGLLLGGFFDCFFC87778CCCDDCCCDC4311HMMMMB2234885C731K........IIIIH..63234EEEA........',
+    'NNNPONNNPONNNPONNNPONNNPONNNPONNNPONNNPOKIAIIKIIJJLLLLLGGLLGGLGDCFFDFFFFFCDD77558CC74322334478C844888416M....BA11111112AAABA9EBB........',
+    'ONNNPONNNPONNNPONNNPONNNPONNNPONNNPONNNPIB6IIIHIIHJJIIJLJJLLGFFFFFCFDFDCCDFCCCCCC88D8877778C87424457C84211HH11433333222116HB....AAAA....',
+    'PONNNPONNNPONNNPONNNPONNNPONNNPONNNPONNNJJJABK37FIIIHHHHHHBBAGFCFFFFFDCFFC858CCC788CD87DD8875337534458854333333444444432211AHJJE9557EB..',
+    'POONNPOONNPOONNPOONNPOONNPOONNPOONNPOONNJJEFJ1B27DF999FFGGJHBA66DFFCFFFFCCCCCC8CC8888DDD77887788C8743358775434555453221222222444424779A.',
+    'PONNNPONNNPONNNPONNNPONNNPONNNPONNNPONNNJJLH6K3DFLIIJJIIHHHBBEFFDDDFDCCCCCCCCFFD88888887888C8CCCCCC7545733345773336MMMM3112111125AEBAAEB',
+    'ONNNPONNNPONNNPONNNPONNNPONNNPONNNPONNNPIAAIIHEJIHIJIIHLJHGFDDDDDFDCFFDCCCCDFC77888844888D85C5433378845555754412B..........IKKKKA.....AB',
+    'NNNPONNNPONNNPONNNPONNNPONNNPONNNPONNNPOKIAIIKBIJJLLLJLGGDDDFCCDDFFFDDDD8CDFC8887CC85854775C422223223532232211A.........................',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKNPONNNPONNNPONMII6IIIJLLLGLLLGFFGLLLLFCDFGFDFFFF8444444458CC834CC41BI...II11122211B...........................',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKNNNPONNNPONNKKHIAIIBJLLLGGLGGLLDCCCGFDFDFFDC854433HHH6234CCC45832...JAA...IIIHII............................',
+    '..........................KKKNPONNNPONNNIKHIMBHIIMJGGLLDGGD88778DDDDCCF854AM.......KA33555C823363E3A....................................',
+    '...........................KKKKNNNPONNNPKJKHIBBB...IFGLFFD9BBBBA5C75FDCC43B..A........MA22244116BBEEB...................................',
+    '.............................KKKKPONNNPOJJIHHKIIK...KEGGDCBBBBBBBB9445CC81AHA9A..6A......A934AAAEAA.....................................',
+    '...............................KKKKNNPOOKLIMIBBHH....HEFGD9HEABBBBB4EBB775215ABBAAA.......A13559E6A.....................................',
+    '.................................KKKKOON.IIIKIKIBM.....IEDC8756BBBBA6B.EE5239AE9EE.........A329A........................................',
+    '...................................KKKKNKBLJIHHKHK.......JA6ABJB36BBBLA..B92259AABB.........AAA.........................................',
     '.....................................KKKKKEEJHJIII..............A19EA.....AE9EA.............69AE........................................',
     '.......................................K...KILEJIB..............AEEA.........................AAB........................................',
     '............................................KJHLJHK.....................................................................................',

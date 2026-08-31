@@ -551,11 +551,21 @@ pommeau doré à gemme rouge. Le rectangle ne pouvait pas rendre le tressage.
 
 **La manche est maintenant dans le sprite, pas dans un rectangle.**
 `BLADESMAN_FLAMEBLADE` (`pixelmaps.js`) gagne 40 colonnes devant la garde —
-`w: 96 → 136` — avec un nouveau tressage (`N`/`O`/`P`, bandes diagonales
-alternées) qui s'évase vers la garde existante, à l'identique de sa forme au
-raccord. `handle.length` redescend à 0,54 (`width` repasse à 0, la manche
-n'a plus besoin du rectangle) pour que `136 × 1,448958 + 0,54 = 197,6` : la
-portée ne bouge pas d'un pixel.
+`w: 96 → 136` — avec un nouveau motif (`N`/`O`/`P`) qui s'évase vers la garde
+existante, à l'identique de sa forme au raccord. `handle.length` redescend à
+0,54 (`width` repasse à 0, la manche n'a plus besoin du rectangle) pour que
+`136 × 1,448958 + 0,54 = 197,6` : la portée ne bouge pas d'un pixel.
+
+**Premier motif faux, corrigé au second passage.** La première version
+posait des bandes diagonales alternées — un tressage plausible, mais **pas**
+celui de la maquette, qui montre un **chevron** : chaque bande forme un « V »
+dont la pointe regarde vers le pommeau, pas une diagonale continue. Demandé
+« exactement celui que je t'ai partagé » : la forme du motif a été reprise
+sur la maquette (`u = colonne + 0,9 × |ligne − centre|`, motif périodique sur
+`u`, ce qui replie la diagonale en chevron de part et d'autre du centre —
+au lieu de `(colonne × 2 + ligne) mod 7`, qui ne repliait rien et donnait des
+bandes parallèles). Les trois tons (`N`/`O`/`P`) ont aussi été repris par
+percentile sur la zone de manche de la maquette plutôt que choisis à l'oeil.
 
 **Le pommeau à gemme de la maquette n'est pas dessiné : il tomberait
 entièrement derrière la bille.** Rayon de bille 41 ; sur les 40 colonnes
