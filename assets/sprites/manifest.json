@@ -1,6 +1,7 @@
 {
   "$comment": "Overrides de sprites. Clé = nom du sprite dans src/data/pixelmaps.js, valeur = fichier PNG placé dans ce dossier. Laisser vide pour utiliser le pixel-art intégré.",
   "sprites": {
-    "bladesmanFlameBlade": "bladesman-flameblade.png"
+    "bladesmanFlameBlade": "bladesman-flameblade.png",
+    "windShuriken": "shinobi-shuriken.png"
   }
 }

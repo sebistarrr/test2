@@ -271,40 +271,42 @@ La charge sur cap en donne davantage : à 16 le Lancier monte à 19 victoires su
 
 ## Roster actif — Les autres sont obsolètes
 
-**Le Lancier, le Hors-la-loi et le Bretteur sont les combattants actifs.**
-Les huit éléments (`shadow`, `ice`, `fire`, `water`, `light`, `lightning`,
-`wind`, `plant`) restent **obsolètes et gelés** dans `elements.js` via
-`DISABLED`. Le Bretteur, lui, a été **réactivé et redessiné à la demande**
-(lame de braise, corps orange, aura rouge flamme — voir `docs/FICHES.md`,
-section « Reskin — lame de braise ») : c'est un guest character retravaillé,
-pas un relevé vidéo qu'on ranime sans y toucher — voir la nuance ci-dessous.
+**Le Lancier, le Hors-la-loi, le Bretteur et le Shinobi sont les combattants
+actifs.** Les sept éléments restants (`shadow`, `ice`, `fire`, `water`,
+`light`, `lightning`, `plant`) restent **obsolètes et gelés** dans
+`elements.js` via `DISABLED`. Le Bretteur et le Shinobi ont tous deux été
+**réactivés et redessinés à la demande** — le Bretteur en lame de braise
+(corps orange, aura rouge flamme — voir `docs/FICHES.md`, section « Reskin —
+lame de braise »), le Shinobi en shuriken de flamme (voir sa section) : ce
+sont des guest characters retravaillés, pas des relevés vidéo qu'on ranime
+sans y toucher — voir la nuance ci-dessous.
 
 ```js
 // src/data/elements.js
-export const DISABLED = deepFreeze(['shadow', 'ice', 'fire', 'water', 'light', 'lightning', 'wind', 'plant']);
+export const DISABLED = deepFreeze(['shadow', 'ice', 'fire', 'water', 'light', 'lightning', 'plant']);
 export const PLAYABLE = deepFreeze(ROSTER.filter((id) => !DISABLED.includes(id)));
 ```
 
-**Les huit éléments désactivés ne sont pas temporaires ni réactivables.**
+**Les sept éléments désactivés ne sont pas temporaires ni réactivables.**
 Ce sont des relevés de vidéos qui ne sont plus maintenus :
 - Pas de rééquilibrage si leurs valeurs changent
 - Pas de rééquilibrage en fonction d'eux
 - Pas de validation d'équilibre (matrice)
 - Pas de vérification de langue pour leurs fiches
 
-Le Bretteur n'entre pas dans cette règle : sa réactivation était une demande
-explicite, sa fiche passe `tools/fiche-check.mjs` et `tools/lang-check.mjs`
-comme n'importe quel combattant actif, et il compte désormais dans la matrice
-de rééquilibrage ci-dessous.
+Le Bretteur et le Shinobi n'entrent pas dans cette règle : leur réactivation
+était une demande explicite, leur fiche passe `tools/fiche-check.mjs` et
+`tools/lang-check.mjs` comme n'importe quel combattant actif, et ils comptent
+désormais dans la matrice de rééquilibrage ci-dessous.
 
 Ce que la désactivation touche, et ce qu'elle ne touche pas :
 
 | Touché | Raison |
 | --- | --- |
 | écran de sélection (`ui/select.js` lit `PLAYABLE`) | Seuls les actifs sont jouables |
-| duel par défaut (`main.js`) | Hors-la-loi vs Bretteur (`PLAYABLE[0]` et `PLAYABLE[1]`) — le Bretteur a rejoint `ROSTER` juste après le Hors-la-loi, en queue et avant le Lancier |
-| `tools/matrix.mjs` — mesure seulement `PLAYABLE` | Rééquilibrage : 6 affrontements × 3 seeds (18 duels) |
-| Sortie de la matrice | `tools/matrix-reference.txt` régénérée : 6 lignes au lieu de 66 |
+| duel par défaut (`main.js`) | Hors-la-loi vs Bretteur (`PLAYABLE[0]` et `PLAYABLE[1]`) — le Bretteur a rejoint `ROSTER` juste après le Hors-la-loi, en queue et avant le Lancier ; le Shinobi (`wind`) a été **déplacé** en queue de `ROSTER`, après le Lancier, pour la même raison (voir sa section) |
+| `tools/matrix.mjs` — mesure seulement `PLAYABLE` | Rééquilibrage : 10 affrontements × 3 seeds (30 duels) |
+| Sortie de la matrice | `tools/matrix-reference.txt` régénérée : 10 lignes |
 
 **L'accès par URL reste disponible** (`?a=fire&b=ice`) pour la consultation
 archivistique, mais sans validation ni équilibre.
@@ -420,6 +422,81 @@ transverse aux trois combattants greffés.**
 
 Les trois changements sont purement visuels ; matrice inchangée au caractère
 près.
+
+---
+
+## Le Vent devient le Shinobi
+
+**Réactivé et reskin, à la demande — même patron que le Bretteur.** Le Vent
+était `DISABLED` depuis la réduction du roster ; il en sort sous un nouveau
+nom, une nouvelle arme et de nouveaux projectiles, tout le reste (stats,
+Tornade, SALVE DE TEMPÊTE) restant le relevé vidéo d'origine, inchangé.
+
+| Ce qui change | Détail |
+| --- | --- |
+| Nom | `VENT`/`WIND` → `SHINOBI`/`SHINOBI` (`id: 'wind'` ne bouge pas — voir plus bas) |
+| Tagline | « lames d'air » → « shurikens », pour rester exact : le projectile n'est plus une lame d'air |
+| Arme | shuriken crème → **shuriken de flamme**, vrai PNG (`assets/sprites/shinobi-shuriken.png`), même technique que la lame du Bretteur |
+| Projectiles | `crescent` (le seul, lancé par `ultimate.volley`) → même sprite que l'arme, **même taille** |
+
+**`id: 'wind'` ne change pas.** Comme pour le Bretteur, l'identifiant interne
+n'est montré à personne (URL d'archive, clé du module de pouvoirs, clés de
+sprite) : le renommer aurait touché `ROSTER`, `DISABLED`, `abilities/index.js`
+et les deux `PIXEL_MAPS` sans rien apporter au joueur. Seuls `name`/`nameRef`
+changent.
+
+**L'arme est un vrai PNG, directement — pas de passage par un pixel-art
+texte intermédiaire.** Contrairement au Bretteur (trois passages : rectangle,
+pixel-art modélisé, puis PNG), la demande donnait d'emblée la maquette et la
+technique à utiliser. `head.sprite: 'windShuriken'` est servi par
+`assets/sprites/shinobi-shuriken.png` (déclaré dans
+`assets/sprites/manifest.json`) — la maquette recadrée sur sa plus grande
+composante connexe, comme la lame du Bretteur. Une différence : cette
+maquette isolait mal l'objet du damier de transparence sur les zones sombres
+(le disque du crâne de dragon central, les creux entre les branches) — un
+simple retrait de fond y laissait des poches de damier visibles. `cv2.inpaint`
+(méthode Telea) a rebouché ces poches à partir des pixels voisins, sans
+toucher au reste de l'image. Deuxième écart à l'invariant « aucun binaire
+dans le dépôt », après la lame du Bretteur.
+
+**Reach, hitbox et gabarit de l'arme sont inchangés.** Le PNG recadré (198 ×
+200) est quasi carré, comme l'était déjà `WIND_SHURIKEN` (17 × 17, le
+pixel-art de repli) : `handle.length` et `head.scale` retombent donc sur la
+même taille dessinée (~74 px) sans recalcul — contrairement à la lame du
+Bretteur, dont le nouveau ratio (bien plus allongé que son pixel-art de
+repli) avait forcé à recalculer `handle.length`. Pur reskin, aucune valeur de
+gameplay de l'arme ne bouge.
+
+**Les projectiles reprennent le même sprite que l'arme, à la même échelle.**
+« Remplacer les projectiles par des shurikens de la même taille » : la clé
+`crescent` (toujours celle que lit `ultimate.volley`) pointe désormais sur
+`windShuriken` au lieu de `windCrescent`, à `scale: 4.35` (contre 3,6) — soit
+la taille dessinée de l'arme en main, ~74 px, pas une taille propre au
+projectile. Le rayon de collision suit la même proportion (12 → 15) pour que
+la hitbox ne mente pas sur un projectile devenu plus grand — même discipline
+que la lame agrandie du Bretteur (invariant 5).
+
+**`ROSTER` : le Shinobi est déplacé en queue, pas seulement retiré de
+`DISABLED`.** `wind` occupait sa place d'origine parmi les huit éléments
+(juste avant `plant`), en tête de `PLAYABLE` une fois `DISABLED` filtré —
+donc **avant** `outlaw`/`bladesman`/`lancer`. Le laisser là aurait changé le
+camp A de leurs six duels existants (invariant : « un nouveau venu s'ajoute
+en queue »). `wind` est donc retiré de sa position d'origine dans `ROSTER` et
+réinséré tout à la fin, après `lancer` — le duel par défaut
+(`PLAYABLE[0]`/`PLAYABLE[1]`, Hors-la-loi vs Bretteur) et les six duels
+existants entre les trois invités restent identiques au caractère près ;
+seules les quatre nouvelles lignes impliquant `wind` s'ajoutent.
+
+**Relevé de matrice : le Shinobi perd tout, sauf son propre miroir.** 0/3
+contre le Hors-la-loi, le Bretteur et le Lancier, 3/3 en mirroir — soit 0/9
+contre les trois autres actifs. Aucune valeur de combat n'a été retouchée
+(seul le rayon de collision du projectile a **légèrement augmenté**, 12 → 15,
+ce qui aide plutôt que ça ne nuit) : c'est le relevé du Vent d'origine, dont
+l'historique à onze combattants le situait déjà sous la moyenne (12/30), mis
+maintenant face aux trois invités les plus agressifs du roster plutôt qu'à un
+panel de onze. Aucun rééquilibrage n'a été demandé ; ce résultat est
+documenté tel quel, pas corrigé. `tools/matrix-reference.txt` a été
+régénérée : 10 lignes au lieu de 6.
 
 ---
 

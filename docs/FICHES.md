@@ -324,6 +324,54 @@ Ces deux rythmes distincts — la cadence qui s'accélère à chaque rafale, le
 couple affiché qui n'avance qu'aux rafales réussies — sont reproduits par deux
 décréments séparés dans la fiche (`cooldownStepOnCast` et `cooldownStep`).
 
+### Reskin — Shinobi
+
+**Réactivé et redessiné à la demande, comme le Bretteur avant lui.** Le Vent
+était `DISABLED` ; il rejoint `PLAYABLE`, déplacé en queue de `ROSTER` (après
+le Lancier, pas à sa place d'origine) pour ne pas déplacer le camp A des six
+duels déjà établis entre Hors-la-loi, Bretteur et Lancier — voir `CLAUDE.md`
+pour le détail. `id: 'wind'` ne change pas ; seuls `name`/`nameRef`
+(`VENT`/`WIND` → `SHINOBI`/`SHINOBI`), l'arme et les projectiles bougent.
+
+| Ce qui change | Détail | Source |
+| --- | --- | --- |
+| Arme | *Shuriken de bourrasque* → *Shuriken de flamme* (`Flame Shuriken`) — huit branches de métal sombre cerclées de flamme continue, crâne de dragon au centre | maquette |
+| Projectile | `crescent` (lancé par `ultimate.volley`) : sprite `windCrescent` → `windShuriken`, `scale` 3,6 → 4,35, `radius` 12 → 15 | demandé, calé |
+
+**L'arme et le projectile partagent maintenant le même sprite, à la même
+échelle (4,35).** « Des shurikens de la même taille » : le projectile lancé a
+exactement la taille dessinée de l'arme en main (~74 px), pas une taille
+propre — contrairement à l'ancien croissant (58 px). Le rayon de collision du
+projectile suit la même proportion (12 → 15) pour que la hitbox ne mente pas
+sur un projectile devenu plus grand.
+
+**Un vrai PNG, directement — pas de pixel-art texte intermédiaire.**
+`head.sprite: 'windShuriken'` est servi par
+`assets/sprites/shinobi-shuriken.png` (déclaré dans
+`assets/sprites/manifest.json`), un recadrage de la maquette fournie sur sa
+plus grande composante connexe — même méthode que la lame du Bretteur.
+Différence notable : cette maquette isolait mal l'objet du damier de
+transparence sur ses zones sombres (le disque derrière le crâne, les creux
+entre les branches) — un simple retrait de fond y laissait des poches de
+damier visibles, contrairement à la lame dont le fond se retirait proprement.
+`cv2.inpaint` (méthode Telea) a rebouché ces poches à partir des pixels
+voisins, sans toucher au reste de l'image.
+
+**Reach et hitbox de l'arme inchangés : c'est un reskin, pas un
+rééquilibrage.** Le PNG recadré (198 × 200) est quasi carré, comme l'était
+déjà `WIND_SHURIKEN` (17 × 17, resté en repli texte) : `handle.length` et
+`head.scale` retombent donc sur la même taille dessinée (~74 px) sans le
+moindre recalcul.
+
+**Relevé de matrice : 0/9 contre les trois autres actifs, 3/3 en miroir.**
+Aucune valeur de combat n'a été retouchée à la hausse ou à la baisse (le
+rayon de collision du projectile a même légèrement augmenté) : c'est le
+relevé du Vent d'origine, sous la moyenne dans l'historique à onze
+combattants (12/30), confronté maintenant aux trois invités les plus
+agressifs du roster réduit plutôt qu'à dix adversaires variés. Aucun
+rééquilibrage n'a été demandé ; le résultat est documenté tel quel.
+`tools/matrix-reference.txt` a été régénérée : 10 lignes au lieu de 6.
+
 ---
 
 ## ⚡ FOUDRE — `lightning` (affiché « LIGHTNING »)

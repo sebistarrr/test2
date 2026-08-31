@@ -690,12 +690,19 @@ const LIGHT = {
  *  VENT  (WIND)
  *  Relevé : vidéo « WIND vs PLANT ».
  * ========================================================================== */
+/**
+ * **Réactivé et reskin, à la demande — le Vent devient le Shinobi.** Même
+ * patron que le Bretteur (voir plus haut) : `id: 'wind'` ne bouge pas (URL
+ * d'archive, module de pouvoirs, clés de sprite — rien de tout ça n'est
+ * montré au joueur), seuls le nom, l'arme et les projectiles changent.
+ * Stats, tornade et ultime restent le relevé vidéo d'origine, inchangé.
+ */
 const WIND = {
   id: 'wind',
-  name: 'VENT',
-  nameRef: 'WIND',
-  tagline: 'Harcèlement — le plus rapide, tornades et lames d’air',
-  taglineRef: 'Harasser — the fastest of all, tornadoes and blades of air',
+  name: 'SHINOBI',
+  nameRef: 'SHINOBI',
+  tagline: 'Harcèlement — le plus rapide, tornades et shurikens',
+  taglineRef: 'Harassment — the fastest of all, tornadoes and shurikens',
   icon: 'iconTornado',
 
   look: {
@@ -728,8 +735,27 @@ const WIND = {
   movement: { speed: 500, turnRate: 2.2, seek: 0.4, mass: 1 },
 
   weapon: {
-    name: 'Shuriken de bourrasque',
-    nameRef: 'Gale Shuriken',
+    /** **Écart assumé au relevé, demandé.** Le losange crème du Vent est
+     *  remplacé par un shuriken de flamme transcrit d'une maquette fournie —
+     *  huit branches de métal sombre cerclées de flamme continue, gemme de
+     *  crâne de dragon au centre. `head.sprite` est servi par un **vrai
+     *  PNG** (`assets/sprites/shinobi-shuriken.png`, déclaré dans
+     *  `assets/sprites/manifest.json`), même technique que la lame du
+     *  Bretteur — voir sa fiche pour l'écart à l'invariant « aucun binaire
+     *  dans le dépôt » que ça implique. `BLADESMAN_FLAMEBLADE` avait besoin
+     *  d'un recadrage soigné à l'extraction (la maquette isole mal l'objet
+     *  du damier de transparence sur les zones sombres) ; `cv2.inpaint`
+     *  (Telea) a rebouché les poches de damier prises dans l'ombre du métal
+     *  sans toucher au reste — un simple retrait de fond ne suffisait pas
+     *  ici, contrairement à la lame. */
+    name: 'Shuriken de flamme',
+    nameRef: 'Flame Shuriken',
+    /** Reach, hitbox et gabarit **inchangés** : c'est un reskin, pas un
+     *  rééquilibrage. Le PNG est quasi carré (198 × 200), comme l'était déjà
+     *  le pixel-art de repli (17 × 17) — `handle.length`/`scale` retombent
+     *  donc sur la même taille dessinée (~74 px) sans recalcul, contrairement
+     *  à la lame du Bretteur dont le nouveau ratio avait forcé à recalculer
+     *  `handle.length`. */
     reach: 105, // mesuré : ~120 px, arme collée au corps
     spin: SPIN * 1.1, // tourne plus vite que les autres (observé)
     spinDir: 1,
@@ -740,7 +766,8 @@ const WIND = {
      * sous le corps, pointe externe à 108 px, soit la portée relevée).
      */
     handle: { length: 34, width: 0, color: '#6f6a55', dark: '#3f3b30', outline: '#201c12', gem: null },
-    /** mesuré : 74 px de pointe à pointe → 17 cellules × 4,35 px. */
+    /** mesuré : 74 px de pointe à pointe → 17 cellules × 4,35 px (repli
+     *  texte) ; le PNG reprend cette même taille dessinée, voir plus haut. */
     head: { sprite: 'windShuriken', scale: 4.35, anchorY: 0.5 },
     hitbox: { from: 0.45, to: 1, radius: 18 },
     melee: {
@@ -816,15 +843,25 @@ const WIND = {
     speedBonus: 1.25,
   },
 
+  /** **Écart assumé au relevé, demandé.** « Remplacer les projectiles par
+   *  des shurikens de la même taille » : la clé `crescent` — toujours celle
+   *  que lit `ultimate.volley` — pointe maintenant sur le même sprite que
+   *  l'arme (`windShuriken`, servi par le même PNG) plutôt que sur
+   *  `windCrescent`, et à la **même échelle** que l'arme (`scale: 4.35`,
+   *  contre 3,6 pour l'ancien croissant) : le projectile lancé a exactement
+   *  la taille dessinée du shuriken en main (~74 px), pas une taille propre.
+   *  `radius` (rayon de collision) suit la même proportion (12 → 15) pour
+   *  que la hitbox ne mente pas sur un projectile devenu plus grand — même
+   *  discipline que la lame agrandie du Bretteur (invariant 5). */
   projectiles: {
     crescent: {
-      label: 'Lame d’air',
-      labelRef: 'Air Blade',
-      sprite: 'windCrescent',
-      scale: 3.6, // mesuré : croissants de 43 à 57 px selon l'orientation
+      label: 'Shuriken',
+      labelRef: 'Shuriken',
+      sprite: 'windShuriken',
+      scale: 4.35,
       speed: 430,
       damage: 4,
-      radius: 12,
+      radius: 15,
       life: 2.2,
       bounces: 1,
       knockback: 80,
@@ -2713,10 +2750,15 @@ export const ELEMENTS = deepFreeze({
  * Ordre d'affichage dans l'écran de sélection — et, via `tools/matrix.mjs`,
  * ordre d'appariement de la matrice d'équilibrage.
  *
- * Le Hors-la-loi et le Bretteur sont **ajoutés en queue** et pas insérés : les
- * paires sont formées en `[liste[i], liste[j]]`, donc mettre un nouveau venu
- * en tête changerait le camp A de dizaines d'affrontements existants, et avec
- * lui leur issue — sans qu'aucune valeur de fiche n'ait bougé.
+ * Le Hors-la-loi, le Bretteur et le Shinobi (`wind`) sont **ajoutés en
+ * queue** et pas insérés : les paires sont formées en `[liste[i], liste[j]]`,
+ * donc mettre un nouveau venu en tête changerait le camp A de dizaines
+ * d'affrontements existants, et avec lui leur issue — sans qu'aucune valeur
+ * de fiche n'ait bougé. `wind` occupait à l'origine sa place parmi les huit
+ * éléments (avant `plant`) ; réactivé en Shinobi, il est **déplacé** ici en
+ * queue de liste pour la même raison — sa position dans `ROSTER` d'origine
+ * l'aurait fait passer devant `outlaw`/`bladesman`/`lancer` dans `PLAYABLE`,
+ * ce qui aurait changé le camp A de leurs six duels existants.
  */
 export const ROSTER = deepFreeze([
   'shadow',
@@ -2725,11 +2767,11 @@ export const ROSTER = deepFreeze([
   'water',
   'light',
   'lightning',
-  'wind',
   'plant',
   'outlaw',
   'bladesman',
   'lancer',
+  'wind',
 ]);
 
 /**
@@ -2753,6 +2795,12 @@ export const ROSTER = deepFreeze([
  * Les identifiants désactivés restent accessibles par URL (`?a=fire&b=ice`) :
  * la désactivation porte sur l'écran de sélection, pas sur le moteur, ce qui
  * permet de continuer à tester un combattant sans le remettre en vitrine.
+ *
+ * **`wind` en est sorti, à la demande — même exception que `bladesman`.**
+ * Ce n'est pas une réactivation « telle quelle » d'un relevé vidéo qu'on
+ * ranime sans y toucher : c'est un reskin demandé (Shinobi, arme et
+ * projectiles en shuriken de flamme), qui compte donc désormais dans la
+ * matrice de rééquilibrage comme `bladesman` avant lui — voir sa fiche.
  */
 export const DISABLED = deepFreeze([
   'shadow',
@@ -2761,7 +2809,6 @@ export const DISABLED = deepFreeze([
   'water',
   'light',
   'lightning',
-  'wind',
   'plant',
 ]);
 
