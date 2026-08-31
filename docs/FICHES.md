@@ -439,6 +439,37 @@ citée entre parenthèses.
 | Projectile | aucun — tout passe par la lame | mesuré |
 | HUD | `Spin Speed: 0.80 → 3.00` et `Damage: 1.6 → 6.0`, ce dernier **jamais stocké** : il est dérivé de la pile à l'affichage, deux valeurs séparées finissant toujours par diverger | mesuré |
 
+### Reskin — lame de braise
+
+**Réactivé et redessiné, à la demande.** Le Bretteur était `DISABLED` ; il
+rejoint de nouveau `PLAYABLE`, entre le Hors-la-loi et le Lancier (queue de
+`ROSTER`, comme l'exige `tools/matrix.mjs`). Trois écarts assumés au relevé,
+tous purement visuels — aucune valeur `mesuré`, `calé` ou `déduit` de gameplay
+n'a bougé :
+
+| Ce qui change | Détail | Source |
+| --- | --- | --- |
+| Corps | `#dcc462` (or clair) → `#e8621b` (orange de braise) | écart assumé |
+| Aura passive | `rgba(172,226,22,0.42)` (vert-jaune) → `rgba(255,69,0,0.45)` (rouge flamme) | écart assumé |
+| Arme | *Sabre dentelé* → *Lame de braise* (`Ember Blade`), transcrite d'une maquette fournie — garde ailée sombre à gemme rouge, lame en flamme continue. `BLADESMAN_FLAMEBLADE` dans `pixelmaps.js`, méthode identique à `LANCER_SPEAR` (réduction par blocs, quantification, pas un dessin reconstruit) | maquette |
+
+**La portée ne bouge pas.** `head.scale` est recalculé pour le nouveau sprite
+(96 cellules contre 40) afin que `handle.length + sprite × scale` retombe
+exactement sur les 152 px relevés — un reskin ne change pas la hitbox.
+
+**L'éventail vert de BLADE RUSH n'a pas été touché.** Il reste `#B1C404`,
+mesuré image 643 : c'est un effet vidéo, pas une couleur de thème, et rien
+dans la demande ne portait dessus. Le combattant affiche donc un corps et une
+aura en rouge-orangé avec un swing d'ultime resté vert — assumé, pas oublié.
+
+**Bilan de matrice.** Rejoindre le roster jouable fait passer `tools/matrix.mjs`
+de 3 à 6 affrontements (3 combattants, paires `i ≤ j`, 3 seeds — 18 duels) ;
+`tools/matrix-reference.txt` a été régénéré. Le Bretteur perd ses six duels
+contre le Hors-la-loi et le Lancier (0/6) — c'est le relevé de sa fiche
+d'origine (9/30 dans l'historique à onze combattants), inchangé par le reskin.
+Aucun paramètre `calé` n'a été retouché pour le remonter : ce n'était pas
+demandé, et le toucher signifierait s'écarter du relevé sans nouvelle mesure.
+
 ---
 
 ## 🐲 DRAGOON — `lancer` (affiché « DRAGOON »)

@@ -27,10 +27,10 @@ leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
 | **Hors-la-loi** | Revolver de glace | **canon asservi à la cible** — il ne tourne pas ; barillet de 6, balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Plein soleil / HIGH NOON (cadence doublée, recul ×8) |
-| **Bretteur** | Sabre dentelé | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
+| **Bretteur** | Lame de braise (transcrite d'une maquette, remplace le sabre dentelé relevé — voir `docs/FICHES.md`) | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
 | **Lancier** | Lance électrique (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 
-Les deux invités jouables portent en plus un **pouvoir spécial greffé**, sur
+Deux des trois invités portent en plus un **pouvoir spécial greffé**, sur
 horloge propre, avec leur propre jauge juste sous celle de l'ultime : le
 **Blizzard** de la Glace pour le Hors-la-loi
 (champ de givre qui le suit, ralentit et grignote) et le **Lien d'essence** de
@@ -256,8 +256,8 @@ prise dessus se convertit en **×1,25** vers ce repère 720 × 1280.
 
 | Élément mesuré                | Valeur relevée (convertie)        |
 | ----------------------------- | --------------------------------- |
-| Boule Hors-la-loi / Bretteur  | `#8a5934` / `#dcc462`             |
-| Portée d'arme                 | revolver 122 px, sabre 152 px     |
+| Boule Hors-la-loi / Bretteur  | `#8a5934` / mesurée `#dcc462` ; le jeu met le Bretteur en **orange `#e8621b`**, avec sa lame de braise (écart assumé, voir `docs/FICHES.md`) |
+| Portée d'arme                 | revolver 122 px, sabre/lame 152 px |
 | Rotation du sabre             | 0,80 → 3,00 tour/s, palier de 1,8 s au plafond, effondrement à −3,0/s |
 | Recul du revolver             | 119 px/s, **988 px/s sous HIGH NOON** |
 | Progression « Damage » (Hors-la-loi) | 3,00 → 5,50 par pas de 0,10, **au coup au but** |

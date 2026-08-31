@@ -270,41 +270,48 @@ La charge sur cap en donne davantage : à 16 le Lancier monte à 19 victoires su
 
 ## Roster actif — Les autres sont obsolètes
 
-**Le Lancier et le Hors-la-loi sont les seuls combattants actifs.** Les neuf
-autres (`shadow`, `ice`, `fire`, `water`, `light`, `lightning`, `wind`, `plant`,
-`bladesman`) sont **obsolètes et gelés** dans `elements.js` via `DISABLED`.
+**Le Lancier, le Hors-la-loi et le Bretteur sont les combattants actifs.**
+Les huit éléments (`shadow`, `ice`, `fire`, `water`, `light`, `lightning`,
+`wind`, `plant`) restent **obsolètes et gelés** dans `elements.js` via
+`DISABLED`. Le Bretteur, lui, a été **réactivé et redessiné à la demande**
+(lame de braise, corps orange, aura rouge flamme — voir `docs/FICHES.md`,
+section « Reskin — lame de braise ») : c'est un guest character retravaillé,
+pas un relevé vidéo qu'on ranime sans y toucher — voir la nuance ci-dessous.
 
 ```js
 // src/data/elements.js
-export const DISABLED = deepFreeze(['shadow', 'ice', 'fire', 'water', 'light', 'lightning', 'wind', 'plant', 'bladesman']);
+export const DISABLED = deepFreeze(['shadow', 'ice', 'fire', 'water', 'light', 'lightning', 'wind', 'plant']);
 export const PLAYABLE = deepFreeze(ROSTER.filter((id) => !DISABLED.includes(id)));
 ```
 
-**Les personnages désactivés ne sont pas temporaires ni réactivables.**
+**Les huit éléments désactivés ne sont pas temporaires ni réactivables.**
 Ce sont des relevés de vidéos qui ne sont plus maintenus :
 - Pas de rééquilibrage si leurs valeurs changent
 - Pas de rééquilibrage en fonction d'eux
 - Pas de validation d'équilibre (matrice)
 - Pas de vérification de langue pour leurs fiches
 
+Le Bretteur n'entre pas dans cette règle : sa réactivation était une demande
+explicite, sa fiche passe `tools/fiche-check.mjs` et `tools/lang-check.mjs`
+comme n'importe quel combattant actif, et il compte désormais dans la matrice
+de rééquilibrage ci-dessous.
+
 Ce que la désactivation touche, et ce qu'elle ne touche pas :
 
 | Touché | Raison |
 | --- | --- |
 | écran de sélection (`ui/select.js` lit `PLAYABLE`) | Seuls les actifs sont jouables |
-| duel par défaut (`main.js`) | Hors-la-loi vs Lancier (`PLAYABLE[0]` et `PLAYABLE[1]`) |
-| `tools/matrix.mjs` — mesure seulement `PLAYABLE` | Rééquilibrage: 3 affrontements × 3 seeds (9 duels) |
-| Sortie de la matrice | `tools/matrix-reference.txt` régénérée : 3 lignes au lieu de 66 |
+| duel par défaut (`main.js`) | Hors-la-loi vs Bretteur (`PLAYABLE[0]` et `PLAYABLE[1]`) — le Bretteur a rejoint `ROSTER` juste après le Hors-la-loi, en queue et avant le Lancier |
+| `tools/matrix.mjs` — mesure seulement `PLAYABLE` | Rééquilibrage : 6 affrontements × 3 seeds (18 duels) |
+| Sortie de la matrice | `tools/matrix-reference.txt` régénérée : 6 lignes au lieu de 66 |
 
 **L'accès par URL reste disponible** (`?a=fire&b=ice`) pour la consultation
 archivistique, mais sans validation ni équilibre.
 
-Le duel par défaut est **Hors-la-loi contre Lancier**. Les deux billes sont
-distinctes — brun contre violet.
-
-**Le Lancier y gagne 3-0, en 10 à 15 secondes.** C'est une charge qui traverse
-l'arène contre un adversaire qui pilote vers lui — un duel asymétrique, mais
-c'est le seul cas jouable avec seulement deux combattants.
+Le duel par défaut est **Hors-la-loi contre Bretteur**. Le Bretteur perd ses
+duels contre les deux autres actifs (0/6 dans la matrice courante) — c'est
+son relevé d'origine (9/30 dans l'historique à onze combattants), que le
+reskin n'a pas touché : voir `docs/FICHES.md`.
 
 ---
 

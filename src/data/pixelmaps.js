@@ -802,39 +802,93 @@ export const OUTLAW_SHOT = deepFreeze({
 });
 
 /* ------------------------------------------------------------------
- * BRETTEUR — sabre dentelé
- * Relevé : garde **orange vif** (232,160,40), petite croix trapue. La lame
- * n'est pas symétrique — bande gris-brun sur l'arête **haute**, corps ivoire
- * en **bas** — et elle est **fuselée** : une lame à côtés parallèles donne un
- * bout carré que le relevé n'a pas. Les deux arêtes sont dentées, d'où
- * l'aspect scie.
+ * BRETTEUR — lame de braise, transcrite d'une maquette fournie
+ *
+ * Remplace le sabre dentelé mesuré sur la vidéo — écart demandé, comme la
+ * lance électrique du Lancier. **Transcrite, pas redessinée** : la maquette
+ * montre l'arme verticale, pointe de flamme en haut, garde ailée à gemme
+ * rouge et poignée enroulée en bas. Méthode :
+ *
+ *   1. Détourage du fond en damier (la maquette n'a pas de vrai canal
+ *      alpha) par seuil de gris, composante connexe la plus grande
+ *      retenue — ça élimine les étincelles détachées de la flamme, qui
+ *      auraient donné des pixels flottants sans lien avec la lame.
+ *   2. Recadrage sur la garde + la lame seules : la poignée enroulée et le
+ *      pommeau à gemme, tout en bas de la maquette, restent **hors carte**
+ *      — exactement comme sur le sabre d'origine, où `handle.length: 45`
+ *      ne dessine rien et laisse cette partie derrière la boule.
+ *   3. Rotation 90° pour ramener la pointe **à droite**, la convention du
+ *      dépôt (voir l'en-tête du fichier) — la maquette la montre vers le
+ *      haut.
+ *   4. Réduction par blocs (moyenne, comme `LANCER_SPEAR`) vers une grille
+ *      96 × 35, puis quantification à 22 couleurs.
+ *
+ * La garde ailée sombre occupe les ~10 premières colonnes ; le reste est la
+ * flamme, du rouge sombre à la base au jaune vif en pointe.
  * ------------------------------------------------------------------ */
-export const BLADESMAN_SABRE = deepFreeze({
-  w: 40,
-  h: 16,
+export const BLADESMAN_FLAMEBLADE = deepFreeze({
+  w: 96,
+  h: 35,
   palette: {
-    K: '#171009', // contour
-    O: '#e8a028', // garde orange vif : pipette (232,160,40)
-    D: '#6b5c4a', // bande gris-brun de l'arête haute
-    I: '#efe6d2', // corps ivoire, en bas de la lame
+    1: '#fada34', // jaune vif : pointe de flamme
+    2: '#f6c224',
+    3: '#f19c15',
+    4: '#f88108',
+    5: '#f67107',
+    6: '#ac743e', // braise/fumée
+    7: '#f55f07',
+    8: '#f14c05',
+    9: '#d24e15',
+    A: '#89523c', // garde, bois/cuir sombre
+    B: '#614f45',
+    C: '#e02f04', // rouge sombre : base de la flamme
+    D: '#cb1403',
+    E: '#923121',
+    F: '#ac0a05',
+    G: '#960206', // gemme de la garde
+    H: '#4a2824',
+    I: '#281f22', // garde, presque noir
+    J: '#500a15',
+    K: '#12080a', // contour
+    L: '#64000a',
+    M: '#000000', // creux entre les langues de flamme
   },
   rows: [
-    '........................................',
-    '.KKKK...................................',
-    '.KOOK...................................',
-    '.KOOK...................................',
-    '.KOOK...................................',
-    '.KOOK.KK.KK.KK..........................',
-    '.KOOOKDDKDDKDK.KK.KK.KK.KK.KK.K.........',
-    '.KOOODIIDIIDIIKDDKDDKDDKDDKDDKDK.KKKKKKK',
-    '.KOOOIIIIIIIIIDIIDIIDIIDIIDIIDIDKDDDDDDK',
-    '.KOOOIIIIIIIIIIIIIIIIIIIIIIIIIIKKKKKKKKK',
-    '.KOOOIIIIIIIIIKKKKKKKKKKKKKKKKK.........',
-    '.KOOOKKKKKKKKK..........................',
-    '.KOOK...................................',
-    '.KOOK...................................',
-    '.KKKK...................................',
-    '........................................',
+    '..........KK....................................................................................',
+    '.........KKI..............B.....................................................................',
+    '........IKB..............69A6A..................................................................',
+    '....KKKLJIM.............6359AA6.................................................................',
+    '...KKLEJIA..............BABBA...................................................................',
+    'MMIEJJLJKI..............96EDCE..................................................................',
+    'MHELJJJKII.........BE6HA137EA96.AB..............................................................',
+    '.IHJIIKIBM........BE5E98439BBA9AA.............................BAB...............................',
+    'KJIKKHAIH.........H9D5D73E59EABB66.......BBAB....BA..........B97EAAA............................',
+    'LJIKHIIIH.....HHI.ADFGC4H.BEEA.AE6....IA95334BBAA9AAA........A1379EA............................',
+    'JJKHIHBB....HDFL.KDFGGC5K..........II5458822BAJB66..........A33AAA..............................',
+    'IIIIIBBIKMKGFLFEHDFGGLDC8HHK....KH958C4CD22K.............IAE31213AB..............AAB............',
+    'KMHIHIKIJJGGLLLFFGLLGGDDC8777545448DD9FF8421K........KK323733721HAB.............A559A...........',
+    'MIIAIKKHLLGGLGGLLLGGFFDCFFC87778CCCDDCCCDC4311HMMMMB2234885C731K........IIIIH..63234EEEA........',
+    'KIAIIKIIJJLLLLLGGLLGGLGDCFFDFFFFFCDD77558CC74322334478C844888416M....BA11111112AAABA9EBB........',
+    'IB6IIIHIIHJJIIJLJJLLGFFFFFCFDFDCCDFCCCCCC88D8877778C87424457C84211HH11433333222116HB....AAAA....',
+    'JJJABK37FIIIHHHHHHBBAGFCFFFFFDCFFC858CCC788CD87DD8875337534458854333333444444432211AHJJE9557EB..',
+    'JJEFJ1B27DF999FFGGJHBA66DFFCFFFFCCCCCC8CC8888DDD77887788C8743358775434555453221222222444424779A.',
+    'JJLH6K3DFLIIJJIIHHHBBEFFDDDFDCCCCCCCCFFD88888887888C8CCCCCC7545733345773336MMMM3112111125AEBAAEB',
+    'IAAIIHEJIHIJIIHLJHGFDDDDDFDCFFDCCCCDFC77888844888D85C5433378845555754412B..........IKKKKA.....AB',
+    'KIAIIKBIJJLLLJLGGDDDFCCDDFFFDDDD8CDFC8887CC85854775C422223223532232211A.........................',
+    'MII6IIIJLLLGLLLGFFGLLLLFCDFGFDFFFF8444444458CC834CC41BI...II11122211B...........................',
+    'KKHIAIIBJLLLGGLGGLLDCCCGFDFDFFDC854433HHH6234CCC45832...JAA...IIIHII............................',
+    'IKHIMBHIIMJGGLLDGGD88778DDDDCCF854AM.......KA33555C823363E3A....................................',
+    'KJKHIBBB...IFGLFFD9BBBBA5C75FDCC43B..A........MA22244116BBEEB...................................',
+    'JJIHHKIIK...KEGGDCBBBBBBBB9445CC81AHA9A..6A......A934AAAEAA.....................................',
+    'KLIMIBBHH....HEFGD9HEABBBBB4EBB775215ABBAAA.......A13559E6A.....................................',
+    '.IIIKIKIBM.....IEDC8756BBBBA6B.EE5239AE9EE.........A329A........................................',
+    'KBLJIHHKHK.......JA6ABJB36BBBLA..B92259AABB.........AAA.........................................',
+    'KKEEJHJIII..............A19EA.....AE9EA.............69AE........................................',
+    '...KILEJIB..............AEEA.........................AAB........................................',
+    '....KJHLJHK.....................................................................................',
+    '........IKH.....................................................................................',
+    '.........KHI....................................................................................',
+    '..........MI....................................................................................',
   ],
 });
 
@@ -867,27 +921,54 @@ export const ICON_REVOLVER = deepFreeze({
   ],
 });
 
+/** Icône du Bretteur, **dérivée de `BLADESMAN_FLAMEBLADE`** et non redessinée
+ *  — même précaution que `ICON_LANCE` (voir sa note), qui avait divergé de
+ *  l'arme trois fois de suite pour avoir été retouchée à la main. La grille
+ *  96 × 35 est tournée à 40° puis réduite au plus proche voisin (pas de
+ *  lissage : un dégradé ferait fuiter les couleurs du fond transparent), en
+ *  réutilisant exactement les teintes de la lame. */
 export const ICON_SABRE = deepFreeze({
   w: 16,
   h: 16,
-  palette: { K: '#171009', I: '#efe6d2', D: '#8d7b62', O: '#e8a028' },
+  palette: {
+    a: '#fada34',
+    b: '#89523c',
+    c: '#f19c15',
+    d: '#614f45',
+    e: '#f6c224',
+    f: '#d24e15',
+    g: '#923121',
+    h: '#f88108',
+    i: '#ac743e',
+    j: '#f55f07',
+    k: '#e02f04',
+    l: '#cb1403',
+    m: '#f14c05',
+    n: '#500a15',
+    o: '#ac0a05',
+    p: '#f67107',
+    q: '#281f22',
+    r: '#4a2824',
+    s: '#960206',
+    t: '#000000',
+  },
   rows: [
-    '............KKK.',
-    '...........KIIK.',
-    '..........KIIDK.',
-    '.........KIIDKK.',
-    '........KIIDKK..',
-    '.......KIIDKK...',
-    '......KIIDKK....',
-    '.....KIIDKK.....',
-    '....KIIDKK......',
-    '...KIIDKK.......',
-    '..KKIIKK........',
-    '.KOKKKKOK.......',
-    '.KOOOKOOOK......',
-    '..KKOKKKK.......',
-    '....KOOK........',
-    '.....KK.........',
+    '................',
+    '..............ab',
+    '.............cd.',
+    '............ceb.',
+    '........fgacb...',
+    '........h.hi....',
+    '......g.jjhcd...',
+    '.....e.klc......',
+    '....hmlmhn......',
+    '...gllolp.......',
+    '.qrsloj.........',
+    'gdnrdl.i........',
+    'nqnqolbf........',
+    '.bdn............',
+    '..tqq...........',
+    '...q............',
   ],
 });
 
@@ -1102,7 +1183,7 @@ export const PIXEL_MAPS = deepFreeze({
   // Hors-la-loi & Bretteur
   outlawRevolver: OUTLAW_REVOLVER,
   outlawShot: OUTLAW_SHOT,
-  bladesmanSabre: BLADESMAN_SABRE,
+  bladesmanFlameBlade: BLADESMAN_FLAMEBLADE,
   iconRevolver: ICON_REVOLVER,
   iconSabre: ICON_SABRE,
   // Dragoon

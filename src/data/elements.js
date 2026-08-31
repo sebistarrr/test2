@@ -1781,17 +1781,23 @@ const BLADESMAN = {
 
   look: {
     radius: 41, // mesuré : rayon 32 sur la vidéo 576 → ×1,25 = 40
-    body: '#dcc462', // pipette : (220,196,98)
+    /** **Écart assumé au relevé.** L'or clair `#dcc462` (pipette vidéo,
+     *  220,196,98) passe à un orange de braise — demandé avec la lame
+     *  ardente qui remplace le sabre dentelé, voir `weapon` plus bas. */
+    body: '#e8621b',
     bodyHit: '#e4e4e6', // mesuré : le disque touché blanchit une image entière
     outline: '#181008', // pipette : (24,13,7)
     outlineWidth: 5,
     /** **Écart assumé au relevé.** La vidéo écrit les PV en crème `#F5F2EA`
      *  avec un contour sombre ; ce moteur ne pose aucun contour sur le
-     *  chiffre, et le crème sur l'or clair devient illisible. */
-    hpColor: '#2a2007',
+     *  chiffre, et le crème sur l'orange clair devient illisible. */
+    hpColor: '#2a0e05',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
-    aura: { color: 'rgba(172,226,22,0.42)', radius: 1.6, pulse: 2.8, showWhen: 'ultimate-ready' },
+    /** **Écart assumé au relevé.** L'aura passive était vert-jaune
+     *  (172,226,22) ; elle passe au rouge-orangé pour suivre la lame de
+     *  braise — demandé. */
+    aura: { color: 'rgba(255,69,0,0.45)', radius: 1.6, pulse: 2.8, showWhen: 'ultimate-ready' },
     flair: {
       /** **C'est l'éventail vert.** Mesuré frame 643 : le cœur rend
        *  (211,219,109) sur l'arène crème, soit `#B1C404` posé à 55 %. Ici il
@@ -1814,12 +1820,20 @@ const BLADESMAN = {
   movement: { speed: 560, turnRate: 1.7, seek: 0.5, mass: 1 },
 
   weapon: {
-    name: 'Sabre dentelé',
-    nameRef: 'Serrated Sabre',
+    /** **Écart assumé au relevé, comme la lance du Lancier.** Le sabre
+     *  dentelé de la vidéo est remplacé par une lame ardente transcrite
+     *  d'une maquette fournie — garde ailée sombre à gemme rouge, lame en
+     *  flamme continue du rouge sombre au jaune vif. Voir `pixelmaps.js`,
+     *  `BLADESMAN_FLAMEBLADE`, pour la méthode de transcription (même
+     *  principe que `LANCER_SPEAR` : réduction par blocs de l'artwork
+     *  fourni, pas un dessin reconstruit). */
+    name: 'Lame de braise',
+    nameRef: 'Ember Blade',
     /** Mesuré : garde à r 36–45, lame à r 45–122 sur la vidéo 576 → ×1,25 :
-     *  garde à 45–56, pointe à 152. La portée **découle** du sprite —
-     *  45 (garde) + 40 cellules × 2,68 — pour que hitbox et dessin ne
-     *  puissent pas diverger quand on retouche la carte. */
+     *  garde à 45–56, pointe à 152. **La portée reste au relevé** : elle ne
+     *  dépend que de `handle.length` et de `head.scale`, tous deux recalés
+     *  pour que le nouveau sprite (96 cellules) retombe exactement sur les
+     *  mêmes 152 px — un reskin ne change pas la hitbox. */
     reach: 152,
     /** Mesuré : **plancher** de la courbe de rotation, 0,80 tour/s → 5,03 rad/s.
      *  Tout ce qui dépasse est ajouté par `abilities/bladesman.js` : la fiche
@@ -1827,9 +1841,13 @@ const BLADESMAN = {
     spin: 5.03,
     spinDir: 1,
     /** La garde est déjà dans le sprite ; `length` la pose à r 45, soit 4 px
-     *  au-delà du bord de la bille, comme sur la vidéo. */
+     *  au-delà du bord de la bille, comme sur la vidéo — inchangé par le
+     *  reskin. */
     handle: { length: 45, width: 0, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
-    head: { sprite: 'bladesmanSabre', scale: 2.68, anchorY: 0.5 },
+    /** `scale` recalculé pour le nouveau sprite (96 cellules de large, contre
+     *  40 avant) : 96 × 1,114583 = 107, soit exactement la largeur dessinée
+     *  d'avant (40 × 2,68). `reach` ne bouge donc pas. */
+    head: { sprite: 'bladesmanFlameBlade', scale: 1.114583, anchorY: 0.5 },
     /** La garde ne coupe pas : le tranchant commence après elle. */
     hitbox: { from: 0.42, to: 1, radius: 17 },
     melee: {
@@ -2580,7 +2598,6 @@ export const DISABLED = deepFreeze([
   'lightning',
   'wind',
   'plant',
-  'bladesman',
 ]);
 
 /**
