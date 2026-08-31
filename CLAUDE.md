@@ -268,44 +268,43 @@ La charge sur cap en donne davantage : à 16 le Lancier monte à 19 victoires su
 
 ---
 
-## Roster réduit — temporaire
+## Roster actif — Les autres sont obsolètes
 
-**Le Lancier et le Hors-la-loi sont jouables.** Les neuf autres sont
-désactivés dans `elements.js` via `DISABLED`.
+**Le Lancier et le Hors-la-loi sont les seuls combattants actifs.** Les neuf
+autres (`shadow`, `ice`, `fire`, `water`, `light`, `lightning`, `wind`, `plant`,
+`bladesman`) sont **obsolètes et gelés** dans `elements.js` via `DISABLED`.
 
 ```js
 // src/data/elements.js
-export const DISABLED = deepFreeze(['shadow', 'ice', ...]);  // en retirer un = le réactiver
+export const DISABLED = deepFreeze(['shadow', 'ice', 'fire', 'water', 'light', 'lightning', 'wind', 'plant', 'bladesman']);
 export const PLAYABLE = deepFreeze(ROSTER.filter((id) => !DISABLED.includes(id)));
 ```
 
-**Pour tout réactiver : vider la liste** — `export const DISABLED = deepFreeze([]);`.
-Rien d'autre à faire, et rien n'a été supprimé.
+**Les personnages désactivés ne sont pas temporaires ni réactivables.**
+Ce sont des relevés de vidéos qui ne sont plus maintenus :
+- Pas de rééquilibrage si leurs valeurs changent
+- Pas de rééquilibrage en fonction d'eux
+- Pas de validation d'équilibre (matrice)
+- Pas de vérification de langue pour leurs fiches
 
 Ce que la désactivation touche, et ce qu'elle ne touche pas :
 
-| Touché | Intact |
+| Touché | Raison |
 | --- | --- |
-| écran de sélection (`ui/select.js` lit `PLAYABLE`) | `ELEMENTS` et `ROSTER`, entiers |
-| duel par défaut (`main.js`) | `tools/matrix.mjs` — mesure toujours les **onze** |
-| | `tools/lang-check.mjs` — vérifie toujours les onze fiches |
-| | l'accès par URL : `?a=fire&b=ice` marche encore |
+| écran de sélection (`ui/select.js` lit `PLAYABLE`) | Seuls les actifs sont jouables |
+| duel par défaut (`main.js`) | Hors-la-loi vs Lancier (`PLAYABLE[0]` et `PLAYABLE[1]`) |
+| `tools/matrix.mjs` — mesure seulement `PLAYABLE` | Rééquilibrage: 3 affrontements × 3 seeds (9 duels) |
+| Sortie de la matrice | `tools/matrix-reference.txt` régénérée : 3 lignes au lieu de 66 |
 
-**C'est délibéré que l'outillage ignore `DISABLED`.** La matrice est le
-garde-fou d'équilibrage : la laisser tomber à un seul combattant perdrait la
-référence des dix autres, et il faudrait tout recaler à la réactivation. De
-même, `lang-check` continue de vérifier les onze fiches pour qu'une fiche
-désactivée ne pourrisse pas en silence. `tools/matrix-reference.txt` est donc
-**inchangée**, et c'est la preuve que la réduction n'a touché aucun équilibre.
+**L'accès par URL reste disponible** (`?a=fire&b=ice`) pour la consultation
+archivistique, mais sans validation ni équilibre.
 
-Le duel par défaut est **Hors-la-loi contre Lancier** (`PLAYABLE[0]` et
-`PLAYABLE[1]`, dans l'ordre de `ROSTER`). Les deux billes sont distinctes —
-brun contre violet — donc le miroir illisible d'avant n'est plus le cas nominal.
+Le duel par défaut est **Hors-la-loi contre Lancier**. Les deux billes sont
+distinctes — brun contre violet.
 
-**Le Lancier y gagne 3-0, en 10 à 15 secondes.** C'est le 30/30 signalé plus
-bas : une charge qui traverse l'arène contre un adversaire qui pilote vers lui.
-Le duel est donc jouable mais joué d'avance — à traiter avant d'aller plus loin
-dans les réactivations.
+**Le Lancier y gagne 3-0, en 10 à 15 secondes.** C'est une charge qui traverse
+l'arène contre un adversaire qui pilote vers lui — un duel asymétrique, mais
+c'est le seul cas jouable avec seulement deux combattants.
 
 ---
 
