@@ -20,6 +20,7 @@ Va droit au fichier concerné, en `grep` ciblé plutôt qu'en lecture intégrale
 | Stats, couleurs, armes, pouvoirs d'un combattant | `src/data/elements.js` (fiches gelées) |
 | Géométrie de scène, phases, export vidéo | `src/data/tuning.js` |
 | Sprites pixel-art (texte) | `src/data/pixelmaps.js` |
+| Overrides de sprites en vrai PNG (écart assumé à « aucun binaire ») | `assets/sprites/` + `manifest.json` |
 | Déroulé du duel, dégâts, rendu global | `src/game/match.js` |
 | Entité combattant (état + dessin) | `src/game/fighter.js` |
 | Pouvoirs d'un combattant | `src/game/abilities/<id>.js` |
@@ -567,6 +568,22 @@ sans que ça se voie.
 
 ## Écarts volontaires au relevé
 
+- **L'arme du Bretteur est un vrai PNG, pas du pixel-art texte** — seule
+  exception à « aucun binaire dans le dépôt ». `weapon.head.sprite` de
+  `bladesman` (`bladesmanFlameBlade`) est servi par
+  `assets/sprites/bladesman-flameblade.png` (déclaré dans
+  `assets/sprites/manifest.json`), un recadrage direct de la maquette fournie
+  pour ce combattant — lame, garde et manche/pommeau en un seul morceau, fond
+  transparent. Deux tentatives de manche **dessinée** en pixel-art texte
+  (rectangle plein, puis chevron modélisé) avaient précédé ce choix ; la
+  demande explicite était de ne rien modéliser et de reprendre l'image
+  partagée telle quelle. `BLADESMAN_FLAMEBLADE` reste dans `pixelmaps.js`
+  comme **repli automatique** si le PNG venait à manquer (le mécanisme existe
+  déjà dans `render/sprites.js`, prévu pour ce cas) — c'est la seule arme du
+  roster à s'en servir. `weapon.handle.length` (18,71) est calé pour que la
+  largeur réellement dessinée (hauteur × ratio du PNG) retombe exactement sur
+  `reach` (197,6, inchangé) : la pointe ne ment pas sur la hitbox, comme pour
+  toutes les autres armes.
 - **Le moulinet d'élan du Lancier** (`lunge.windup` / `windupSpin`) et son
   **recul renforcé et symétrique** (460 / 460 contre 300 / 95 relevés) sont
   deux ajouts de mise en scène, pas des mesures. Le recul de l'attaquant valait

@@ -540,51 +540,53 @@ plus marqué du roster réduit, monte de 4/6 à 5/6 ; le Hors-la-loi descend de
 3/6 à 2/6 contre le Bretteur mais reste imbattu en mirroir et contre le
 Lancier. `tools/matrix-reference.txt` a été régénérée en conséquence.
 
-### Manche redessinée
+### Manche : du rectangle au PNG
 
-**Le rectangle plein comblait le vide, mais ne ressemblait à rien.** Après
-l'agrandissement ×1,3 ci-dessus, `handle.width` était passé de 0 à 9 pour
-couvrir les 17,5 px de vide entre le bord de la bille et le sprite — un
-rectangle uni, dans les tons de la garde. Efficace contre le vide, mais le
-design attendu (maquette fournie) montre une **manche tressée noire**, avec un
-pommeau doré à gemme rouge. Le rectangle ne pouvait pas rendre le tressage.
+**Trois passages avant d'aboutir, chacun corrigeant le précédent.**
 
-**La manche est maintenant dans le sprite, pas dans un rectangle.**
-`BLADESMAN_FLAMEBLADE` (`pixelmaps.js`) gagne 40 colonnes devant la garde —
-`w: 96 → 136` — avec un nouveau motif (`N`/`O`/`P`) qui s'évase vers la garde
-existante, à l'identique de sa forme au raccord. `handle.length` redescend à
-0,54 (`width` repasse à 0, la manche n'a plus besoin du rectangle) pour que
-`136 × 1,448958 + 0,54 = 197,6` : la portée ne bouge pas d'un pixel.
+| Passage | Approche | Ce qui clochait |
+| --- | --- | --- |
+| 1 | Rectangle plein (`handle.width: 9`), tons de la garde | Comblait le vide (17,5 px entre le bord de bille et le sprite) mais ne rendait aucun motif : la maquette montre une manche tressée noire à pommeau doré et gemme rouge |
+| 2 | Manche dessinée en pixel-art texte, 40 colonnes ajoutées devant la garde dans `BLADESMAN_FLAMEBLADE` (`w: 96 → 136`) | Motif d'abord en bandes diagonales — un tressage plausible mais **pas** celui de la maquette, qui est un **chevron** (chaque bande forme un « V » vers le pommeau). Corrigé une fois (`u = colonne + 0,9 × \|ligne − centre\|`, replié en chevron), mais restait une **modélisation** — demande explicite : « il ne faut pas modéliser l'arme » |
+| 3 | **PNG réel**, recadré directement dans la maquette | Retenu |
 
-**Premier motif faux, corrigé au second passage.** La première version
-posait des bandes diagonales alternées — un tressage plausible, mais **pas**
-celui de la maquette, qui montre un **chevron** : chaque bande forme un « V »
-dont la pointe regarde vers le pommeau, pas une diagonale continue. Demandé
-« exactement celui que je t'ai partagé » : la forme du motif a été reprise
-sur la maquette (`u = colonne + 0,9 × |ligne − centre|`, motif périodique sur
-`u`, ce qui replie la diagonale en chevron de part et d'autre du centre —
-au lieu de `(colonne × 2 + ligne) mod 7`, qui ne repliait rien et donnait des
-bandes parallèles). Les trois tons (`N`/`O`/`P`) ont aussi été repris par
-percentile sur la zone de manche de la maquette plutôt que choisis à l'oeil.
+**Le troisième passage remplace tout le sprite, pas seulement la manche.**
+Un sprite ne peut avoir qu'une seule source (texte *ou* image, jamais les
+deux mélangées), et la maquette montre l'arme entière — lame, garde, manche,
+pommeau — comme un seul dessin. `weapon.head.sprite` de `bladesman` est donc
+servi par `assets/sprites/bladesman-flameblade.png`, un recadrage direct de
+la maquette (composante connexe la plus grande de l'image, pour exclure les
+braises détachées du fond ; fond rendu transparent ; rotation pour que la
+pointe regarde vers la droite, la convention du dépôt), déclaré dans
+`assets/sprites/manifest.json`. `BLADESMAN_FLAMEBLADE` (`pixelmaps.js`) reste
+en place comme **repli automatique** si le PNG venait à manquer — le
+mécanisme existait déjà dans `render/sprites.js`, aucune arme ne s'en servait
+jusqu'ici.
 
-**Le pommeau à gemme de la maquette n'est pas dessiné : il tomberait
-entièrement derrière la bille.** Rayon de bille 41 ; sur les 40 colonnes
-ajoutées, seules les ~12 dernières (celles qui s'évasent vers la garde,
-≈17,5 px) dépassent du bord de la bille. Dessiner le pommeau doré dans les 28
-premières colonnes, qui ne se voient jamais, aurait été du travail perdu — et
-aurait faussé la lecture d'un désaccord qui n'existe pas.
+**Écart assumé à l'invariant « aucun binaire dans le dépôt ».** C'est le
+premier — et seul — sprite du roster à en sortir. Demandé explicitement,
+documenté dans `CLAUDE.md`.
 
-**Dessinée, pas ré-échantillonnée.** La maquette de la manche est une image
-bruitée (JPEG sur damier de transparence), à une résolution largement
-supérieure à la trame du sprite (35 lignes) : un ré-échantillonnage direct par
-blocs — la méthode habituelle pour ce dépôt — donnait du bruit poivre-et-sel
-plutôt qu'un tressage lisible, le compression JPEG créant des artefacts plus
-fins que la taille des blocs de réduction. Le tressage est donc **dessiné** en
-reprenant la silhouette et les proportions de la maquette (cylindre étroit qui
-s'évase vers la garde), pas transcrite pixel à pixel.
+**Le pommeau à gemme est maintenant dans l'image, mais reste en grande
+partie derrière la bille.** Rayon de bille 41 ; le PNG est dessiné de
+`handle.length` (18,71) à `reach` (197,6), donc son extrémité pommeau
+(la plus proche du pivot) est hors champ jusqu'à x = 41 — environ 22 px de
+l'image sur 179 dessinés, soit la manche jusqu'à un peu avant la bague
+dorée. C'est le pommeau doré à gemme lui-même qui ne dépasse jamais ; la
+manche tressée, elle, se voit sur une longueur un peu plus généreuse
+qu'avec les deux passages précédents, sans qu'aucun réglage ne l'ait visé
+— c'est la conséquence directe d'utiliser l'image entière plutôt qu'un
+segment découpé à la main.
 
-Purement visuel : `reach`, `hitbox` et toutes les valeurs de gameplay sont
-inchangées, `tools/matrix.mjs` rend une matrice identique au caractère près.
+**`handle.length` recalé, `reach` et la hitbox inchangés.** `head.scale`
+(1,448958) fixe toujours la hauteur dessinée (`35 × scale`, `35` venant du
+repli texte) ; la largeur dessinée suit maintenant le **ratio réel du PNG**
+(969 × 279, mesuré sur le recadrage) plutôt que celui du pixel-art texte.
+`handle.length` est recalé à 18,71 pour que largeur dessinée + `handle.length`
+retombe exactement sur 197,6 — la pointe ne ment toujours pas sur la hitbox
+(invariant 5). Purement visuel : `reach`, `hitbox` et toutes les valeurs de
+gameplay sont inchangées, `tools/matrix.mjs` rend une matrice identique au
+caractère près.
 
 ---
 

@@ -1889,21 +1889,24 @@ const BLADESMAN = {
      *  décrit le plancher, le module décrit le cycle. */
     spin: 5.03,
     spinDir: 1,
-    /** **Design revu, demandé.** Le premier comblement du vide (rectangle
-     *  plein, `width: 9`) marchait mais ne ressemblait pas à la manche
-     *  tressée de la maquette fournie. La manche est maintenant **dans le
-     *  sprite** (40 colonnes ajoutées devant la garde dans
-     *  `BLADESMAN_FLAMEBLADE`, voir `pixelmaps.js`) plutôt que dans ce
-     *  rectangle, qui redevient inutile : `width` repasse à 0, comme sur les
-     *  dix autres armes dont la garde/manche est déjà dans le sprite. */
-    handle: { length: 0.54, width: 0, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
-    /** `scale` inchangé (1,448958) : seule la largeur de la carte grandit,
-     *  de 96 à 136 cellules (40 de plus pour la manche). `handle.length`
-     *  recalé à 0,54 pour que `136 × 1,448958 + 0,54 = 197,6`, la portée
-     *  inchangée depuis l'agrandissement ×1,3 — la pointe dessinée ne ment
-     *  toujours pas sur la hitbox (invariant 5). Les ~28 premières colonnes
-     *  de la manche tombent derrière la bille (rayon 41) ; seule sa fin
-     *  évasée, contre la garde, est visible — c'est voulu, voir `pixelmaps.js`. */
+    /** **Design revu, demandé — troisième passage.** Les deux essais de
+     *  manche dessinée (rectangle plein, puis chevron modélisé en pixel-art
+     *  texte) ne satisfaisaient pas la demande : « il ne faut pas modéliser
+     *  l'arme ». `head.sprite` est maintenant servi par un **vrai PNG**
+     *  (`assets/sprites/bladesman-flameblade.png`, déclaré dans
+     *  `assets/sprites/manifest.json`) recadré directement dans la maquette
+     *  fournie — lame, garde **et** manche/pommeau en un seul morceau, plus
+     *  aucune part modélisée. `handle.width` reste à 0 : la manche est dans
+     *  l'image, pas dans un rectangle. Voir `pixelmaps.js` pour l'écart à
+     *  l'invariant « aucun binaire dans le dépôt » que ça implique. */
+    handle: { length: 18.71, width: 0, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
+    /** `scale` inchangé (1,448958) : c'est ce qui fixe `headH` (35 × 1,448958,
+     *  la hauteur dessinée) indépendamment de l'image utilisée pour `head.sprite`
+     *  — texte ou PNG. `handle.length` est recalé à 18,71 pour que la largeur
+     *  réellement dessinée (`headH × ratio du PNG`, 969 × 279) retombe
+     *  exactement sur `reach` (197,6) : la pointe ne ment toujours pas sur la
+     *  hitbox (invariant 5), même si `map.w` (136, dans `pixelmaps.js`) ne
+     *  décrit plus que le pixel-art de repli, jamais lu pour ce calcul. */
     head: { sprite: 'bladesmanFlameBlade', scale: 1.448958, anchorY: 0.5 },
     /** La garde ne coupe pas : le tranchant commence après elle. Rayon de
      *  hitbox × 1,3 comme le reste de la lame. */

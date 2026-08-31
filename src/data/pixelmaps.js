@@ -828,18 +828,23 @@ export const OUTLAW_SHOT = deepFreeze({
  * ------------------------------------------------------------------ */
 export const BLADESMAN_FLAMEBLADE = deepFreeze({
   /**
-   * **Manche ajoutée, demandée, reprise sur la maquette au second passage.**
-   * Le premier essai (tressage en bandes diagonales) ne reproduisait pas le
-   * motif de la maquette — un **chevron** (chaque « V » pointe vers le
-   * pommeau), pas une diagonale. Les 40 premières colonnes redessinent ce
-   * chevron : toujours dessiné, pas transcrit pixel à pixel (la maquette est
-   * une image bruitée — JPEG sur damier de transparence — bien plus fine que
-   * la trame de ce sprite), mais la **forme** du motif suit maintenant la
-   * maquette, pas une approximation. Couleurs reprises par percentile sur la
-   * zone de manche de la maquette (la médiane JPEG bruite, voir la méthode de
-   * relevé documentée dans `CLAUDE.md`). Le pommeau doré à gemme de la
-   * maquette n'est pas dessiné : il tomberait entièrement derrière la bille
-   * (rayon 41), les ~28 premières colonnes de la manche le sont déjà.
+   * **Repli seulement — le rendu réel passe par un PNG.** Les deux premiers
+   * essais de manche (rectangle plein, puis chevron modélisé ci-dessous)
+   * étaient encore une modélisation, pas la maquette elle-même — demande
+   * explicite : « il ne faut pas modéliser l'arme ». `head.sprite` de
+   * `bladesman` est donc servi par `assets/sprites/bladesman-flameblade.png`
+   * (déclaré dans `assets/sprites/manifest.json`), un recadrage direct de la
+   * maquette fournie — lame, garde et manche/pommeau en un seul morceau,
+   * fond transparent, pointe tournée vers la droite. C'est un **écart à
+   * l'invariant « aucun binaire dans le dépôt »** (voir `CLAUDE.md`),
+   * délibéré et demandé.
+   *
+   * Cette carte texte n'est donc plus lue pour le rendu : elle reste comme
+   * **repli automatique** si le PNG venait à manquer (`render/sprites.js`
+   * retombe dessus tout seul), et `h` (35, lu par `fighter.js` pour la
+   * hauteur dessinée) doit rester cohérent avec `weapon.head.scale` — `w`,
+   * en revanche, n'est jamais lu pour la portée ni la hitbox, seulement
+   * validé contre la longueur des lignes ci-dessous.
    */
   w: 136,
   h: 35,
