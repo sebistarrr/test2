@@ -1503,9 +1503,11 @@ const OUTLAW = {
   },
 
   /** Mesuré 483 px/s (médiane de 57 segments rectilignes) → ×1,25 = 604.
-   *  Calé à 455 : à 604 px/s dans cette arène le pistolero traverse le cadre
-   *  plus vite qu'il ne recharge, et la matrice le fait gagner partout. */
-  movement: { speed: 455, turnRate: 1.9, seek: 0.44, mass: 1 },
+   *  Calé à 455 (à 604 px/s dans cette arène le pistolero traverse le cadre
+   *  plus vite qu'il ne recharge, et la matrice le fait gagner partout), puis
+   *  **écart assumé, demandé** : ×1,2 supplémentaire → 546, sous le 604
+   *  mesuré. Voir la matrice après ce changement dans les invariants. */
+  movement: { speed: 546, turnRate: 1.9, seek: 0.44, mass: 1 },
 
   weapon: {
     name: 'Revolver de glace',
@@ -1811,6 +1813,46 @@ const BLADESMAN = {
       impact: ['#fbbf24', '#ffffff', '#f97316'],
       shape: 'streak',
       castFlash: 'rgba(249,115,22,0.7)', // écart assumé : l'éventail virait au vert fluo sous BLADE RUSH, désormais à l'orange flamme
+      /** **Cendres — écart assumé, demandé.** Poussière de braise le long de la
+       *  lame, sur le même patron `powder` que le givre du Hors-la-loi et la
+       *  foudre du Lancier (voir `render/flair.js`) : des grains isolés au lieu
+       *  d'arcs continus, majoritairement gris cendre (`glow`), une minorité de
+       *  braises qui rougeoient (`core`). `jitter: 30` dépasse la demi-épaisseur
+       *  de la lame (35 × 1,448958 / 2 ≈ 25,4 après le passage ×1,3), sinon les
+       *  grains restent dans la silhouette qui les recouvre. Purement décoratif
+       *  (`render/flair.js`) : ne peut rien changer au duel. */
+      weaponArc: {
+        powder: true,
+        count: 26,
+        jitter: 30,
+        size: 4.5,
+        rate: 7,
+        boost: 1.6,
+        core: '#fbbf24',
+        glow: '#3a332c',
+        alpha: 0.8,
+      },
+      /** **Fuseau de cendre — écart assumé, demandé.** Le Bretteur n'avait
+       *  aucun fuseau de vitesse (opt-in `smear`, absent jusqu'ici) ; il en
+       *  gagne un, en cendre plutôt qu'en flamme franche, pour distinguer le
+       *  panache qui suit le corps de la traînée de lame (`ribbon`, orange) et
+       *  de la poussière d'arme (`weaponArc`, ci-dessus). Même patron `powder`
+       *  que le fuseau de givre du Hors-la-loi. */
+      smear: {
+        color: '#3a332c',
+        width: 30,
+        alpha: 0.4,
+        powder: {
+          color: '#2b2620',
+          core: '#f97316',
+          haze: '#4a423a',
+          hazeAlpha: 0.3,
+          grains: 5,
+          spread: 24,
+          size: 5.6,
+          rate: 6,
+        },
+      },
     },
     /** **Écart assumé, demandé.** Le sillage de vitesse était en or terne
      *  (220,196,98) ; il reprend la même teinte flamme que l'aura, cohérente
@@ -1836,26 +1878,27 @@ const BLADESMAN = {
     name: 'Lame de braise',
     nameRef: 'Ember Blade',
     /** Mesuré : garde à r 36–45, lame à r 45–122 sur la vidéo 576 → ×1,25 :
-     *  garde à 45–56, pointe à 152. **La portée reste au relevé** : elle ne
-     *  dépend que de `handle.length` et de `head.scale`, tous deux recalés
-     *  pour que le nouveau sprite (96 cellules) retombe exactement sur les
-     *  mêmes 152 px — un reskin ne change pas la hitbox. */
-    reach: 152,
+     *  garde à 45–56, pointe à 152. **Écart assumé, demandé** : la lame
+     *  passe ×1,3 (152 → 197,6) — `handle.length` et `head.scale` sont
+     *  recalés dans la même proportion, donc la pointe dessinée retombe
+     *  exactement sur cette nouvelle portée, comme avant le reskin. Un
+     *  changement de reach déplace la matrice ; voir les invariants. */
+    reach: 197.6,
     /** Mesuré : **plancher** de la courbe de rotation, 0,80 tour/s → 5,03 rad/s.
      *  Tout ce qui dépasse est ajouté par `abilities/bladesman.js` : la fiche
      *  décrit le plancher, le module décrit le cycle. */
     spin: 5.03,
     spinDir: 1,
-    /** La garde est déjà dans le sprite ; `length` la pose à r 45, soit 4 px
-     *  au-delà du bord de la bille, comme sur la vidéo — inchangé par le
-     *  reskin. */
-    handle: { length: 45, width: 0, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
-    /** `scale` recalculé pour le nouveau sprite (96 cellules de large, contre
-     *  40 avant) : 96 × 1,114583 = 107, soit exactement la largeur dessinée
-     *  d'avant (40 × 2,68). `reach` ne bouge donc pas. */
-    head: { sprite: 'bladesmanFlameBlade', scale: 1.114583, anchorY: 0.5 },
-    /** La garde ne coupe pas : le tranchant commence après elle. */
-    hitbox: { from: 0.42, to: 1, radius: 17 },
+    /** La garde est déjà dans le sprite ; `length` la pose à r 45 × 1,3 = 58,5,
+     *  au-delà du bord de la bille dans la même proportion que sur la vidéo. */
+    handle: { length: 58.5, width: 0, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
+    /** `scale` × 1,3 = 1,448958 : 96 × 1,448958 = 139,1, plus `handle.length`
+     *  58,5 = 197,6, exactement la nouvelle portée ci-dessus — la pointe
+     *  dessinée ne ment toujours pas sur la hitbox (invariant 5). */
+    head: { sprite: 'bladesmanFlameBlade', scale: 1.448958, anchorY: 0.5 },
+    /** La garde ne coupe pas : le tranchant commence après elle. Rayon de
+     *  hitbox × 1,3 comme le reste de la lame. */
+    hitbox: { from: 0.42, to: 1, radius: 22.1 },
     melee: {
       /** Mesuré, **exact et sans exception** : `damage = 2,00 × Spin Speed`.
        *  La valeur n'est jamais stockée, elle est dérivée de la pile. */
@@ -1917,8 +1960,11 @@ const BLADESMAN = {
     nameRef: 'BLADE RUSH',
     barLabel: 'BLADE RUSH',
     barLabelFr: 'RUÉE DE LAME',
-    barFill: '#dcc462',
-    barText: '#2a2007',
+    /** **Écart assumé, demandé.** La jauge était en or terne (`#dcc462`),
+     *  seule note du bas d'écran à ne pas suivre le reskin flamme ; elle passe
+     *  à l'orange de l'aura, texte assombri en ton braise pour rester lisible. */
+    barFill: '#f97316',
+    barText: '#2a0e05',
     /** Mesuré : cycles de 273, 214 et 333 images — donc **pas une simple
      *  horloge**. Modèle retenu : horloge de 9 s + 6 % par coup d'épée. */
     chargeRate: 100 / 9,
@@ -1961,7 +2007,11 @@ const BLADESMAN = {
     nameRef: 'Infernal Rage',
     barLabel: 'INFERNAL RAGE',
     barLabelFr: 'RAGE INFERNALE',
-    barFill: '#dc2626',
+    /** **Écart assumé, demandé.** Rouge pur à l'origine, pour se distinguer de
+     *  la jauge BLADE RUSH au-dessus ; passe à un orange plus sombre pour
+     *  suivre le reskin flamme du bas d'écran tout en restant deux teintes
+     *  différentes l'une de l'autre. */
+    barFill: '#ea580c',
     barText: '#fff1f0',
     cooldown: 11,
     first: 5,
@@ -1996,7 +2046,9 @@ const BLADESMAN = {
       (f) => `Rotation : ${formatHalf(f.stacks)} tr/s`,
       (f) => `Dégâts : ${formatHalf(f.stacks * 2)}`,
     ],
-    color: '#a8912f',
+    /** **Écart assumé, demandé.** Or sombre à l'origine, seule ligne du bas
+     *  d'écran encore hors du reskin flamme ; passe à l'orange de l'aura. */
+    color: '#f97316',
     stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };

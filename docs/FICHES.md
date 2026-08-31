@@ -404,7 +404,7 @@ citée entre parenthèses.
 | Corps | rayon 41 px (32), `#8a5934` — pipette (138,89,52), médiane érodée sur titre + bille + jauge | mesuré |
 | Flash d'encaissement | `#e4e4e6` — mesuré aux images 223/224/225 : le disque touché blanchit **une image entière**, contour compris | mesuré |
 | Chiffre de PV | crème `#f5f2ea` : le seul ton lisible sur le brun sombre | mesuré |
-| Déplacement | 455 px/s (relevé 483 → 604 après conversion) — calé, sinon il traverse le cadre plus vite qu'il ne recharge | mesuré + calé |
+| Déplacement | 546 px/s. Calé à 455 (relevé 483 → 604 après conversion), sinon il traverse le cadre plus vite qu'il ne recharge ; **écart assumé, demandé** ensuite : ×1,2 → 546, toujours sous le 604 mesuré | mesuré + calé + demandé |
 | **Arme** | *Revolver* — portée 122 px (pointe du canon à 97). **Seule arme du roster qui ne tourne pas** : `weapon.spin = 0`, et le module écrit `weaponAngle` à chaque image. Le relevé est explicite — « le canon est asservi à l'adversaire à chaque image, sans lissage » | mesuré |
 | Sprite | 34 × 15 cellules ×2,5 : crosse brune côté bille, carcasse et barillet en acier bleuté-violine, puis un **canon fin** de 6 cellules sur 15. C'est le contraste corps épais / canon fin qui identifie l'arme | mesuré |
 | Corps à corps | pile courante en PV, toutes les **3 s** — le verrou le plus long du roster, parce que le canon est **toujours** aligné. À 1,5 s le pistolero gagnait 27 duels sur 27 | calé |
@@ -453,9 +453,11 @@ n'a bougé :
 | Aura passive | `rgba(172,226,22,0.42)` (vert-jaune) → `rgba(255,69,0,0.45)` (rouge flamme) | écart assumé |
 | Arme | *Sabre dentelé* → *Lame de braise* (`Ember Blade`), transcrite d'une maquette fournie — garde ailée sombre à gemme rouge, lame en flamme continue. `BLADESMAN_FLAMEBLADE` dans `pixelmaps.js`, méthode identique à `LANCER_SPEAR` (réduction par blocs, quantification, pas un dessin reconstruit) | maquette |
 
-**La portée ne bouge pas.** `head.scale` est recalculé pour le nouveau sprite
-(96 cellules contre 40) afin que `handle.length + sprite × scale` retombe
-exactement sur les 152 px relevés — un reskin ne change pas la hitbox.
+**La portée ne bougeait pas, à ce stade.** `head.scale` est recalculé pour le
+nouveau sprite (96 cellules contre 40) afin que `handle.length + sprite ×
+scale` retombe exactement sur les 152 px relevés — un reskin ne change pas la
+hitbox. (Elle bouge en revanche à la vague suivante, où l'agrandissement de la
+lame *est* la demande — voir « Lame agrandie, cendres et bas d'écran orange ».)
 
 **L'éventail vert de BLADE RUSH n'a pas été touché.** Il reste `#B1C404`,
 mesuré image 643 : c'est un effet vidéo, pas une couleur de thème, et rien
@@ -511,6 +513,32 @@ contre le Hors-la-loi (le duel par défaut reste donc à l'image de son relevé
 d'origine), mais gagne 2/3 contre le Lancier — soit **2/6**, contre 0/6 avant.
 `tools/matrix-reference.txt` a été régénérée ; seules les quatre lignes qui
 impliquent le Bretteur ont bougé.
+
+### Lame agrandie, cendres et bas d'écran orange
+
+**Quatrième vague, demandée.** Trois ajouts sur le Bretteur, un sur le
+Hors-la-loi (vitesse, voir sa fiche plus haut) :
+
+| Ajout | Détail | Source |
+| --- | --- | --- |
+| Lame ×1,3 | `weapon.reach` 152 → 197,6 ; `handle.length` 45 → 58,5 ; `head.scale` 1,114583 → 1,448958 ; `hitbox.radius` 17 → 22,1. Les quatre bougent dans la même proportion : la pointe dessinée retombe exactement sur la nouvelle portée (invariant 5), ce n'est pas un agrandissement visuel seul | demandé, calé |
+| Cendres sur l'arme | `look.flair.weaponArc` (absent jusqu'ici), en mode `powder` — grains gris (`glow: '#3a332c'`) et braises ponctuelles (`core: '#fbbf24'`) le long de la lame, `jitter: 30` pour dépasser la demi-épaisseur du sprite agrandi (≈25,4 px) | demandé, écart assumé |
+| Cendres en traînée | `look.flair.smear` (absent jusqu'ici) : le Bretteur n'avait aucun fuseau de vitesse ; il en gagne un en cendre, distinct du ruban de lame (orange) | demandé, écart assumé |
+| Bas d'écran orange | `ultimate.barFill` (or `#dcc462` → orange `#f97316`), `special.barFill` (rouge `#dc2626` → orange sombre `#ea580c`), `hud.color` (or sombre `#a8912f` → orange `#f97316`) | écart assumé, demandé |
+
+Les deux effets de cendre passent par `render/flair.js` (`weaponArc.powder`,
+`smear.powder`, même mécanisme que le givre du Hors-la-loi) : purement
+décoratifs, aucun tirage dans `game.rng`, ne peuvent rien changer au duel.
+L'agrandissement de la lame, en revanche, est un vrai changement de gameplay :
+une lame plus longue touche de plus loin.
+
+**Relevé de matrice, après l'agrandissement de la lame et la vitesse du
+Hors-la-loi :** le total du Bretteur reste **2/6**, mais la répartition
+s'inverse — il gagne désormais 1/3 contre le Hors-la-loi (contre 0/3 avant) et
+seulement 1/3 contre le Lancier (contre 2/3 avant). Le Lancier, déjà l'écart le
+plus marqué du roster réduit, monte de 4/6 à 5/6 ; le Hors-la-loi descend de
+3/6 à 2/6 contre le Bretteur mais reste imbattu en mirroir et contre le
+Lancier. `tools/matrix-reference.txt` a été régénérée en conséquence.
 
 ---
 

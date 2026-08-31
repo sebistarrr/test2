@@ -343,6 +343,39 @@ le Lancier que l'écart se voit. `tools/matrix-reference.txt` a été régénér
 en conséquence — seules les quatre lignes qui impliquent le Bretteur ont
 bougé, jamais `outlaw vs outlaw`, `outlaw vs lancer` ni `lancer vs lancer`.
 
+**Quatrième vague — demandée, gameplay assumé.** Trois retouches en plus sur
+le Bretteur, et une sur le Hors-la-loi, toutes en écart assumé au relevé :
+
+- **Lame agrandie ×1,3** (`weapon.reach`, `handle.length`, `head.scale`,
+  `hitbox.radius` recalés dans la même proportion : 152 → 197,6). Un reskin
+  ne change normalement pas la hitbox (voir plus haut), mais ici la taille
+  elle-même était la demande — la pointe dessinée retombe donc exactement sur
+  la nouvelle portée (invariant 5), et le rayon de la hitbox suit la même
+  échelle.
+- **Cendres, en plus des flammes** (`look.flair.weaponArc`, `powder: true`) :
+  poussière grise le long de la lame, quelques braises qui rougeoient (`core`),
+  sur le même patron `powder` que le givre du Hors-la-loi. Purement décoratif
+  (`render/flair.js`), ne peut rien changer au duel.
+- **Fuseau de cendre** (`look.flair.smear`) : le Bretteur n'en avait aucun ;
+  il gagne un panache de cendre qui suit le corps, distinct du ruban de lame
+  (orange) et de la poussière d'arme ci-dessus.
+- **Bas d'écran en orange** : les deux jauges (`ultimate.barFill`,
+  `special.barFill`) et la couleur des lignes de stat (`hud.color`) suivent
+  désormais le reskin flamme — c'était la dernière zone du bas d'écran encore
+  en or/rouge d'origine.
+- **Vitesse du Hors-la-loi ×1,2** (455 → 546, sous le 604 mesuré) : le calage
+  à 455 datait d'avant le roster réduit et le rendait trop lent face au
+  Bretteur agrandi.
+
+**La lame agrandie et la vitesse du Hors-la-loi sont deux vrais leviers de
+jeu, pas des retouches cosmétiques : la matrice a bougé et a été régénérée.**
+Le total du Bretteur reste 2/6, mais la répartition s'inverse — 1/3 contre le
+Hors-la-loi (contre 0/3 avant), 1/3 contre le Lancier (contre 2/3 avant) — et
+le Lancier, déjà l'écart le plus marqué du roster réduit, monte de 4/6 à 5/6
+pendant que le Hors-la-loi descend de 3/6 à 2/6 face au Bretteur. Aucun des
+deux changements demandés ne visait l'équilibre ; ce déplacement est la
+conséquence assumée, pas une dérive à corriger.
+
 ---
 
 ## Langue
