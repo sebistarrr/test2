@@ -914,6 +914,92 @@ export const BLADESMAN_FLAMEBLADE = deepFreeze({
   ],
 });
 
+/**
+ * **Roue de flamme — effet d'incantation de BLADE RUSH, demandé.**
+ * Remplace l'anneau plein (`game.fx.ring`) qui marquait jusqu'ici le
+ * déclenchement de la ruée : un moyeu à rayons et gemme centrale, cerné de
+ * langues de flamme irrégulières et de grains de cendre — pas une
+ * transcription, une conception originale, sur la même grille de pixels que
+ * le reste du roster. Carré (`drawSpriteCentered`, pas d'orientation) :
+ * treize langues à longueur/largeur tirées d'une graine fixe, donc identiques
+ * à chaque duel — l'irrégularité vient du dessin, pas d'un tirage en jeu (qui
+ * consommerait `game.rng` ou `game.viewRng` selon où il est posé). Voir
+ * `abilities/bladesman.js` (`_drawRushWheel`) pour l'animation : échelle et
+ * opacité seules bougent, jamais la carte elle-même.
+ */
+export const BLADESMAN_FLAMEWHEEL = deepFreeze({
+  w: 48,
+  h: 48,
+  palette: {
+    1: '#fada34',
+    2: '#f6c224',
+    3: '#f19c15',
+    4: '#f88108',
+    5: '#f67107',
+    7: '#f55f07',
+    8: '#f14c05',
+    9: '#d24e15',
+    C: '#e02f04',
+    D: '#cb1403',
+    G: '#960206', // gemme centrale du moyeu
+    H: '#2a1710', // moyeu, bois sombre
+    A: '#89523c', // rayons du moyeu
+    K: '#12080a', // contour
+    S: '#3a322e', // cendre sombre
+    T: '#6e6458', // cendre claire
+  },
+  rows: [
+    '................................................',
+    '................................................',
+    '................................................',
+    '................................................',
+    '................................................',
+    '................................................',
+    '.........................1......................',
+    '..................1......22.....................',
+    '..................12.....33..........T..........',
+    '..................32......44.....1..............',
+    '..................44S....7S5...S21..............',
+    '..................45....S77S...33...............',
+    '..................57T...888....44...............',
+    '...........11.....788..9999....55...............',
+    '............2.....899C.CCC....877...............',
+    '............34....CCCDDDDDK.DC988...............',
+    '............445889DKDHHHHHHKDCC9...75433211.....',
+    '..............789CDHH...A..HHDC...875543........',
+    '................CDHA.KKKKKK..HK..9887...........',
+    '................KH.AKHHHHHHKAAHKC998............',
+    '.........34579C.KH.KHHHHHHHHK.HDDC9.............',
+    '......11235789CDH.KHHHHHHHHHHK.HDC..............',
+    '.............9CDH.KHHHHKKHHHHK.HD.....43........',
+    '............S.CDHAKHHHKGGKHHHK.HDC9S754321......',
+    '...............KHAKHHHKGGKHHHKAHDC98755.........',
+    '.........45...CDH.KHHHHKKHHHHK.HDC987...........',
+    '........345789CDH.KHHHHHHHHHHK.HK...............',
+    '...T..123..789CCDH.KHHHHHHHHK.HDD...T...........',
+    '......1....S.99.DHAAKHHHHHHKA.HDC9S75...........',
+    '................DDH..KKKKKK.AHDC998554..........',
+    '............T..CCDDHH..AA..HHDCC....43..........',
+    '..........T....99C.DDHHHHHHKDCC99....32.........',
+    '.........S....8899.CDDKKDDD..C988.....1.........',
+    '..............778.99CC..99C...877.....S.........',
+    '............45578.8T9..888....755...............',
+    '........T.23345...888..77......44...............',
+    '........S123......777..544.....33...............',
+    '...................55...33.....321..............',
+    '...................44....21.......1.............',
+    '...................33.....1.....................',
+    '...................23...........................',
+    '..................1.............................',
+    '.......................T........................',
+    '............................S...................',
+    '................................................',
+    '................................................',
+    '................................................',
+    '................................................',
+  ],
+});
+
 /* ------------------------------------------------------------------
  * Icônes de titre du Hors-la-loi et du Bretteur.
  * Elles sont posées sur le fond sombre `#1c1a26` : elles doivent tenir par
@@ -1206,6 +1292,7 @@ export const PIXEL_MAPS = deepFreeze({
   outlawRevolver: OUTLAW_REVOLVER,
   outlawShot: OUTLAW_SHOT,
   bladesmanFlameBlade: BLADESMAN_FLAMEBLADE,
+  bladesmanFlameWheel: BLADESMAN_FLAMEWHEEL,
   iconRevolver: ICON_REVOLVER,
   iconSabre: ICON_SABRE,
   // Dragoon

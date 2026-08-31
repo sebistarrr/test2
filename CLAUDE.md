@@ -377,6 +377,25 @@ pendant que le Hors-la-loi descend de 3/6 à 2/6 face au Bretteur. Aucun des
 deux changements demandés ne visait l'équilibre ; ce déplacement est la
 conséquence assumée, pas une dérive à corriger.
 
+**Cinquième vague — demandée, purement visuelle cette fois.** Trois ajouts,
+aucun ne déplace la matrice :
+
+- **Lame ×1,3 de plus** (`head.scale` 1,448958 → 1,8836454). `handle.length`
+  recalé au ratio exact du PNG devient négatif (−31,26) — au-delà du point où
+  le pommeau se pose au centre de la bille, grandir encore ne peut que le
+  faire déborder derrière le pivot, jamais au-delà de son bord (rayon 41).
+- **`weapon.overBody: true`** — même drapeau que le Lancier. La manche, en
+  grande partie masquée par la bille jusqu'ici, passe désormais par-dessus :
+  bille, anneaux d'état et chiffre de PV compris. C'est ce qui rend le
+  `handle.length` négatif sans conséquence visuelle fâcheuse.
+- **Roue de flamme au déclenchement de BLADE RUSH**, remplace l'anneau plein
+  (`game.fx.ring`). Nouveau sprite pixel-art, `BLADESMAN_FLAMEWHEEL`
+  (`pixelmaps.js`) : moyeu à rayons et gemme, cerné de langues de feu et de
+  grains de cendre. Conçu (il n'y a pas de maquette pour cet effet), pas
+  transcrit — voir `docs/FICHES.md` pour le détail. Les cendres qui
+  l'accompagnent passent par `game.viewRng`, jamais `game.rng` : `Effects.
+  burst()` aurait tiré dans le flux de simulation.
+
 ---
 
 ## Langue

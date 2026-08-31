@@ -579,14 +579,59 @@ qu'avec les deux passages précédents, sans qu'aucun réglage ne l'ait visé
 segment découpé à la main.
 
 **`handle.length` recalé, `reach` et la hitbox inchangés.** `head.scale`
-(1,448958) fixe toujours la hauteur dessinée (`35 × scale`, `35` venant du
-repli texte) ; la largeur dessinée suit maintenant le **ratio réel du PNG**
-(969 × 279, mesuré sur le recadrage) plutôt que celui du pixel-art texte.
-`handle.length` est recalé à 18,71 pour que largeur dessinée + `handle.length`
-retombe exactement sur 197,6 — la pointe ne ment toujours pas sur la hitbox
-(invariant 5). Purement visuel : `reach`, `hitbox` et toutes les valeurs de
-gameplay sont inchangées, `tools/matrix.mjs` rend une matrice identique au
-caractère près.
+fixe toujours la hauteur dessinée (`35 × scale`, `35` venant du repli texte) ;
+la largeur dessinée suit le **ratio réel du fichier PNG** (486 × 140, mesuré
+sur le fichier final) plutôt que celui du pixel-art texte. `handle.length`
+est recalé pour que largeur dessinée + `handle.length` retombe exactement sur
+197,6 — la pointe ne ment toujours pas sur la hitbox (invariant 5). Purement
+visuel : `reach`, `hitbox` et toutes les valeurs de gameplay sont inchangées,
+`tools/matrix.mjs` rend une matrice identique au caractère près.
+
+### Lame regrandie, manche par-dessus la bille, roue de flamme
+
+**Trois demandes supplémentaires, toutes en écart visuel assumé — aucune ne
+touche `reach`, la hitbox ou une valeur de dégâts.**
+
+**Lame ×1,3 de plus.** `head.scale` repasse ×1,3 (1,448958 → 1,8836454, le
+même facteur que le premier agrandissement). `handle.length` est recalé avec
+le ratio exact du PNG (486 × 140) pour que la largeur dessinée retombe sur
+`reach` (197,6, inchangé) : il devient négatif (−31,26). Au-delà de la valeur
+qui posait le pommeau pile au centre de la bille (0), grandir encore ne peut
+que le faire déborder **derrière** le pivot — jamais au-delà du bord de la
+bille (rayon 41 > 31,26), donc le pommeau reste sur la silhouette de la
+bille, il ne la transperce pas.
+
+**`weapon.overBody: true` — même drapeau que le Lancier.** La manche, jusque
+là en grande partie masquée par la bille (`Fighter.draw()` peint l'arme
+**avant** le corps par défaut), passe désormais par-dessus : bille, contour,
+anneaux d'état et chiffre de PV compris, comme documenté dans `fighter.js`
+pour le Lancier. C'est ce qui rend le `handle.length` négatif ci-dessus sans
+conséquence : la portion qui déborde derrière le pivot se voit maintenant
+**sur** la bille au lieu d'être coupée par elle. Purement visuel — ni
+`bladeSegment()` ni la hitbox ne lisent ce drapeau, seul l'ordre de dessin
+en dépend.
+
+**Roue de flamme au déclenchement de BLADE RUSH.** Remplace l'anneau plein
+(`game.fx.ring`) par un sprite pixel-art dédié, `BLADESMAN_FLAMEWHEEL`
+(`pixelmaps.js`, 48 × 48) : un moyeu à rayons et gemme centrale, cerné de
+treize langues de flamme irrégulières et de grains de cendre. **Conçu, pas
+transcrit** — il n'y a pas de maquette pour cet effet, contrairement à
+l'arme — mais dessiné sur la même grille de pixels que le reste du roster.
+L'irrégularité des langues vient d'une graine fixe au moment de la
+conception (treize angles, longueurs et largeurs tirés une fois), pas d'un
+tirage en jeu : la carte ne change jamais, seules l'échelle et l'opacité
+l'animent (`abilities/bladesman.js`, `_drawRushWheel`) — 0,5 s, montée
+franche puis fondu.
+
+Les cendres qui l'accompagnent (`_spawnRushAsh`) sont posées via
+`game.viewRng`, jamais `game.rng` : `Effects.burst()` aurait tiré dans le
+flux de simulation (voir sa note dans `render/effects.js`, un piège déjà payé
+sur le Blizzard) — `_spawnRushAsh` appelle `game.fx.spawn()` directement avec
+des valeurs déjà tirées côté rendu, donc rien n'est consommé côté simulation.
+
+Purement décoratif : `render/flair.js` et ce nouvel effet passent tous deux
+par `viewRng`, `tools/matrix.mjs` rend une matrice identique au caractère
+près.
 
 ---
 

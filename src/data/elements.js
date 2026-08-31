@@ -1898,16 +1898,32 @@ const BLADESMAN = {
      *  fournie — lame, garde **et** manche/pommeau en un seul morceau, plus
      *  aucune part modélisée. `handle.width` reste à 0 : la manche est dans
      *  l'image, pas dans un rectangle. Voir `pixelmaps.js` pour l'écart à
-     *  l'invariant « aucun binaire dans le dépôt » que ça implique. */
-    handle: { length: 18.71, width: 0, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
-    /** `scale` inchangé (1,448958) : c'est ce qui fixe `headH` (35 × 1,448958,
-     *  la hauteur dessinée) indépendamment de l'image utilisée pour `head.sprite`
-     *  — texte ou PNG. `handle.length` est recalé à 18,71 pour que la largeur
-     *  réellement dessinée (`headH × ratio du PNG`, 969 × 279) retombe
-     *  exactement sur `reach` (197,6) : la pointe ne ment toujours pas sur la
-     *  hitbox (invariant 5), même si `map.w` (136, dans `pixelmaps.js`) ne
-     *  décrit plus que le pixel-art de repli, jamais lu pour ce calcul. */
-    head: { sprite: 'bladesmanFlameBlade', scale: 1.448958, anchorY: 0.5 },
+     *  l'invariant « aucun binaire dans le dépôt » que ça implique.
+     *
+     *  **Écart assumé, demandé — quatrième passage.** La lame regrandit ×1,3
+     *  (`head.scale` × 1,3, comme le premier agrandissement) et `handle.length`
+     *  se retrouve négatif (−31,26) : au-delà de la valeur qui posait le
+     *  pommeau pile au centre de la bille (0), un agrandissement supplémentaire
+     *  ne peut que le faire déborder **derrière** le pivot, dans l'axe opposé à
+     *  la lame — jamais au-delà du bord de la bille (rayon 41), donc le
+     *  pommeau reste sur la silhouette de la bille, pas planté dedans. Sans
+     *  incidence avant ce passage-ci : `overBody` (juste en dessous) rend
+     *  maintenant toute l'arme visible par-dessus la bille, y compris cette
+     *  portion. */
+    handle: { length: -31.26, width: 0, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
+    /** `scale` × 1,3 (1,448958 → 1,8836454) : seule la taille change,
+     *  `handle.length` est recalé pour que la largeur réellement dessinée
+     *  (`headH × ratio du PNG`, 486 × 140) retombe exactement sur `reach`
+     *  (197,6, inchangé) — la pointe ne ment toujours pas sur la hitbox
+     *  (invariant 5), même si `map.w`/`map.h` (dans `pixelmaps.js`) ne
+     *  décrivent plus que le pixel-art de repli, jamais lus pour ce calcul. */
+    head: { sprite: 'bladesmanFlameBlade', scale: 1.8836454, anchorY: 0.5 },
+    /** **L'arme passe par-dessus la bille — demandé.** Même drapeau que le
+     *  Lancier (voir sa fiche pour le détail d'ordre de dessin dans
+     *  `fighter.js`) : la manche, jusqu'ici en grande partie masquée par la
+     *  bille, devient entièrement visible. Purement visuel — `bladeSegment()`
+     *  et la hitbox ne lisent pas ce drapeau, seul `Fighter.draw()` le fait. */
+    overBody: true,
     /** La garde ne coupe pas : le tranchant commence après elle. Rayon de
      *  hitbox × 1,3 comme le reste de la lame. */
     hitbox: { from: 0.42, to: 1, radius: 22.1 },

@@ -40,6 +40,10 @@
  */
 
 import { TAU, clamp, wrapAngle } from '../../core/math.js';
+import { drawSpriteCentered } from '../../render/sprites.js';
+
+/** Durée de la roue de flamme au déclenchement de BLADE RUSH, en secondes. */
+const RUSH_WHEEL_LIFE = 0.5;
 
 export const bladesmanAbilities = {
   id: 'bladesman',
@@ -48,6 +52,7 @@ export const bladesmanAbilities = {
     f.state.plateau = 0; // temps passé au plafond
     f.state.overheat = false; // true = la lame s'effondre vers le plancher
     f.state.rush = false;
+    f.state.rushWheel = 0; // secondes restantes de la roue de flamme (rendu seul)
     // Rage infernale : minuterie propre, sans rapport avec la jauge d'ultime
     f.state.spec = 0; // secondes restantes de Rage infernale active
     f.state.specCd = f.el.special.first;
@@ -61,6 +66,7 @@ export const bladesmanAbilities = {
   update(f, dt, now, game) {
     const el = f.el;
     this.tickSpin(f, dt, now);
+    if (f.state.rushWheel > 0) f.state.rushWheel = Math.max(0, f.state.rushWheel - dt);
 
     /* ---------- ultime --------------------------------------------------- */
     const ult = el.ultimate;
@@ -119,8 +125,61 @@ export const bladesmanAbilities = {
     f.state.rush = true;
     f.boost = ult.duration;
     f.boostFactor = ult.speedBonus;
-    game.fx.ring(f.x, f.y, 20, 300, 0.45, 'rgba(249,115,22,0.9)', 8, true);
+    /** **Roue de flamme, demandée** — remplace l'anneau plein qui marquait le
+     *  déclenchement. `f.state.rushWheel` pilote `_drawRushWheel()` (rendu
+     *  seul) ; les cendres qui l'accompagnent sont posées ici via
+     *  `game.viewRng`, jamais `game.rng` : une décoration ne doit pas décaler
+     *  la simulation (invariant 2). */
+    f.state.rushWheel = RUSH_WHEEL_LIFE;
+    this._spawnRushAsh(f, game);
     game.shake(5, 0.3);
+  },
+
+  /**
+   * Cendres qui volent au déclenchement de la roue de flamme — poussière déjà
+   * posée le long de la lame (`weaponArc`), reprise ici en éclat ponctuel.
+   * `game.viewRng` d'un bout à l'autre : `game.fx.spawn()` ne tire rien lui-
+   * même, mais `burst()` l'aurait fait sur `game.rng` (voir sa note dans
+   * `render/effects.js`) — en repartant de `spawn()` directement, la
+   * décoration ne consomme jamais le flux de simulation.
+   */
+  _spawnRushAsh(f, game) {
+    for (let i = 0; i < 18; i++) {
+      const a = game.viewRng.range(0, TAU);
+      const v = game.viewRng.range(70, 220);
+      game.fx.spawn({
+        kind: 'spark',
+        x: f.x,
+        y: f.y,
+        vx: Math.cos(a) * v,
+        vy: Math.sin(a) * v,
+        life: game.viewRng.range(0.35, 0.8),
+        size: game.viewRng.range(2, 5),
+        color: game.viewRng.pick(['#3a322e', '#6e6458', '#8a837c']),
+        drag: 1.8,
+        gravity: 60,
+      });
+    }
+  },
+
+  /**
+   * Roue de flamme : moyeu à rayons et gemme, cerné de langues de feu
+   * irrégulières — `BLADESMAN_FLAMEWHEEL` (`pixelmaps.js`). Un seul paramètre
+   * anime tout : `f.state.rushWheel`, qui décompte dans `update()`. La carte
+   * elle-même ne bouge jamais, seules l'échelle et l'opacité varient — c'est
+   * ce qui garde le dessin lisible pendant qu'il grossit puis s'efface.
+   */
+  _drawRushWheel(ctx, f) {
+    if (f.state.rushWheel <= 0) return;
+    const t = 1 - f.state.rushWheel / RUSH_WHEEL_LIFE; // 0 au cast, 1 à la fin
+    const pop = Math.min(1, t / 0.3);
+    const scale = 0.35 + 0.9 * (1 - (1 - pop) ** 3); // montée franche, sans à-coup
+    const alpha = t < 0.5 ? 1 : Math.max(0, 1 - (t - 0.5) / 0.5);
+    if (alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    drawSpriteCentered(ctx, 'bladesmanFlameWheel', f.x, f.y, 210 * scale);
+    ctx.restore();
   },
 
   /**
@@ -349,7 +408,12 @@ export const bladesmanAbilities = {
     ctx.restore();
   },
 
-  drawOver() {},
+  /** La roue de flamme se dessine **après** le combattant (`match.js` appelle
+   *  `drawOver` une fois la bille et l'arme peintes) : elle doit se lire comme
+   *  un flash autour de lui, pas comme une nappe posée derrière. */
+  drawOver(ctx, f) {
+    this._drawRushWheel(ctx, f);
+  },
 
   barValue(f) {
     if (f.ult.active > 0) return f.ult.active / f.el.ultimate.duration;
