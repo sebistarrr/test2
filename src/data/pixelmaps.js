@@ -827,7 +827,17 @@ export const OUTLAW_SHOT = deepFreeze({
  * flamme, du rouge sombre à la base au jaune vif en pointe.
  * ------------------------------------------------------------------ */
 export const BLADESMAN_FLAMEBLADE = deepFreeze({
-  w: 96,
+  /**
+   * **Manche ajoutée, demandée.** Les 40 premières colonnes sont une manche
+   * tressée dessinée (pas transcrite : la maquette fournie pour la manche est
+   * une image bruitée — JPEG sur damier de transparence — bien plus fine que
+   * la trame de ce sprite, un ré-échantillonnage direct y donnait du bruit
+   * poivre-et-sel). Mêmes proportions que la maquette : cylindre étroit qui
+   * s'évase vers la garde. Le pommeau dorée à gemme de la maquette n'est pas
+   * dessiné : il tomberait entièrement derrière la bille (rayon 41), les
+   * ~28 premières colonnes de la manche le sont déjà.
+   */
+  w: 136,
   h: 35,
   palette: {
     1: '#fada34', // jaune vif : pointe de flamme
@@ -849,46 +859,49 @@ export const BLADESMAN_FLAMEBLADE = deepFreeze({
     H: '#4a2824',
     I: '#281f22', // garde, presque noir
     J: '#500a15',
-    K: '#12080a', // contour
+    K: '#12080a', // contour (partagé avec la manche)
     L: '#64000a',
     M: '#000000', // creux entre les langues de flamme
+    N: '#1a1720', // manche : cuir tressé, ton de base
+    O: '#100d14', // manche : creux du tressage
+    P: '#2b2632', // manche : fil clair du tressage
   },
   rows: [
-    '..........KK....................................................................................',
-    '.........KKI..............B.....................................................................',
-    '........IKB..............69A6A..................................................................',
-    '....KKKLJIM.............6359AA6.................................................................',
-    '...KKLEJIA..............BABBA...................................................................',
-    'MMIEJJLJKI..............96EDCE..................................................................',
-    'MHELJJJKII.........BE6HA137EA96.AB..............................................................',
-    '.IHJIIKIBM........BE5E98439BBA9AA.............................BAB...............................',
-    'KJIKKHAIH.........H9D5D73E59EABB66.......BBAB....BA..........B97EAAA............................',
-    'LJIKHIIIH.....HHI.ADFGC4H.BEEA.AE6....IA95334BBAA9AAA........A1379EA............................',
-    'JJKHIHBB....HDFL.KDFGGC5K..........II5458822BAJB66..........A33AAA..............................',
-    'IIIIIBBIKMKGFLFEHDFGGLDC8HHK....KH958C4CD22K.............IAE31213AB..............AAB............',
-    'KMHIHIKIJJGGLLLFFGLLGGDDC8777545448DD9FF8421K........KK323733721HAB.............A559A...........',
-    'MIIAIKKHLLGGLGGLLLGGFFDCFFC87778CCCDDCCCDC4311HMMMMB2234885C731K........IIIIH..63234EEEA........',
-    'KIAIIKIIJJLLLLLGGLLGGLGDCFFDFFFFFCDD77558CC74322334478C844888416M....BA11111112AAABA9EBB........',
-    'IB6IIIHIIHJJIIJLJJLLGFFFFFCFDFDCCDFCCCCCC88D8877778C87424457C84211HH11433333222116HB....AAAA....',
-    'JJJABK37FIIIHHHHHHBBAGFCFFFFFDCFFC858CCC788CD87DD8875337534458854333333444444432211AHJJE9557EB..',
-    'JJEFJ1B27DF999FFGGJHBA66DFFCFFFFCCCCCC8CC8888DDD77887788C8743358775434555453221222222444424779A.',
-    'JJLH6K3DFLIIJJIIHHHBBEFFDDDFDCCCCCCCCFFD88888887888C8CCCCCC7545733345773336MMMM3112111125AEBAAEB',
-    'IAAIIHEJIHIJIIHLJHGFDDDDDFDCFFDCCCCDFC77888844888D85C5433378845555754412B..........IKKKKA.....AB',
-    'KIAIIKBIJJLLLJLGGDDDFCCDDFFFDDDD8CDFC8887CC85854775C422223223532232211A.........................',
-    'MII6IIIJLLLGLLLGFFGLLLLFCDFGFDFFFF8444444458CC834CC41BI...II11122211B...........................',
-    'KKHIAIIBJLLLGGLGGLLDCCCGFDFDFFDC854433HHH6234CCC45832...JAA...IIIHII............................',
-    'IKHIMBHIIMJGGLLDGGD88778DDDDCCF854AM.......KA33555C823363E3A....................................',
-    'KJKHIBBB...IFGLFFD9BBBBA5C75FDCC43B..A........MA22244116BBEEB...................................',
-    'JJIHHKIIK...KEGGDCBBBBBBBB9445CC81AHA9A..6A......A934AAAEAA.....................................',
-    'KLIMIBBHH....HEFGD9HEABBBBB4EBB775215ABBAAA.......A13559E6A.....................................',
-    '.IIIKIKIBM.....IEDC8756BBBBA6B.EE5239AE9EE.........A329A........................................',
-    'KBLJIHHKHK.......JA6ABJB36BBBLA..B92259AABB.........AAA.........................................',
-    'KKEEJHJIII..............A19EA.....AE9EA.............69AE........................................',
-    '...KILEJIB..............AEEA.........................AAB........................................',
-    '....KJHLJHK.....................................................................................',
-    '........IKH.....................................................................................',
-    '.........KHI....................................................................................',
-    '..........MI....................................................................................',
+    '..................................................KK....................................................................................',
+    '.................................................KKI..............B.....................................................................',
+    '................................................IKB..............69A6A..................................................................',
+    '............................................KKKLJIM.............6359AA6.................................................................',
+    '...........................................KKLEJIA..............BABBA...................................................................',
+    '.......................................KMMIEJJLJKI..............96EDCE..................................................................',
+    '.....................................KKPMHELJJJKII.........BE6HA137EA96.AB..............................................................',
+    '...................................KKNOP.IHJIIKIBM........BE5E98439BBA9AA.............................BAB...............................',
+    '.................................KKPNOPNKJIKKHAIH.........H9D5D73E59EABB66.......BBAB....BA..........B97EAAA............................',
+    '...............................KKOPNNOPNLJIKHIIIH.....HHI.ADFGC4H.BEEA.AE6....IA95334BBAA9AAA........A1379EA............................',
+    '.............................KKNNOPNOPNNJJKHIHBB....HDFL.KDFGGC5K..........II5458822BAJB66..........A33AAA..............................',
+    '...........................KKOPNOPNNOPNOIIIIIBBIKMKGFLFEHDFGGLDC8HHK....KH958C4CD22K.............IAE31213AB..............AAB............',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKOPNNOPNOPNNOKMHIHIKIJJGGLLLFFGLLGGDDC8777545448DD9FF8421K........KK323733721HAB.............A559A...........',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKNNOPNOPNNOPNOPMIIAIKKHLLGGLGGLLLGGFFDCFFC87778CCCDDCCCDC4311HMMMMB2234885C731K........IIIIH..63234EEEA........',
+    'PNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPKIAIIKIIJJLLLLLGGLLGGLGDCFFDFFFFFCDD77558CC74322334478C844888416M....BA11111112AAABA9EBB........',
+    'PNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNIB6IIIHIIHJJIIJLJJLLGFFFFFCFDFDCCDFCCCCCC88D8877778C87424457C84211HH11433333222116HB....AAAA....',
+    'NNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNJJJABK37FIIIHHHHHHBBAGFCFFFFFDCFFC858CCC788CD87DD8875337534458854333333444444432211AHJJE9557EB..',
+    'NOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNJJEFJ1B27DF999FFGGJHBA66DFFCFFFFCCCCCC8CC8888DDD77887788C8743358775434555453221222222444424779A.',
+    'NOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOJJLH6K3DFLIIJJIIHHHBBEFFDDDFDCCCCCCCCFFD88888887888C8CCCCCC7545733345773336MMMM3112111125AEBAAEB',
+    'OPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOIAAIIHEJIHIJIIHLJHGFDDDDDFDCFFDCCCCDFC77888844888D85C5433378845555754412B..........IKKKKA.....AB',
+    'OPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPNNOPNOPKIAIIKBIJJLLLJLGGDDDFCCDDFFFDDDD8CDFC8887CC85854775C422223223532232211A.........................',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKNOPNNOPNOPNNOPMII6IIIJLLLGLLLGFFGLLLLFCDFGFDFFFF8444444458CC834CC41BI...II11122211B...........................',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKPNOPNNOPNOPNKKHIAIIBJLLLGGLGGLLDCCCGFDFDFFDC854433HHH6234CCC45832...JAA...IIIHII............................',
+    '..........................KKKNOPNOPNNOPNIKHIMBHIIMJGGLLDGGD88778DDDDCCF854AM.......KA33555C823363E3A....................................',
+    '...........................KKKKNNOPNOPNNKJKHIBBB...IFGLFFD9BBBBA5C75FDCC43B..A........MA22244116BBEEB...................................',
+    '.............................KKKKPNNOPNOJJIHHKIIK...KEGGDCBBBBBBBB9445CC81AHA9A..6A......A934AAAEAA.....................................',
+    '...............................KKKKOPNNOKLIMIBBHH....HEFGD9HEABBBBB4EBB775215ABBAAA.......A13559E6A.....................................',
+    '.................................KKKKNOP.IIIKIKIBM.....IEDC8756BBBBA6B.EE5239AE9EE.........A329A........................................',
+    '...................................KKKKPKBLJIHHKHK.......JA6ABJB36BBBLA..B92259AABB.........AAA.........................................',
+    '.....................................KKKKKEEJHJIII..............A19EA.....AE9EA.............69AE........................................',
+    '.......................................K...KILEJIB..............AEEA.........................AAB........................................',
+    '............................................KJHLJHK.....................................................................................',
+    '................................................IKH.....................................................................................',
+    '.................................................KHI....................................................................................',
+    '..................................................MI....................................................................................',
   ],
 });
 

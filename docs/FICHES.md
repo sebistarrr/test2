@@ -540,6 +540,42 @@ plus marqué du roster réduit, monte de 4/6 à 5/6 ; le Hors-la-loi descend de
 3/6 à 2/6 contre le Bretteur mais reste imbattu en mirroir et contre le
 Lancier. `tools/matrix-reference.txt` a été régénérée en conséquence.
 
+### Manche redessinée
+
+**Le rectangle plein comblait le vide, mais ne ressemblait à rien.** Après
+l'agrandissement ×1,3 ci-dessus, `handle.width` était passé de 0 à 9 pour
+couvrir les 17,5 px de vide entre le bord de la bille et le sprite — un
+rectangle uni, dans les tons de la garde. Efficace contre le vide, mais le
+design attendu (maquette fournie) montre une **manche tressée noire**, avec un
+pommeau doré à gemme rouge. Le rectangle ne pouvait pas rendre le tressage.
+
+**La manche est maintenant dans le sprite, pas dans un rectangle.**
+`BLADESMAN_FLAMEBLADE` (`pixelmaps.js`) gagne 40 colonnes devant la garde —
+`w: 96 → 136` — avec un nouveau tressage (`N`/`O`/`P`, bandes diagonales
+alternées) qui s'évase vers la garde existante, à l'identique de sa forme au
+raccord. `handle.length` redescend à 0,54 (`width` repasse à 0, la manche
+n'a plus besoin du rectangle) pour que `136 × 1,448958 + 0,54 = 197,6` : la
+portée ne bouge pas d'un pixel.
+
+**Le pommeau à gemme de la maquette n'est pas dessiné : il tomberait
+entièrement derrière la bille.** Rayon de bille 41 ; sur les 40 colonnes
+ajoutées, seules les ~12 dernières (celles qui s'évasent vers la garde,
+≈17,5 px) dépassent du bord de la bille. Dessiner le pommeau doré dans les 28
+premières colonnes, qui ne se voient jamais, aurait été du travail perdu — et
+aurait faussé la lecture d'un désaccord qui n'existe pas.
+
+**Dessinée, pas ré-échantillonnée.** La maquette de la manche est une image
+bruitée (JPEG sur damier de transparence), à une résolution largement
+supérieure à la trame du sprite (35 lignes) : un ré-échantillonnage direct par
+blocs — la méthode habituelle pour ce dépôt — donnait du bruit poivre-et-sel
+plutôt qu'un tressage lisible, le compression JPEG créant des artefacts plus
+fins que la taille des blocs de réduction. Le tressage est donc **dessiné** en
+reprenant la silhouette et les proportions de la maquette (cylindre étroit qui
+s'évase vers la garde), pas transcrite pixel à pixel.
+
+Purement visuel : `reach`, `hitbox` et toutes les valeurs de gameplay sont
+inchangées, `tools/matrix.mjs` rend une matrice identique au caractère près.
+
 ---
 
 ## 🐲 DRAGOON — `lancer` (affiché « DRAGOON »)

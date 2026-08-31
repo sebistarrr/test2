@@ -1889,18 +1889,21 @@ const BLADESMAN = {
      *  décrit le plancher, le module décrit le cycle. */
     spin: 5.03,
     spinDir: 1,
-    /** La garde est déjà dans le sprite ; `length` la pose à r 45 × 1,3 = 58,5,
-     *  au-delà du bord de la bille dans la même proportion que sur la vidéo.
-     *  **Écart visuel assumé, demandé** : à cette distance du bord de la bille
-     *  (radius 41), le sprite laissait un vide de 17,5 px avant l'agrandissement
-     *  ×1,3 — trop grand pour rester discret comme les 4 px d'avant. `width`
-     *  passe de 0 à 9 pour poser une manche qui comble ce vide, dans les tons
-     *  déjà présents dans la garde du sprite (palette `A: #89523c`). Pur
-     *  changement de dessin : `length` et donc la portée/hitbox ne bougent pas. */
-    handle: { length: 58.5, width: 9, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
-    /** `scale` × 1,3 = 1,448958 : 96 × 1,448958 = 139,1, plus `handle.length`
-     *  58,5 = 197,6, exactement la nouvelle portée ci-dessus — la pointe
-     *  dessinée ne ment toujours pas sur la hitbox (invariant 5). */
+    /** **Design revu, demandé.** Le premier comblement du vide (rectangle
+     *  plein, `width: 9`) marchait mais ne ressemblait pas à la manche
+     *  tressée de la maquette fournie. La manche est maintenant **dans le
+     *  sprite** (40 colonnes ajoutées devant la garde dans
+     *  `BLADESMAN_FLAMEBLADE`, voir `pixelmaps.js`) plutôt que dans ce
+     *  rectangle, qui redevient inutile : `width` repasse à 0, comme sur les
+     *  dix autres armes dont la garde/manche est déjà dans le sprite. */
+    handle: { length: 0.54, width: 0, color: '#8d7b62', dark: '#5c4f3c', outline: '#171009', gem: null },
+    /** `scale` inchangé (1,448958) : seule la largeur de la carte grandit,
+     *  de 96 à 136 cellules (40 de plus pour la manche). `handle.length`
+     *  recalé à 0,54 pour que `136 × 1,448958 + 0,54 = 197,6`, la portée
+     *  inchangée depuis l'agrandissement ×1,3 — la pointe dessinée ne ment
+     *  toujours pas sur la hitbox (invariant 5). Les ~28 premières colonnes
+     *  de la manche tombent derrière la bille (rayon 41) ; seule sa fin
+     *  évasée, contre la garde, est visible — c'est voulu, voir `pixelmaps.js`. */
     head: { sprite: 'bladesmanFlameBlade', scale: 1.448958, anchorY: 0.5 },
     /** La garde ne coupe pas : le tranchant commence après elle. Rayon de
      *  hitbox × 1,3 comme le reste de la lame. */
