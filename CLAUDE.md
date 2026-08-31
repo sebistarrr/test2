@@ -396,6 +396,31 @@ aucun ne déplace la matrice :
   l'accompagnent passent par `game.viewRng`, jamais `game.rng` : `Effects.
   burst()` aurait tiré dans le flux de simulation.
 
+**Sixième vague — corrige un effet de bord de la cinquième, plus une demande
+transverse aux trois combattants greffés.**
+
+- **`look.hpOverWeapon` — nouveau drapeau opt-in, `fighter.js`.** La manche
+  par-dessus la bille (vague précédente) recouvrait le chiffre de PV, resté
+  sur l'ordre par défaut (chiffre avant l'arme) : il disparaissait dessous,
+  en plus d'être sombre sur une manche sombre. Le drapeau pose le chiffre
+  **après** l'arme quand il est vrai ; faux par défaut, donc les dix autres
+  combattants — Lancier compris, dont la lance ne recouvre le centre qu'en
+  charge — gardent leur ordre. Seul le Bretteur le porte.
+- **`hpColor` du Bretteur revient au crème mesuré** (`#f5f2ea`, assombri à
+  `#2a0e05` du temps où le chiffre se lisait sur l'orange du corps, pas sur
+  la manche).
+- **Les jauges d'ultime et de pouvoir spécial partagent maintenant leur
+  couleur**, pour les trois combattants qui portent les deux (Hors-la-loi,
+  Bretteur, Lancier) : la jauge d'ultime reprend exactement `barFill`/
+  `barText` de la jauge de pouvoir spécial juste en dessous. Taille et police
+  étaient déjà partagées (`HUD.special` recopie `HUD.bar`, `render/hud.js` les
+  trace avec la même fonction) ; seule la couleur restait volontairement
+  distincte, pour qu'on reconnaisse les deux jauges au premier coup d'œil —
+  c'est ce choix qui est renversé ici, sur demande explicite.
+
+Les trois changements sont purement visuels ; matrice inchangée au caractère
+près.
+
 ---
 
 ## Langue

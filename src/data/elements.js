@@ -1581,8 +1581,13 @@ const OUTLAW = {
     nameRef: 'HIGH NOON',
     barLabel: 'HIGH NOON',
     barLabelFr: 'PLEIN SOLEIL',
-    barFill: '#3f97c9',
-    barText: '#fdf7ed',
+    /** **Écart assumé, demandé.** Reprend exactement la couleur de la jauge
+     *  de Blizzard juste en dessous (`special.barFill`/`barText`) : les deux
+     *  jauges d'un même combattant doivent se lire comme une paire — taille,
+     *  police (déjà partagées via `HUD.bar`/`HUD.special`, voir `tuning.js`)
+     *  et désormais couleur aussi. */
+    barFill: '#3fbde0',
+    barText: '#f2fdff',
     /** Mesuré : charge linéaire de 1,13 px/image sur 238 px utiles → 7,0 s.
      *  C'est une **horloge pure** : la jauge gauche ne réagit pas aux coups. */
     chargeRate: 100 / 7,
@@ -1790,12 +1795,20 @@ const BLADESMAN = {
     bodyHit: '#e4e4e6', // mesuré : le disque touché blanchit une image entière
     outline: '#181008', // pipette : (24,13,7)
     outlineWidth: 5,
-    /** **Écart assumé au relevé.** La vidéo écrit les PV en crème `#F5F2EA`
-     *  avec un contour sombre ; ce moteur ne pose aucun contour sur le
-     *  chiffre, et le crème sur l'orange clair devient illisible. */
-    hpColor: '#2a0e05',
+    /** **Écart assumé, demandé — deux passages.** D'abord posé sombre
+     *  (`#2a0e05`) parce que le crème mesuré de la vidéo (`#F5F2EA`) se
+     *  noyait sur l'orange clair du corps. Depuis que `overBody` (plus bas)
+     *  fait passer la manche par-dessus la bille, c'est ce sombre qui se noie
+     *  — noir sur les tons presque noirs de la manche. Le crème mesuré
+     *  redevient donc le bon choix : la manche est sombre, pas le corps. */
+    hpColor: '#f5f2ea',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
+    /** **Demandé.** Sans ce drapeau, le chiffre se pose **avant** l'arme
+     *  (l'ordre par défaut) et la manche — par-dessus la bille depuis
+     *  `overBody` — le recouvrirait entièrement au centre. Voir la note dans
+     *  `fighter.js` (`draw()`) pour l'ordre exact que ce drapeau inverse. */
+    hpOverWeapon: true,
     /** **Écart assumé au relevé, poussé plus loin — demandé.** L'aura passive
      *  était vert-jaune (172,226,22), puis rouge-orangé pour suivre la lame de
      *  braise ; elle reprend maintenant la teinte exacte de l'aura du Feu
@@ -1988,11 +2001,14 @@ const BLADESMAN = {
     nameRef: 'BLADE RUSH',
     barLabel: 'BLADE RUSH',
     barLabelFr: 'RUÉE DE LAME',
-    /** **Écart assumé, demandé.** La jauge était en or terne (`#dcc462`),
-     *  seule note du bas d'écran à ne pas suivre le reskin flamme ; elle passe
-     *  à l'orange de l'aura, texte assombri en ton braise pour rester lisible. */
-    barFill: '#f97316',
-    barText: '#2a0e05',
+    /** **Écart assumé, demandé — deux passages.** D'abord passée à l'orange
+     *  de l'aura (`#f97316`, texte assombri) pour suivre le reskin flamme.
+     *  Reprend maintenant exactement la couleur de la jauge de Rage infernale
+     *  juste en dessous : les deux jauges d'un combattant doivent se lire
+     *  comme une paire — taille, police (déjà partagées via `HUD.bar`/
+     *  `HUD.special`) et désormais couleur aussi. */
+    barFill: '#ea580c',
+    barText: '#fff1f0',
     /** Mesuré : cycles de 273, 214 et 333 images — donc **pas une simple
      *  horloge**. Modèle retenu : horloge de 9 s + 6 % par coup d'épée. */
     chargeRate: 100 / 9,
@@ -2531,13 +2547,14 @@ const LANCER = {
     nameRef: 'JUMP',
     barLabel: 'JUMP',
     barLabelFr: 'BOND',
-    /** La jauge suit la teinte du corps, sans quoi elle resterait le dernier
-     *  fragment de l'ancienne identité à l'écran. C'est le violet sombre de la
-     *  hampe de la lance électrique — et il retombe tout près de l'indigo
-     *  `#594984` pipetté sur la vidéo, que le passage par le cuivre avait
-     *  écarté. */
-    barFill: '#5d3d8e',
-    barText: '#ffffff',
+    /** **Écart assumé, demandé.** La jauge suivait la teinte du corps
+     *  (`#5d3d8e`, le violet sombre de la hampe). Reprend maintenant
+     *  exactement la couleur de la jauge du Lien d'essence juste en dessous :
+     *  les deux jauges d'un combattant doivent se lire comme une paire —
+     *  taille, police (déjà partagées via `HUD.bar`/`HUD.special`) et
+     *  désormais couleur aussi. */
+    barFill: '#7c3aed',
+    barText: '#f3e8ff',
     /** Mesuré : +0,10 de remplissage par seconde, donc jauge pleine en ~10 s. */
     chargeRate: 10,
     /** Mesuré : marches de ~8 % à chaque touche portée. */

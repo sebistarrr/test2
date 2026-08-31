@@ -633,6 +633,50 @@ Purement décoratif : `render/flair.js` et ce nouvel effet passent tous deux
 par `viewRng`, `tools/matrix.mjs` rend une matrice identique au caractère
 près.
 
+### Chiffre de PV au-dessus de la manche
+
+**La manche, désormais par-dessus la bille (`overBody`), recouvrait le
+chiffre de PV — resté, lui, sur l'ordre de dessin par défaut (avant l'arme).**
+Le chiffre disparaissait sous elle, en plus d'être sombre (`#2a0e05`) sur une
+manche elle-même sombre — noir sur noir, illisible dans les deux cas à la
+fois.
+
+**Nouveau drapeau `look.hpOverWeapon`, opt-in.** `fighter.js` (`draw()`) pose
+le chiffre de PV **après** l'arme quand ce drapeau est vrai, au lieu
+d'avant — l'ordre par défaut, gardé pour les dix autres combattants. Le
+Lancier (qui a aussi `overBody`) ne le porte pas : sa lance ne recouvre le
+centre qu'en charge, et `CLAUDE.md` documente déjà ce compromis comme voulu ;
+le poser sur les onze aurait défait un choix qui n'était pas remis en cause.
+
+**`hpColor` revient au crème mesuré (`#f5f2ea`).** Il avait été assombri
+uniquement parce que la manche était alors masquée par la bille et que le
+chiffre se lisait sur l'orange du corps — un crème mesuré s'y noyait. Avec
+`overBody`, c'est l'inverse : le chiffre se lit maintenant sur la manche,
+sombre, donc c'est le crème mesuré qui redevient le bon choix.
+
+Purement visuel — aucune valeur de gameplay ne bouge, matrice inchangée.
+
+### Jauges d'ultime et de pouvoir spécial, même couleur
+
+**Demandé pour les trois combattants qui portent les deux jauges** (Hors-la-loi,
+Bretteur, Lancier) : la jauge d'ultime (la première) reprend désormais
+exactement la couleur de la jauge de pouvoir spécial (la seconde) juste en
+dessous.
+
+| Combattant | Jauge d'ultime | Couleur reprise de |
+| --- | --- | --- |
+| Hors-la-loi | HIGH NOON : `#3f97c9` → `#3fbde0` / texte `#fdf7ed` → `#f2fdff` | Blizzard |
+| Bretteur | BLADE RUSH : `#f97316` → `#ea580c` / texte `#2a0e05` → `#fff1f0` | Rage infernale |
+| Lancier | BOND : `#5d3d8e` → `#7c3aed` / texte `#ffffff` → `#f3e8ff` | Lien d'essence |
+
+**Taille et police l'étaient déjà.** `HUD.special` (`tuning.js`) recopie
+`HUD.bar` à l'ordonnée près, et les deux passent par la **même fonction**
+(`drawGauge` dans `render/hud.js`) : seule la couleur restait propre à
+chaque jauge, par choix — pour qu'on les distingue au premier coup d'œil.
+C'est ce choix qui est renversé ici, sur demande explicite.
+
+Purement visuel — aucune valeur de gameplay ne bouge, matrice inchangée.
+
 ---
 
 ## 🐲 DRAGOON — `lancer` (affiché « DRAGOON »)

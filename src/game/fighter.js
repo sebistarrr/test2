@@ -471,17 +471,30 @@ export class Fighter {
       ctx.fill();
     }
 
-    // points de vie
-    ctx.font = look.hpFont;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = look.hpColor;
-    ctx.fillText(String(Math.max(0, Math.ceil(this.hp))), this.x, this.y + look.hpOffsetY);
+    /**
+     * `look.hpOverWeapon` : le chiffre de PV se pose **après** l'arme au lieu
+     * d'avant — opt-in, faux par défaut, donc n'affecte que qui le demande.
+     * Le Bretteur en a besoin : sa manche passe par-dessus la bille
+     * (`overBody`) et couvre le centre où le chiffre se pose, en tons sombres
+     * — sans ce drapeau, le chiffre resterait invisible sous elle. Le Lancier
+     * ne le porte pas : sa lance ne recouvre le centre qu'en charge, et
+     * `CLAUDE.md` documente déjà ce compromis-là comme voulu.
+     */
+    const hpOverWeapon = look.hpOverWeapon === true;
+    const drawHp = () => {
+      ctx.font = look.hpFont;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = look.hpColor;
+      ctx.fillText(String(Math.max(0, Math.ceil(this.hp))), this.x, this.y + look.hpOffsetY);
+    };
+    if (!hpOverWeapon) drawHp();
 
     /**
-     * `weapon.overBody` : l'arme est peinte **en dernier**, après le corps,
-     * les anneaux d'état *et* le chiffre de PV — donc strictement au-dessus de
-     * la balle, en permanence.
+     * `weapon.overBody` : l'arme est peinte **en dernier**, après le corps et
+     * les anneaux d'état — donc strictement au-dessus de la balle, en
+     * permanence. Elle passe aussi après le chiffre de PV, sauf si
+     * `look.hpOverWeapon` demande l'inverse (voir plus haut).
      *
      * Elle passait auparavant juste avant le chiffre, pour garder celui-ci
      * lisible ; mais les digits traversaient alors la lance, ce qui se lit
@@ -490,6 +503,7 @@ export class Fighter {
      * charge, la lance peut masquer une partie du chiffre.
      */
     if (overBody) this.paintWeapon(ctx);
+    if (hpOverWeapon) drawHp();
   }
 
   auraVisible() {
