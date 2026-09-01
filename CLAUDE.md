@@ -533,7 +533,7 @@ n'est pas repris d'un autre combattant, il est conçu pour le Shinobi.
 | --- | --- |
 | Apparaît | 130 px derrière le Shinobi (calé dans l'arène), 5 s après le début du duel, puis toutes les 12 s |
 | PV | 20 (demandé), affichés comme ceux d'un vrai combattant |
-| Rendu | **identique au vrai Shinobi** — voir plus bas — à 88 % d'opacité, seul indice visuel de qui porte les PV du duel |
+| Rendu | **identique au vrai Shinobi, sans l'arme** — voir plus bas — à 88 % d'opacité, seul indice visuel de qui porte les PV du duel |
 | Se fait toucher | par l'arme adverse (mêlée) et par les projectiles adverses, comme un vrai combattant |
 | Riposte | jette des shurikens vers l'adversaire, toutes les 1,1 s |
 | Disparaît | **uniquement à 0 PV** (demandé, permanent sinon) — une gerbe |
@@ -607,6 +607,16 @@ blocage joue dans les deux sens (le vrai Shinobi peut lui-même se faire
 bloquer par son propre clone) : aucune règle ne l'empêche, et aucun banc n'en
 a montré le besoin. Toujours confiné aux seules lignes `wind` ;
 `tools/matrix-reference.txt` régénérée une troisième fois.
+
+**Arme retirée du clone, purement visuel.** Demandé : le clone ne porte plus
+de shuriken sur lui, alors qu'il continue d'en *jeter* (`throwFromClone` est
+inchangé — c'est un tir, pas une arme tenue). `customWeapon` passe de `null`
+à un no-op (`() => {}`) : `paintWeapon()` appelle `this.customWeapon(ctx)` au
+lieu de `this.drawWeapon()`, donc rien ne se dessine. Les champs
+`weaponAngle`/`weaponTwirl`/`weaponLateral`, qui ne servaient qu'à ce rendu,
+disparaissent avec lui — plus rien ne les lit. Matrice inchangée au fichier
+près : `paintWeapon` n'est jamais lu par `weaponHit()` ni par la collision de
+corps, seulement par le rendu.
 
 ---
 

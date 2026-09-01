@@ -184,9 +184,6 @@ export const windAbilities = {
 
     if (c) {
       c.flash = Math.max(0, c.flash - dt);
-      // l'arme tourne sur place, comme celle d'un vrai combattant immobile —
-      // purement décoratif, ça ne consomme aucun aléa
-      c.weaponAngle = wrapAngle(c.weaponAngle + f.el.weapon.spin * dt);
 
       const target = f.opponent;
 
@@ -274,10 +271,11 @@ export const windAbilities = {
       // toujours haut la maintient éteinte (`auraVisible()` la lit telle quelle)
       ability: { timer: 999 },
       ult: { ready: false, active: 0 },
-      weaponAngle: f.weaponAngle,
-      weaponTwirl: 0,
-      weaponLateral: 0,
-      customWeapon: null,
+      // pas d'arme rattachée au corps — demandé : le clone riposte par ses
+      // propres shurikens (`throwFromClone`), sans en porter un sur lui.
+      // `paintWeapon()` appelle `customWeapon` s'il est défini au lieu de
+      // `drawWeapon()`, donc un no-op suffit à ne rien dessiner.
+      customWeapon: () => {},
       attackTimer: sp.attack.interval * 0.5, // première riposte plus rapide qu'un cycle complet
     };
     Object.setPrototypeOf(clone, Fighter.prototype);

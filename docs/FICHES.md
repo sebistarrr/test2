@@ -401,7 +401,7 @@ stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
 | Apparition | 5 s puis toutes les 12 s (après une mort), à 130 px derrière le Shinobi |
 | Durée | **permanente** — demandé ; seuls ses PV le font disparaître |
 | Riposte | shuriken vers l'adversaire toutes les 1,1 s, attribué au vrai Shinobi (charge son ultime) |
-| Rendu | identique au vrai combattant (même prototype `Fighter`), 88 % d'opacité |
+| Rendu | identique au vrai combattant (même prototype `Fighter`), **sans arme**, 88 % d'opacité |
 | Corps | **solide** — bouscule l'adversaire et le vrai Shinobi, personne ne le traverse |
 | Jauge | `SHADOW CLONE`, sous `TEMPEST VOLLEY`, mêmes couleurs |
 
@@ -422,6 +422,12 @@ encaisse tout l'écartement — écrite dans `wind.js` pour rester confinée au
 module. Le blocage joue dans les deux sens : le vrai Shinobi peut aussi se
 faire bloquer par son propre clone, sans que ça n'ait posé de problème au
 banc. `tools/matrix-reference.txt` régénérée une troisième fois.
+
+**Arme retirée du clone, purement visuel.** Il continue de jeter des
+shurikens (`throwFromClone`, inchangé) mais n'en porte plus sur lui :
+`customWeapon` passe de `null` à un no-op, ce qui coupe `drawWeapon()` sans
+toucher au reste du rendu hérité de `Fighter.prototype`. Matrice inchangée
+au fichier près.
 
 ---
 
