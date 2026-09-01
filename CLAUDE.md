@@ -536,7 +536,7 @@ n'est pas repris d'un autre combattant, il est conçu pour le Shinobi.
 | Rendu | **identique au vrai Shinobi** — voir plus bas — à 88 % d'opacité, seul indice visuel de qui porte les PV du duel |
 | Se fait toucher | par l'arme adverse (mêlée) et par les projectiles adverses, comme un vrai combattant |
 | Riposte | jette des shurikens vers l'adversaire, toutes les 1,1 s |
-| Disparaît | à 0 PV, ou après 6 s s'il n'a pas été tué — dans les deux cas, une gerbe |
+| Disparaît | **uniquement à 0 PV** (demandé, permanent sinon) — une gerbe |
 | Jauge | seconde rangée du HUD, `SHADOW CLONE`, sous `TEMPEST VOLLEY` — mêmes couleurs (convention de la sixième vague du Bretteur) |
 
 **Le moteur ne connaît que deux combattants, et ce n'est pas près de
@@ -581,6 +581,16 @@ contre 0/9 avant. Toutes les lignes n'impliquant pas `wind` sont
 **identiques au caractère près** : le changement reste confiné à ses propres
 affrontements (invariant de la matrice). `tools/matrix-reference.txt`
 régénérée en conséquence.
+
+**Clone rendu permanent, à la demande.** Le plafond de 6 s (`sp.duration`,
+`c.life`) est retiré : plus rien ne fait expirer le clone, seuls ses PV le
+peuvent. La clé `duration` disparaît de la fiche (elle n'était plus lue par
+personne, `fiche-check.mjs` l'aurait signalée comme morte). Nouveau relevé :
+0/3 contre le Hors-la-loi (contre 1/3 — le clone traîne plus longtemps mais
+se fait détruire avant de peser), **3/3** contre le Bretteur (contre 2/3),
+1/3 contre le Lancier (contre 0/3) — soit **4/9**, contre 3/9 avec le clone
+minuté. Toujours confiné aux seules lignes impliquant `wind` ;
+`tools/matrix-reference.txt` régénérée une seconde fois.
 
 ---
 

@@ -183,7 +183,6 @@ export const windAbilities = {
     const c = f.state.clone;
 
     if (c) {
-      c.life -= dt;
       c.flash = Math.max(0, c.flash - dt);
       // l'arme tourne sur place, comme celle d'un vrai combattant immobile —
       // purement décoratif, ça ne consomme aucun aléa
@@ -209,7 +208,8 @@ export const windAbilities = {
       // touché par un projectile adverse
       this.tickCloneProjectiles(f, c, game);
 
-      if (c.life <= 0 || c.hp <= 0) this.despawnClone(f, game, c.hp <= 0);
+      // permanent : seuls les PV le font disparaître, pas une horloge
+      if (c.hp <= 0) this.despawnClone(f, game);
       return;
     }
 
@@ -248,7 +248,6 @@ export const windAbilities = {
       weaponTwirl: 0,
       weaponLateral: 0,
       customWeapon: null,
-      life: sp.duration,
       attackTimer: sp.attack.interval * 0.5, // première riposte plus rapide qu'un cycle complet
     };
     Object.setPrototypeOf(clone, Fighter.prototype);
@@ -326,16 +325,11 @@ export const windAbilities = {
     }
   },
 
-  /** Fin de vie : PV à zéro ou horloge écoulée, dans les deux cas une gerbe. */
-  despawnClone(f, game, killed) {
+  /** Fin de vie : uniquement à 0 PV, le clone est désormais permanent sinon. */
+  despawnClone(f, game) {
     const c = f.state.clone;
     if (c) {
-      game.fx.burst(c.x, c.y, killed ? 22 : 10, {
-        color: ['#141414', '#e8621b', '#3a3a3a'],
-        speed: killed ? 260 : 140,
-        size: 5,
-        life: 0.4,
-      });
+      game.fx.burst(c.x, c.y, 22, { color: ['#141414', '#e8621b', '#3a3a3a'], speed: 260, size: 5, life: 0.4 });
     }
     const sp = f.el.special;
     f.state.clone = null;

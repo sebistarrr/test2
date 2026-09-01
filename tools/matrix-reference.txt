@@ -1,10 +1,10 @@
 outlaw vs outlaw           durées 24,22.7,23.8           {"outlaw":3}
 outlaw vs bladesman        durées 27,24.6,22.7           {"bladesman":1,"outlaw":2}
 outlaw vs lancer           durées 16.2,20,24.4           {"lancer":3}
-outlaw vs wind             durées 26.6,24.9,29.6         {"outlaw":2,"wind":1}
+outlaw vs wind             durées 24.1,24.7,27.8         {"outlaw":3}
 bladesman vs bladesman     durées 17.2,16.4,18.3         {"bladesman":3}
 bladesman vs lancer        durées 18.8,14.5,13.9         {"bladesman":1,"lancer":2}
-bladesman vs wind          durées 20,21.4,18.1           {"wind":2,"bladesman":1}
+bladesman vs wind          durées 18.7,18.9,18.5         {"wind":3}
 lancer vs lancer           durées 13.5,12.2,20.3         {"lancer":3}
-lancer vs wind             durées 25,20.3,25             {"lancer":3}
-wind vs wind               durées 37.4,25.8,31           {"wind":3}
+lancer vs wind             durées 25.8,20.3,18.9         {"lancer":2,"wind":1}
+wind vs wind               durées 27.6,28.9,29.7         {"wind":3}

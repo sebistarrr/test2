@@ -398,8 +398,8 @@ stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
 | Trait | Valeur |
 | --- | --- |
 | PV | 20 (demandé) |
-| Apparition | 5 s puis toutes les 12 s, à 130 px derrière le Shinobi |
-| Durée | 6 s, ou jusqu'à 0 PV |
+| Apparition | 5 s puis toutes les 12 s (après une mort), à 130 px derrière le Shinobi |
+| Durée | **permanente** — demandé ; seuls ses PV le font disparaître |
 | Riposte | shuriken vers l'adversaire toutes les 1,1 s, attribué au vrai Shinobi (charge son ultime) |
 | Rendu | identique au vrai combattant (même prototype `Fighter`), 88 % d'opacité |
 | Jauge | `SHADOW CLONE`, sous `TEMPEST VOLLEY`, mêmes couleurs |
@@ -408,6 +408,11 @@ stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
 (1/3 Hors-la-loi, 2/3 Bretteur, 0/3 Lancier), 3/3 en miroir inchangé.**
 Toutes les lignes n'impliquant pas `wind` restent identiques au caractère
 près. `tools/matrix-reference.txt` régénérée.
+
+**Rendu permanent, second relevé : 4/9** (0/3 Hors-la-loi, **3/3** Bretteur,
+1/3 Lancier). Le plafond de 6 s (`sp.duration`) est retiré de la fiche — plus
+rien n'expire le clone, seuls ses PV le peuvent. Toujours confiné aux seules
+lignes `wind` ; `tools/matrix-reference.txt` régénérée une seconde fois.
 
 ---
 

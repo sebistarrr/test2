@@ -895,7 +895,7 @@ const WIND = {
      *  serait invisible, une en continu saturerait l'arène de deux corps. */
     cooldown: 12,
     first: 5, // calé : laisse le duel s'installer avant la première invocation
-    duration: 6, // calé : le clone s'efface de lui-même s'il n'est jamais tué
+    // Permanent : demandé. Rien ne le fait expirer, seuls ses PV le peuvent.
     offset: 130, // calé : apparaît derrière le Shinobi, hors de son propre corps
     attack: { interval: 1.1, projectile: 'crescent' }, // riposte à la même cadence, à peu près, que la Tornade
   },
