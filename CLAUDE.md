@@ -548,11 +548,19 @@ module du Shinobi. Le clone est donc un objet ordinaire, **coiffé du
 prototype `Fighter`** (`Object.setPrototypeOf(clone, Fighter.prototype)`) :
 il hérite `draw()`, `radius`, `onStage`, `weaponPivot()`… sans dupliquer une
 ligne de rendu, et reste visuellement identique au vrai combattant par
-construction plutôt que par copie. Contrepartie assumée : le clone est
-**stationnaire** et **incorporel** — il ne bouscule pas les corps
-(`resolveBodies` ne le voit pas), il ne se déplace pas. Un clone qui pilote et
-percute aurait exigé les mêmes trois fichiers moteur qu'un clone inscrit dans
-`game.fighters`.
+construction plutôt que par copie. Contrepartie assumée : le clone reste
+**stationnaire**, mais depuis la demande « corps solide » il n'est plus
+incorporel — voir `resolveCloneBody` plus bas. Un clone qui pilote et percute
+*en se déplaçant* aurait exigé les mêmes trois fichiers moteur qu'un clone
+inscrit dans `game.fighters` ; un clone qui bloque sans bouger, non.
+
+**Corps solide, à la demande.** Le clone bouscule désormais l'adversaire
+*et* le vrai Shinobi — personne ne le traverse. Même geste que
+`resolveBodies()` de `physics.js` (séparation puis recul), mais à sens
+unique : le clone ne bougeant jamais, c'est toujours l'autre corps qui
+encaisse tout l'écartement. Écrite dans `wind.js` plutôt que dans
+`physics.js` — qui ne connaît que `this.a`/`this.b` — pour rester confinée au
+module du Shinobi, comme le reste du pouvoir.
 
 **Deux réutilisations, une conséquence.** Le corps à corps adverse touche le
 clone en rappelant **`weaponHit()` telle quelle** depuis `physics.js` — elle
@@ -591,6 +599,14 @@ se fait détruire avant de peser), **3/3** contre le Bretteur (contre 2/3),
 1/3 contre le Lancier (contre 0/3) — soit **4/9**, contre 3/9 avec le clone
 minuté. Toujours confiné aux seules lignes impliquant `wind` ;
 `tools/matrix-reference.txt` régénérée une seconde fois.
+
+**Clone rendu solide, troisième relevé : 5/9.** 1/3 contre le Hors-la-loi
+(contre 0/3 — un corps de plus dans l'arène gêne son canon asservi),
+toujours **3/3** contre le Bretteur, 1/3 contre le Lancier inchangé. Le
+blocage joue dans les deux sens (le vrai Shinobi peut lui-même se faire
+bloquer par son propre clone) : aucune règle ne l'empêche, et aucun banc n'en
+a montré le besoin. Toujours confiné aux seules lignes `wind` ;
+`tools/matrix-reference.txt` régénérée une troisième fois.
 
 ---
 

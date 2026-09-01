@@ -402,6 +402,7 @@ stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
 | Durée | **permanente** — demandé ; seuls ses PV le font disparaître |
 | Riposte | shuriken vers l'adversaire toutes les 1,1 s, attribué au vrai Shinobi (charge son ultime) |
 | Rendu | identique au vrai combattant (même prototype `Fighter`), 88 % d'opacité |
+| Corps | **solide** — bouscule l'adversaire et le vrai Shinobi, personne ne le traverse |
 | Jauge | `SHADOW CLONE`, sous `TEMPEST VOLLEY`, mêmes couleurs |
 
 **Relevé de matrice après ajout : 3/9 contre les trois autres actifs
@@ -413,6 +414,14 @@ près. `tools/matrix-reference.txt` régénérée.
 1/3 Lancier). Le plafond de 6 s (`sp.duration`) est retiré de la fiche — plus
 rien n'expire le clone, seuls ses PV le peuvent. Toujours confiné aux seules
 lignes `wind` ; `tools/matrix-reference.txt` régénérée une seconde fois.
+
+**Rendu solide, troisième relevé : 5/9** (**1/3** Hors-la-loi, 3/3 Bretteur
+inchangé, 1/3 Lancier inchangé). Réutilise la géométrie de `resolveBodies()`
+(`physics.js`) à sens unique — le clone ne bouge jamais, l'autre corps
+encaisse tout l'écartement — écrite dans `wind.js` pour rester confinée au
+module. Le blocage joue dans les deux sens : le vrai Shinobi peut aussi se
+faire bloquer par son propre clone, sans que ça n'ait posé de problème au
+banc. `tools/matrix-reference.txt` régénérée une troisième fois.
 
 ---
 

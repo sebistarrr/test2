@@ -190,6 +190,12 @@ export const windAbilities = {
 
       const target = f.opponent;
 
+      // corps solide : personne ne le traverse, ni l'adversaire ni le vrai
+      // Shinobi — le clone est immobile, donc tout l'écartement retombe sur
+      // le corps qui le percute (voir `resolveCloneBody`)
+      this.resolveCloneBody(c, f);
+      this.resolveCloneBody(c, target);
+
       // riposte : le clone jette lui aussi des shurikens
       c.attackTimer -= dt;
       if (c.attackTimer <= 0 && target && target.onStage) {
@@ -215,6 +221,30 @@ export const windAbilities = {
 
     f.state.cloneCd -= dt;
     if (f.state.cloneCd <= 0) this.castClone(f, game);
+  },
+
+  /**
+   * **Corps solide, à la demande.** Même géométrie que `resolveBodies()` de
+   * `physics.js` (séparation + rebond), mais à sens unique : le clone ne
+   * bouge jamais, donc c'est toujours l'autre corps qui encaisse tout
+   * l'écartement et tout le recul. Écrite ici plutôt que dans `physics.js` —
+   * qui ne connaît que `this.a`/`this.b` — pour la même raison que le reste
+   * du pouvoir : le rester confiné au module du Shinobi.
+   */
+  resolveCloneBody(clone, other) {
+    if (!other || !other.onStage) return;
+    const dx = other.x - clone.x;
+    const dy = other.y - clone.y;
+    const d = Math.hypot(dx, dy);
+    const min = clone.radius + other.radius;
+    if (d === 0 || d >= min) return;
+
+    const nx = dx / d;
+    const ny = dy / d;
+    other.x += nx * (min - d);
+    other.y += ny * (min - d);
+    other.heading = wrapAngle(Math.atan2(ny, nx));
+    other.push(nx, ny, 130 * PHYSICS.bodyRestitution);
   },
 
   /** Incantation : un double apparaît derrière le Shinobi, dans l'arène. */
