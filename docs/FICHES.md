@@ -363,6 +363,15 @@ déjà `WIND_SHURIKEN` (17 × 17, resté en repli texte) : `handle.length` et
 `head.scale` retombent donc sur la même taille dessinée (~74 px) sans le
 moindre recalcul.
 
+**Corps passé au noir, à la demande.** `look.body` `#bcbf9e` → `#141414`.
+Le contour (`outline`) et le chiffre de PV (`hpColor`) étaient déjà proches du
+noir (`#0a0a0a`) : laissés tels quels, ils auraient disparu **noir sur noir**
+sur le nouveau corps — le même piège déjà payé sur le Bretteur (voir sa
+section, « HP au-dessus de la manche »). Contour repassé à l'orange de braise
+du shuriken (`#e8621b`), chiffre de PV au crème mesuré du reste du roster
+(`#f5f2ea`). Vérifié à l'écran (`tools/shot.mjs`), lisible dans toutes les
+configurations testées. Purement visuel, matrice inchangée.
+
 **Relevé de matrice : 0/9 contre les trois autres actifs, 3/3 en miroir.**
 Aucune valeur de combat n'a été retouchée à la hausse ou à la baisse (le
 rayon de collision du projectile a même légèrement augmenté) : c'est le

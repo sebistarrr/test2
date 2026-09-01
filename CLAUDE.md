@@ -487,6 +487,19 @@ réinséré tout à la fin, après `lancer` — le duel par défaut
 existants entre les trois invités restent identiques au caractère près ;
 seules les quatre nouvelles lignes impliquant `wind` s'ajoutent.
 
+**Corps passé au noir, à la demande.** `look.body` était crème-sable
+(`#bcbf9e`) ; il est maintenant `#141414` — la couleur d'un shinobi. Piège
+déjà payé sur le Bretteur et évité ici d'entrée : le contour mesuré
+(`#0a0a0a`) et le chiffre de PV (`hpColor`, aussi `#0a0a0a`) collaient déjà au
+noir, et seraient devenus illisibles **noir sur noir** une fois le corps
+assombri. Le contour est donc repassé à l'orange de braise du shuriken
+(`#e8621b` — reprend la teinte de l'arme, contraste net sur le corps *et* sur
+le blanc de l'arène), et le chiffre de PV au crème mesuré ailleurs dans le
+roster (`#f5f2ea`) plutôt qu'assombri une deuxième fois. Vérifié à l'écran
+(`tools/shot.mjs`) : lisible dans toutes les configurations, y compris à
+faible PV où le chiffre se détache sur le corps noir. Purement visuel — aucune
+valeur de combat touchée, matrice inchangée au fichier près.
+
 **Relevé de matrice : le Shinobi perd tout, sauf son propre miroir.** 0/3
 contre le Hors-la-loi, le Bretteur et le Lancier, 3/3 en mirroir — soit 0/9
 contre les trois autres actifs. Aucune valeur de combat n'a été retouchée

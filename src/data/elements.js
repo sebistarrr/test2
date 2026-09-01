@@ -707,11 +707,20 @@ const WIND = {
 
   look: {
     radius: 41,
-    body: '#bcbf9e', // pipette : rgb(187,190,158)
+    /** **Écart assumé au relevé, demandé.** Corps crème-sable (or clair,
+     *  220,196,98-ish) passé au noir — la couleur d'un shinobi. Le contour
+     *  mesuré (`#0a0a0a`) collait déjà au noir, et le chiffre de PV aussi
+     *  (`hpColor`) : les deux auraient disparu **noir sur noir** une fois le
+     *  corps assombri (exactement le piège déjà payé sur le Bretteur — voir
+     *  sa fiche). Contour repassé à l'orange de braise du shuriken (contraste
+     *  net sur le noir du corps *et* sur le blanc de l'arène), chiffre de PV
+     *  au crème mesuré ailleurs dans le roster (`#f5f2ea`) plutôt qu'assombri
+     *  une deuxième fois. */
+    body: '#141414',
     bodyHit: '#ffffff',
-    outline: '#0a0a0a',
+    outline: '#e8621b',
     outlineWidth: 5,
-    hpColor: '#0a0a0a',
+    hpColor: '#f5f2ea',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
     aura: {
