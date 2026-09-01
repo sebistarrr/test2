@@ -708,6 +708,53 @@ c'est la conséquence directe d'une demande, documentée telle quelle et non
 corrigée d'office. Les leviers, si l'on veut le ramener : `hitbox.radius`
 (75), `melee.damage` (3) et `melee.cooldown` (1 s).
 
+### Style sombre ninja
+
+**Demandé, purement visuel — et la matrice le prouve.** Le shuriken passe en
+nuances de gris, les nombres de dégâts en noir, aura et traînée en gris-noir,
+et la rotation d'arme monte de ×1,3.
+
+**L'arme est repeinte, pas redessinée.** `shinobi-shuriken-dark.png` est le
+même PNG dont la **luminance est remappée** sur une rampe de gris : le métal
+sombre reste quasi noir, les anciennes flammes deviennent un gris moyen
+(p50 61 → 51, p95 197 → 136), avec une pointe de bleu acier et **l'alpha
+conservé au pixel près**. Le `manifest.json` bascule dessus ; l'original en
+flammes reste dans le dossier, et c'est très exactement le rôle de cette
+couche d'indirection — revenir en arrière est une ligne de JSON.
+
+**La borne haute de la rampe est le vrai réglage.** L'arène est blanche : un
+gris pâle n'y existe pas (leçon déjà payée sur la poudre de givre du
+Hors-la-loi). Les anciennes flammes sont donc plafonnées à **168/255**, assez
+clair pour garder le dessin des lames lisible, assez tenu pour que l'objet
+entier se lise comme une silhouette sombre.
+
+**« Les dégâts en noir » se règle par `look.accent`.** C'est lui que
+`Flair.hit()` met dans le nombre qui s'envole — et aussi dans la marque au
+sol, les traits de sillage et la gerbe d'impact. Il passe à `#1f1f24`, pas à
+`#000` : le moteur pose déjà un **contour `#0a0a0a`** autour du chiffre, et un
+remplissage strictement identique effacerait le relief du glyphe.
+
+**La première passe « aura et traînée en noir » était incomplète.** Elle
+n'avait touché que `look.aura` et `look.trail`, en laissant le bloc `flair`
+— or c'est lui qui porte ce qu'on voit vraiment traîner : le ruban de 75 px,
+les motes, la gerbe d'impact, l'éclair d'incantation. Tous passent en gris
+ardoise ici, ainsi que la traînée du projectile. `castFlash` devient sombre :
+l'écran **s'assombrit** un huitième de seconde au lieu de blanchir.
+
+**La rotation ×1,3 (`SPIN * 1,1` → `SPIN * 1,43`) est vérifiable, pas
+seulement annoncée.** Depuis que la hitbox est un disque centré, `weaponAngle`
+ne décide plus d'aucune collision : il ne reste que le sprite qui tourne et le
+ruban qui suit `reach`. La matrice est **identique au caractère près**, ce qui
+est la preuve attendue pour un changement déclaré visuel.
+
+**Ce qui reste chaud, et pourquoi.** Trois choses n'ont pas été touchées faute
+d'avoir été demandées, et chacune se défend : le **contour orange de la
+bille** (`#e8621b`), qui est ce qui détache le moyeu des lames grises et dont
+la lisibilité a été validée à l'écran ; le **disque de sable de la Tornade**,
+qui est un relevé vidéo et ne dure que 0,2 s ; et les **jauges + la ligne de
+stat** du bas d'écran, encore en khaki. Les trois sont des lignes de fiche à
+changer si l'on veut pousser le noir jusqu'au bout.
+
 ---
 
 ## Langue

@@ -487,6 +487,38 @@ hausse. **Le Shinobi devient l'anomalie du roster réduit**, conséquence
 directe de la demande, documentée telle quelle. Leviers pour le ramener si
 besoin : `hitbox.radius` (75), `melee.damage` (3), `melee.cooldown` (1 s).
 
+### Style sombre ninja
+
+**Demandé, purement visuel.** Matrice **identique au caractère près**.
+
+| Bloc | Avant | Après |
+| --- | --- | --- |
+| Arme (PNG) | flammes orange/rouge | **`shinobi-shuriken-dark.png`** — même image, luminance remappée en gris (p50 61 → 51, p95 197 → 136), alpha conservé |
+| Nom de l'arme | *Shuriken de flamme* | ***Shuriken d'ombre*** (`Shadow Shuriken`) — « de flamme » aurait menti sur ce qu'on voit |
+| `look.accent` | `#a89b6f` | **`#1f1f24`** — c'est lui qui remplit le nombre de dégâts, la marque au sol et le sillage |
+| `look.aura` / `look.trail` | noir plat | gris-noir (`rgba(38,38,44,…)` / `rgba(42,42,50,…)`) |
+| `flair.ribbon` | `#d6cdaa` | `#33333c` |
+| `flair.motes` | khaki | `['#3f3f46', '#71717a', '#18181b']` |
+| `flair.impact` | crème/blanc/khaki | `['#52525b', '#27272a', '#8b8b93']` |
+| `flair.castFlash` | crème | `rgba(30,30,36,0.55)` — l'écran s'assombrit au lieu de blanchir |
+| Traînée du projectile | `rgba(207,198,168,…)` | `rgba(58,58,68,…)` |
+| `weapon.spin` | `SPIN × 1,1` | **`SPIN × 1,43`** (×1,3 demandé) |
+
+**Deux points de méthode.** La rampe de gris est plafonnée à **168/255** :
+l'arène étant blanche, un gris pâle n'y existe pas, mais il faut assez de
+clair pour que le dessin des lames reste lisible. Et `accent` vaut `#1f1f24`
+plutôt que du noir pur parce que le moteur pose déjà un contour `#0a0a0a`
+autour du chiffre de dégâts — un remplissage identique effacerait le relief
+du glyphe.
+
+**La rotation est bien sans effet sur le duel** : depuis que la hitbox est un
+disque centré, `weaponAngle` ne décide plus d'aucune collision. La matrice
+inchangée en est la preuve, pas la relecture du code.
+
+**Restent chauds, non demandés** : le contour orange de la bille (c'est lui
+qui détache le moyeu des lames grises), le disque de sable de la Tornade
+(relevé vidéo, 0,2 s) et les jauges du bas d'écran.
+
 ---
 
 ## ⚡ FOUDRE — `lightning` (affiché « LIGHTNING »)

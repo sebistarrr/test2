@@ -723,26 +723,52 @@ const WIND = {
     hpColor: '#f5f2ea',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
-    /** **Écart assumé, demandé.** Aura et traînée passent au noir, comme le
-     *  corps : c'était le dernier khaki-crème (`#d6cdaa`-ish) qui restait sur
-     *  un combattant devenu noir ailleurs. Le ruban de l'arme (`flair.ribbon`),
-     *  les motes et l'éclair d'incantation ne sont pas touchés — non demandés,
-     *  et ils restent lisibles tels quels sur le corps noir. */
+    /**
+     * **Style sombre ninja — demandé, purement visuel.**
+     *
+     * Tout ce qui restait khaki-crème (`#d6cdaa`-ish, la palette du Vent
+     * d'origine) passe au gris-noir. Une première passe n'avait touché que
+     * `aura` et `trail`, en laissant le bloc `flair` — or c'est **lui** qui
+     * porte ce qu'on voit vraiment traîner derrière le combattant : le ruban
+     * de 75 px, les motes, la gerbe d'impact. D'où cette seconde passe, plus
+     * complète.
+     *
+     * Deux contraintes tiennent la gamme :
+     *  • **l'arène est blanche**, donc les gris doivent rester *tenus* — un
+     *    gris pâle n'y existe pas (même leçon que la poudre du Hors-la-loi) ;
+     *  • le corps est déjà `#141414`, donc les effets doivent s'en décoller
+     *    un peu : ils sont en gris ardoise (`#33333c` → `#71717a`), pas en
+     *    noir pur.
+     */
     aura: {
-      color: 'rgba(20,20,20,0.55)',
+      color: 'rgba(38,38,44,0.5)',
       radius: 1.6,
       pulse: 2.6,
       showWhen: 'ability-ready',
     },
     flair: {
-      ribbon: { color: '#d6cdaa', width: 20, alpha: 0.5 },
-      motes: { rate: 11, size: 9, drift: 46, rise: -6, colors: ['#b9a878', '#8a7f5c', '#d6cdaa'] },
-      impact: ['#e8dcc0', '#ffffff', '#a89b6f'],
+      ribbon: { color: '#33333c', width: 20, alpha: 0.5 },
+      motes: { rate: 11, size: 9, drift: 46, rise: -6, colors: ['#3f3f46', '#71717a', '#18181b'] },
+      impact: ['#52525b', '#27272a', '#8b8b93'],
       shape: 'streak',
-      castFlash: 'rgba(232,220,192,0.6)',
+      /** Éclat d'incantation : sombre, donc l'écran **s'assombrit** un huitième
+       *  de seconde au lieu de blanchir. C'est l'effet voulu pour un ninja, et
+       *  c'est assez bref pour ne rien masquer du duel. */
+      castFlash: 'rgba(30,30,36,0.55)',
     },
-    trail: { color: 'rgba(20,20,20,0.3)', every: 0.035, life: 0.3 },
-    accent: '#a89b6f',
+    trail: { color: 'rgba(42,42,50,0.32)', every: 0.035, life: 0.3 },
+    /**
+     * **`accent` porte le nombre de dégâts** (`Flair.hit` le remplit avec, sur
+     * un contour noir posé par le moteur), la marque au sol, les traits de
+     * sillage et la gerbe d'impact. Le passer en noir répond donc directement
+     * à « les dégâts en noir ».
+     *
+     * `#1f1f24` et non `#000` : le contour du nombre est déjà `#0a0a0a`, et
+     * un remplissage strictement identique effacerait le relief du chiffre.
+     * Deux crans d'écart suffisent à le garder lisible, sur l'arène blanche
+     * comme sur un corps sombre.
+     */
+    accent: '#1f1f24',
   },
 
   // le plus rapide et le plus manœuvrant du roster (observé)
@@ -761,9 +787,18 @@ const WIND = {
      *  du damier de transparence sur les zones sombres) ; `cv2.inpaint`
      *  (Telea) a rebouché les poches de damier prises dans l'ombre du métal
      *  sans toucher au reste — un simple retrait de fond ne suffisait pas
-     *  ici, contrairement à la lame. */
-    name: 'Shuriken de flamme',
-    nameRef: 'Flame Shuriken',
+     *  ici, contrairement à la lame.
+     *
+     *  **Repeint en gris-noir depuis, sur demande** (« style sombre ninja ») :
+     *  `manifest.json` pointe maintenant sur `shinobi-shuriken-dark.png`, la
+     *  même maquette dont la luminance est remappée sur une rampe de gris
+     *  (métal quasi noir, anciennes flammes en gris moyen), alpha conservé au
+     *  pixel près. L'original en flammes reste dans le dossier : c'est
+     *  exactement à ça que sert la couche d'indirection du manifeste, et il
+     *  suffit d'y changer une ligne pour revenir en arrière. Le nom de l'arme
+     *  suit la teinte — « de flamme » aurait menti sur ce qu'on voit. */
+    name: 'Shuriken d’ombre',
+    nameRef: 'Shadow Shuriken',
     /**
      * **La bille EST le shuriken — demandé, écart assumé au relevé.**
      *
@@ -791,7 +826,15 @@ const WIND = {
      * que la bille bouche le moyeu au lieu de passer derrière.
      */
     reach: 75, // déduit : rayon des pointes du shuriken dessiné
-    spin: SPIN * 1.1, // tourne plus vite que les autres (observé) — ici, sur lui-même
+    /**
+     * Relevé à `SPIN * 1,1` (il tournait déjà plus vite que le reste du
+     * roster), **poussé ×1,3 sur demande** — écart assumé, et **purement
+     * visuel** : depuis que la hitbox est un disque centré (`from`/`to` à
+     * zéro), `weaponAngle` ne décide plus d'aucune collision. Il ne reste
+     * que le sprite qui tourne sur lui-même et le ruban qui suit `reach`.
+     * La matrice le confirme — inchangée au caractère près.
+     */
+    spin: SPIN * 1.43,
     spinDir: 1,
     /**
      * **Aucun manche**, et `length` **négatif** : `width: 0` demande au moteur
@@ -956,7 +999,9 @@ const WIND = {
       life: 2.2,
       bounces: 1,
       knockback: 80,
-      trail: { color: 'rgba(207,198,168,0.4)', every: 0.04, life: 0.32 },
+      // gris ardoise comme le reste du style ninja : c'est une traînée, elle
+      // suit la même gamme que le ruban et les motes du corps
+      trail: { color: 'rgba(58,58,68,0.42)', every: 0.04, life: 0.32 },
     },
   },
 
