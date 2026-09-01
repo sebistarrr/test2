@@ -747,13 +747,82 @@ ne décide plus d'aucune collision : il ne reste que le sprite qui tourne et le
 ruban qui suit `reach`. La matrice est **identique au caractère près**, ce qui
 est la preuve attendue pour un changement déclaré visuel.
 
-**Ce qui reste chaud, et pourquoi.** Trois choses n'ont pas été touchées faute
-d'avoir été demandées, et chacune se défend : le **contour orange de la
-bille** (`#e8621b`), qui est ce qui détache le moyeu des lames grises et dont
-la lisibilité a été validée à l'écran ; le **disque de sable de la Tornade**,
-qui est un relevé vidéo et ne dure que 0,2 s ; et les **jauges + la ligne de
-stat** du bas d'écran, encore en khaki. Les trois sont des lignes de fiche à
-changer si l'on veut pousser le noir jusqu'au bout.
+**Ce qui restait chaud à cette étape** : le contour orange de la bille (passé
+au gris depuis, voir ci-dessous), le **disque de sable de la Tornade** — un
+relevé vidéo qui ne dure que 0,2 s — et les **jauges + la ligne de stat** du
+bas d'écran, toujours en khaki.
+
+### Contour gris, dégâts gris, et deux renommages
+
+**Le combattant n'a plus qu'un seul accent, et c'est un gris.** `look.outline`
+(`#e8621b` → `#8f8f99`) et `look.accent` (`#1f1f24` → `#8f8f99`) prennent la
+même valeur, choisie entre deux bornes : plus claire que le corps `#141414`,
+plus sombre que le blanc de l'arène, et un cran sous le point le plus clair du
+shuriken (168/255) pour que l'anneau reste lisible **par-dessus** les lames.
+Vérifié au zoom : la bille se détache du shuriken des deux côtés.
+
+**Le noir des dégâts était une erreur de ma part, pas un choix.** Le nombre
+qui s'envole est rempli par `accent` **sur un contour `#0a0a0a` posé par le
+moteur** : un remplissage noir s'y noyait, le chiffre devenait une masse sans
+relief. Le gris tranche sur le contour noir *et* sur l'arène blanche.
+
+**Deux renommages, aucune mécanique touchée** : `Tornado Damage` →
+**`Shuriken Damage`** (la valeur affichée reste `f.stacks`, la stat relevée),
+et `TEMPEST VOLLEY` → **`SHURIKEN TORNADO`** (nom, libellé de jauge et
+moitié française). Les `id` internes (`tempestVolley`, `tornado`) ne bougent
+pas : ils ne sont montrés à personne, et les renommer toucherait le module
+sans rien apporter au joueur — même règle que `id: 'wind'` gardé sous le nom
+SHINOBI.
+
+### Le clone ne prenait jamais un seul coup de mêlée
+
+**Signalé « le clone ne subit pas de dégâts parfois », mesuré, et c'était pire
+que « parfois ».** Un banc instrumenté qui compte, image par image, les pas où
+un clone est *géométriquement* dans la portée de l'arme adverse :
+
+| Adversaire | pas à portée | bloqués par `meleeCd` |
+| --- | --- | --- |
+| Hors-la-loi | 15 | **15** |
+| Bretteur | 49 | **49** |
+| Lancier | 34 | **34** |
+
+**100 %.** Aucune touche de mêlée n'atteignait jamais un clone ; tous ses PV
+perdus venaient des projectiles.
+
+**La cause est un ordre d'exécution, pas une géométrie.** `weaponHit()` refuse
+la touche quand `attacker.meleeCd > 0`, et `Match.resolveMelee` tourne **avant
+les modules** : elle pose ce verrou dès que l'arme atteint le vrai Shinobi —
+lequel est à 130 px du clone, donc à portée aux mêmes instants. Ce que j'avais
+documenté comme une « mutuelle exclusion » (une arme ne touche qu'un corps)
+n'était pas une course équitable : le clone la perdait **toujours**, par
+construction.
+
+**Le correctif donne à chaque clone son propre verrou.** `cloneWeaponHit()`
+reprend la géométrie de `weaponHit()` mot pour mot — même `bladeSegment()` du
+moteur, même `segmentPointDistance`, donc la hitbox ne peut pas diverger de
+celle des vrais combattants — mais la garde par `clone.hitCd` au lieu de
+`attacker.meleeCd`. Chaque corps encaisse au plus une touche par cycle d'arme,
+indépendamment des autres : une lame qui balaie une grappe de corps les mord
+tous. Et une touche sur un clone ne pose **jamais** `opponent.meleeCd` : ça
+rendrait le vrai Shinobi intouchable dès qu'un clone traîne à côté de lui,
+soit une famine remplacée par l'autre.
+
+Au banc, après correctif : PV perdus par les clones **22 → 36** (Hors-la-loi),
+**14 → 21** (Bretteur), **14 → 30** (Lancier), et des clones qui meurent enfin
+(0 → 1 contre le Bretteur, 0 → 2 contre le Lancier).
+
+**Relevé de matrice : le Shinobi redescend de 8/9 à 7/9** — le Lancier reprend
+son affrontement (2/3 contre 1/3). C'est la correction d'un bug, pas un
+rééquilibrage : elle va dans le bon sens pour l'anomalie signalée à l'étape
+précédente. Toutes les lignes n'impliquant pas `wind` restent identiques au
+caractère près.
+
+**La leçon, et elle est générale.** Un garde-fou du moteur réutilisé depuis un
+module hérite de **l'ordre d'appel du moteur**, pas seulement de sa géométrie.
+`Match.update()` fixe cet ordre (corps → mêlée → pouvoirs → projectiles), donc
+tout ce qu'un module teste après coup arrive **derrière** les deux vrais
+combattants et peut être affamé par eux sans qu'aucune erreur ne se voie. Ça
+ne se lit pas dans le code : ça se compte.
 
 ---
 

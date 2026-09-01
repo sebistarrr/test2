@@ -19,10 +19,9 @@
  * @module game/abilities/wind
  */
 
-import { TAU, clamp, dist, wrapAngle } from '../../core/math.js';
+import { TAU, clamp, dist, segmentPointDistance, wrapAngle } from '../../core/math.js';
 import { ARENA, PHYSICS } from '../../data/tuning.js';
 import { Fighter } from '../fighter.js';
-import { weaponHit } from '../physics.js';
 
 export const windAbilities = {
   id: 'wind',
@@ -192,6 +191,7 @@ export const windAbilities = {
     for (let i = f.state.clones.length - 1; i >= 0; i--) {
       const c = f.state.clones[i];
       c.flash = Math.max(0, c.flash - dt);
+      c.hitCd = Math.max(0, c.hitCd - dt);
 
       // corps solide : personne ne le traverse, ni l'adversaire ni le vrai
       // Shinobi — le clone est immobile, donc tout l'écartement retombe sur
@@ -206,17 +206,10 @@ export const windAbilities = {
         this.throwFromClone(f, c, target, game);
       }
 
-      /**
-       * Touché par l'arme adverse. Même test que le moteur utilise pour un
-       * vrai combattant, donc mutuellement exclusif avec une touche portée
-       * sur le vrai Shinobi ce pas-ci (les deux partagent `target.meleeCd`) —
-       * et, désormais, avec une touche sur un **autre** clone : le premier de
-       * la liste qui encaisse pose `target.meleeCd`, donc `weaponHit()`
-       * renvoie `null` pour tous les suivants dans le même pas. Une seule
-       * arme ne peut jamais toucher deux corps à la fois.
-       */
+      // touché par l'arme adverse — verrou **propre au clone**, voir
+      // `cloneWeaponHit` pour pourquoi il ne peut pas être celui du moteur
       if (target && target.onStage) {
-        const hit = weaponHit(target, c);
+        const hit = this.cloneWeaponHit(target, c);
         if (hit) this.hitClone(c, target, game, hit);
       }
 
@@ -294,6 +287,7 @@ export const windAbilities = {
       // `drawWeapon()`, donc un no-op suffit à ne rien dessiner.
       customWeapon: () => {},
       attackTimer: sp.attack.interval * 0.5, // première riposte plus rapide qu'un cycle complet
+      hitCd: 0, // verrou de touche propre au clone — voir `cloneWeaponHit`
     };
     Object.setPrototypeOf(clone, Fighter.prototype);
     f.state.clones.push(clone);
@@ -329,15 +323,48 @@ export const windAbilities = {
     });
   },
 
+  /**
+   * **Le clone porte son propre verrou de touche, pas celui du moteur.**
+   *
+   * `weaponHit()` refuse la touche quand `attacker.meleeCd > 0`. Le clone ne
+   * pouvait donc être touché que dans les fenêtres où l'arme adverse était
+   * *déjà* disponible — or `Match.resolveMelee` tourne **avant** les modules
+   * et pose ce verrou dès qu'elle atteint le vrai Shinobi, qui se trouve à
+   * 130 px du clone, donc à portée aux mêmes instants. Ce n'était pas une
+   * course équitable, c'était une famine : au banc, **100 % des pas où un
+   * clone était géométriquement à portée étaient bloqués par `meleeCd`**
+   * (15/15, 49/49, 34/34 contre les trois adversaires) — aucune touche de
+   * mêlée n'atteignait jamais un clone, tous ses PV perdus venaient des
+   * projectiles.
+   *
+   * D'où ce test : **la géométrie de `weaponHit()` mot pour mot** — le même
+   * `bladeSegment()` du moteur et la même `segmentPointDistance`, donc la
+   * hitbox ne peut pas diverger de celle des vrais combattants — mais gardé
+   * par `clone.hitCd`, propre à chaque clone. Chaque corps encaisse alors au
+   * plus une touche par cycle d'arme, indépendamment des autres : une lame qui
+   * balaie une grappe de corps les mord tous, ce qui est aussi ce qu'on voit.
+   */
+  cloneWeaponHit(attacker, clone) {
+    if (!attacker.onStage || clone.hitCd > 0) return null;
+    const b = attacker.bladeSegment();
+    const { d, x, y } = segmentPointDistance(b.ax, b.ay, b.bx, b.by, clone.x, clone.y);
+    if (d > clone.radius + b.r) return null;
+    const dx = clone.x - x;
+    const dy = clone.y - y;
+    const len = Math.hypot(dx, dy) || 1;
+    return { x, y, nx: dx / len, ny: dy / len };
+  },
+
   /** Le clone encaisse un coup de mêlée adverse. */
   hitClone(clone, opponent, game, hit) {
     const melee = opponent.el.weapon.melee;
     const dmg = typeof melee.damage === 'function' ? melee.damage(opponent) : melee.damage;
     clone.hp = Math.max(0, clone.hp - dmg);
     clone.flash = PHYSICS.hitFlash;
-    // même verrou et même recul que `Match.resolveMelee` : sans lui, la même
-    // arme pourrait toucher clone puis vrai Shinobi (ou l'inverse) au même pas
-    opponent.meleeCd = melee.cooldown;
+    // le verrou est posé **sur le clone**, jamais sur `opponent.meleeCd` : y
+    // toucher rendrait le vrai Shinobi intouchable dès qu'un clone traîne à
+    // côté de lui, ce qui remplacerait une famine par l'autre
+    clone.hitCd = melee.cooldown;
     opponent.push(-hit.nx, -hit.ny, melee.selfRecoil);
     game.fx.burst(hit.x, hit.y, 8, {
       color: [opponent.el.look.accent, '#ffffff', '#141414'],

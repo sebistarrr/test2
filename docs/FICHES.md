@@ -515,9 +515,52 @@ du glyphe.
 disque centré, `weaponAngle` ne décide plus d'aucune collision. La matrice
 inchangée en est la preuve, pas la relecture du code.
 
-**Restent chauds, non demandés** : le contour orange de la bille (c'est lui
-qui détache le moyeu des lames grises), le disque de sable de la Tornade
-(relevé vidéo, 0,2 s) et les jauges du bas d'écran.
+**Restaient chauds à cette étape** : le contour orange de la bille (gris
+depuis, voir ci-dessous), le disque de sable de la Tornade (relevé vidéo,
+0,2 s) et les jauges du bas d'écran.
+
+### Contour gris, dégâts gris, renommages
+
+| Bloc | Avant | Après |
+| --- | --- | --- |
+| `look.outline` | `#e8621b` (orange de braise) | **`#8f8f99`** |
+| `look.accent` (nombre de dégâts) | `#1f1f24` (noir) | **`#8f8f99`** |
+| `hud.stats[0]` | `Tornado Damage` | **`Shuriken Damage`** |
+| `ultimate` | `TEMPEST VOLLEY` / *Salve de tempête* | **`SHURIKEN TORNADO`** / *Tornade de shurikens* |
+
+Le gris est choisi entre deux bornes : plus clair que le corps (`#141414`),
+plus sombre que le blanc de l'arène, et un cran sous le point le plus clair
+du shuriken (168/255) pour que l'anneau reste lisible **par-dessus** les
+lames. Le noir des dégâts de l'étape précédente était une erreur : le moteur
+pose déjà un contour `#0a0a0a` autour du chiffre, un remplissage noir s'y
+noyait. Les `id` internes (`tempestVolley`, `tornado`) ne bougent pas.
+
+### Correctif : le clone n'encaissait jamais un coup de mêlée
+
+Banc instrumenté, pas par pas, sur les instants où un clone est
+**géométriquement** dans la portée de l'arme adverse :
+
+| Adversaire | pas à portée | bloqués par `meleeCd` | PV perdus (avant → après) | morts (avant → après) |
+| --- | --- | --- | --- | --- |
+| Hors-la-loi | 15 | **15 (100 %)** | 22 → **36** | 1 → 1 |
+| Bretteur | 49 | **49 (100 %)** | 14 → **21** | 0 → **1** |
+| Lancier | 34 | **34 (100 %)** | 14 → **30** | 0 → **2** |
+
+**Cause : un ordre d'exécution.** `weaponHit()` refuse la touche quand
+`attacker.meleeCd > 0`, et `Match.resolveMelee` tourne avant les modules :
+elle pose ce verrou dès que l'arme atteint le vrai Shinobi, à 130 px du clone
+donc à portée aux mêmes instants. La « mutuelle exclusion » documentée
+n'était pas une course équitable — le clone la perdait toujours.
+
+**Correctif :** `cloneWeaponHit()` reprend la géométrie de `weaponHit()` mot
+pour mot (même `bladeSegment()`, même `segmentPointDistance`) mais la garde
+par `clone.hitCd`, propre à chaque clone. Une touche sur un clone ne pose
+jamais `opponent.meleeCd` : ça rendrait le vrai Shinobi intouchable dès qu'un
+clone traîne à côté, soit une famine remplacée par l'autre.
+
+**Matrice : 8/9 → 7/9**, le Lancier reprend son affrontement (2/3 contre
+1/3). C'est un correctif de bug, et il va dans le bon sens pour l'anomalie
+signalée à l'étape précédente.
 
 ---
 

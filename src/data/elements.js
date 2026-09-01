@@ -712,13 +712,21 @@ const WIND = {
      *  mesuré (`#0a0a0a`) collait déjà au noir, et le chiffre de PV aussi
      *  (`hpColor`) : les deux auraient disparu **noir sur noir** une fois le
      *  corps assombri (exactement le piège déjà payé sur le Bretteur — voir
-     *  sa fiche). Contour repassé à l'orange de braise du shuriken (contraste
-     *  net sur le noir du corps *et* sur le blanc de l'arène), chiffre de PV
-     *  au crème mesuré ailleurs dans le roster (`#f5f2ea`) plutôt qu'assombri
-     *  une deuxième fois. */
+     *  sa fiche). Contour repassé à une couleur franche (contraste net sur le
+     *  noir du corps *et* sur le blanc de l'arène) — c'était l'orange de
+     *  braise du shuriken à l'époque, c'est du gris depuis le style ninja,
+     *  voir `outline` juste en dessous. Chiffre de PV au crème mesuré ailleurs
+     *  dans le roster (`#f5f2ea`) plutôt qu'assombri une deuxième fois. */
     body: '#141414',
     bodyHit: '#ffffff',
-    outline: '#e8621b',
+    /** **Contour gris, demandé** — c'était le dernier élément chaud du
+     *  combattant (orange de braise, hérité du temps où le shuriken était en
+     *  flammes). Il garde son rôle : détacher la bille — le « trou » — des
+     *  lames grises qui rayonnent autour. D'où un gris **plus clair que le
+     *  corps** (`#141414`) et **plus sombre que le blanc de l'arène**, tenu
+     *  un cran sous le point le plus clair du shuriken (168/255) pour que
+     *  l'anneau reste lisible par-dessus les lames. */
+    outline: '#8f8f99',
     outlineWidth: 5,
     hpColor: '#f5f2ea',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
@@ -758,17 +766,18 @@ const WIND = {
     },
     trail: { color: 'rgba(42,42,50,0.32)', every: 0.035, life: 0.3 },
     /**
-     * **`accent` porte le nombre de dégâts** (`Flair.hit` le remplit avec, sur
-     * un contour noir posé par le moteur), la marque au sol, les traits de
-     * sillage et la gerbe d'impact. Le passer en noir répond donc directement
-     * à « les dégâts en noir ».
+     * **`accent` porte le nombre de dégâts infligés** (`Flair.hit` le remplit
+     * avec, sur un contour noir posé par le moteur), la marque au sol, les
+     * traits de sillage et la gerbe d'impact.
      *
-     * `#1f1f24` et non `#000` : le contour du nombre est déjà `#0a0a0a`, et
-     * un remplissage strictement identique effacerait le relief du chiffre.
-     * Deux crans d'écart suffisent à le garder lisible, sur l'arène blanche
-     * comme sur un corps sombre.
+     * **Passé du noir au gris, demandé.** Le noir `#1f1f24` de la passe
+     * précédente se noyait dans le contour `#0a0a0a` que le moteur pose
+     * autour du chiffre : le nombre devenait une masse noire sans relief. Un
+     * gris moyen y gagne des deux côtés — il tranche sur le contour noir *et*
+     * sur le blanc de l'arène. Même valeur que le contour de la bille : le
+     * combattant n'a plus qu'un seul accent, et c'est ce gris.
      */
-    accent: '#1f1f24',
+    accent: '#8f8f99',
   },
 
   // le plus rapide et le plus manœuvrant du roster (observé)
@@ -916,10 +925,14 @@ const WIND = {
 
   ultimate: {
     id: 'tempestVolley',
-    name: 'Salve de tempête',
-    nameRef: 'TEMPEST VOLLEY',
-    barLabel: 'TEMPEST VOLLEY',
-    barLabelFr: 'SALVE DE TEMPÊTE',
+    /** Renommé sur demande : `TEMPEST VOLLEY` → `SHURIKEN TORNADO`. L'`id`
+     *  (`tempestVolley`) ne bouge pas — il n'est montré à personne, et le
+     *  renommer toucherait le module de pouvoirs sans rien apporter au
+     *  joueur ; même règle que `id: 'wind'` gardé sous le nom SHINOBI. */
+    name: 'Tornade de shurikens',
+    nameRef: 'SHURIKEN TORNADO',
+    barLabel: 'SHURIKEN TORNADO',
+    barLabelFr: 'TORNADE DE SHURIKENS',
     barFill: '#b9b295',
     barText: '#2a2518',
     /** Cycle de jauge mesuré : ~8 à 10 s entre deux décharges. */
@@ -1008,12 +1021,15 @@ const WIND = {
   progression: { stack: 10, stack2: 0 },
 
   hud: {
+    /** Libellé renommé sur demande : « Tornado Damage » → « Shuriken Damage ».
+     *  La valeur affichée reste `f.stacks`, la stat relevée sur la vidéo — seul
+     *  le mot change, pour coller au personnage tel qu'il est maintenant. */
     stats: [
-      (f) => `Tornado Damage: ${Math.round(f.stacks)}`,
+      (f) => `Shuriken Damage: ${Math.round(f.stacks)}`,
       (f) => `Cooldown: ${formatSeconds(f.ability.cooldown)}`,
     ],
     statsFr: [
-      (f) => `Dégâts de tornade : ${Math.round(f.stacks)}`,
+      (f) => `Dégâts de shuriken : ${Math.round(f.stacks)}`,
       (f) => `Recharge : ${formatSeconds(f.ability.cooldown)}`,
     ],
     color: '#8a8163',
