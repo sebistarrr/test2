@@ -19,7 +19,10 @@
  * @module game/abilities/wind
  */
 
-import { TAU, clamp } from '../../core/math.js';
+import { TAU, clamp, dist, wrapAngle } from '../../core/math.js';
+import { ARENA, PHYSICS } from '../../data/tuning.js';
+import { Fighter } from '../fighter.js';
+import { weaponHit } from '../physics.js';
 
 export const windAbilities = {
   id: 'wind',
@@ -28,6 +31,14 @@ export const windAbilities = {
     /** @type {Array<{x:number,y:number,r:number,life:number,max:number,angle:number}>} */
     f.state.gusts = [];
     f.state.volleyTimer = 0;
+
+    // Clone d'ombre : minuterie propre, sans rapport avec la Tornade ni
+    // l'ultime — même forme que `f.state.spec` du Hors-la-loi.
+    const sp = f.el.special;
+    /** @type {object|null} le clone actif, ou rien */
+    f.state.clone = null;
+    f.state.cloneCd = sp.first;
+    f.state.cloneSpan = sp.first;
   },
 
   update(f, dt, now, game) {
@@ -66,6 +77,9 @@ export const windAbilities = {
     if (game.phase !== 'fight') return;
     f.ability.timer -= dt;
     if (f.ability.timer <= 0) this.castTornado(f, now, game);
+
+    /* ---------- clone d'ombre ---------- */
+    this.tickClone(f, dt, now, game);
   },
 
   castTornado(f, now, game) {
@@ -141,6 +155,194 @@ export const windAbilities = {
     }
   },
 
+  /* ------------------------------------------------------------------ */
+  /*  CLONE D'OMBRE — pouvoir spécial, sur horloge propre                */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Horloge, entretien et combat du clone, en un seul point — même forme que
+   * `tickBlizzard` du Hors-la-loi (invariant 7).
+   *
+   * Le clone n'est **pas** un `Fighter` inscrit dans `game.fighters` : le
+   * moteur (`match.js`, `physics.js`, `projectiles.js`) n'en connaît que deux,
+   * `this.a`/`this.b`, et c'est vrai de bout en bout (HUD, stats, victoire).
+   * L'y ajouter aurait fait déborder l'ajout hors du module. Le clone est
+   * donc un objet ordinaire, coiffé du **prototype `Fighter`**
+   * (`Object.setPrototypeOf`) : il hérite `draw()`, `radius`, `onStage`,
+   * `weaponPivot()`… gratuitement, et reste identique au vrai Shinobi sans
+   * dupliquer son rendu. Le corps à corps adverse le touche en **réutilisant
+   * `weaponHit()`** telle quelle (elle ne demande que position, rayon et
+   * statut — un plain object coiffé du prototype les fournit tous) ; les
+   * projectiles adverses, eux, ne passent jamais par `Projectiles.update()`
+   * (qui ne teste que `game.fighters`) — `tickCloneProjectiles` referme la
+   * boucle ici, sur `game.projectiles.list` directement, déjà manipulé sans
+   * détour ailleurs (`Match.startVictory` le vide de la même façon).
+   */
+  tickClone(f, dt, now, game) {
+    const sp = f.el.special;
+    const c = f.state.clone;
+
+    if (c) {
+      c.life -= dt;
+      c.flash = Math.max(0, c.flash - dt);
+      // l'arme tourne sur place, comme celle d'un vrai combattant immobile —
+      // purement décoratif, ça ne consomme aucun aléa
+      c.weaponAngle = wrapAngle(c.weaponAngle + f.el.weapon.spin * dt);
+
+      const target = f.opponent;
+
+      // riposte : le clone jette lui aussi des shurikens
+      c.attackTimer -= dt;
+      if (c.attackTimer <= 0 && target && target.onStage) {
+        c.attackTimer = sp.attack.interval;
+        this.throwFromClone(f, c, target, game);
+      }
+
+      // touché par l'arme adverse — même test que le moteur utilise pour un
+      // vrai combattant, donc mutuellement exclusif avec une touche portée
+      // sur le vrai Shinobi ce pas-ci (les deux partagent `target.meleeCd`)
+      if (target && target.onStage) {
+        const hit = weaponHit(target, c);
+        if (hit) this.hitClone(c, target, game, hit);
+      }
+
+      // touché par un projectile adverse
+      this.tickCloneProjectiles(f, c, game);
+
+      if (c.life <= 0 || c.hp <= 0) this.despawnClone(f, game, c.hp <= 0);
+      return;
+    }
+
+    f.state.cloneCd -= dt;
+    if (f.state.cloneCd <= 0) this.castClone(f, game);
+  },
+
+  /** Incantation : un double apparaît derrière le Shinobi, dans l'arène. */
+  castClone(f, game) {
+    const sp = f.el.special;
+    const behind = f.heading + Math.PI;
+    const inner = ARENA.inner;
+    const r = f.el.look.radius;
+    const x = clamp(f.x + Math.cos(behind) * sp.offset, inner.left + r, inner.right - r);
+    const y = clamp(f.y + Math.sin(behind) * sp.offset, inner.top + r, inner.bottom - r);
+
+    const clone = {
+      el: f.el,
+      x,
+      y,
+      hp: sp.hp,
+      maxHp: sp.hp,
+      flash: 0,
+      tint: null,
+      tintAlpha: 1,
+      dots: [],
+      shield: 0,
+      shieldMax: 0,
+      offstage: 0,
+      invulnerable: 0,
+      // l'aura ne doit jamais s'allumer sur le clone : un minuteur de pouvoir
+      // toujours haut la maintient éteinte (`auraVisible()` la lit telle quelle)
+      ability: { timer: 999 },
+      ult: { ready: false, active: 0 },
+      weaponAngle: f.weaponAngle,
+      weaponTwirl: 0,
+      weaponLateral: 0,
+      customWeapon: null,
+      life: sp.duration,
+      attackTimer: sp.attack.interval * 0.5, // première riposte plus rapide qu'un cycle complet
+    };
+    Object.setPrototypeOf(clone, Fighter.prototype);
+    f.state.clone = clone;
+
+    game.fx.ring(x, y, 10, 90, 0.4, 'rgba(20,20,20,0.7)', 6, true);
+    game.fx.burst(x, y, 16, { color: ['#141414', '#e8621b', '#3a3a3a'], speed: 220, size: 5, life: 0.4 });
+  },
+
+  /** Le clone jette un shuriken vers l'adversaire — même projectile que le vrai. */
+  throwFromClone(f, clone, target, game) {
+    const def = f.el.projectiles[f.el.special.attack.projectile];
+    const angle = Math.atan2(target.y - clone.y, target.x - clone.x);
+    /**
+     * Émission manuelle plutôt que `Projectiles.spawn(owner, key, angle)` :
+     * celle-ci part toujours de la position de `owner`, or le tir doit partir
+     * du **clone**, tout en restant attribué à `f` — c'est ce qui fait que le
+     * coup au but charge l'ultime du vrai Shinobi et compte dans ses
+     * statistiques (`Match.damage()` lit `source.ult`/`source.el`, absents
+     * d'un simple point d'origine).
+     */
+    game.projectiles.list.push({
+      def,
+      owner: f,
+      x: clone.x + Math.cos(angle) * (clone.radius + 6),
+      y: clone.y + Math.sin(angle) * (clone.radius + 6),
+      vx: Math.cos(angle) * def.speed,
+      vy: Math.sin(angle) * def.speed,
+      angle,
+      life: def.life,
+      bounces: def.bounces,
+      trailTimer: 0,
+      trailSeed: 0,
+    });
+  },
+
+  /** Le clone encaisse un coup de mêlée adverse. */
+  hitClone(clone, opponent, game, hit) {
+    const melee = opponent.el.weapon.melee;
+    const dmg = typeof melee.damage === 'function' ? melee.damage(opponent) : melee.damage;
+    clone.hp = Math.max(0, clone.hp - dmg);
+    clone.flash = PHYSICS.hitFlash;
+    // même verrou et même recul que `Match.resolveMelee` : sans lui, la même
+    // arme pourrait toucher clone puis vrai Shinobi (ou l'inverse) au même pas
+    opponent.meleeCd = melee.cooldown;
+    opponent.push(-hit.nx, -hit.ny, melee.selfRecoil);
+    game.fx.burst(hit.x, hit.y, 8, {
+      color: [opponent.el.look.accent, '#ffffff', '#141414'],
+      speed: 220,
+      size: 4,
+      life: 0.3,
+    });
+  },
+
+  /**
+   * Le clone encaisse les projectiles adverses en vol.
+   *
+   * Tourne **avant** `Match.projectiles.update()` dans le pas de simulation
+   * (les pouvoirs sont mis à jour avant les projectiles) : ce test porte donc
+   * sur la position que les projectiles avaient à la fin du pas précédent, un
+   * cran derrière celle testée contre les deux vrais combattants. À la cadence
+   * de simulation du jeu, l'écart ne se voit pas ; documenté ici plutôt que
+   * corrigé, pour ne pas toucher l'ordre de `match.js` pour ce seul besoin.
+   */
+  tickCloneProjectiles(f, clone, game) {
+    const list = game.projectiles.list;
+    for (let i = list.length - 1; i >= 0; i--) {
+      const p = list[i];
+      if (p.owner === f) continue; // les propres shurikens du clone ne le touchent pas
+      if (dist(p.x, p.y, clone.x, clone.y) > clone.radius + p.def.radius) continue;
+      const dmg = typeof p.def.damage === 'function' ? p.def.damage(p.owner) : p.def.damage;
+      clone.hp = Math.max(0, clone.hp - dmg);
+      clone.flash = PHYSICS.hitFlash;
+      game.projectiles.kill(i, p);
+    }
+  },
+
+  /** Fin de vie : PV à zéro ou horloge écoulée, dans les deux cas une gerbe. */
+  despawnClone(f, game, killed) {
+    const c = f.state.clone;
+    if (c) {
+      game.fx.burst(c.x, c.y, killed ? 22 : 10, {
+        color: ['#141414', '#e8621b', '#3a3a3a'],
+        speed: killed ? 260 : 140,
+        size: 5,
+        life: 0.4,
+      });
+    }
+    const sp = f.el.special;
+    f.state.clone = null;
+    f.state.cloneCd = sp.cooldown;
+    f.state.cloneSpan = sp.cooldown;
+  },
+
   /**
    * Rafale : un **disque flou couleur sable** fait de larges pales en éventail
    * qui rayonnent du centre — c'est le motif relevé image par image, et non
@@ -205,10 +407,31 @@ export const windAbilities = {
     }
   },
 
-  drawOver() {},
+  /** Le clone, dessiné par-dessus tout le reste — même rendu que le vrai
+   *  Shinobi (`Object.setPrototypeOf` lui a donné `Fighter.prototype.draw`),
+   *  à une légère transparence près : c'est ce qui dit lequel porte les PV
+   *  du duel. Masqué dès que le Shinobi meurt, pour ne pas laisser un clone
+   *  figé à l'écran pendant le ralenti du K.O. */
+  drawOver(ctx, f, game, now) {
+    const c = f.state.clone;
+    if (!c || !f.alive) return;
+    ctx.save();
+    ctx.globalAlpha = 0.88;
+    c.draw(ctx, now);
+    ctx.restore();
+  },
 
   barValue(f) {
     if (f.ult.active > 0) return f.ult.active / f.el.ultimate.duration;
     return f.ult.charge / 100;
+  },
+
+  /** Jauge du clone : se remplit vers la prochaine incantation, se vide sur
+   *  ses PV restants pendant qu'il est actif — même convention que le
+   *  Blizzard du Hors-la-loi. */
+  specialBar(f) {
+    const c = f.state.clone;
+    if (c) return { value: clamp(c.hp / c.maxHp, 0, 1), active: true };
+    return { value: 1 - clamp(f.state.cloneCd / f.state.cloneSpan, 0, 1), active: false };
   },
 };

@@ -372,14 +372,42 @@ du shuriken (`#e8621b`), chiffre de PV au crème mesuré du reste du roster
 (`#f5f2ea`). Vérifié à l'écran (`tools/shot.mjs`), lisible dans toutes les
 configurations testées. Purement visuel, matrice inchangée.
 
-**Relevé de matrice : 0/9 contre les trois autres actifs, 3/3 en miroir.**
-Aucune valeur de combat n'a été retouchée à la hausse ou à la baisse (le
-rayon de collision du projectile a même légèrement augmenté) : c'est le
-relevé du Vent d'origine, sous la moyenne dans l'historique à onze
-combattants (12/30), confronté maintenant aux trois invités les plus
-agressifs du roster réduit plutôt qu'à dix adversaires variés. Aucun
-rééquilibrage n'a été demandé ; le résultat est documenté tel quel.
-`tools/matrix-reference.txt` a été régénérée : 10 lignes au lieu de 6.
+**Relevé de matrice initial : 0/9 contre les trois autres actifs, 3/3 en
+miroir.** Aucune valeur de combat n'avait été retouchée à la hausse ou à la
+baisse (le rayon de collision du projectile avait même légèrement augmenté) :
+c'était le relevé du Vent d'origine, sous la moyenne dans l'historique à onze
+combattants (12/30), confronté aux trois invités les plus agressifs du roster
+réduit plutôt qu'à dix adversaires variés. Ce résultat a changé depuis — voir
+« Corps au noir et Clone d'ombre » ci-dessous.
+
+### Corps au noir, et Clone d'ombre
+
+**Aura et traînée passent au noir, à la demande.** `look.aura.color`
+(`rgba(214,205,170,…)` → `rgba(20,20,20,…)`) et `look.trail.color`
+(`rgba(207,198,168,…)` → même noir) : dernier vestige khaki-crème du reskin
+d'avant le corps noir. `look.flair` (ruban, motes, éclair d'incantation)
+n'est pas touché, non demandé. Purement visuel.
+
+**Nouveau pouvoir demandé : un clone de lui-même, 20 PV.** Troisième
+créneau greffé (même patron que le Blizzard/la Rage infernale/le Lien
+d'essence), mais **conçu** pour le Shinobi plutôt que repris d'un autre
+combattant — voir `CLAUDE.md` pour le détail technique (pourquoi il est
+stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
+`weaponHit()`). En résumé :
+
+| Trait | Valeur |
+| --- | --- |
+| PV | 20 (demandé) |
+| Apparition | 5 s puis toutes les 12 s, à 130 px derrière le Shinobi |
+| Durée | 6 s, ou jusqu'à 0 PV |
+| Riposte | shuriken vers l'adversaire toutes les 1,1 s, attribué au vrai Shinobi (charge son ultime) |
+| Rendu | identique au vrai combattant (même prototype `Fighter`), 88 % d'opacité |
+| Jauge | `SHADOW CLONE`, sous `TEMPEST VOLLEY`, mêmes couleurs |
+
+**Relevé de matrice après ajout : 3/9 contre les trois autres actifs
+(1/3 Hors-la-loi, 2/3 Bretteur, 0/3 Lancier), 3/3 en miroir inchangé.**
+Toutes les lignes n'impliquant pas `wind` restent identiques au caractère
+près. `tools/matrix-reference.txt` régénérée.
 
 ---
 

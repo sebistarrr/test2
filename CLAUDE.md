@@ -500,16 +500,87 @@ roster (`#f5f2ea`) plutôt qu'assombri une deuxième fois. Vérifié à l'écran
 faible PV où le chiffre se détache sur le corps noir. Purement visuel — aucune
 valeur de combat touchée, matrice inchangée au fichier près.
 
-**Relevé de matrice : le Shinobi perd tout, sauf son propre miroir.** 0/3
-contre le Hors-la-loi, le Bretteur et le Lancier, 3/3 en mirroir — soit 0/9
-contre les trois autres actifs. Aucune valeur de combat n'a été retouchée
-(seul le rayon de collision du projectile a **légèrement augmenté**, 12 → 15,
-ce qui aide plutôt que ça ne nuit) : c'est le relevé du Vent d'origine, dont
-l'historique à onze combattants le situait déjà sous la moyenne (12/30), mis
-maintenant face aux trois invités les plus agressifs du roster plutôt qu'à un
-panel de onze. Aucun rééquilibrage n'a été demandé ; ce résultat est
-documenté tel quel, pas corrigé. `tools/matrix-reference.txt` a été
-régénérée : 10 lignes au lieu de 6.
+**Relevé de matrice initial : le Shinobi perdait tout, sauf son propre
+miroir.** 0/3 contre le Hors-la-loi, le Bretteur et le Lancier, 3/3 en
+mirroir — soit 0/9 contre les trois autres actifs. Aucune valeur de combat
+n'avait été retouchée (seul le rayon de collision du projectile avait
+**légèrement augmenté**, 12 → 15, ce qui aide plutôt que ça ne nuit) : c'est
+le relevé du Vent d'origine, dont l'historique à onze combattants le situait
+déjà sous la moyenne (12/30), mis face aux trois invités les plus agressifs
+du roster plutôt qu'à un panel de onze. Aucun rééquilibrage n'avait été
+demandé, ce résultat était resté documenté tel quel. Il a changé depuis — voir
+le Clone d'ombre ci-dessous.
+
+### Aura et traînée, au noir
+
+**Demandé, purement visuel.** `look.aura.color` et `look.trail.color`
+passent du khaki-crème (`rgba(214,205,170,…)` / `rgba(207,198,168,…)`) au
+noir (`rgba(20,20,20,…)`) — c'était le dernier vestige de la palette
+crème-sable d'avant le reskin en noir. `look.flair.ribbon`/`.motes`/
+`.impact`/`.castFlash` ne sont **pas** touchés : non demandés, et ils restent
+lisibles sur le corps noir. Matrice inchangée — ni `aura` ni `trail` ne sont
+lus par un module de pouvoirs (`fiche-check.mjs` ne les couvre d'ailleurs pas,
+ce ne sont pas des blocs de fiche au sens de l'outil).
+
+### Clone d'ombre — nouveau pouvoir, troisième créneau
+
+**Demandé : « ajoute un nouveau pouvoir supplémentaire qui crée un clone de
+lui-même avec 20 PV ».** Troisième créneau greffé, même patron que le
+Blizzard/la Rage infernale/le Lien d'essence (invariant 7) — sauf que celui-ci
+n'est pas repris d'un autre combattant, il est conçu pour le Shinobi.
+
+| Ce que fait le clone | Comment |
+| --- | --- |
+| Apparaît | 130 px derrière le Shinobi (calé dans l'arène), 5 s après le début du duel, puis toutes les 12 s |
+| PV | 20 (demandé), affichés comme ceux d'un vrai combattant |
+| Rendu | **identique au vrai Shinobi** — voir plus bas — à 88 % d'opacité, seul indice visuel de qui porte les PV du duel |
+| Se fait toucher | par l'arme adverse (mêlée) et par les projectiles adverses, comme un vrai combattant |
+| Riposte | jette des shurikens vers l'adversaire, toutes les 1,1 s |
+| Disparaît | à 0 PV, ou après 6 s s'il n'a pas été tué — dans les deux cas, une gerbe |
+| Jauge | seconde rangée du HUD, `SHADOW CLONE`, sous `TEMPEST VOLLEY` — mêmes couleurs (convention de la sixième vague du Bretteur) |
+
+**Le moteur ne connaît que deux combattants, et ce n'est pas près de
+changer.** `match.js`, `physics.js` et `projectiles.js` sont écrits pour
+`this.a`/`this.b` de bout en bout — HUD, statistiques, séquence de victoire.
+Inscrire le clone comme un troisième `Fighter` dans `game.fighters` aurait
+fait déborder l'ajout dans les trois fichiers du moteur, très loin du seul
+module du Shinobi. Le clone est donc un objet ordinaire, **coiffé du
+prototype `Fighter`** (`Object.setPrototypeOf(clone, Fighter.prototype)`) :
+il hérite `draw()`, `radius`, `onStage`, `weaponPivot()`… sans dupliquer une
+ligne de rendu, et reste visuellement identique au vrai combattant par
+construction plutôt que par copie. Contrepartie assumée : le clone est
+**stationnaire** et **incorporel** — il ne bouscule pas les corps
+(`resolveBodies` ne le voit pas), il ne se déplace pas. Un clone qui pilote et
+percute aurait exigé les mêmes trois fichiers moteur qu'un clone inscrit dans
+`game.fighters`.
+
+**Deux réutilisations, une conséquence.** Le corps à corps adverse touche le
+clone en rappelant **`weaponHit()` telle quelle** depuis `physics.js` — elle
+ne demande que position, rayon et statut, qu'un plain object coiffé du
+prototype fournit tous. Les tirs adverses, eux, ne passent jamais par
+`Projectiles.update()` (qui ne teste que `game.fighters`) : `wind.js` referme
+la boucle lui-même sur `game.projectiles.list`, déjà manipulé directement
+ailleurs (`Match.startVictory` le vide de la même façon). Conséquence
+mesurée : ce second test tourne **un pas de simulation derrière** celui des
+deux vrais combattants (les pouvoirs sont mis à jour avant les projectiles
+dans `Match.update()`) — à la cadence du jeu, invisible ; documenté plutôt que
+corrigé, pour ne pas toucher l'ordre de `match.js` pour ce seul besoin.
+
+**Les shurikens du clone restent attribués au vrai Shinobi.** Le tir part de
+la position du clone mais garde `owner: f` — c'est ce qui fait qu'un coup au
+but charge l'ultime du vrai Shinobi et compte dans ses statistiques
+(`Match.damage()` lit `source.ult`/`source.el`, absents d'un simple point
+d'origine). Un même verrou que `Match.resolveMelee` (`opponent.meleeCd`)
+empêche une même frappe adverse de toucher le clone et le vrai Shinobi au
+même pas.
+
+**Relevé de matrice après ajout : le Shinobi gagne enfin des duels.** 1/3
+contre le Hors-la-loi (contre 0/3), 2/3 contre le Bretteur (contre 0/3),
+toujours 0/3 contre le Lancier — soit **3/9** contre les trois autres actifs,
+contre 0/9 avant. Toutes les lignes n'impliquant pas `wind` sont
+**identiques au caractère près** : le changement reste confiné à ses propres
+affrontements (invariant de la matrice). `tools/matrix-reference.txt`
+régénérée en conséquence.
 
 ---
 

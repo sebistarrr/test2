@@ -723,8 +723,13 @@ const WIND = {
     hpColor: '#f5f2ea',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
+    /** **Écart assumé, demandé.** Aura et traînée passent au noir, comme le
+     *  corps : c'était le dernier khaki-crème (`#d6cdaa`-ish) qui restait sur
+     *  un combattant devenu noir ailleurs. Le ruban de l'arme (`flair.ribbon`),
+     *  les motes et l'éclair d'incantation ne sont pas touchés — non demandés,
+     *  et ils restent lisibles tels quels sur le corps noir. */
     aura: {
-      color: 'rgba(214,205,170,0.55)',
+      color: 'rgba(20,20,20,0.55)',
       radius: 1.6,
       pulse: 2.6,
       showWhen: 'ability-ready',
@@ -736,7 +741,7 @@ const WIND = {
       shape: 'streak',
       castFlash: 'rgba(232,220,192,0.6)',
     },
-    trail: { color: 'rgba(207,198,168,0.3)', every: 0.035, life: 0.3 },
+    trail: { color: 'rgba(20,20,20,0.3)', every: 0.035, life: 0.3 },
     accent: '#a89b6f',
   },
 
@@ -850,6 +855,49 @@ const WIND = {
     duration: 1.5,
     volley: { interval: 0.3, count: 2, spread: 1.1, projectile: 'crescent' },
     speedBonus: 1.25,
+  },
+
+  /**
+   * **CLONE D'OMBRE — pouvoir demandé, troisième créneau.**
+   *
+   * Même patron que le Blizzard/la Rage infernale/le Lien d'essence
+   * (invariant 7) : greffé à côté d'`ability` (Tornade) et d'`ultimate`
+   * (Salve de tempête), sur sa propre horloge (`f.state.cloneCd`), sans
+   * toucher ni l'une ni l'autre.
+   *
+   * **Différence avec les trois autres greffes : celle-ci n'est pas reprise
+   * d'un autre combattant, elle est conçue pour le Shinobi.** Un double de
+   * 20 PV apparaît près de lui — vraiment hittable (arme adverse et
+   * projectiles adverses le blessent, voir `abilities/wind.js`), vraiment
+   * offensif (il jette lui aussi des shurikens), mais **stationnaire** et
+   * **incorporel** (il ne bouscule personne) : donner au clone le pilotage,
+   * la rotation d'arme et les collisions corporelles complètes d'un vrai
+   * combattant aurait voulu toucher `match.js`/`physics.js`, qui ne
+   * connaissent que deux combattants (`this.a`/`this.b`) dans tout le
+   * moteur — voir l'invariant du moteur qui ne connaît aucun combattant.
+   * Ce compromis garde l'ajout confiné au module du Shinobi.
+   */
+  special: {
+    id: 'shadowClone',
+    name: 'Clone d\'ombre',
+    nameRef: 'Shadow Clone',
+    barLabel: 'SHADOW CLONE',
+    barLabelFr: 'CLONE D\'OMBRE',
+    /** Reprend la couleur de la jauge d'ultime juste au-dessus — même
+     *  convention que les trois autres pouvoirs greffés (sixième vague du
+     *  Bretteur) : les deux jauges d'un même combattant se lisent comme une
+     *  paire. */
+    barFill: '#b9b295',
+    barText: '#2a2518',
+    hp: 20, // demandé
+    /** Calé sur le même ordre de grandeur que le Blizzard (11 s) : les duels
+     *  du roster réduit durent 10 à 30 s, une seule incantation par duel
+     *  serait invisible, une en continu saturerait l'arène de deux corps. */
+    cooldown: 12,
+    first: 5, // calé : laisse le duel s'installer avant la première invocation
+    duration: 6, // calé : le clone s'efface de lui-même s'il n'est jamais tué
+    offset: 130, // calé : apparaît derrière le Shinobi, hors de son propre corps
+    attack: { interval: 1.1, projectile: 'crescent' }, // riposte à la même cadence, à peu près, que la Tornade
   },
 
   /** **Écart assumé au relevé, demandé.** « Remplacer les projectiles par
