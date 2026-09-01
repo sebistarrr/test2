@@ -443,6 +443,50 @@ Bretteur (inchangé, déjà maximal), 1/3 contre le Lancier (inchangé, sa
 charge traverse l'écart sans ralentir). `tools/matrix-reference.txt`
 régénérée une quatrième fois.
 
+### La bille devient le shuriken
+
+**Demandé : la bille joue le trou du shuriken, les lames rayonnent autour.**
+L'arme n'est plus tenue à côté du corps, elle est **centrée dessus** — même
+PNG, nouvelle géométrie.
+
+| Bloc | Avant | Après | Source |
+| --- | --- | --- | --- |
+| `head.scale` | 4,35 (74 px de large) | **8,912656** (**150 px**) | demandé, calé à l'œil |
+| `handle.length` | 34 | **−75** | déduit : une demi-largeur, pour centrer |
+| `reach` | 105 | **75** | déduit : rayon des pointes dessinées |
+| `hitbox` | `from 0,45 → to 1`, `radius 18` | **`from 0` / `to 0`, `radius 75`** | demandé : dégâts tout autour |
+
+`handle.length + largeur dessinée = −75 + 150 = 75 = reach` : l'invariant
+« la pointe dessinée retombe sur la portée » tient toujours, en symétrique.
+
+**La hitbox omnidirectionnelle se dit dans la fiche seule.** `from`/`to` à
+zéro confondent les deux bouts du segment tranchant sur le pivot ;
+`segmentPointDistance` gère déjà ce cas dégénéré, donc `weaponHit()` teste
+`distance ≤ rayon adverse + 75`, soit un disque centré sur la bille. Aucune
+ligne de `fighter.js` ni de `physics.js` n'a bougé.
+
+**Taille : compromis assumé.** Le vrai moyeu de la maquette fait 30 % du
+rayon ; y caler une bille de 82 px aurait demandé un shuriken de 273 px,
+presque la moitié de l'arène. À 150 px les lames dépassent de 34 px — la
+bille couvre le moyeu et la naissance des lames, ce qui dépasse est la
+partie flamme. L'arme reste **sous** le corps, sinon la bille ne boucherait
+plus le trou.
+
+**Deux conséquences gratuites.** Le ruban de `flair.js` suit `reach` le long
+de `weaponAngle` : il trace désormais un cercle de 75 px autour du
+combattant. Et les projectiles (`crescent`, resté à `scale: 4,35`) ne
+suivent **pas** la nouvelle taille : la règle « des shurikens de la même
+taille que l'arme » valait pour l'arme tenue, un projectile de 150 px serait
+illisible.
+
+**Relevé de matrice : 8/9** (3/3 Hors-la-loi, 3/3 Bretteur, **2/3** Lancier
+contre 1/3 avant). Une hitbox qui ne dépend plus de l'orientation de l'arme
+punit la charge du Lancier, qui passait jusque-là entre deux tours de lame.
+Les durées se raccourcissent partout — signature d'une cadence de touche en
+hausse. **Le Shinobi devient l'anomalie du roster réduit**, conséquence
+directe de la demande, documentée telle quelle. Leviers pour le ramener si
+besoin : `hitbox.radius` (75), `melee.damage` (3), `melee.cooldown` (1 s).
+
 ---
 
 ## ⚡ FOUDRE — `lightning` (affiché « LIGHTNING »)

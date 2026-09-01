@@ -764,26 +764,60 @@ const WIND = {
      *  ici, contrairement à la lame. */
     name: 'Shuriken de flamme',
     nameRef: 'Flame Shuriken',
-    /** Reach, hitbox et gabarit **inchangés** : c'est un reskin, pas un
-     *  rééquilibrage. Le PNG est quasi carré (198 × 200), comme l'était déjà
-     *  le pixel-art de repli (17 × 17) — `handle.length`/`scale` retombent
-     *  donc sur la même taille dessinée (~74 px) sans recalcul, contrairement
-     *  à la lame du Bretteur dont le nouveau ratio avait forcé à recalculer
-     *  `handle.length`. */
-    reach: 105, // mesuré : ~120 px, arme collée au corps
-    spin: SPIN * 1.1, // tourne plus vite que les autres (observé)
+    /**
+     * **La bille EST le shuriken — demandé, écart assumé au relevé.**
+     *
+     * L'arme ne pend plus à côté du corps : le sprite est **centré sur la
+     * bille**, qui joue le trou central du shuriken pendant que les lames
+     * rayonnent autour d'elle. Trois valeurs suffisent à le dire, et elles
+     * tiennent ensemble :
+     *
+     *  • `head.scale` porte la largeur dessinée à **150 px** (17 cellules du
+     *    repli texte × 8,912656, corrigé du ratio 198/200 du PNG) ;
+     *  • `handle.length` vaut **−75**, soit la moitié de cette largeur :
+     *    `drawSpriteLeft` blitte à partir de là, donc le sprite démarre une
+     *    demi-largeur *avant* le pivot et retombe exactement centré ;
+     *  • `reach` vaut **75**, le rayon des pointes.
+     *
+     * L'invariant du dépôt tient toujours au caractère près :
+     * `handle.length + largeur dessinée = −75 + 150 = 75 = reach`. La pointe
+     * dessinée ne ment donc pas sur la portée, comme pour les dix autres.
+     *
+     * **Taille : 150 px pour une bille de 82.** Les lames dépassent de 34 px
+     * tout autour — assez pour se lire comme un shuriken, pas assez pour
+     * occuper un quart de l'arène. Caler la bille sur le vrai moyeu de la
+     * maquette (30 % du rayon) aurait demandé 273 px, hors de question.
+     * L'arme reste **sous** le corps (pas de `overBody`) : c'est ce qui fait
+     * que la bille bouche le moyeu au lieu de passer derrière.
+     */
+    reach: 75, // déduit : rayon des pointes du shuriken dessiné
+    spin: SPIN * 1.1, // tourne plus vite que les autres (observé) — ici, sur lui-même
     spinDir: 1,
     /**
-     * **Aucun manche.** Sur la vidéo le losange est posé à même la boule :
-     * `width: 0` demande au moteur de ne rien dessiner et `length` ne sert
-     * plus qu'à décoller le sprite du centre (34 px → pointe interne cachée
-     * sous le corps, pointe externe à 108 px, soit la portée relevée).
+     * **Aucun manche**, et `length` **négatif** : `width: 0` demande au moteur
+     * de ne rien dessiner, et la longueur ne sert plus qu'à reculer le sprite
+     * d'une demi-largeur pour le centrer sur la bille (même mécanique que le
+     * talon de la lance du Lancier, poussée jusqu'au centrage complet).
      */
-    handle: { length: 34, width: 0, color: '#6f6a55', dark: '#3f3b30', outline: '#201c12', gem: null },
-    /** mesuré : 74 px de pointe à pointe → 17 cellules × 4,35 px (repli
-     *  texte) ; le PNG reprend cette même taille dessinée, voir plus haut. */
-    head: { sprite: 'windShuriken', scale: 4.35, anchorY: 0.5 },
-    hitbox: { from: 0.45, to: 1, radius: 18 },
+    handle: { length: -75, width: 0, color: '#6f6a55', dark: '#3f3b30', outline: '#201c12', gem: null },
+    /** 17 cellules du repli texte × 8,912656 = 151,5 px de haut, soit
+     *  150 px de large une fois le ratio 198/200 du PNG appliqué. */
+    head: { sprite: 'windShuriken', scale: 8.912656, anchorY: 0.5 },
+    /**
+     * **Il blesse tout autour de lui — c'est la conséquence demandée.**
+     *
+     * `from` et `to` à zéro écrasent le segment tranchant sur le pivot :
+     * `bladeSegment()` rend alors deux extrémités confondues au centre du
+     * corps, et `segmentPointDistance` (qui traite déjà `len2 === 0`) mesure
+     * la distance à ce point. Le test d'`weaponHit` devient donc
+     * `distance ≤ rayon adverse + 75` : un **disque** centré sur la bille,
+     * sans direction privilégiée. Aucune ligne de moteur n'a eu à bouger — la
+     * forme de la hitbox se dit entièrement dans la fiche.
+     *
+     * `radius: 75` est le rayon des pointes, le même que `reach` : la lame
+     * touche là où on la voit.
+     */
+    hitbox: { from: 0, to: 0, radius: 75 },
     melee: {
       damage: 3,
       cooldown: 1, // cadence la plus rapide du roster

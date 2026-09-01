@@ -459,13 +459,15 @@ simple retrait de fond y laissait des poches de damier visibles. `cv2.inpaint`
 toucher au reste de l'image. Deuxième écart à l'invariant « aucun binaire
 dans le dépôt », après la lame du Bretteur.
 
-**Reach, hitbox et gabarit de l'arme sont inchangés.** Le PNG recadré (198 ×
-200) est quasi carré, comme l'était déjà `WIND_SHURIKEN` (17 × 17, le
-pixel-art de repli) : `handle.length` et `head.scale` retombent donc sur la
-même taille dessinée (~74 px) sans recalcul — contrairement à la lame du
-Bretteur, dont le nouveau ratio (bien plus allongé que son pixel-art de
-repli) avait forcé à recalculer `handle.length`. Pur reskin, aucune valeur de
-gameplay de l'arme ne bouge.
+**Reach, hitbox et gabarit de l'arme sont inchangés — au moment du reskin.**
+Le PNG recadré (198 × 200) est quasi carré, comme l'était déjà
+`WIND_SHURIKEN` (17 × 17, le pixel-art de repli) : `handle.length` et
+`head.scale` retombaient donc sur la même taille dessinée (~74 px) sans
+recalcul — contrairement à la lame du Bretteur, dont le nouveau ratio (bien
+plus allongé que son pixel-art de repli) avait forcé à recalculer
+`handle.length`. Pur reskin, aucune valeur de gameplay de l'arme ne bougeait.
+**Cette géométrie a été refaite depuis** — voir « La bille devient le
+shuriken » plus bas.
 
 **Les projectiles reprennent le même sprite que l'arme, à la même échelle.**
 « Remplacer les projectiles par des shurikens de la même taille » : la clé
@@ -641,6 +643,70 @@ tout l'écart entre deux corps sans ralentir, plusieurs clones ne lui coûtent
 pas plus qu'un seul. Toutes les lignes n'impliquant pas `wind` restent
 identiques au caractère près. `tools/matrix-reference.txt` régénérée une
 quatrième fois.
+
+### La bille devient le shuriken
+
+**Demandé : « au lieu du shuriken rattaché à la balle, je veux que la balle
+devienne le shuriken — la balle représentant le trou et les lames autour ».**
+L'arme ne pend plus à côté du corps : le même PNG est **centré sur la bille**,
+qui bouche le moyeu pendant que les lames rayonnent tout autour.
+
+| Valeur | Avant | Après | Pourquoi |
+| --- | --- | --- | --- |
+| `head.scale` | 4,35 | **8,912656** | largeur dessinée 74 → **150 px** |
+| `handle.length` | 34 | **−75** | une demi-largeur *avant* le pivot : le sprite retombe centré |
+| `reach` | 105 | **75** | le rayon des pointes, pas une portée devant soi |
+| `hitbox` | `from 0,45 → to 1`, `radius 18` | **`from 0` / `to 0`, `radius 75`** | segment écrasé sur le centre = **disque** |
+
+**L'invariant du dépôt tient toujours** : `handle.length + largeur dessinée
+= −75 + 150 = 75 = reach`. La pointe dessinée ne ment pas sur la portée,
+exactement comme pour les dix autres armes — le calcul est juste devenu
+symétrique.
+
+**La hitbox tout autour ne coûte pas une ligne de moteur.** `from` et `to` à
+zéro confondent les deux extrémités du segment tranchant sur le pivot ;
+`segmentPointDistance` traite déjà le cas dégénéré (`len2 === 0`), donc
+`weaponHit()` teste `distance ≤ rayon adverse + 75` — un disque centré sur la
+bille, sans direction privilégiée. **La forme de la hitbox se dit entièrement
+dans la fiche**, ce qui est exactement ce que l'invariant « le moteur ne
+connaît aucun combattant » promettait sans qu'on ait eu à l'éprouver jusque-là.
+
+**La taille est un compromis assumé.** Caler la bille (82 px de diamètre) sur
+le vrai moyeu de la maquette — 30 % du rayon, mesuré sur le PNG — aurait
+demandé un shuriken de **273 px**, soit près de la moitié de la largeur de
+l'arène. À 150 px les lames dépassent de 34 px tout autour : assez pour se
+lire comme un shuriken, pas assez pour manger le cadre. La bille couvre donc
+le moyeu *et* la naissance des lames, et ce qui dépasse est précisément la
+partie flamme de la maquette.
+
+**L'arme reste sous le corps** (pas de `overBody`) : c'est ce qui fait que la
+bille bouche le trou au lieu de passer derrière. Et le ruban de
+`render/flair.js` suit `reach` le long de `weaponAngle` : il trace maintenant
+un **cercle** de 75 px autour du combattant au lieu d'un arc devant lui —
+gratuit, et raccord avec un shuriken qui tourne sur lui-même.
+
+**Les projectiles ne suivent pas.** `projectiles.crescent` reste à
+`scale: 4,35` (~74 px) : la règle « des shurikens de la même taille que
+l'arme » datait de l'arme tenue en main ; un projectile de 150 px serait
+devenu illisible. C'est l'écart assumé de cette étape.
+
+**Le clone reste une bille nue.** « Supprime l'arme rattachée au clone »
+avait été demandé à l'étape précédente, et `customWeapon` reste un no-op :
+les clones n'ont donc pas de lames, ce qui les distingue au premier coup
+d'œil du vrai Shinobi — et dit juste, puisqu'eux ne blessent qu'au shuriken
+lancé.
+
+**Relevé de matrice : 8/9**, contre 7/9 avec l'arme tenue. Le seul
+déplacement est **le Lancier, qui passe de 2/3 à 1/3** : une hitbox qui ne
+dépend plus de l'orientation de l'arme punit la charge, qui traversait
+jusqu'ici entre deux passages de lame. Le Hors-la-loi et le Bretteur étaient
+déjà à 0/3, ils y restent. Les durées se raccourcissent partout (les duels
+contre le Shinobi passent de ~20-26 s à ~16-24 s), ce qui est la signature
+d'une cadence de touche en hausse. **À 8 victoires sur 9, le Shinobi est
+désormais l'anomalie du roster réduit**, à la place qu'occupait le Lancier :
+c'est la conséquence directe d'une demande, documentée telle quelle et non
+corrigée d'office. Les leviers, si l'on veut le ramener : `hitbox.radius`
+(75), `melee.damage` (3) et `melee.cooldown` (1 s).
 
 ---
 
