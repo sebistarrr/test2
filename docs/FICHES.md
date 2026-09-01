@@ -398,7 +398,7 @@ stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
 | Trait | Valeur |
 | --- | --- |
 | PV | 20 (demandé) |
-| Apparition | 5 s puis toutes les 12 s (après une mort), à 130 px derrière le Shinobi |
+| Apparition | 5 s puis toutes les 12 s **sans condition**, à 130 px derrière le Shinobi — plusieurs clones coexistent |
 | Durée | **permanente** — demandé ; seuls ses PV le font disparaître |
 | Riposte | shuriken vers l'adversaire toutes les 1,1 s, attribué au vrai Shinobi (charge son ultime) |
 | Rendu | identique au vrai combattant (même prototype `Fighter`), **sans arme**, 88 % d'opacité |
@@ -428,6 +428,20 @@ shurikens (`throwFromClone`, inchangé) mais n'en porte plus sur lui :
 `customWeapon` passe de `null` à un no-op, ce qui coupe `drawWeapon()` sans
 toucher au reste du rendu hérité de `Fighter.prototype`. Matrice inchangée
 au fichier près.
+
+**Plusieurs clones à la fois, à la demande.** `f.state.clone` devient
+`f.state.clones` (tableau) : la minuterie de réapparition tourne en continu
+et pose un nouveau clone toutes les 12 s sans attendre la mort des
+précédents. Chaque clone garde ses PV et son horloge de riposte propres.
+Une même arme ou un même projectile ne peut jamais toucher deux corps au
+même pas — `weaponHit()` pose `target.meleeCd` dès le premier clone touché,
+et un projectile est retiré de la liste dès qu'il touche — donc aucun
+verrou supplémentaire n'a été nécessaire pour garder cette règle avec
+plusieurs clones. **Relevé de matrice : 7/9**, contre 5/9 avec un seul
+clone à la fois — 3/3 contre le Hors-la-loi (contre 1/3), 3/3 contre le
+Bretteur (inchangé, déjà maximal), 1/3 contre le Lancier (inchangé, sa
+charge traverse l'écart sans ralentir). `tools/matrix-reference.txt`
+régénérée une quatrième fois.
 
 ---
 

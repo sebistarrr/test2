@@ -35,8 +35,8 @@ export const windAbilities = {
     // Clone d'ombre : minuterie propre, sans rapport avec la Tornade ni
     // l'ultime — même forme que `f.state.spec` du Hors-la-loi.
     const sp = f.el.special;
-    /** @type {object|null} le clone actif, ou rien */
-    f.state.clone = null;
+    /** @type {object[]} plusieurs clones peuvent coexister */
+    f.state.clones = [];
     f.state.cloneCd = sp.first;
     f.state.cloneSpan = sp.first;
   },
@@ -177,15 +177,21 @@ export const windAbilities = {
    * (qui ne teste que `game.fighters`) — `tickCloneProjectiles` referme la
    * boucle ici, sur `game.projectiles.list` directement, déjà manipulé sans
    * détour ailleurs (`Match.startVictory` le vide de la même façon).
+   *
+   * **Plusieurs clones peuvent coexister**, à la demande : la minuterie de
+   * réapparition (`f.state.cloneCd`) tourne **indépendamment** de la vie des
+   * clones déjà posés — elle ne se réarme plus à la mort de l'un d'eux, mais
+   * à chaque incantation. Chaque clone reste un objet **distinct** dans
+   * `f.state.clones`, donc chacun porte ses propres PV et n'en perd que sur
+   * ses propres touches — pas de pile ni d'état partagé entre eux.
    */
   tickClone(f, dt, now, game) {
     const sp = f.el.special;
-    const c = f.state.clone;
+    const target = f.opponent;
 
-    if (c) {
+    for (let i = f.state.clones.length - 1; i >= 0; i--) {
+      const c = f.state.clones[i];
       c.flash = Math.max(0, c.flash - dt);
-
-      const target = f.opponent;
 
       // corps solide : personne ne le traverse, ni l'adversaire ni le vrai
       // Shinobi — le clone est immobile, donc tout l'écartement retombe sur
@@ -200,24 +206,35 @@ export const windAbilities = {
         this.throwFromClone(f, c, target, game);
       }
 
-      // touché par l'arme adverse — même test que le moteur utilise pour un
-      // vrai combattant, donc mutuellement exclusif avec une touche portée
-      // sur le vrai Shinobi ce pas-ci (les deux partagent `target.meleeCd`)
+      /**
+       * Touché par l'arme adverse. Même test que le moteur utilise pour un
+       * vrai combattant, donc mutuellement exclusif avec une touche portée
+       * sur le vrai Shinobi ce pas-ci (les deux partagent `target.meleeCd`) —
+       * et, désormais, avec une touche sur un **autre** clone : le premier de
+       * la liste qui encaisse pose `target.meleeCd`, donc `weaponHit()`
+       * renvoie `null` pour tous les suivants dans le même pas. Une seule
+       * arme ne peut jamais toucher deux corps à la fois.
+       */
       if (target && target.onStage) {
         const hit = weaponHit(target, c);
         if (hit) this.hitClone(c, target, game, hit);
       }
 
-      // touché par un projectile adverse
+      // touché par un projectile adverse — chaque clone teste la même liste,
+      // mais un projectile est retiré dès qu'il touche, donc il ne peut
+      // jamais blesser deux clones (ni un clone et le vrai Shinobi)
       this.tickCloneProjectiles(f, c, game);
 
-      // permanent : seuls les PV le font disparaître, pas une horloge
-      if (c.hp <= 0) this.despawnClone(f, game);
-      return;
+      // permanent : seuls ses propres PV le font disparaître, pas une horloge
+      if (c.hp <= 0) this.despawnClone(f, game, i);
     }
 
     f.state.cloneCd -= dt;
-    if (f.state.cloneCd <= 0) this.castClone(f, game);
+    if (f.state.cloneCd <= 0) {
+      f.state.cloneCd = sp.cooldown;
+      f.state.cloneSpan = sp.cooldown;
+      this.castClone(f, game);
+    }
   },
 
   /**
@@ -279,7 +296,7 @@ export const windAbilities = {
       attackTimer: sp.attack.interval * 0.5, // première riposte plus rapide qu'un cycle complet
     };
     Object.setPrototypeOf(clone, Fighter.prototype);
-    f.state.clone = clone;
+    f.state.clones.push(clone);
 
     game.fx.ring(x, y, 10, 90, 0.4, 'rgba(20,20,20,0.7)', 6, true);
     game.fx.burst(x, y, 16, { color: ['#141414', '#e8621b', '#3a3a3a'], speed: 220, size: 5, life: 0.4 });
@@ -353,16 +370,16 @@ export const windAbilities = {
     }
   },
 
-  /** Fin de vie : uniquement à 0 PV, le clone est désormais permanent sinon. */
-  despawnClone(f, game) {
-    const c = f.state.clone;
-    if (c) {
-      game.fx.burst(c.x, c.y, 22, { color: ['#141414', '#e8621b', '#3a3a3a'], speed: 260, size: 5, life: 0.4 });
-    }
-    const sp = f.el.special;
-    f.state.clone = null;
-    f.state.cloneCd = sp.cooldown;
-    f.state.cloneSpan = sp.cooldown;
+  /**
+   * Fin de vie d'**un** clone, uniquement à 0 PV — il est permanent sinon.
+   * `index` cible celui-là précisément dans `f.state.clones` : la minuterie
+   * de réapparition n'est plus touchée ici, elle tourne indépendamment de la
+   * vie de chaque clone (voir `tickClone`).
+   */
+  despawnClone(f, game, index) {
+    const c = f.state.clones[index];
+    game.fx.burst(c.x, c.y, 22, { color: ['#141414', '#e8621b', '#3a3a3a'], speed: 260, size: 5, life: 0.4 });
+    f.state.clones.splice(index, 1);
   },
 
   /**
@@ -429,18 +446,19 @@ export const windAbilities = {
     }
   },
 
-  /** Le clone, dessiné par-dessus tout le reste — même rendu que le vrai
+  /** Les clones, dessinés par-dessus tout le reste — même rendu que le vrai
    *  Shinobi (`Object.setPrototypeOf` lui a donné `Fighter.prototype.draw`),
    *  à une légère transparence près : c'est ce qui dit lequel porte les PV
-   *  du duel. Masqué dès que le Shinobi meurt, pour ne pas laisser un clone
-   *  figé à l'écran pendant le ralenti du K.O. */
+   *  du duel. Masqués dès que le Shinobi meurt, pour ne pas les laisser
+   *  figés à l'écran pendant le ralenti du K.O. */
   drawOver(ctx, f, game, now) {
-    const c = f.state.clone;
-    if (!c || !f.alive) return;
-    ctx.save();
-    ctx.globalAlpha = 0.88;
-    c.draw(ctx, now);
-    ctx.restore();
+    if (!f.alive) return;
+    for (const c of f.state.clones) {
+      ctx.save();
+      ctx.globalAlpha = 0.88;
+      c.draw(ctx, now);
+      ctx.restore();
+    }
   },
 
   barValue(f) {
@@ -448,12 +466,18 @@ export const windAbilities = {
     return f.ult.charge / 100;
   },
 
-  /** Jauge du clone : se remplit vers la prochaine incantation, se vide sur
-   *  ses PV restants pendant qu'il est actif — même convention que le
-   *  Blizzard du Hors-la-loi. */
+  /**
+   * Jauge du clone : se remplit vers la prochaine incantation.
+   *
+   * Plusieurs clones pouvant coexister à des PV différents, une seule barre
+   * ne peut plus dire « les PV du clone actif » comme du temps d'un clone
+   * unique — elle annonce donc uniquement la **prochaine** apparition,
+   * qu'il y ait déjà des clones en jeu ou non.
+   */
   specialBar(f) {
-    const c = f.state.clone;
-    if (c) return { value: clamp(c.hp / c.maxHp, 0, 1), active: true };
-    return { value: 1 - clamp(f.state.cloneCd / f.state.cloneSpan, 0, 1), active: false };
+    return {
+      value: 1 - clamp(f.state.cloneCd / f.state.cloneSpan, 0, 1),
+      active: f.state.clones.length > 0,
+    };
   },
 };

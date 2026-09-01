@@ -531,7 +531,7 @@ n'est pas repris d'un autre combattant, il est conçu pour le Shinobi.
 
 | Ce que fait le clone | Comment |
 | --- | --- |
-| Apparaît | 130 px derrière le Shinobi (calé dans l'arène), 5 s après le début du duel, puis toutes les 12 s |
+| Apparaît | 130 px derrière le Shinobi (calé dans l'arène), 5 s après le début du duel, puis toutes les 12 s — **sans attendre la mort du précédent** : plusieurs clones peuvent coexister |
 | PV | 20 (demandé), affichés comme ceux d'un vrai combattant |
 | Rendu | **identique au vrai Shinobi, sans l'arme** — voir plus bas — à 88 % d'opacité, seul indice visuel de qui porte les PV du duel |
 | Se fait toucher | par l'arme adverse (mêlée) et par les projectiles adverses, comme un vrai combattant |
@@ -617,6 +617,30 @@ lieu de `this.drawWeapon()`, donc rien ne se dessine. Les champs
 disparaissent avec lui — plus rien ne les lit. Matrice inchangée au fichier
 près : `paintWeapon` n'est jamais lu par `weaponHit()` ni par la collision de
 corps, seulement par le rendu.
+
+**Plusieurs clones à la fois, à la demande.** `f.state.clone` (singulier)
+devient `f.state.clones` (tableau) : la minuterie de réapparition
+(`f.state.cloneCd`) ne se réarme plus à la mort d'un clone, elle tourne en
+continu et en pose un nouveau toutes les 12 s, qu'il en reste ou non des
+précédents. Chaque clone garde ses PV et son horloge de riposte propres — ce
+sont des objets distincts dans le tableau, jamais un état partagé. La
+mutuelle exclusion des touches (une même arme ou un même projectile ne peut
+toucher deux corps au même pas) tient **gratuitement** : `weaponHit()` pose
+`target.meleeCd` dès le premier clone touché, ce qui fait échouer le test
+sur tous les suivants dans la même boucle ; un projectile est retiré de
+`game.projectiles.list` dès qu'il touche, donc invisible aux clones testés
+après lui. La jauge `SHADOW CLONE` ne peut plus annoncer « les PV du clone
+actif » (il peut y en avoir plusieurs, à des PV différents) : elle annonce
+désormais uniquement la prochaine apparition, tout le temps.
+
+**Relevé de matrice : 7/9**, contre 5/9 avec un clone à la fois. Le
+Hors-la-loi passe de 1/3 à **3/3** — un canon asservi qui doit choisir entre
+plusieurs cibles perd l'essentiel de son avantage de précision. Le Bretteur
+reste à 3/3 (déjà maximal), le Lancier à 1/3 inchangé : sa charge traverse
+tout l'écart entre deux corps sans ralentir, plusieurs clones ne lui coûtent
+pas plus qu'un seul. Toutes les lignes n'impliquant pas `wind` restent
+identiques au caractère près. `tools/matrix-reference.txt` régénérée une
+quatrième fois.
 
 ---
 
