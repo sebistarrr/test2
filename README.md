@@ -30,7 +30,7 @@ avec leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
 | **Hors-la-loi** | Revolver de glace | **canon asservi à la cible** — il ne tourne pas ; barillet de 6, balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Plein soleil / HIGH NOON (cadence doublée, recul ×8) |
 | **Bretteur** | Lame de braise (transcrite d'une maquette, remplace le sabre dentelé relevé — voir `docs/FICHES.md`) | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
 | **Lancier** | Lance électrique (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
-| **Mage** | Sceptre de sève (transcrit d'une maquette) — **braqué sur la cible et posé sur le flanc** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Tempête de sève / SAPWOOD STORM — celle de la Plante, reteintée |
+| **Mage** | Sceptre de sève (transcrit d'une maquette) — **braqué sur la cible, posé sur le flanc et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Tempête de sève / SAPWOOD STORM — celle de la Plante, reteintée |
 
 Deux des quatre invités portent en plus un **pouvoir spécial greffé**, sur
 horloge propre, avec leur propre jauge juste sous celle de l'ultime : le
@@ -39,10 +39,12 @@ horloge propre, avec leur propre jauge juste sous celle de l'ultime : le
 l'Ombre pour le Lancier (dôme figé + rayon qui draine). Ils s'ajoutent à leur
 ultime, ils ne le remplacent pas — voir [`docs/FICHES.md`](docs/FICHES.md).
 
-Le Mage, lui, ne porte pas de troisième créneau : il reprend **les deux
-pouvoirs de la Plante** — le Semis et la Tempête — à ses places normales. Son
-module ne les recopie pas, il **délègue** à celui de la Plante ; c'est la seule
-façon qu'ils ne divergent pas au premier réglage.
+Le Mage, lui, ne porte pas de troisième créneau : il reprend **l'ultime de la
+Plante** — la Tempête — à sa place normale. Son module ne le recopie pas, il
+**délègue** à celui de la Plante ; c'est la seule façon qu'il ne diverge pas au
+premier réglage. Le Semis (les bulbes posés au sol) n'a en revanche pas été
+repris : retiré à la demande, un tireur qui vise et guide ses orbes n'a pas
+besoin d'une mine plantée par terre.
 
 <sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png) · [les orbes guidées du Mage](docs/capture-mage.png) · [sa Tempête de sève](docs/capture-mage-tempete.png).</sup>
 

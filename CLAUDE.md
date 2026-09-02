@@ -82,7 +82,7 @@ commentaire.
 | `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale** du Feu, greffée |
 | `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence** de l'Ombre, greffé |
 | `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, greffé et conçu pour lui : des clones de 15 PV, permanents, solides, qui ripostent |
-| `mage` Mage | Tireur | **sceptre braqué et posé sur le flanc** (`weapon.spin = 0` + `weaponLateral`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Ses deux pouvoirs sont ceux de la Plante, **délégués** à son module, pas recopiés |
+| `mage` Mage | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte l'ultime de la Plante (Tempête de sève), **délégué** à son module — le Semis (bulbes au sol) a été retiré, demandé |
 
 Le détail de chacun — relevés, écarts, historique des demandes — est dans
 `docs/FICHES.md`, une section par combattant.
@@ -121,14 +121,12 @@ la matrice.
 archivistique, sans validation ni équilibre.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Lancier 10, Shinobi 9, **Mage 5**, Hors-la-loi 3, Bretteur 3.
+miroir chacun : Lancier 10, Shinobi 7, **Mage 6**, Bretteur 4, Hors-la-loi 3.
 
-Le Mage arrive au milieu, et c'est voulu. Les deux écarts sont anciens et
-inchangés — l'arrivée du Mage n'a déplacé **aucun** affrontement existant, le
-diff de la matrice ne contient que des ajouts. Leviers connus si on veut
-resserrer : Shinobi `hitbox.radius` (75), `melee.damage` (3),
-`melee.cooldown` (1 s) ; Mage `projectiles.orb.damage`, seul levier qui
-réponde chez lui (voir sa fiche).
+Le Mage arrive au milieu, et c'est voulu. Les deux écarts (Lancier, Hors-la-loi)
+sont anciens et inchangés. Leviers connus si on veut resserrer : Shinobi
+`hitbox.radius` (75), `melee.damage` (3), `melee.cooldown` (1 s) ; Mage
+`projectiles.orb.damage`, seul levier qui réponde chez lui (voir sa fiche).
 
 ---
 

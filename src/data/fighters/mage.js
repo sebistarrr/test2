@@ -18,9 +18,12 @@ import { formatHalf } from '../format.js';
  *  est une **cadence de tir qui monte toute seule** (« Attack Speed »).
  *
  *  Ce qui ne l'est pas : le personnage est **vert**, son arme est le sceptre de
- *  la maquette fournie, ses orbes sont **guidées**, et ses deux pouvoirs sont
- *  ceux de la Plante — demandés tels quels, et délégués à `abilities/plant.js`
- *  plutôt que recopiés.
+ *  la maquette fournie, ses orbes sont **guidées**, et son ultime — la Tempête
+ *  de sève — est celui de la Plante, demandé tel quel et délégué à
+ *  `abilities/plant.js` plutôt que recopié.
+ *
+ *  Le Semis de la Plante (les bulbes posés au sol) n'a **pas** été repris,
+ *  retiré à la demande : voir la section `ability` plus bas.
  * ========================================================================== */
 export const MAGE = fiche({
   id: 'mage',
@@ -93,6 +96,15 @@ export const MAGE = fiche({
     spin: 0,
     spinDir: 1,
     /**
+     * **Demandé, purement visuel** : le sceptre se dessine par-dessus la
+     * bille au lieu de dessous — sans `overBody`, le décalage sur le flanc
+     * (`weaponLateral`) le fait déjà déborder de la silhouette, mais son
+     * talon restait caché sous le corps. Même drapeau que le Lancier
+     * (`fighter.js`, invariant du rendu) : il ne pèse sur aucune hitbox, la
+     * géométrie de `bladeSegment()` ne change pas.
+     */
+    overBody: true,
+    /**
      * **Portée 128 px**, mesurée sur la baguette de Magia : 100 px vidéo entre
      * les deux bouts, ×1,275. La carte fait 70 cellules de large dessinées à
      * `scale: 2`, soit 140 px, donc le manche démarre **12 px derrière le
@@ -137,45 +149,25 @@ export const MAGE = fiche({
     },
   },
 
-  /* ---------- POUVOIR — celui de la Plante, demandé tel quel ---------- */
+  /* ---------- POUVOIR ---------- */
   /**
-   * **Semis, repris de la Plante.** Même bloc `bulb`, donc
-   * `abilities/plant.js` le pilote sans une ligne de code en double — le
-   * module du Mage lui délègue.
+   * **Aucun.** Le Semis (les bulbes de la Plante, posés et laissés au sol) a
+   * été retiré, demandé : un tireur qui vise et guide ses orbes n'a pas
+   * besoin d'une mine plantée par terre, et cette mécanique-là tranchait avec
+   * le reste de sa fiche — tout le Mage se joue **en l'air**, jamais au sol.
    *
-   * Deux écarts, tous deux volontaires :
-   *  • dégâts et soin **constants** au lieu de suivre `self.stacks`. Chez la
-   *    Plante la pile est « Bulb Damage/Heal » ; ici elle est la cadence de
-   *    tir, et la faire piloter aussi les bulbes empilerait deux montées sur
-   *    une seule stat ;
-   *  • `max: 3` au lieu de 4 : le Mage sème en tirant, il ne se replie pas
-   *    sur ses bulbes comme la Plante.
+   * La fiche doit malgré tout porter un `ability.cooldown` : le moteur le lit
+   * à la construction du combattant. Même patron que la Furie du Lancier
+   * (`fighters/lancer.js`) — `cooldown: Infinity`, jamais décompté par le
+   * module, et `ui/select.js` l'affiche comme « passif » (`Number.isFinite`).
    */
   ability: {
-    id: 'bulb',
-    name: 'Semis',
-    nameRef: 'Bulb',
-    cooldown: 5.5,
+    id: 'none',
+    name: 'Aucun',
+    nameRef: 'None',
+    cooldown: Infinity,
     cooldownStep: 0,
-    cooldownFloor: 5.5,
-    bulb: {
-      max: 3,
-      life: 18,
-      sprite: 'plantBulb',
-      scale: 2.5,
-      radius: 36,
-      armDelay: 0.9,
-      shootInterval: 2.4,
-      shootRange: 460,
-      projectile: 'flower',
-      damage: () => 3,
-      heal: () => 2,
-      slow: 0.25,
-      slowDuration: 1.6,
-      /** Gerbe à l'éclatement. Sans elle, `plant.js` retombe sur ses teintes,
-       *  dont un rose qui n'a rien à faire chez le Mage. */
-      burstColors: ['#38cd65', '#97e0a0', '#1f964d'],
-    },
+    cooldownFloor: Infinity,
   },
 
   /* ---------- ULTIME — celui de la Plante, reteinté ---------- */
@@ -183,7 +175,8 @@ export const MAGE = fiche({
    * **Tempête de fleurs, reprise de la Plante**, à la couleur près : la nuée
    * rose de la vidéo d'origine passe au vert du sceptre, sans quoi le Mage
    * aurait un ultime d'une autre famille que tout le reste de sa fiche.
-   * `tickDamage` est constant, pour la même raison que les bulbes.
+   * `tickDamage` est constant plutôt que dérivé de `self.stacks` — chez le
+   * Mage cette pile est la cadence de tir, pas une stat de dégâts.
    */
   ultimate: {
     id: 'flowerStorm',
@@ -260,21 +253,17 @@ export const MAGE = fiche({
       homing: { turnRate: 2.6, delay: 0.1 },
       trail: { color: 'rgba(56,205,101,0.4)', every: 0.035, life: 0.32 },
     },
-    /** Tiré par les bulbes, pas par le Mage — voir `ability.bulb.projectile`.
-     *  Reteinté en vert comme le reste, la corolle rose de la Plante jurerait. */
-    flower: {
-      label: 'Fleur',
-      labelRef: 'Flower',
-      sprite: 'mageFlower',
-      scale: 3.6,
-      speed: 340,
-      damage: 2,
-      radius: 12,
-      life: 2.4,
-      bounces: 0,
-      knockback: 60,
-      trail: { color: 'rgba(56,205,101,0.45)', every: 0.04, life: 0.4 },
-    },
+    /**
+     * Pas de `flower` ici. Elle n'était tirée que par les bulbes du Semis
+     * (`ability.bulb.projectile`), retiré avec la mécanique — une entrée
+     * `projectiles.flower` inutilisée serait une clé de fiche que plus
+     * personne ne lit (invariant 9), et `ui/select.js` l'aurait quand même
+     * affichée dans la ligne « Projectile » de la carte.
+     *
+     * La corolle volante de la Tempête de sève (`mageFlower`) n'en dépend
+     * pas : `ultimate.storm.swarm.flowerSprite` la dessine directement via
+     * `PIXEL_MAPS`, sans passer par le registre des projectiles.
+     */
   },
 
   /**

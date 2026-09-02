@@ -151,19 +151,38 @@ export const plantAbilities = {
   id: 'plant',
 
   init(f) {
-    /** @type {Array<{x:number,y:number,life:number,shoot:number,born:number}>} */
+    this.initBulbs(f);
+    this.initStorm(f);
+  },
+
+  /** @type {Array<{x:number,y:number,life:number,shoot:number,born:number}>} */
+  initBulbs(f) {
     f.state.bulbs = [];
+  },
+
+  initStorm(f) {
     f.state.stormTick = 0;
     f.state.stormHeal = 0;
     f.state.stormSpin = 0; // angle de la nuée : rendu seul
   },
 
+  /**
+   * Scindé en trois pas composables — **le Mage en reprend un seul**
+   * (`updateStorm`), pas les bulbes ni le semis : sa fiche ne porte pas
+   * `ability.bulb`. `update()` les enchaîne dans le même ordre qu'avant la
+   * scission, donc la Plante ne change pas d'un pas de simulation.
+   */
   update(f, dt, now, game) {
+    this.updateBulbs(f, dt, now, game);
+    this.updateStorm(f, dt, now, game);
+    this.updateSemis(f, dt, now, game);
+  },
+
+  updateBulbs(f, dt, now, game) {
     const el = f.el;
     const b = el.ability.bulb;
     const target = f.opponent;
 
-    /* ---------- bulbes ---------- */
     for (let i = f.state.bulbs.length - 1; i >= 0; i--) {
       const bulb = f.state.bulbs[i];
       bulb.life -= dt;
@@ -210,9 +229,10 @@ export const plantAbilities = {
         }
       }
     }
+  },
 
-    /* ---------- ultime ---------- */
-    const ult = el.ultimate;
+  updateStorm(f, dt, now, game) {
+    const ult = f.el.ultimate;
     if (f.ult.active > 0) {
       f.ult.active -= dt;
       f.state.stormSpin += ult.storm.swarm.churn * dt;
@@ -227,8 +247,9 @@ export const plantAbilities = {
       f.ult.ready = f.ult.charge >= 100;
       if (f.ult.ready) this.castStorm(f, game);
     }
+  },
 
-    /* ---------- semis ---------- */
+  updateSemis(f, dt, now, game) {
     if (game.phase !== 'fight') return;
     f.ability.timer -= dt;
     if (f.ability.timer <= 0) this.plantBulb(f, game);

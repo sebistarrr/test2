@@ -1667,20 +1667,23 @@ Deux choses apprises au passage :
   dit — pas parce qu'il équilibre.
 
 **Réglage retenu :** `orb.damage: 2`, mêlée 2 PV / 1,7 s → **12 victoires sur
-24** au banc des deux camps, **5 sur 12** dans la matrice officielle.
+24** au banc des deux camps, **5 sur 12** dans la matrice d'alors — avec le
+Semis encore en place (voir la section suivante pour son retrait, qui a depuis
+changé ce chiffre à 6/12).
 
-Profil obtenu, et il est cohérent : le Mage **bat les deux combattants à
-portée courte** (Hors-la-loi 3-0, Bretteur 2-1) et **perd contre les deux qui
-referment vite** (Lancier 0-3, Shinobi 0-3). Un tireur se fait battre par qui
-arrive au contact.
+Profil obtenu à ce stade, et il était cohérent : le Mage **bat les deux
+combattants à portée courte** (Hors-la-loi 3-0, Bretteur 2-1) et **perd contre
+les deux qui referment vite** (Lancier 0-3, Shinobi 0-3). Un tireur se fait
+battre par qui arrive au contact — ça reste vrai après le retrait du Semis,
+seul le score contre le Bretteur et le Shinobi a un peu bougé.
 
 ### Les pouvoirs de la Plante — délégués, pas recopiés
 
-Demandés tels quels. La fiche du Mage porte les **mêmes blocs** `ability.bulb`
-et `ultimate.storm`, et `abilities/mage.js` appelle `plantAbilities.update`,
-`.init`, `.drawUnder`, `.drawOver` et `.barValue`. Aucune ligne en double : une
-copie aurait divergé au premier réglage, exactement la duplication que le dépôt
-a déjà payée sur `drawGauge`.
+**Historique : à la sortie, deux pouvoirs.** La fiche du Mage portait les
+**mêmes blocs** `ability.bulb` et `ultimate.storm`, et `abilities/mage.js`
+appelait `plantAbilities.update`, `.init`, `.drawUnder`, `.drawOver` et
+`.barValue`. Aucune ligne en double : une copie aurait divergé au premier
+réglage, exactement la duplication que le dépôt a déjà payée sur `drawGauge`.
 
 Trois écarts, tous volontaires :
 
@@ -1691,12 +1694,69 @@ Trois écarts, tous volontaires :
   sur ses bulbes ;
 - **tout est reteinté en vert**, corolle comprise.
 
-**Ce dernier point a demandé une correction dans `plant.js`.** Le module codait
-`'flower'` en dur dans `drawSwarm`, et la couleur rose de la gerbe d'un bulbe
-qui éclate en littéral : la tempête verte du Mage faisait donc voler des
-corolles **roses**. Les deux littéraux sont passés en clés de fiche
-(`swarm.flowerSprite`, `bulb.burstColors`) **avec le littéral d'origine en
-repli** — la Plante ne change pas d'un pixel, et la matrice le confirme.
+**Ce dernier point a demandé une correction dans `plant.js`, conservée après
+le retrait du Semis** (section suivante) parce que la Tempête de sève en a
+toujours besoin. Le module codait `'flower'` en dur dans `drawSwarm`, et la
+couleur rose de la gerbe d'un bulbe qui éclate en littéral : la tempête verte
+du Mage faisait donc voler des corolles **roses**. Les deux littéraux sont
+passés en clés de fiche (`swarm.flowerSprite`, `bulb.burstColors`) **avec le
+littéral d'origine en repli** — la Plante ne change pas d'un pixel, et la
+matrice le confirme.
+
+### Le Semis retiré, et le sceptre par-dessus la bille
+
+Deux demandes, purement indépendantes l'une de l'autre.
+
+**Le Semis (les bulbes posés au sol) a été retiré.** Un tireur qui vise et
+guide ses orbes n'a pas besoin d'une mine plantée par terre — c'était le seul
+morceau du Mage qui se jouait **au sol** plutôt qu'en l'air, et il tranchait
+avec le reste de sa fiche.
+
+Retrait propre, pas un simple masquage visuel : `ability.bulb` a disparu de la
+fiche, `ability.cooldown` passe à `Infinity` (même patron que la Furie du
+Lancier — un cooldown jamais décompté, que `ui/select.js` affiche « passif »),
+et `abilities/mage.js` ne délègue plus que `updateStorm` / `drawOver` /
+`barValue`, jamais `updateBulbs` / `updateSemis` / `drawUnder`.
+
+**Ça a demandé de scinder `plantAbilities.update()` et `.init()`**, qui
+enchaînaient jusque-là bulbes, tempête et minuterie de semis dans une seule
+méthode. Découpés en `updateBulbs` / `updateStorm` / `updateSemis` (et
+`initBulbs` / `initStorm`), appelés dans le même ordre par `update()` — la
+Plante ne perd donc pas un pas de simulation, c'est une réorganisation pure.
+
+Le `projectile.flower` de la fiche du Mage a suivi : il n'était tiré que par
+les bulbes (`ability.bulb.projectile`), donc il ne sert plus à rien — et une
+clé de fiche que plus personne ne lit ne crie pas (invariant 9), y compris
+dans `ui/select.js`, qui l'aurait affichée dans la ligne « Projectile » de la
+carte sans qu'elle corresponde à quoi que ce soit en jeu. Retiré. La corolle de
+la Tempête, elle, ne dépend pas de ce registre : `flowerSprite: 'mageFlower'`
+est lue directement dans `PIXEL_MAPS` par `drawSwarm`.
+
+**C'est un changement de jeu**, pas un simple nettoyage : le Semis pesait des
+dégâts, du soin et un ralentissement. Seules les lignes du Mage bougent dans la
+matrice, le reste au caractère près :
+
+| | Avant (avec Semis) | Après |
+| --- | --- | --- |
+| vs Hors-la-loi | 3-0 | 3-0 |
+| vs Bretteur | 2-1 | 1-2 |
+| vs Lancier | 0-3 | 0-3 |
+| vs Shinobi | 0-3 | 1-2 |
+| **Total** | **5/12** | **6/12** |
+
+Le Mage reste dans la même bande — il perd toujours contre les deux
+combattants qui referment vite (Lancier, Shinobi) et bat toujours le
+Hors-la-loi — mais regagne un peu de terrain contre le Bretteur et le Shinobi,
+privé qu'il était du soin et du ralentissement des bulbes. Aucun autre levier
+n'a été retouché : le retrait suffit à rester dans la bande, sans nouveau
+réglage.
+
+**Le sceptre se dessine maintenant par-dessus la bille**, `weapon.overBody:
+true` — même drapeau que le Lancier et le Bretteur, purement visuel : il ne
+pèse sur aucune hitbox (`bladeSegment()` ne le consulte pas), seul l'ordre de
+peinture dans `fighter.js` en dépend. Vérifié en isolant les deux changements :
+`overBody` seul laisse la matrice **identique au caractère près**, c'est le
+retrait du Semis qui la fait bouger.
 
 ### Ce qui n'a pas été repris de Magia
 

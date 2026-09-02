@@ -16,12 +16,15 @@
  *  • **Orbes guidées.** Le guidage vit dans `game/projectiles.js`, piloté par
  *    `projectiles.orb.homing` de la fiche ; ce module ne fait que tirer.
  *
- *  • **Semis et Tempête de sève.** Ce sont les deux pouvoirs de la Plante,
- *    demandés tels quels. Ils ne sont **pas recopiés** : la fiche du Mage porte
- *    les mêmes blocs `ability.bulb` et `ultimate.storm`, et tout ce qui les
- *    concerne est délégué à `plant.js`. Une copie aurait divergé au premier
- *    réglage — c'est exactement la duplication que le dépôt a déjà payée deux
- *    fois sur `drawGauge`.
+ *  • **Tempête de sève, et rien d'autre de la Plante.** Le Semis (les bulbes
+ *    posés au sol) a été retiré, demandé — le Mage est un tireur, une mine
+ *    plantée par terre n'a rien à faire dans son jeu. Seule reste la tempête :
+ *    la fiche porte `ultimate.storm` et ce module délègue à
+ *    `plantAbilities.updateStorm` / `.drawOver` / `.barValue`, jamais aux
+ *    méthodes qui touchent aux bulbes (`updateBulbs`, `updateSemis`,
+ *    `drawUnder`). Une copie aurait divergé au premier réglage — c'est
+ *    exactement la duplication que le dépôt a déjà payée deux fois sur
+ *    `drawGauge`.
  *
  * @module game/abilities/mage
  */
@@ -48,16 +51,17 @@ export const mageAbilities = {
   id: 'mage',
 
   init(f) {
-    plantAbilities.init(f);
+    // Seul l'état de la tempête est repris — pas `initBulbs` : le Mage ne sème
+    // rien, `f.state.bulbs` resterait un tableau vide et mort.
+    plantAbilities.initStorm(f);
     /** Décompte avant la prochaine orbe. Le premier tir attend une cadence
      *  entière : sans ça le Mage ouvre le duel par une orbe gratuite. */
     f.state.shotTimer = 1 / f.stacks;
   },
 
   update(f, dt, now, game) {
-    /* ---------- ce qui vient de la Plante, tel quel ---------- */
-    // Semis, Tempête de sève, jauge d'ultime : un seul appel, aucune copie.
-    plantAbilities.update(f, dt, now, game);
+    /* ---------- Tempête de sève, tel quel ---------- */
+    plantAbilities.updateStorm(f, dt, now, game);
 
     /* ---------- le sceptre vise ---------- */
     const target = f.opponent;
@@ -118,11 +122,11 @@ export const mageAbilities = {
     });
   },
 
-  // Bulbes et tempête se dessinent comme chez la Plante. Pas de `drawWeapon` :
+  // `Match` appelle `drawUnder` sans le garder optionnel (contrairement à
+  // `drawWeapon`/`specialBar`) : il faut donc la méthode, même vide — c'était
+  // les bulbes au sol, retirés avec le Semis. Pas de `drawWeapon` non plus :
   // le Mage a un vrai sprite d'arme, contrairement à la liane courbe.
-  drawUnder(ctx, f) {
-    plantAbilities.drawUnder(ctx, f);
-  },
+  drawUnder() {},
 
   drawOver(ctx, f, game, now) {
     plantAbilities.drawOver(ctx, f, game, now);
