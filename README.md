@@ -122,10 +122,14 @@ src/
 │   ├── rng.js             aléa déterministe (mulberry32) piloté par seed
 │   └── fonts.js           attente des webfonts avant la 1re frame
 ├── data/                  ← LES DONNÉES, séparées du moteur
-│   ├── elements.js        **fiches d'éléments** (gelées) : apparence, vitesse,
-│   │                      arme, pouvoir, ultime, projectiles, HUD
+│   ├── fighters/<id>.js   **une fiche par combattant** (gelée) : apparence,
+│   │                      vitesse, arme, pouvoir, ultime, projectiles, HUD
+│   ├── pixelart/<id>.js   ses sprites pixel-art, en texte
+│   ├── elements.js        registre : ELEMENTS, ROSTER, DISABLED, PLAYABLE
+│   ├── pixelmaps.js       registre des sprites (PIXEL_MAPS)
+│   ├── defaults.js        valeurs universelles + helper `fiche()`
+│   ├── format.js          formatage des lignes de stat du HUD
 │   ├── tuning.js          géométrie de scène mesurée sur la vidéo
-│   ├── pixelmaps.js       sprites pixel-art en texte
 │   └── freeze.js          deepFreeze + garde-fou d'immutabilité
 ├── render/
 │   ├── canvas.js          repère logique 720x1280, DPR, pixel-perfect
@@ -175,8 +179,12 @@ tools/                     outillage de vérification (non chargé par la page)
 
 - **Le moteur ne connaît aucun combattant.** `fighter.js`, `physics.js` et
   `projectiles.js` lisent la fiche. Ajouter « Feu » — ou un personnage venu
-  d'un tout autre jeu, comme le Hors-la-loi — = une entrée dans `elements.js`
+  d'un tout autre jeu, comme le Hors-la-loi — = une fiche dans `data/fighters/`
   + un module dans `abilities/`, sans toucher au reste.
+- **Un combattant, trois fichiers du même nom.** `wind` c'est
+  `data/fighters/wind.js`, `game/abilities/wind.js` et `data/pixelart/wind.js`.
+  `elements.js` et `pixelmaps.js` ne sont que des registres : ils ne portent
+  aucune valeur de combattant, et on n'a pas à les ouvrir pour en modifier un.
 - **Les fiches sont gelées** (`deepFreeze`) et le duel travaille sur un état
   séparé : impossible qu'une partie modifie les stats d'un élément pour la
   suivante. `assertFrozen()` le vérifie au lancement de chaque duel.
@@ -221,7 +229,7 @@ passe par [`src/ui/lang.js`](src/ui/lang.js), deux tables aux clés identiques.
 
 Toutes les constantes de mise en page proviennent d'un relevé image par image
 (720 × 1280, 30 fps) ; elles sont regroupées dans `src/data/tuning.js` et
-`src/data/elements.js`, chacune commentée `mesuré` ou `calé`.
+`src/data/fighters/`, chacune commentée `mesuré`, `calé` ou `déduit`.
 
 | Élément mesuré                | Valeur relevée                    |
 | ----------------------------- | --------------------------------- |
@@ -284,24 +292,32 @@ s'éternise. Détail de l'équilibrage dans [`docs/FICHES.md`](docs/FICHES.md).
 
 ## Ajouter un combattant
 
-1. **La fiche** dans `src/data/elements.js` (copie `SHADOW` et adapte).
-   Tout y passe : couleurs, rayon, vitesse, arme, dégâts, pouvoir, ultime,
+Marche à suivre complète, avec les vérifications :
+[`docs/AJOUTER-UN-COMBATTANT.md`](docs/AJOUTER-UN-COMBATTANT.md). En résumé,
+**un combattant = trois fichiers du même nom**, plus trois lignes de registre :
+
+1. **Les sprites** dans `src/data/pixelart/<id>.js` (texte), recensés dans
+   `src/data/pixelmaps.js` — ou en PNG via `assets/sprites/manifest.json`, voir
+   [`assets/sprites/README.md`](assets/sprites/README.md).
+2. **La fiche** dans `src/data/fighters/<id>.js` (copie une existante et
+   adapte). Tout y passe : couleurs, vitesse, arme, dégâts, pouvoir, ultime,
    projectiles, libellés du HUD. **Les deux langues sont dans la fiche** :
    `name`/`nameRef`, `tagline`/`taglineRef`, `weapon.name`/`weapon.nameRef`,
-   `hud.statsFr`/`hud.stats`… L'application affiche l'anglais ; oublier un
-   champ `Ref` fait retomber une ligne en français au milieu d'un écran
-   anglais (le repli est silencieux).
-2. **Les sprites** dans `src/data/pixelmaps.js` (texte) ou en PNG via
-   `assets/sprites/manifest.json` — voir
-   [`assets/sprites/README.md`](assets/sprites/README.md).
-3. **Les pouvoirs** : un module dans `src/game/abilities/` exposant
+   `hud.statFr`/`hud.stat`… L'application affiche l'anglais ; oublier un champ
+   `Ref` fait retomber une ligne en français au milieu d'un écran anglais (le
+   repli est silencieux). `fiche()` pose les huit valeurs universelles.
+3. **Les pouvoirs** : un module dans `src/game/abilities/<id>.js` exposant
    `init / update / drawUnder / drawOver / barValue`, puis une ligne dans
    `abilities/index.js`.
-4. Ajoute son id à `ROSTER` — **en queue de liste**. Les paires de la matrice
-   sont formées en `[liste[i], liste[j]]` : insérer un nouveau venu ailleurs
-   qu'à la fin changerait le camp A d'affrontements existants, et avec lui leur
-   issue, sans qu'aucune valeur de fiche n'ait bougé. Il apparaît alors dans
-   l'écran de sélection avec sa fiche générée automatiquement.
+4. **Trois lignes dans `src/data/elements.js`** : l'import, l'entrée dans
+   `ELEMENTS`, et l'id **en queue de `ROSTER`**. Les paires de la matrice sont
+   formées en `[liste[i], liste[j]]` : insérer un nouveau venu ailleurs qu'à la
+   fin changerait le camp A d'affrontements existants, et avec lui leur issue,
+   sans qu'aucune valeur de fiche n'ait bougé. Il apparaît alors dans l'écran de
+   sélection avec sa fiche générée automatiquement.
+
+`node tools/fiche-check.mjs` attrape les oublis de câblage et les clés de
+sprite inconnues, qui ne lèvent aucune erreur par eux-mêmes.
 
 Rien d'autre à modifier : HUD, sélection, physique et projectiles sont
 pilotés par les données.

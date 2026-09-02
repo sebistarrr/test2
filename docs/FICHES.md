@@ -1268,7 +1268,7 @@ sont converties ×1,25 vers le repère 720 × 1280.
 | Forme de la lame | **en feuille** : plus large au milieu qu'à ses deux bouts. Relevé en aplatissant la lance sur trois images nettes (t = 0 / 4,5 / 7,8 s) — la bille est localisée au sous-pixel, l'image tournée pour mettre la lance à l'horizontale, puis la demi-épaisseur mesurée colonne par colonne. Les trois profils concordent : **24 px de large à la bille, 32 au ventre, 21 près de la pointe**. Le premier portage l'affinait de façon monotone, ce que la vidéo dément | mesuré |
 | Silhouette de la lame | **c'est ici que le relevé cède la place à une maquette.** La vidéo montre une lame *en feuille* crantée ; l'arme retenue est la **lance électrique** d'une maquette fournie — pommeau doré, hampe violette parcourue de fissures blanches, garde, tête hérissée à gemme centrale et barbelures. Elle n'est pas *dessinée d'après* la maquette : elle **est** la maquette, transcrite (voir la ligne suivante) | maquette |
 | Rendu de la lance | une seule carte de **208 × 43 à `scale: 1`**, obtenue par réduction de la maquette en blocs **3 × 3 exacts** (624/208 = 3, 129/43 = 3) : aucun rééchantillonnage, donc rapport d'aspect conservé au pixel près, et la médiane par bloc rend les aplats que le JPEG source avait bruités. **La portée ne bouge pas** : 208 × 1 = 208 px logiques comme 104 × 2 auparavant, donc la pointe reste à −44 + 208 = 164. C'est aussi pourquoi la carte est préférée à l'override PNG que le dépôt propose pourtant : `headH = map.h × scale` se lit sur la **carte** et `w = headH × img.w / img.h` sur l'**image**, si bien qu'un PNG d'un autre rapport d'aspect décale la largeur dessinée sans toucher la hitbox — le 624 × 129 posait la pointe à 168,8 px, une arme qui ment de 5 px sur son allonge | maquette, encombrement mesuré |
-| **Orientation de la lance** | **elle suit le cap de déplacement.** Ni rotation libre, ni visée : elle est soudée à la vitesse. Mesuré sur 141 images réparties sur toute la vidéo, lance isolée par ACP de son contour sombre — **6,6° d'écart médian au cap de déplacement** (3,7° sur les images les mieux isolées, 94 % sous 15°) contre **37,9° au cap vers l'adversaire**. Vrai à tous les régimes : 10,6° en marche lente, 6,1° en croisière, 4,8° à l'accélération, 6,1° en pleine charge. La fiche porte `weapon.spin: 0` et c'est `abilities/lancer.js` qui recopie `heading` | mesuré |
+| **Orientation de la lance** | `weapon.spin: 0`, et `abilities/lancer.js` recopie `heading` — **par défaut, faute de mieux établi.** Le chiffre « 6,6° au cap contre 37,9° à l'adversaire » qui figurait ici est **retiré** : voir la rétractation ci-dessous | non tranché |
 | **Charge** | viser → verrouiller → foncer. En croisière la bille tient 400–450 px/s vidéo (soit les 540 de la fiche) ; pendant une charge (t = 8,70 → 8,84 s) elle monte à 1 125–1 160 px/s vidéo, soit **~1 400 en repère jeu**, sur **~0,15 s** | mesuré |
 | Garde | **aucune**. Ce qui ressemblait à un losange de garde sur les premières captures est derrière la bille, donc invisible en jeu : au-delà du bord de la bille le profil ne montre aucun renflement | mesuré |
 | Hitbox | de 0,32 à 1 de la portée (la lame commence à 52 px du centre), rayon 12 px | déduit du sprite |
@@ -1297,8 +1297,72 @@ centrale du personnage, et les deux premiers portages l'avaient manquée chacun
 | 1 | rotation libre à 327 °/s | le détecteur prenait le barycentre des pixels indigo les plus lointains ; pendant une charge, ce sont les **images fantômes**, pas la lance |
 | 2 | « elle vise l'adversaire, à ±5° » | mesuré sur les seules plages où le Lancier fonçait *sur* l'adversaire, là où cap de déplacement et cap adverse se confondent — un sous-ensemble biaisé |
 | 3 | **elle suit le cap de déplacement** | tient sur 141 images réparties sur toute la vidéo, et à tous les régimes de vitesse |
+| 4 | **rien** — les deux hypothèses tombent ensemble | voir la rétractation ci-dessous |
 
-Le troisième est le bon, et ce qui l'établit n'est pas seulement la statistique
+**Rétractation du relevé n° 3.** Une quatrième mesure, faite sur les *deux*
+vidéos avec un détecteur corrigé, ne tranche pas — et c'est le résultat
+honnête :
+
+| Méthode | A (vs Magia) | B (vs Outlaw) |
+| --- | --- | --- |
+| ACP, composante connexe, > 300 px/s | cap 31,7° / adversaire 12,4° | cap 26,6° / adversaire 12,9° |
+| Vecteur bille → pointe | cap 44,7° / adversaire 27,6° | cap 41,4° / adversaire 38,1° |
+| Corrélation des variations | r = +0,06 / −0,09 | r = −0,04 / +0,26 |
+
+Aucune des deux hypothèses ne descend sous 25° avec la méthode du vecteur
+pointe, les corrélations sont nulles, et les verdicts par bande de vitesse
+s'inversent d'une bande à l'autre. **Une mécanique ne fait pas ça, une mesure
+polluée si.** Le détecteur du relevé n° 3 prenait tous les pixels sombres dans
+un rayon de 130 px **sans exclure le cadre noir de l'arène** — une droite
+parfaite, que l'ACP privilégie précisément parce qu'elle cherche la direction
+la plus allongée, et que le test d'allongement *sélectionnait* au lieu de
+filtrer. Il ne tournait en outre que sur les images où un détecteur global
+retrouvait la bille : 490 sur 747 dans la vidéo B.
+
+Pour trancher il faudrait une lecture image par image sur un jeu d'images
+choisies à la main, ou une source de meilleure définition. En attendant,
+`weaponAngle = heading` reste en place **par défaut**, pas comme un relevé.
+
+**Ce qui, lui, est mesuré — et concorde sur les deux vidéos.**
+
+| Mesure | A (vs Magia) | B (vs Outlaw) | Le jeu |
+| --- | --- | --- | --- |
+| Vitesse de croisière | 423 px/s | 413 px/s | **432** |
+| Une charge toutes les | 1,7 s | 0,9 s | **2,3 s** |
+| Distance parcourue par charge | 137 px logiques | (bruitée) | **136** |
+| Pic de vitesse en charge | 1 392 px/s | 1 770 px/s | **1 555** |
+| Cadence de touche | 0,181 coup/s | — | **0,184** |
+
+Ces cinq-là sont pris avec le **même code** des deux côtés, la conversion ×1,25
+appliquée, et un **suivi temporel** de la bille — pas une détection image par
+image, qui la perdait 257 fois sur 747 pendant les charges.
+
+**Mesurer contre le bon adversaire.** `tools/probe.mjs` fait affronter au
+Lancier les dix autres, qui **pilotent vers lui** et entrent donc d'eux-mêmes
+dans le couloir de charge : il y rend 0,506 coup/s. Dans le **miroir** — le
+duel le plus proche de la vidéo, où l'adversaire se déplace de son côté — il
+rend **0,202 coup/s pour 2,43 PV/s**, contre 0,181 et 2,54 relevés. Le même
+personnage, deux chiffres qui diffèrent d'un facteur 2,5 : **la cadence d'un
+combattant n'a de sens qu'en nommant l'adversaire.**
+
+Ce que la comparaison a révélé, et qui était le vrai défaut : le Dragoon de la
+vidéo **charge souvent et rate souvent** — une charge toutes les 1 à 1,7 s,
+dont environ une sur trois porte. Le portage chargeait toutes les 4,3 s et
+touchait presque à chaque fois. Les deux rendaient la **même cadence de
+touche**, ce qui masquait l'écart au chiffre, mais rien à voir à l'œil.
+
+**L'arrêt avant la charge n'est pas mesuré non plus.** Le « 163 px/s une image
+avant le déclenchement » venait d'un détecteur qui ne retenait un déclenchement
+que si `v[i-1] < 0,35 × v[i]` — il *sélectionnait* les images précédées d'un
+creux, puis rapportait qu'il y avait un creux. Avec un seuil neutre, la vitesse
+avant charge vaut 732 px/s (A) et 413 (B) : pas d'arrêt. La phase `brace` est
+conservée parce qu'elle a été **demandée** comme effet de jeu, pas parce
+qu'elle est relevée.
+
+**Ce qui suit était l'argument du relevé n° 3.** Il garde sa valeur de méthode
+— un mécanisme juste rend des chiffres qu'on n'a pas eu à caler — même si la
+mesure qui l'accompagnait est retirée. Ce qui l'établissait n'était pas
+seulement la statistique
 mais **ce qu'il explique gratuitement**. `weaponAngle = heading` produit tout
 seul les trois comportements visibles image par image :
 
@@ -1493,6 +1557,53 @@ justement à le vérifier après chaque changement de fiche.
 
 Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 `index.html?a=…&b=…&seed=…`.
+
+### Dernier relevé à onze combattants (historique)
+
+Le roster est réduit à quatre depuis ; ce relevé n'est plus régénéré, mais il
+porte les leviers, qui eux restent vrais.
+
+Lancier 30, **Hors-la-loi 25**, Ombre 15, Lumière 15, Glace 15, Feu 13,
+Vent 12, Plante 11, Foudre 10, Eau 10, Bretteur 9 — sept hors de la bande
+13–17. Ce qu'il faut en retenir :
+
+- **Le Lancier à 30/30 gagnait tous ses duels.** C'est le piège de l'arme
+  braquée dans sa forme la plus pure : une charge qui traverse l'arène contre
+  dix adversaires qui **pilotent vers lui** et entrent donc dans le couloir. Le
+  rayon de hitbox n'est pas le levier (de 12 à 3 px il ne descend que de 0,506
+  à 0,439 coup/s — les charges ne frôlent pas, elles traversent) : les leviers
+  sont `lunge.scanSpin` et le retour à une charge de longueur bornée. **À
+  traiter avant toute réactivation du roster complet.**
+- **Le Hors-la-loi à 25–26 est un écart assumé**, conséquence directe de trois
+  demandes (rechargement ×2 plus rapide, balle ×1,3, éclats de givre).
+  L'ablation dit lequel pèse : rechargement seul **23**, éclats seuls **28**,
+  vitesse de balle seule 14 — soit rien de mesurable. Aucun levier disponible
+  ne le ramène dans la bande sans défaire la demande : la cadence du Blizzard
+  est plate (25–26 de 11 s à 26 s), celle des éclats ne descend pas sous 23, et
+  `ability.cooldown` comme `magazine` sont `mesuré`. La dispersion y arrive
+  (1,35 rad → 16) mais un cône de 77° fait cesser le canon asservi de se lire
+  comme une visée.
+- **La Lumière à 21/30 puis 15** : son Égide grandit quand elle **encaisse**,
+  et les trois invités frappent rarement pour beaucoup — le profil exact que le
+  bouclier absorbe. Elle les bat 9-0. Couplage de fiches, pas dérive ; aucune
+  valeur de la Lumière n'a jamais été touchée.
+- **L'Eau tenait la bande de justesse, à 13**, en perdant 0-3 contre l'Ombre,
+  la Lumière et le Lancier. C'est elle que la moindre retouche du Lancier
+  faisait sortir : à `lunge.minRange` 220 il la balayait 3-0 (12), à 240 elle
+  revenait. Ces 20 px coûtaient 0,13 PV/s de fidélité (2,53 contre 2,40) — la
+  bande passe avant.
+- **Le tour de rechargement du Hors-la-loi lui coûtait ses touches de mêlée.**
+  Pendant 1,4 s l'arme n'est plus asservie, or le bout du canon porte la
+  hitbox de contact (`hitbox.from: 0,62`) : il balaie au lieu de pointer. Il
+  était tombé de 15 à **9/30**. Porter le gel de 0,30 à **0,50** l'a ramené à
+  **16/30** — plus que compensé. Levier à retenir :
+  `projectiles.shot.onHit.slow`.
+- **Les deux pouvoirs greffés** (Blizzard, Lien d'essence) ont déplacé sept
+  affrontements sur 66 et n'ont fait sortir personne de la bande.
+- **Le recul symétrique a ramené le Lancier de 19 à 17 tout seul**, sans
+  qu'aucun levier d'équilibrage ne soit touché : un attaquant repoussé aussi
+  fort que sa cible met plus longtemps à revenir au contact. Un réglage de mise
+  en scène qui rend un équilibre — l'inverse arrive plus souvent.
 
 ---
 

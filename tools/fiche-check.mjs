@@ -1,4 +1,15 @@
-// Garde-fou : les clés d'une fiche et ce que son module lit doivent coïncider.
+// Garde-fou des fiches. Trois vérifications, toutes sur des pannes SILENCIEUSES :
+//
+//   • câblage — un combattant présent dans ELEMENTS mais pas dans ROSTER
+//     n'apparaît jamais ; un module oublié dans abilities/index.js retombe sur
+//     le module neutre, donc le combattant se joue sans pouvoir ni ultime ;
+//   • sprites — une clé citée par une fiche mais absente de PIXEL_MAPS ne
+//     dessine rien, sans erreur ;
+//   • fiche ↔ module — les clés d'une fiche et ce que son module lit doivent
+//     coïncider.
+//
+// Les deux premières sont les fautes de l'AJOUT d'un combattant, la troisième
+// celle de sa MODIFICATION.
 //
 // Deux pannes réelles, à deux mois d'intervalle, toutes deux silencieuses :
 //
@@ -50,15 +61,67 @@ const BLOCKS = [
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 const page = await browser.newPage();
 await page.goto(`${URL}/index.html`, { waitUntil: 'networkidle' });
-const fiches = await page.evaluate(async () => {
+const { fiches, wiring } = await page.evaluate(async () => {
   const m = await import('/src/data/elements.js');
+  const { PIXEL_MAPS } = await import('/src/data/pixelmaps.js');
+  const { abilitiesFor } = await import('/src/game/abilities/index.js');
   const out = {};
   for (const id of m.ROSTER) out[id] = m.ELEMENTS[id];
-  return JSON.parse(JSON.stringify(out, (k, v) => (typeof v === 'function' ? '[fn]' : v)));
+  return {
+    fiches: JSON.parse(JSON.stringify(out, (k, v) => (typeof v === 'function' ? '[fn]' : v))),
+    wiring: {
+      roster: [...m.ROSTER],
+      registered: Object.keys(m.ELEMENTS),
+      disabled: [...m.DISABLED],
+      sprites: Object.keys(PIXEL_MAPS),
+      // `abilitiesFor` retombe sur un module neutre : un combattant dont le
+      // module n'est pas inscrit dans `abilities/index.js` se joue sans
+      // pouvoir ni ultime, sans la moindre erreur.
+      noop: m.ROSTER.filter((id) => abilitiesFor(id).id === 'noop'),
+    },
+  };
 });
 await browser.close();
 
 let problems = 0;
+
+/* --------------------------------------------------------------------------
+ *  CÂBLAGE — les oublis classiques de l'ajout d'un combattant
+ *
+ *  Aucun de ces quatre cas ne lève d'erreur : un combattant absent de `ROSTER`
+ *  n'apparaît simplement jamais, un module non inscrit retombe sur le module
+ *  neutre, et une clé de sprite inconnue dessine du vide. Le duel se joue,
+ *  seulement il ne montre pas ce qu'on croit.
+ * ------------------------------------------------------------------------ */
+const say = (msg) => { console.log(`  ✗ ${msg}`); problems++; };
+
+for (const id of wiring.registered) {
+  if (!wiring.roster.includes(id)) say(`câblage — ${id} est dans ELEMENTS mais absent de ROSTER : injouable et hors matrice`);
+}
+for (const id of wiring.roster) {
+  if (!wiring.registered.includes(id)) say(`câblage — ROSTER cite ${id}, absent d'ELEMENTS`);
+  else if (fiches[id].id !== id) say(`câblage — ELEMENTS.${id} porte id: '${fiches[id].id}' : les deux doivent coïncider`);
+}
+for (const id of wiring.disabled) {
+  if (!wiring.roster.includes(id)) say(`câblage — DISABLED cite ${id}, absent de ROSTER`);
+}
+for (const id of wiring.noop) {
+  say(`câblage — ${id} n'a pas de module dans abilities/index.js : il se jouera sans pouvoir ni ultime`);
+}
+
+// Toute clé de sprite citée par une fiche doit exister dans PIXEL_MAPS.
+for (const [id, el] of Object.entries(fiches)) {
+  const cited = [
+    ['icon', el.icon],
+    ['weapon.head.sprite', el.weapon?.head?.sprite],
+    ...Object.entries(el.projectiles ?? {}).map(([k, p]) => [`projectiles.${k}.sprite`, p.sprite]),
+  ];
+  for (const [where, key] of cited) {
+    if (key && !wiring.sprites.includes(key)) {
+      say(`sprite — ${id}.${where} cite « ${key} », absent de PIXEL_MAPS : rien ne sera dessiné`);
+    }
+  }
+}
 for (const [id, el] of Object.entries(fiches)) {
   let src;
   try {
@@ -106,6 +169,6 @@ for (const [id, el] of Object.entries(fiches)) {
 }
 
 console.log(problems === 0
-  ? 'OK — chaque clé de fiche vérifiée est lue, et chaque lecture a sa clé'
+  ? 'OK — câblage du roster, clés de sprite, et recoupement fiche ↔ module'
   : `${problems} écart(s) — voir ci-dessus`);
 process.exit(problems === 0 ? 0 : 1);
