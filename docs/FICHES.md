@@ -1741,15 +1741,24 @@ matrice, le reste au caractère près :
 | vs Hors-la-loi | 3-0 | 3-0 |
 | vs Bretteur | 2-1 | 1-2 |
 | vs Lancier | 0-3 | 0-3 |
-| vs Shinobi | 0-3 | 1-2 |
+| vs Shinobi | 0-3 | 2-1 |
 | **Total** | **5/12** | **6/12** |
 
-Le Mage reste dans la même bande — il perd toujours contre les deux
-combattants qui referment vite (Lancier, Shinobi) et bat toujours le
-Hors-la-loi — mais regagne un peu de terrain contre le Bretteur et le Shinobi,
-privé qu'il était du soin et du ralentissement des bulbes. Aucun autre levier
-n'a été retouché : le retrait suffit à rester dans la bande, sans nouveau
-réglage.
+*(Correction : une première version de ce tableau inversait le score « après »
+contre le Shinobi — 1-2 au lieu de 2-1. La ligne ci-dessus est la bonne, et
+c'est elle que confirme `tools/matrix-reference.txt`.)*
+
+Le Mage bat toujours le Hors-la-loi et perd toujours contre le Lancier ; ce qui
+bouge nettement, c'est le Shinobi — une défaite sèche (0-3) devient une victoire
+nette (2-1). C'est plus que ce que le retrait des bulbes explique à lui seul :
+retirer toute une mécanique retire aussi ses propres décorations (gerbes de
+plantation, de touche, anneau de soin), et celles-ci **consomment `game.rng`**
+comme le reste des particules du dépôt — un chantier connu et non résolu (voir
+« Déterminisme et ordre d'exécution » dans `CLAUDE.md`). Une part de ce
+basculement est donc probablement un remaniement du tirage plutôt qu'un effet
+mécanique direct du Semis sur ce duel précis ; sans ablation dédiée, impossible
+de trancher la part de chaque cause. Aucun levier n'a été retouché pour
+autant : le retrait suffit à rester dans la bande, sans nouveau réglage.
 
 **Le sceptre se dessine maintenant par-dessus la bille**, `weapon.overBody:
 true` — même drapeau que le Lancier et le Bretteur, purement visuel : il ne
@@ -1757,6 +1766,64 @@ pèse sur aucune hitbox (`bladeSegment()` ne le consulte pas), seul l'ordre de
 peinture dans `fighter.js` en dépend. Vérifié en isolant les deux changements :
 `overBody` seul laisse la matrice **identique au caractère près**, c'est le
 retrait du Semis qui la fait bouger.
+
+### Le sceptre centré sur le pivot — une demande visuelle qui a coûté de la portée
+
+**Demandé : la même longueur devant et derrière le point d'attache.** À la
+sortie du personnage, le sceptre ne l'était pas du tout — `handle.length: -12`
+pour une carte dessinée sur 140 px (70 cellules × `scale: 2`), donc **128 px
+devant** le pivot (jusqu'au cristal) contre **12 px derrière**. Le sceptre
+tenait presque tout entier en avant de la bille, un talon microscopique dans
+son dos.
+
+Recentré à largeur dessinée inchangée : `handle.length: -70`, donc 70 px de
+chaque côté. C'est un simple partage en deux de la largeur du sprite (140 / 2
+= 70), aucun redessin.
+
+**Mais l'invariant du dépôt ne laisse pas ce choix gratuit.** `handle.length` +
+largeur dessinée doit toujours valoir `reach` — sinon la pointe du sprite ment
+sur la hitbox. Avec `handle.length: -70` et 140 px dessinés, la pointe tombe à
+70, donc `reach` **doit** passer de 128 à 70 : centrer le sceptre sans le
+redessiner plus grand réduit mécaniquement sa portée de près de moitié. Il n'y
+avait pas de troisième voie à largeur de sprite inchangée — grossir la carte
+pour garder `reach: 128` en symétrique (donc 256 px dessinés) aurait demandé un
+`scale` non entier (~3,66) et un sceptre visuellement disproportionné par
+rapport à la bille.
+
+**Même patron que le Shinobi**, seul autre combattant à porter une arme
+centrée sur son pivot : `handle.length: -75, reach: 75`, sa portée mesurée
+elle aussi ramenée par la symétrie et jamais recalée depuis. Le Mage suit le
+même choix — la portée `reach: 70` n'est plus la baguette mesurée sur Magia
+(128 px), elle est **déduite** de la symétrie demandée.
+
+`fireOrb()` (`abilities/mage.js`) n'a pas eu besoin d'être touché : il lit
+`f.el.weapon.reach` pour placer le point de tir, donc l'orbe part toujours du
+cristal — mécaniquement plus proche de la bille qu'avant, puisque le cristal
+lui-même l'est. `hitbox.from: 0,87` n'a pas bougé non plus : le cristal reste
+les 13 % derniers de l'arme, seule l'arme entière a raccourci.
+
+**C'est un changement de jeu, pas seulement un ajustement visuel**, et il a été
+accepté comme tel plutôt que compensé par un autre réglage. Seules les lignes
+du Mage bougent dans la matrice :
+
+| | Avant (reach 128, asymétrique) | Après (reach 70, centré) |
+| --- | --- | --- |
+| vs Hors-la-loi | 3-0 | 2-1 |
+| vs Bretteur | 1-2 | 1-2 |
+| vs Lancier | 0-3 | 0-3 |
+| vs Shinobi | 2-1 | 1-2 |
+| **Total** | **6/12** | **4/12** |
+
+Deux victoires perdues, une contre le Hors-la-loi et une contre le Shinobi —
+ses deux adversaires les plus rapides à revenir au contact une fois la portée
+raccourcie. Le score contre le Bretteur et le Lancier ne bouge pas. Le Mage
+descend dans la bande basse du roster réduit, aux côtés du Hors-la-loi et du
+Bretteur (4/12 chacun), sans tomber en dessous. Rien
+d'autre n'a été retouché pour compenser : la demande portait sur l'apparence,
+pas sur l'équilibre, et le nouvel équilibre est *le* résultat de la demande,
+pas un accident à corriger. Si la portée doit revenir, les deux leviers
+disponibles sont d'agrandir le sprite (en acceptant un sceptre plus grand pour
+retrouver `reach: 128` en symétrique) ou de renoncer au centrage.
 
 ### Ce qui n'a pas été repris de Magia
 

@@ -105,24 +105,40 @@ export const MAGE = fiche({
      */
     overBody: true,
     /**
-     * **Portée 128 px**, mesurée sur la baguette de Magia : 100 px vidéo entre
-     * les deux bouts, ×1,275. La carte fait 70 cellules de large dessinées à
-     * `scale: 2`, soit 140 px, donc le manche démarre **12 px derrière le
-     * pivot** pour que la somme retombe sur la portée — invariant du dépôt :
-     * `handle.length` + largeur dessinée = `reach`, sinon la pointe ment sur
-     * la hitbox.
+     * **Centré sur le pivot, demandé — écart assumé à la portée mesurée.**
+     *
+     * La baguette de Magia mesure 100 px vidéo entre ses deux bouts (×1,275 =
+     * 128 px), et c'est la valeur qu'a portée `reach` à la sortie du
+     * personnage : le manche ne démarrait qu'à −12 px du pivot, donc le
+     * sceptre tenait presque tout entier **devant** la bille (128 px) contre
+     * un talon minuscule **derrière** (12 px).
+     *
+     * Recentré ici, à même largeur dessinée (70 cellules × `scale: 2` =
+     * 140 px, inchangé) : `handle.length` passe à la moitié de cette largeur,
+     * **−70**, donc le sceptre démarre 70 px derrière le pivot et va jusqu'à
+     * 70 px devant — la même longueur des deux côtés. L'invariant du dépôt
+     * (`handle.length` + largeur dessinée = `reach`, sinon la pointe ment sur
+     * la hitbox) fixe alors `reach` à **70**, pas 128 : centrer le sprite sans
+     * le redessiner en plus grand réduit mécaniquement sa portée.
+     *
+     * Même patron que le Shinobi, seul autre combattant du roster à porter une
+     * arme centrée sur son pivot (`handle.length: -75, reach: 75` — voir sa
+     * fiche) : cette symétrie coûtait déjà sa portée mesurée, gardée telle
+     * quelle et jamais recalée.
      *
      * `width: 0` : le sceptre est un sprite entier, du talon au cristal. Il
      * n'y a pas de manche à tracer par-dessus, seulement un décalage.
      */
-    reach: 128,
-    handle: { length: -12, width: 0, color: '#483b33', dark: '#2d2a27', outline: '#1b1a1d', gem: null },
+    reach: 70,
+    handle: { length: -70, width: 0, color: '#483b33', dark: '#2d2a27', outline: '#1b1a1d', gem: null },
     /** `scale: 2` : la carte est la maquette réduite de moitié (70 × 17), donc
      *  chaque pixel d'art fait 2 px à l'écran. À l'échelle 1 la hampe se
      *  réduisait à un trait — voir `pixelart/mage.js`. */
     head: { sprite: 'mageStaff', scale: 2 },
-    /** Seul le cristal blesse : de 0,87 à 1 de la portée, soit les 17 derniers
-     *  pixels. Rayon 15, la demi-hauteur de la couronne de bois. */
+    /** Seul le cristal blesse : de 0,87 à 1 de la portée, soit les 9 derniers
+     *  pixels (13 % de 70, contre 17 sur les 128 d'avant — le cristal reste
+     *  la même fraction visible de l'arme, seule l'arme a raccourci). Rayon
+     *  15, la demi-hauteur de la couronne de bois, inchangé. */
     hitbox: { from: 0.87, radius: 15 },
     melee: {
       /**

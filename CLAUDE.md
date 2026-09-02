@@ -121,12 +121,18 @@ la matrice.
 archivistique, sans validation ni équilibre.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Lancier 10, Shinobi 7, **Mage 6**, Bretteur 4, Hors-la-loi 3.
+miroir chacun : Lancier 10, Shinobi 8, Bretteur 4, **Mage 4**, Hors-la-loi 4.
 
-Le Mage arrive au milieu, et c'est voulu. Les deux écarts (Lancier, Hors-la-loi)
-sont anciens et inchangés. Leviers connus si on veut resserrer : Shinobi
+L'écart du Lancier est ancien et inchangé. **Le Mage a perdu deux victoires
+(6 → 4) en centrant son sceptre sur le pivot** (demandé, purement visuel dans
+l'intention) : à largeur de sprite égale, centrer l'arme a mécaniquement réduit
+sa portée de 128 à 70 px (voir sa fiche, `weapon.reach`) — le point de touche
+et le point de tir des orbes se sont rapprochés de lui d'autant. Assumé,
+non recalé : la demande portait sur l'apparence, pas sur l'équilibre, et le
+Mage reste dans la bande basse aux côtés du Hors-la-loi et du Bretteur plutôt
+que de tomber sous elle. Leviers connus si on veut resserrer : Shinobi
 `hitbox.radius` (75), `melee.damage` (3), `melee.cooldown` (1 s) ; Mage
-`projectiles.orb.damage`, seul levier qui réponde chez lui (voir sa fiche).
+`projectiles.orb.damage` ou revenir sur le centrage (voir sa fiche).
 
 ---
 
