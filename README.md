@@ -32,21 +32,28 @@ avec leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
 | **Lancier** | Lance électrique (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Mage** | Sceptre de sève (transcrit d'une maquette) — **braqué sur la cible, posé sur le flanc et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Tempête de sève / SAPWOOD STORM — celle de la Plante, reteintée |
 
-Deux des quatre invités portent en plus un **pouvoir spécial greffé**, sur
-horloge propre, avec leur propre jauge juste sous celle de l'ultime : le
-**Blizzard** de la Glace pour le Hors-la-loi
-(champ de givre qui le suit, ralentit et grignote) et le **Lien d'essence** de
-l'Ombre pour le Lancier (dôme figé + rayon qui draine). Ils s'ajoutent à leur
-ultime, ils ne le remplacent pas — voir [`docs/FICHES.md`](docs/FICHES.md).
+Les quatre invités portent en plus un **pouvoir spécial greffé**, sur horloge
+propre, avec leur propre jauge juste sous celle de l'ultime. Il s'ajoute à leur
+ultime, il ne le remplace pas — voir [`docs/FICHES.md`](docs/FICHES.md).
 
-Le Mage, lui, ne porte pas de troisième créneau : il reprend **l'ultime de la
-Plante** — la Tempête — à sa place normale. Son module ne le recopie pas, il
-**délègue** à celui de la Plante ; c'est la seule façon qu'il ne diverge pas au
-premier réglage. Le Semis (les bulbes posés au sol) n'a en revanche pas été
-repris : retiré à la demande, un tireur qui vise et guide ses orbes n'a pas
-besoin d'une mine plantée par terre.
+Trois sont **empruntés** à un élément gelé : le **Blizzard** de la Glace pour
+le Hors-la-loi (champ de givre qui le suit, ralentit et grignote), la **Rage
+infernale** du Feu pour le Bretteur, et le **Lien d'essence** de l'Ombre pour
+le Lancier (dôme figé + rayon qui draine).
 
-<sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png) · [les orbes guidées du Mage](docs/capture-mage.png) · [sa Tempête de sève](docs/capture-mage-tempete.png).</sup>
+Celui du Mage est **original**, comme le Clone d'ombre du Shinobi : le **Tir
+enraciné**. Des racines le clouent au sol une seconde — il cesse de bouger *et*
+de tirer — puis il lâche une **orbe majeure** à trois fois les dégâts d'une
+orbe ordinaire. C'est la seule prise de risque de son jeu : partout ailleurs il
+tire en fuyant.
+
+Son ultime, en revanche, est **emprunté à la Plante** — la Tempête de sève, à
+sa place normale. Son module ne le recopie pas, il **délègue** à celui de la
+Plante ; c'est la seule façon qu'il ne diverge pas au premier réglage. Le Semis
+(les bulbes posés au sol) n'a pas été repris : retiré à la demande, un tireur
+qui vise et guide ses orbes n'a pas besoin d'une mine plantée par terre.
+
+<sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png) · [les orbes guidées du Mage](docs/capture-mage.png) · [sa Tempête de sève](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
 
 ![Lumière contre Feu](docs/capture-duel.png)
 

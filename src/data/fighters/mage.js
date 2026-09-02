@@ -229,6 +229,77 @@ export const MAGE = fiche({
     },
   },
 
+  /* ---------- POUVOIR SPÉCIAL — troisième créneau, conçu pour lui ---------- */
+  /**
+   * **Tir enraciné** — le seul pouvoir du Mage qui ne vienne de nulle part
+   * ailleurs. Les quatre autres invités portent un pouvoir **emprunté** à un
+   * élément gelé (Blizzard de la Glace, Rage infernale du Feu, Lien d'essence
+   * de l'Ombre) ; celui-ci est original, comme le Clone d'ombre du Shinobi.
+   *
+   * **Le marché : il s'immobilise pour frapper fort.** Des racines le clouent
+   * au sol (`boostFactor: 0`, le compteur générique du `Fighter`, exactement
+   * comme la phase `brace` du Lancier), il cesse de tirer ses orbes ordinaires
+   * pendant qu'il charge, puis lâche **une orbe majeure** au bout du sceptre.
+   *
+   * C'est la seule dimension de risque de tout son jeu : partout ailleurs il
+   * tire en fuyant, sans jamais rien exposer. Enraciné, il ne peut plus
+   * esquiver — et c'est là qu'un Lancier qui charge ou un Shinobi qui referme
+   * le trouve. La contrepartie doit donc être franche, sinon le pouvoir ne
+   * vaut jamais son risque : l'orbe majeure fait **3 fois** les dégâts d'une
+   * orbe ordinaire, va plus vite et vire plus sec.
+   *
+   * **Pas de zone posée au sol.** Les racines sont accrochées à lui et
+   * disparaissent avec le tir : c'est délibérément l'inverse du Semis, qui
+   * laissait des bulbes plantés dans l'arène et qui a été retiré pour ça.
+   */
+  special: {
+    id: 'rootedShot',
+    name: 'Tir enraciné',
+    nameRef: 'Rooted Shot',
+    barLabel: 'ROOTED SHOT',
+    barLabelFr: 'TIR ENRACINÉ',
+    barFill: '#1f964d',
+    barText: '#e8fff0',
+    /** Calé sur la durée des duels du roster réduit (20 à 25 s) : à 7 s
+     *  d'horloge, le Mage s'enracine trois fois dans un duel moyen. */
+    cooldown: 7,
+    /** Premier enracinement calé plus tôt que le cycle, pour qu'il pèse sur un
+     *  duel qui peut se décider en 20 s. */
+    first: 3.5,
+    /**
+     * Durée de l'ancrage, en secondes. C'est **le** curseur de risque du
+     * pouvoir : plus il est long, plus l'orbe majeure se paie cher. 1 s laisse
+     * au Lancier le temps d'engager une charge et au Shinobi de refermer, sans
+     * transformer chaque incantation en condamnation.
+     *
+     * La clé s'appelle `duration` et pas `charge` : c'est le nom que
+     * `ui/select.js` lit pour la ligne « Special » de la carte, comme pour les
+     * quatre autres pouvoirs greffés. Sous un autre nom, la carte affichait
+     * « Rooted Shot — undefineds, every 7s ».
+     */
+    duration: 1,
+    /** L'orbe lâchée à la fin — voir `projectiles.greatOrb`. */
+    projectile: 'greatOrb',
+    /**
+     * Racines dessinées **sous** le Mage pendant la charge (rendu seul, tracé
+     * par un hachage pur — aucun tirage, donc aucun effet sur l'équilibrage).
+     * Elles poussent avec la charge et disparaissent au tir.
+     */
+    roots: {
+      count: 7,
+      length: 58, // px au-delà du bord de la bille, au bout de la charge
+      width: 7,
+      /** Bois du sceptre, pas vert : en vert uni les racines se lisaient comme
+       *  un astérisque, sept piques identiques plantées autour de la bille. Le
+       *  brun les rattache à la hampe, et la pointe verte dit que c'est vivant. */
+      color: '#4a3b2f',
+      tip: '#38cd65',
+    },
+    /** Halo qui enfle au bout du sceptre pendant la charge, puis part avec
+     *  l'orbe : c'est ce qui rend l'attente lisible. */
+    glow: { radius: 30, color: 'rgba(56,205,101,0.55)' },
+  },
+
   projectiles: {
     /**
      * **L'orbe guidée** — ce que le sceptre envoie, et tout le personnage.
@@ -268,6 +339,34 @@ export const MAGE = fiche({
       knockback: 70,
       homing: { turnRate: 2.6, delay: 0.1 },
       trail: { color: 'rgba(56,205,101,0.4)', every: 0.035, life: 0.32 },
+    },
+    /**
+     * **L'orbe majeure** — la récompense du Tir enraciné, et rien d'autre ne
+     * la tire.
+     *
+     * Elle reprend l'orbe ordinaire en la poussant sur les trois axes qui se
+     * lisent à l'écran : **trois fois les dégâts** (6 contre 2), plus grosse
+     * (44 px contre 24), plus rapide (620 contre 470) et un guidage plus sec
+     * (3,4 rad/s contre 2,6). C'est ce qui doit payer une seconde
+     * d'immobilité — une orbe à peine meilleure ne vaudrait jamais le risque,
+     * et le pouvoir ne servirait qu'à se faire toucher.
+     *
+     * `life` allongée à 3,4 s : elle poursuit plus longtemps, donc rater le
+     * premier passage ne l'annule pas.
+     */
+    greatOrb: {
+      label: 'Orbe majeure',
+      labelRef: 'Greater Orb',
+      sprite: 'mageOrb',
+      scale: 4, // même carte de 11 px, dessinée deux fois plus grand que l'orbe
+      speed: 620,
+      damage: 6,
+      radius: 20,
+      life: 3.4,
+      bounces: 1,
+      knockback: 190,
+      homing: { turnRate: 3.4, delay: 0.1 },
+      trail: { color: 'rgba(56,205,101,0.55)', every: 0.025, life: 0.42 },
     },
     /**
      * Pas de `flower` ici. Elle n'était tirée que par les bulbes du Semis

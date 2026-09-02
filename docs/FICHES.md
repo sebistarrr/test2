@@ -1846,6 +1846,93 @@ recouvre : vérifié sur le Bretteur (Rage infernale) et le Hors-la-loi
 **identique au caractère près** — c'est un second passage de rendu, rien qui
 touche à `game.rng` ou à l'état d'un combattant.
 
+### Tir enraciné — le troisième créneau, et le seul pouvoir original du Mage
+
+**Demandé : un pouvoir spécial à lui.** Le Mage était le seul des cinq
+combattants actifs sans troisième créneau. Les quatre autres en portent un
+**emprunté** à un élément gelé — Blizzard (Glace) pour le Hors-la-loi, Rage
+infernale (Feu) pour le Bretteur, Lien d'essence (Ombre) pour le Lancier — sauf
+le Clone d'ombre du Shinobi, conçu pour lui. Celui-ci est du second type :
+original, rien ne le porte ailleurs.
+
+**Le marché : il s'immobilise pour frapper fort.**
+
+| | |
+| --- | --- |
+| Cycle | premier à **3,5 s**, puis toutes les **7 s** — trois enracinements dans un duel moyen de 20 à 25 s |
+| Ancrage | **1 s** à l'arrêt complet (`f.boost` / `f.boostFactor: 0`, le compteur générique, exactement la phase `brace` du Lancier) |
+| Pendant la charge | les orbes ordinaires **s'interrompent** — c'est ce qui fait *attendre* le grand coup au lieu de l'ajouter par-dessus le reste |
+| Récompense | une **orbe majeure** : 6 PV contre 2, 44 px contre 24, 620 px/s contre 470, guidage 3,4 rad/s contre 2,6 |
+
+C'est la seule dimension de risque de tout son jeu : partout ailleurs le Mage
+tire en fuyant, sans jamais rien exposer. Enraciné, il ne peut plus esquiver.
+La contrepartie devait donc être franche — une orbe à peine meilleure n'aurait
+jamais valu le risque, et le pouvoir n'aurait servi qu'à se faire toucher.
+
+**Pas de zone posée au sol.** Les racines sont accrochées à lui et disparaissent
+avec le tir : c'est délibérément l'inverse du Semis, retiré précisément parce
+qu'il laissait des bulbes plantés dans l'arène.
+
+#### Ce que le rendu a demandé
+
+- **Les racines partent du bord de la bille, pas de son centre.** Première
+  version : 58 px mesurés depuis le centre, or le corps en fait 41 de rayon —
+  elles restaient donc invisibles sous lui pendant les deux premiers tiers de
+  la charge, et on ne voyait rien venir. Elles sortent maintenant du corps dès
+  la première image.
+- **La jauge se remplit, elle ne se vide pas.** Reprise telle quelle du
+  Blizzard, elle décomptait le temps restant — donc elle partait pleine et
+  tombait à zéro au moment du tir, ce qui se lit comme un pouvoir qui se
+  termine à l'instant où il commence. Un tir qu'on charge veut l'inverse.
+- **Les racines sont en bois, pas en vert.** En vert uni (`#1f964d`) elles se
+  lisaient comme un astérisque, sept piques identiques plantées autour de la
+  bille. Passées au brun de la hampe (`#4a3b2f`) avec la pointe verte, elles se
+  rattachent au sceptre et se lisent comme des racines.
+- **`duration`, pas `charge`.** La clé portait d'abord le nom qui décrit ce
+  qu'elle fait ; mais `ui/select.js` lit `special.duration` pour la ligne
+  « Special » de la carte, comme pour les quatre autres pouvoirs greffés, et la
+  carte affichait donc « Rooted Shot — **undefineds**, every 7s ». Le nom
+  générique gagne : c'est celui que le reste du dépôt attend.
+
+#### Un piège évité de justesse
+
+`Projectiles` garde son `owner` **par identité** pour savoir qui ne pas
+toucher. La première version du tir passait une **copie** du combattant
+(`{ ...f, x: tip.x, y: tip.y }`) pour placer l'orbe au bout du sceptre — l'orbe
+majeure aurait alors frappé son propre tireur. Le tir emprunte donc la position
+du cristal le temps du `spawn` puis la rend, exactement comme `plant.js` le
+fait pour tirer depuis un bulbe.
+
+#### Équilibrage
+
+Aucun réglage n'a été nécessaire : les valeurs de départ tombent juste.
+
+| | Avant | Après |
+| --- | --- | --- |
+| vs Hors-la-loi | 2-1 | 3-0 |
+| vs Bretteur | 1-2 | 2-1 |
+| vs Lancier | 0-3 | 1-2 |
+| vs Shinobi | 1-2 | 0-3 |
+| **Total** | **4/12** | **6/12** |
+
+Le Mage revient exactement à la médiane, et **le roster entier se resserre** :
+9/9/6/3/3 contre 10/8/4/4/4, le relevé le plus serré depuis la réduction à cinq
+combattants.
+
+Deux résultats se lisent tout seuls dans la mécanique :
+
+- **il prend une victoire au Lancier** (0-3 → 1-2), alors qu'il ne lui en avait
+  jamais pris une seule. Le Lancier charge en ligne droite ; une orbe guidée à
+  6 PV est exactement ce qui punit une trajectoire prévisible ;
+- **il en perd une contre le Shinobi** (1-2 → 0-3). L'immobilité d'une seconde
+  est précisément ce que le combattant le plus rapide du roster sait punir.
+  C'est le risque du pouvoir qui se voit dans la matrice, pas un défaut de
+  réglage.
+
+Curseurs si l'équilibre doit bouger : `special.duration` (le temps
+d'immobilité, donc le risque), `projectiles.greatOrb.damage` (la récompense) ou
+`special.cooldown` (la fréquence).
+
 ### Ce qui n'a pas été repris de Magia
 
 - **Sa couleur** — le personnage est vert, demandé. Vert `#1f7a3d`, plus sombre

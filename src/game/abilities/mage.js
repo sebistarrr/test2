@@ -26,9 +26,18 @@
  *    exactement la duplication que le dépôt a déjà payée deux fois sur
  *    `drawGauge`.
  *
+ *  • **Tir enraciné** (troisième créneau, `special`) — le seul pouvoir du Mage
+ *    qui ne soit emprunté à personne. Des racines le clouent au sol une
+ *    seconde, ses orbes ordinaires s'interrompent, puis il lâche une **orbe
+ *    majeure** à trois fois les dégâts. Le compteur `f.state.spec` a la forme
+ *    des compteurs génériques, comme le Blizzard du Hors-la-loi ; l'ancrage
+ *    passe par `f.boost`/`f.boostFactor`, exactement comme la phase `brace`
+ *    du Lancier.
+ *
  * @module game/abilities/mage
  */
 
+import { clamp, hash01, TAU } from '../../core/math.js';
 import { plantAbilities } from './plant.js';
 
 /** Pas de la cadence, par orbe tirée. Mesuré : tous les paliers de la vidéo
@@ -57,6 +66,11 @@ export const mageAbilities = {
     /** Décompte avant la prochaine orbe. Le premier tir attend une cadence
      *  entière : sans ça le Mage ouvre le duel par une orbe gratuite. */
     f.state.shotTimer = 1 / f.stacks;
+    /** Secondes de charge restantes ; 0 = pas enraciné. Même forme que le
+     *  `spec` du Blizzard : un module l'allume, le module le décompte. */
+    f.state.spec = 0;
+    f.state.specCd = f.el.special.first;
+    f.state.specSpan = f.el.special.first;
   },
 
   update(f, dt, now, game) {
@@ -77,8 +91,41 @@ export const mageAbilities = {
      */
     f.weaponLateral = LATERAL;
 
-    /* ---------- les orbes ---------- */
     if (game.phase !== 'fight' || !target || !target.alive || !f.onStage) return;
+
+    /* ---------- Tir enraciné ---------- */
+    const sp = f.el.special;
+    if (f.state.spec > 0) {
+      f.state.spec -= dt;
+      /**
+       * L'ancrage est **réécrit à chaque image**, pas posé une fois : `boost`
+       * est un compteur que le moteur décompte, donc il faut le retenir tant
+       * que la charge dure. Même mécanique que la phase `brace` du Lancier,
+       * `boostFactor: 0` — arrêt net, pas un ralentissement. C'est le risque
+       * du pouvoir, il doit être franc.
+       */
+      f.boost = Math.max(f.boost, dt * 2);
+      f.boostFactor = 0;
+      if (f.state.spec <= 0) {
+        f.state.spec = 0;
+        f.boost = 0;
+        f.boostFactor = 1;
+        f.state.specCd = sp.cooldown;
+        f.state.specSpan = sp.cooldown;
+        this.releaseRootedShot(f, game);
+      }
+      // Enraciné, il ne tire pas ses orbes ordinaires : c'est ce qui fait
+      // *attendre* le grand coup au lieu de l'ajouter par-dessus le reste.
+      return;
+    }
+
+    f.state.specCd -= dt;
+    if (f.state.specCd <= 0) {
+      f.state.spec = sp.duration;
+      return;
+    }
+
+    /* ---------- les orbes ---------- */
     f.state.shotTimer -= dt;
     if (f.state.shotTimer > 0) return;
 
@@ -89,32 +136,65 @@ export const mageAbilities = {
   },
 
   /**
-   * Une orbe part **du cristal**, pas du centre de la bille : le sceptre est
-   * décalé sur le flanc, et une orbe qui sortirait du corps donnerait
-   * l'impression que l'arme n'y est pour rien.
+   * Fin de la charge : l'orbe majeure part du cristal, comme les autres.
+   *
+   * Elle **ne fait pas monter la cadence** (`f.stacks`) : cette pile compte les
+   * orbes ordinaires, et la nourrir ici ferait du Tir enraciné un accélérateur
+   * déguisé en plus d'être une frappe — deux effets pour un pouvoir, dont un
+   * invisible.
    */
-  fireOrb(f, game) {
-    const pivot = f.weaponPivot();
-    const a = f.weaponAngle;
-    const tipX = pivot.x + Math.cos(a) * f.el.weapon.reach;
-    const tipY = pivot.y + Math.sin(a) * f.el.weapon.reach;
+  releaseRootedShot(f, game) {
+    const tip = this.crystal(f);
+    this.spawnFromCrystal(f, f.el.special.projectile, game);
+    game.fx.burst(tip.x, tip.y, 14, {
+      color: ['#38cd65', '#97e0a0', '#e8fff0'],
+      speed: 220,
+      size: 5,
+      life: 0.45,
+    });
+    game.fx.ring(f.x, f.y, f.radius, f.radius * 2.1, 0.4, 'rgba(56,205,101,0.9)', 5, true);
+  },
 
-    // `spawn` place le projectile à `offset` du **porteur** ; on emprunte donc
-    // la position du bout du sceptre le temps du tir, comme `plant.js` le fait
-    // pour tirer depuis un bulbe.
+  /** Le bout du sceptre, d'où part tout ce que le Mage envoie. */
+  crystal(f) {
+    const pivot = f.weaponPivot();
+    return {
+      x: pivot.x + Math.cos(f.weaponAngle) * f.el.weapon.reach,
+      y: pivot.y + Math.sin(f.weaponAngle) * f.el.weapon.reach,
+    };
+  },
+
+  /**
+   * Un projectile part **du cristal**, pas du centre de la bille : le sceptre
+   * est décalé sur le flanc, et une orbe qui sortirait du corps donnerait
+   * l'impression que l'arme n'y est pour rien.
+   *
+   * `spawn` place le projectile à `offset` du **porteur** : on emprunte donc la
+   * position du bout du sceptre le temps du tir, comme `plant.js` le fait pour
+   * tirer depuis un bulbe. Emprunter plutôt que passer une copie du
+   * combattant : `Projectiles` garde `owner` par **identité** pour savoir qui
+   * ne pas toucher, et une copie ferait que l'orbe frappe son propre tireur.
+   */
+  spawnFromCrystal(f, key, game) {
+    const tip = this.crystal(f);
     const sx = f.x;
     const sy = f.y;
-    f.x = tipX;
-    f.y = tipY;
-    game.projectiles.spawn(f, 'orb', a, 0);
+    f.x = tip.x;
+    f.y = tip.y;
+    game.projectiles.spawn(f, key, f.weaponAngle, 0);
     f.x = sx;
     f.y = sy;
+  },
+
+  fireOrb(f, game) {
+    const tip = this.crystal(f);
+    this.spawnFromCrystal(f, 'orb', game);
 
     // La cadence monte d'un cran par orbe. `game.viewRng` n'est pas sollicité
     // et rien ne tire dans `game.rng` : le tir reste un événement pur.
     f.stacks = Math.min(RATE_CAP, f.stacks + STEP);
 
-    game.fx.burst(tipX, tipY, 4, {
+    game.fx.burst(tip.x, tip.y, 4, {
       color: ['#38cd65', '#97e0a0'],
       speed: 110,
       size: 4,
@@ -122,14 +202,99 @@ export const mageAbilities = {
     });
   },
 
-  // `Match` appelle `drawUnder` sans le garder optionnel (contrairement à
-  // `drawWeapon`/`specialBar`) : il faut donc la méthode, même vide — c'était
-  // les bulbes au sol, retirés avec le Semis. Pas de `drawWeapon` non plus :
-  // le Mage a un vrai sprite d'arme, contrairement à la liane courbe.
-  drawUnder() {},
+  /**
+   * Les racines du Tir enraciné, **sous** le Mage — c'est la seule chose que
+   * ce module dessine au sol, et elle est accrochée à lui, pas posée dans
+   * l'arène (l'inverse exact des bulbes du Semis, retirés).
+   *
+   * Rendu pur : la direction de chaque racine sort d'un **hachage** de son
+   * indice, jamais d'un tirage. Une décoration qui puiserait dans `game.rng`
+   * décalerait tous les duels — le dépôt l'a déjà payé deux fois.
+   *
+   * Pas de `drawWeapon` par ailleurs : le Mage a un vrai sprite d'arme,
+   * contrairement à la liane courbe de la Plante.
+   */
+  drawUnder(ctx, f) {
+    if (f.state.spec <= 0 || !f.onStage) return;
+    const sp = f.el.special;
+    const r = sp.roots;
+    // 0 au déclenchement, 1 juste avant le tir : les racines poussent.
+    const grow = clamp(1 - f.state.spec / sp.duration, 0, 1);
+
+    /**
+     * Les racines partent du **bord de la bille**, pas de son centre : mesurées
+     * depuis le centre, les 58 px de `length` restaient sous les 41 px de rayon
+     * pendant les deux premiers tiers de la charge, et on ne voyait rien venir.
+     * Elles sortent donc du corps dès la première image.
+     */
+    const from = f.radius * 0.75;
+    ctx.save();
+    ctx.lineCap = 'round';
+    for (let i = 0; i < r.count; i++) {
+      const a = (i / r.count) * TAU + hash01(i * 12.9898) * 0.5;
+      const len = f.radius + r.length * (0.55 + 0.45 * hash01(i * 78.233 + 3.1)) * grow;
+      const sx = f.x + Math.cos(a) * from;
+      const sy = f.y + Math.sin(a) * from;
+      // légère cassure au milieu : une racine ne pousse pas droit
+      const bend = (hash01(i * 41.7 + 9.4) - 0.5) * 0.7;
+      const mx = f.x + Math.cos(a + bend) * ((from + len) * 0.5);
+      const my = f.y + Math.sin(a + bend) * ((from + len) * 0.5);
+      const ex = f.x + Math.cos(a) * len;
+      const ey = f.y + Math.sin(a) * len;
+
+      ctx.strokeStyle = r.color;
+      ctx.lineWidth = r.width;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo(mx, my, ex, ey);
+      ctx.stroke();
+
+      // pointe plus claire, pour que la racine se lise jusqu'au bout
+      ctx.strokeStyle = r.tip;
+      ctx.lineWidth = Math.max(1, r.width - 3);
+      ctx.beginPath();
+      ctx.moveTo(mx, my);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+    }
+    ctx.restore();
+  },
 
   drawOver(ctx, f, game, now) {
     plantAbilities.drawOver(ctx, f, game, now);
+
+    // Halo qui enfle au bout du sceptre : sans lui, l'immobilité se lit comme
+    // un blocage plutôt que comme une charge.
+    if (f.state.spec <= 0 || !f.onStage) return;
+    const sp = f.el.special;
+    const grow = clamp(1 - f.state.spec / sp.duration, 0, 1);
+    const tip = this.crystal(f);
+    const rr = sp.glow.radius * (0.3 + 0.7 * grow);
+    ctx.save();
+    const g = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, rr);
+    g.addColorStop(0, sp.glow.color);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(tip.x, tip.y, rr, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  },
+
+  /**
+   * Seconde rangée du HUD : pleine pendant la charge, elle se remplit sinon.
+   * Méthode **optionnelle** côté moteur — les combattants sans troisième
+   * créneau n'affichent pas de cadre vide.
+   */
+  specialBar(f) {
+    const sp = f.el.special;
+    // Pendant la charge la jauge **se remplit** au lieu de se vider : c'est un
+    // tir qu'on charge, pas un effet qui s'épuise comme le Blizzard. Vidée,
+    // elle se lisait comme un pouvoir qui se termine à l'instant où il commence.
+    if (f.state.spec > 0) {
+      return { value: clamp(1 - f.state.spec / sp.duration, 0, 1), active: true };
+    }
+    return { value: 1 - clamp(f.state.specCd / f.state.specSpan, 0, 1), active: false };
   },
 
   barValue(f) {

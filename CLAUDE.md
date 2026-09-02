@@ -82,7 +82,7 @@ commentaire.
 | `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale** du Feu, greffée |
 | `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence** de l'Ombre, greffé |
 | `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, greffé et conçu pour lui : des clones de 15 PV, permanents, solides, qui ripostent |
-| `mage` Mage | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte l'ultime de la Plante (Tempête de sève), **délégué** à son module — le Semis (bulbes au sol) a été retiré, demandé |
+| `mage` Mage | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte l'ultime de la Plante (Tempête de sève), **délégué** à son module, et le **Tir enraciné** greffé — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
 
 Le détail de chacun — relevés, écarts, historique des demandes — est dans
 `docs/FICHES.md`, une section par combattant.
@@ -121,18 +121,20 @@ la matrice.
 archivistique, sans validation ni équilibre.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Lancier 10, Shinobi 8, Bretteur 4, **Mage 4**, Hors-la-loi 4.
+miroir chacun : Lancier 9, Shinobi 9, **Mage 6**, Hors-la-loi 3, Bretteur 3.
 
-L'écart du Lancier est ancien et inchangé. **Le Mage a perdu deux victoires
-(6 → 4) en centrant son sceptre sur le pivot** (demandé, purement visuel dans
-l'intention) : à largeur de sprite égale, centrer l'arme a mécaniquement réduit
-sa portée de 128 à 70 px (voir sa fiche, `weapon.reach`) — le point de touche
-et le point de tir des orbes se sont rapprochés de lui d'autant. Assumé,
-non recalé : la demande portait sur l'apparence, pas sur l'équilibre, et le
-Mage reste dans la bande basse aux côtés du Hors-la-loi et du Bretteur plutôt
-que de tomber sous elle. Leviers connus si on veut resserrer : Shinobi
-`hitbox.radius` (75), `melee.damage` (3), `melee.cooldown` (1 s) ; Mage
-`projectiles.orb.damage` ou revenir sur le centrage (voir sa fiche).
+C'est le relevé **le plus resserré depuis la réduction du roster** (9/9/6/3/3
+contre 10/8/4/4/4 auparavant), et c'est le Tir enraciné du Mage qui l'a
+resserré : le pouvoir greffé l'a ramené de 4 à 6 victoires, exactement à la
+médiane, en prenant une victoire au Lancier, une au Hors-la-loi et une au
+Bretteur — le Shinobi, lui, en gagne une, l'immobilité d'une seconde étant
+précisément ce que le plus rapide du roster sait punir. Il
+avait perdu ces deux victoires en centrant son sceptre — le centrage l'ayant
+mécaniquement raccourci de 128 à 70 px de portée (voir sa fiche). Leviers
+connus si on veut resserrer encore : Shinobi `hitbox.radius` (75),
+`melee.damage` (3), `melee.cooldown` (1 s) ; Mage `projectiles.orb.damage`,
+`projectiles.greatOrb.damage` ou `special.duration` (le temps d'immobilité,
+qui est son curseur de risque).
 
 ---
 
