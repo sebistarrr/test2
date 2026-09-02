@@ -180,7 +180,10 @@ export const plantAbilities = {
         game.damage(target, b.damage(f), f, { kind: 'bulb', x: bulb.x, y: bulb.y });
         target.applySlow(b.slow, b.slowDuration, now);
         game.fx.burst(bulb.x, bulb.y, 16, {
-          color: ['#4ade80', '#bbf7d0', '#f472b6'],
+          // Même raison que la corolle : la gerbe se dit dans la fiche, et le
+          // rose de la Plante reste le repli. Le nombre de particules ne bouge
+          // pas, donc `game.rng` est consommé à l'identique.
+          color: b.burstColors ?? ['#4ade80', '#bbf7d0', '#f472b6'],
           speed: 240,
           size: 5,
           life: 0.5,
@@ -393,7 +396,10 @@ export const plantAbilities = {
       const rad = reach * (0.25 + 0.6 * w);
       drawSpriteCentered(
         ctx,
-        'flower',
+        // La clé de sprite vient de la fiche : le Mage réutilise cette
+        // tempête avec sa propre corolle. Repli sur celle de la Plante, donc
+        // rien ne change pour elle.
+        sw.flowerSprite ?? 'flower',
         target.x + Math.cos(a) * rad,
         target.y + Math.sin(a) * rad,
         sw.flowerSize,

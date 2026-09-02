@@ -114,7 +114,7 @@ node tools/shot.mjs "?a=<id>&b=outlaw&seed=11" /tmp/s 4,10
   Si elle bouge, le changement n'était pas visuel.
 - **Réorganisation de `src/data/`** (découpe, défauts, réécriture de
   commentaires) → `fiche-snapshot` doit être identique. C'est plus fort que la
-  matrice, qui ne joue que les quatre combattants de `PLAYABLE` et laisserait
+  matrice, qui ne joue que les combattants de `PLAYABLE` et laisserait
   passer une régression sur les sept fiches gelées.
 - **Changement de jeu** → régénérer `tools/matrix-reference.txt` et
   **justifier** le nouvel équilibre dans `CLAUDE.md` et `docs/FICHES.md`.
@@ -127,4 +127,32 @@ node tools/shot.mjs "?a=<id>&b=outlaw&seed=11" /tmp/s 4,10
 | --- | --- | --- |
 | Modifier un combattant | `elements.js`, 2 995 lignes | `fighters/<id>.js`, 130 à 590 |
 | Retoucher un sprite | `pixelmaps.js`, 1 301 lignes | `pixelart/<id>.js`, 40 à 300 |
-| Registre à relire | 2 995 + 1 301 lignes | 152 + 82 |
+| Registre à relire | 2 995 + 1 301 lignes | ~160 + ~90 |
+
+Éprouvé sur l'ajout du Mage : quatre fichiers créés, neuf lignes ajoutées dans
+les trois registres, **zéro ligne modifiée** dans une fiche existante —
+`fiche-snapshot` le confirme, et le diff de la matrice ne contient que des
+ajouts.
+
+---
+
+## Réutiliser les pouvoirs d'un autre combattant
+
+Ça se fait, et ça ne se recopie pas. Le Mage porte les deux pouvoirs de la
+Plante : sa fiche déclare les **mêmes blocs** (`ability.bulb`,
+`ultimate.storm`) et son module **délègue** —
+`plantAbilities.update(f, dt, now, game)`, idem pour `init`, `drawUnder`,
+`drawOver` et `barValue`. Aucune ligne en double, donc rien qui puisse diverger
+au premier réglage.
+
+Deux points à vérifier quand on fait ça :
+
+- **les valeurs dérivées de `f.stacks`.** Chez la Plante, les dégâts du bulbe
+  suivent la pile ; chez le Mage la pile est la cadence de tir. Les fonctions
+  de sa fiche rendent donc des constantes — sinon une seule stat piloterait
+  deux montées ;
+- **les littéraux du module d'origine.** `plant.js` codait en dur la clé de
+  sprite `'flower'` et une couleur rose : la tempête verte du Mage faisait
+  voler des corolles roses. Les passer en clés de fiche **avec le littéral
+  d'origine en repli** laisse le combattant d'origine strictement inchangé —
+  la matrice le vérifie.

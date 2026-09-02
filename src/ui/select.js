@@ -108,7 +108,7 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
         <dt>${t.sheetAbility}</dt><dd>${ability}</dd>
         <dt>${t.sheetUltimate}</dt><dd>${t.ultimateLine(label(el.ultimate, lang), el.ultimate.duration)}</dd>
         <dt>${t.sheetSpecial}</dt><dd>${special}</dd>
-        <dt>${t.sheetProjectile}</dt><dd>${projectileLine(el, t)}</dd>
+        <dt>${t.sheetProjectile}</dt><dd>${projectileLine(el, t, lang)}</dd>
       </dl>`;
   }
 
@@ -167,14 +167,21 @@ function spinLine(w, t) {
  * Ligne « Projectile » de la fiche — certains éléments n'en ont aucun, et les
  * dégâts peuvent être une fonction de la pile courante (la balle du
  * Hors-la-loi porte sa stat « Damage », comme son coup à bout portant).
+ *
+ * **Cette ligne restait en anglais en mode français, pour les onze
+ * combattants** : elle lisait `labelRef` sans regarder la langue. Dernier
+ * reste de la demi-traduction déjà corrigée ailleurs, et le seul endroit du
+ * dépôt où le couple des deux langues s'appelle `label`/`labelRef` au lieu de
+ * `name`/`nameRef` — d'où l'aide `label()` qui ne pouvait pas le voir.
  */
-function projectileLine(el, t) {
+function projectileLine(el, t, lang) {
   const list = Object.values(el.projectiles ?? {});
   if (!list.length) return t.projectileNone;
   return list
     .map((p) => {
       const dmg = typeof p.damage === 'function' ? t.meleeStack : t.meleeHp(p.damage);
-      return t.projectileLine(p.labelRef ?? p.label, dmg, p.speed);
+      const name = lang === 'fr' ? p.label ?? p.labelRef : p.labelRef ?? p.label;
+      return t.projectileLine(name, dmg, p.speed);
     })
     .join(' · ');
 }

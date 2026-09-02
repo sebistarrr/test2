@@ -38,6 +38,7 @@ import { PLANT_BULB, FLOWER, ICON_LEAF } from './pixelart/plant.js';
 import { OUTLAW_REVOLVER, OUTLAW_SHOT, ICON_REVOLVER } from './pixelart/outlaw.js';
 import { BLADESMAN_FLAMEBLADE, BLADESMAN_FLAMEWHEEL, ICON_SABRE } from './pixelart/bladesman.js';
 import { LANCER_SPEAR, ICON_LANCE } from './pixelart/lancer.js';
+import { MAGE_STAFF, MAGE_ORB, MAGE_FLOWER, ICON_STAFF } from './pixelart/mage.js';
 
 export const PIXEL_MAPS = deepFreeze({
   // Ombre & Glace
@@ -78,4 +79,9 @@ export const PIXEL_MAPS = deepFreeze({
   // Dragoon
   lancerSpear: LANCER_SPEAR,
   iconLance: ICON_LANCE,
+  // Mage
+  mageStaff: MAGE_STAFF,
+  mageOrb: MAGE_ORB,
+  mageFlower: MAGE_FLOWER,
+  iconStaff: ICON_STAFF,
 });

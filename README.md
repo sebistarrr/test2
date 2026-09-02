@@ -1,4 +1,4 @@
-# Elemental Duel — onze combattants, un duel
+# Elemental Duel — douze combattants, un duel
 
 Clone haute fidélité des duels d'éléments de la chaîne de référence
 (*Elemental Armory League*), en **HTML + CSS + JavaScript** avec un rendu
@@ -18,26 +18,33 @@ GitHub Pages.
 | **Vent** | Shuriken de bourrasque (losange évidé, sans manche) | le plus rapide, rafales tournoyantes autour de lui | Salve de tempête |
 | **Plante** | Liane fouettante (crochet en escalier de pixels) | bulbes qui blessent l'un et **soignent** l'autre | Tempête de fleurs (nuée de cubes roses) |
 
-**Plus trois invités**, repris de la chaîne « ballthingsim » et portés sur ce
-moteur : le Hors-la-loi et le Bretteur du duel *Outlaw vs Bladesman*, et le
+**Plus quatre invités**, repris de la chaîne « ballthingsim » et portés sur ce
+moteur : le Hors-la-loi et le Bretteur du duel *Outlaw vs Bladesman*, le
 Lancier de *Dragoon vs Outlaw* — la même vidéo que le Hors-la-loi, vue depuis
-l'autre camp. Ils ne sont pas des éléments : ce sont des personnages, avec
-leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
+l'autre camp — et le Mage, construit sur la mécanique de Magia dans
+*Dragoon vs Magia*. Ils ne sont pas des éléments : ce sont des personnages,
+avec leurs couleurs, leurs armes et leurs formules relevées sur *leur* vidéo.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
 | **Hors-la-loi** | Revolver de glace | **canon asservi à la cible** — il ne tourne pas ; barillet de 6, balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Plein soleil / HIGH NOON (cadence doublée, recul ×8) |
 | **Bretteur** | Lame de braise (transcrite d'une maquette, remplace le sabre dentelé relevé — voir `docs/FICHES.md`) | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
 | **Lancier** | Lance électrique (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
+| **Mage** | Sceptre de sève (transcrit d'une maquette) — **braqué sur la cible et posé sur le flanc** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Tempête de sève / SAPWOOD STORM — celle de la Plante, reteintée |
 
-Deux des trois invités portent en plus un **pouvoir spécial greffé**, sur
+Deux des quatre invités portent en plus un **pouvoir spécial greffé**, sur
 horloge propre, avec leur propre jauge juste sous celle de l'ultime : le
 **Blizzard** de la Glace pour le Hors-la-loi
 (champ de givre qui le suit, ralentit et grignote) et le **Lien d'essence** de
 l'Ombre pour le Lancier (dôme figé + rayon qui draine). Ils s'ajoutent à leur
 ultime, ils ne le remplacent pas — voir [`docs/FICHES.md`](docs/FICHES.md).
 
-<sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png).</sup>
+Le Mage, lui, ne porte pas de troisième créneau : il reprend **les deux
+pouvoirs de la Plante** — le Semis et la Tempête — à ses places normales. Son
+module ne les recopie pas, il **délègue** à celui de la Plante ; c'est la seule
+façon qu'ils ne divergent pas au premier réglage.
+
+<sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png) · [les orbes guidées du Mage](docs/capture-mage.png) · [sa Tempête de sève](docs/capture-mage-tempete.png).</sup>
 
 ![Lumière contre Feu](docs/capture-duel.png)
 
@@ -68,7 +75,7 @@ empêche Jekyll d'ignorer les dossiers.
 
 | Paramètre    | Effet                                                             |
 | ------------ | ----------------------------------------------------------------- |
-| `?a=&b=`     | lance directement un duel sans écran de sélection — `shadow`, `ice`, `fire`, `water`, `light`, `lightning`, `wind`, `plant`, `outlaw`, `bladesman` |
+| `?a=&b=`     | lance directement un duel sans écran de sélection — `shadow`, `ice`, `fire`, `water`, `light`, `lightning`, `wind`, `plant`, `outlaw`, `bladesman`, `lancer`, `mage` |
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
 | `?lang=fr`   | **toute l'interface** en français — HUD, titre d'arène et écrans DOM (par défaut : l'anglais de la vidéo) |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |

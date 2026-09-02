@@ -48,6 +48,7 @@ import { PLANT } from './fighters/plant.js';
 import { OUTLAW } from './fighters/outlaw.js';
 import { BLADESMAN } from './fighters/bladesman.js';
 import { LANCER } from './fighters/lancer.js';
+import { MAGE } from './fighters/mage.js';
 
 export const ELEMENTS = deepFreeze({
   shadow: SHADOW,
@@ -61,6 +62,7 @@ export const ELEMENTS = deepFreeze({
   outlaw: OUTLAW,
   bladesman: BLADESMAN,
   lancer: LANCER,
+  mage: MAGE,
 });
 
 /**
@@ -89,6 +91,7 @@ export const ROSTER = deepFreeze([
   'bladesman',
   'lancer',
   'wind',
+  'mage',
 ]);
 
 /**

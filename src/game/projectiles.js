@@ -11,7 +11,7 @@
 import { ARENA } from '../data/tuning.js';
 import { hash01 } from '../core/math.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
-import { TAU, dist } from '../core/math.js';
+import { TAU, dist, clamp, wrapAngle } from '../core/math.js';
 import { drawSpriteCentered } from '../render/sprites.js';
 
 export class Projectiles {
@@ -50,6 +50,8 @@ export class Projectiles {
       /** Compteur d'émissions, seule entrée du hachage de dispersion : il
        *  avance d'un pas fixe, donc la poudre est identique à graine égale. */
       trailSeed: 0,
+      /** Sursis avant que le guidage prenne — voir `def.homing` dans `update`. */
+      homingDelay: def.homing ? def.homing.delay : 0,
     });
   }
 
@@ -109,6 +111,42 @@ export class Projectiles {
     for (let i = this.list.length - 1; i >= 0; i--) {
       const p = this.list[i];
       p.life -= dt;
+
+      /**
+       * **Guidage** (`def.homing`) — l'orbe du Mage, seule à le déclarer.
+       *
+       * Le moteur ne nomme personne : la cible est le premier combattant en
+       * scène qui n'est pas le tireur, exactement le test que fait déjà la
+       * boucle de touche plus bas. Toute la forme du guidage se dit dans la
+       * fiche, donc un autre combattant peut en hériter sans une ligne ici.
+       *
+       * **Le virage est borné** (`turnRate`, rad/s) et c'est tout le
+       * garde-fou : une orbe qui virerait sans limite serait une touche
+       * garantie, la version projectile du piège de l'arme braquée. Bornée,
+       * elle dépasse la cible qui coupe assez sec, revient, et finit par
+       * expirer — ce qui laisse au déplacement le dernier mot.
+       *
+       * `delay` laisse l'orbe sortir en ligne droite avant de virer, sans quoi
+       * elle pivoterait dans le sceptre même et partirait de travers.
+       */
+      const hm = p.def.homing;
+      if (hm) {
+        p.homingDelay -= dt;
+        if (p.homingDelay <= 0) {
+          for (const f of fighters) {
+            if (f === p.owner || !f.onStage || !f.alive) continue;
+            const want = Math.atan2(f.y - p.y, f.x - p.x);
+            const cur = Math.atan2(p.vy, p.vx);
+            const step = clamp(wrapAngle(want - cur), -hm.turnRate * dt, hm.turnRate * dt);
+            const a = cur + step;
+            const sp = Math.hypot(p.vx, p.vy);
+            p.vx = Math.cos(a) * sp;
+            p.vy = Math.sin(a) * sp;
+            break;
+          }
+        }
+      }
+
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.angle = Math.atan2(p.vy, p.vx);

@@ -1,8 +1,8 @@
 # CLAUDE.md — mémoire du projet
 
 Clone haute fidélité des duels d'éléments *Elemental Armory League*, **plus les
-trois personnages venus de la chaîne « ballthingsim »** — le Hors-la-loi, le
-Bretteur et le Lancier — portés sur le même moteur.
+quatre personnages venus de la chaîne « ballthingsim »** — le Hors-la-loi, le
+Bretteur, le Lancier et le Mage — portés sur le même moteur.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -50,17 +50,22 @@ de navigation, pas un besoin.
 
 ## Roster
 
-Onze combattants, de **deux origines**.
+Douze combattants, de **deux origines**.
 
 Huit éléments : `shadow ice fire water light lightning wind plant`, relevés sur
 les vidéos *Elemental Armory League* (720 × 1280).
 
-Trois personnages : `outlaw bladesman lancer`, relevés sur deux vidéos de la
-chaîne « ballthingsim », toutes deux en **576 × 1024, 30 fps** :
-*Outlaw vs Bladesman* (1159 images, 38,6 s) et *Dragoon vs Outlaw* (33,6 s).
+Quatre personnages : `outlaw bladesman lancer mage`, relevés sur trois vidéos
+de la chaîne « ballthingsim », toutes en **576 × 1024, 30 fps** :
+*Outlaw vs Bladesman* (1159 images, 38,6 s), *Dragoon vs Outlaw* (33,6 s) et
+*Dragoon vs Magia* (24,4 s).
 
-**Conséquence : deux repères de mesure cohabitent.** Toute mesure prise sur une
-vidéo 576 se convertit en **×1,25** vers le repère logique 720 × 1280 du jeu.
+**Conséquence : plusieurs repères de mesure cohabitent, et ils ne sont pas
+tous les mêmes.** Les deux premières vidéos 576 se convertissent **×1,25** vers
+le repère logique 720 × 1280 du jeu. **Celle de Magia, non : ×1,275** — son
+arène mesure 502 px de bord extérieur contre 640 dans le jeu, et la bille le
+confirme (32 px de rayon × 1,275 = 40,8, soit les 41 du roster). Ne pas
+supposer le facteur : le mesurer sur l'arène, le vérifier sur la bille.
 Chaque valeur convertie cite la mesure d'origine dans son commentaire ; ne
 jamais « corriger » un commentaire qui cite un chiffre en 576.
 
@@ -77,6 +82,7 @@ commentaire.
 | `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale** du Feu, greffée |
 | `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence** de l'Ombre, greffé |
 | `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, greffé et conçu pour lui : des clones de 15 PV, permanents, solides, qui ripostent |
+| `mage` Mage | Tireur | **sceptre braqué et posé sur le flanc** (`weapon.spin = 0` + `weaponLateral`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Ses deux pouvoirs sont ceux de la Plante, **délégués** à son module, pas recopiés |
 
 Le détail de chacun — relevés, écarts, historique des demandes — est dans
 `docs/FICHES.md`, une section par combattant.
@@ -85,9 +91,9 @@ Le détail de chacun — relevés, écarts, historique des demandes — est dans
 
 ## Roster actif — les autres sont obsolètes
 
-**Le Hors-la-loi, le Bretteur, le Lancier et le Shinobi sont les combattants
-actifs.** Les sept éléments restants restent **obsolètes et gelés** via
-`DISABLED`.
+**Le Hors-la-loi, le Bretteur, le Lancier, le Shinobi et le Mage sont les
+combattants actifs.** Les sept éléments restants restent **obsolètes et gelés**
+via `DISABLED`.
 
 ```js
 // src/data/elements.js
@@ -109,16 +115,20 @@ la matrice.
 | --- | --- |
 | écran de sélection (`ui/select.js` lit `PLAYABLE`) | seuls les actifs sont jouables |
 | duel par défaut (`main.js`) | Hors-la-loi vs Bretteur (`PLAYABLE[0]`/`[1]`) |
-| `tools/matrix.mjs` | 10 affrontements × 3 seeds = 30 duels |
+| `tools/matrix.mjs` | 15 affrontements × 3 seeds = 45 duels |
 
 **L'accès par URL reste disponible** (`?a=fire&b=ice`) pour la consultation
 archivistique, sans validation ni équilibre.
 
-**Relevé de matrice courant** (`tools/matrix-reference.txt`) : Shinobi 6/9,
-Lancier 5/6, Hors-la-loi et Bretteur 2/6 chacun. Le Shinobi est l'anomalie du
-roster réduit — conséquence directe de la hitbox en disque, demandée et
-documentée, pas une dérive à corriger d'office. Leviers si on veut le ramener :
-`hitbox.radius` (75), `melee.damage` (3), `melee.cooldown` (1 s).
+**Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
+miroir chacun : Lancier 10, Shinobi 9, **Mage 5**, Hors-la-loi 3, Bretteur 3.
+
+Le Mage arrive au milieu, et c'est voulu. Les deux écarts sont anciens et
+inchangés — l'arrivée du Mage n'a déplacé **aucun** affrontement existant, le
+diff de la matrice ne contient que des ajouts. Leviers connus si on veut
+resserrer : Shinobi `hitbox.radius` (75), `melee.damage` (3),
+`melee.cooldown` (1 s) ; Mage `projectiles.orb.damage`, seul levier qui
+réponde chez lui (voir sa fiche).
 
 ---
 
@@ -263,7 +273,21 @@ sans que ça se voie.
     disque du Shinobi l'a éprouvé : `hitbox.from` et `to` à zéro confondent les
     deux bouts du segment tranchant sur le pivot, `segmentPointDistance` traite
     déjà le cas dégénéré, et **la forme de la hitbox se dit entièrement dans la
-    fiche** — sans une ligne de moteur.
+    fiche** — sans une ligne de moteur. Le guidage des orbes du Mage est le
+    second cas : `projectiles.orb.homing` décrit un virage borné, et
+    `projectiles.js` l'applique en visant « le premier combattant en scène qui
+    n'est pas le tireur » — exactement le test que fait déjà sa boucle de
+    touche. Un autre combattant en hériterait sans une ligne de moteur, et la
+    branche n'existe pas pour ceux qui ne la déclarent pas : les dix
+    affrontements d'avant sont restés identiques au caractère près.
+
+    **Corollaire pour les modules de pouvoirs.** Un module qui code en dur une
+    clé de sprite se ferme à sa propre réutilisation : `plant.js` dessinait
+    `'flower'` en littéral, ce qui faisait voler des corolles **roses** dans la
+    tempête verte du Mage. Les deux littéraux concernés (la corolle, la gerbe
+    d'éclatement d'un bulbe) sont passés en clés de fiche **avec le littéral
+    d'origine en repli**, donc la Plante ne change pas d'un pixel — matrice
+    vérifiée identique.
 
 13. **Le moteur ne connaît que *deux* combattants**, et ce n'est pas près de
     changer : `match.js`, `physics.js` et `projectiles.js` sont écrits pour
@@ -456,6 +480,28 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   1,11 à 0,86 coup/s : une part croissante de ses touches venait des **éclats de
   givre**, que la dispersion n'affecte pas. Quand un levier connu cesse de
   répondre, chercher ce qui a changé de *source*.
+  **Deuxième instance, sur le Mage, et l'ablation a tranché en une minute.**
+  Son guidage semblait être son levier évident : balayé de 3,4 à 0,4 rad/s, il
+  ne l'a fait passer que de 22 à 16 victoires sur 24 — plat. Compter les dégâts
+  **par source** (`opts.kind` dans `game.damage`) a montré que 73 % venaient
+  des projectiles ; `orb.damage` s'est révélé raide au point de rupture (3 →
+  20 victoires, 2 → 15, 1 → 0). Avant de balayer un paramètre, **mesurer d'où
+  vient réellement le dégât** — c'est plus rapide qu'un balayage à l'aveugle,
+  et ça dit *lequel* balayer.
+
+- **Deux leviers qui marchent chacun ne s'additionnent pas.** Orbe à 2 **et**
+  mêlée à 1 faisaient tomber le Mage de 20 à 8 victoires sur 24, alors que
+  chacun seul le posait autour de 15. Près du seuil, un point de dégât bascule
+  des courses déjà serrées. Régler **un** levier, remesurer, et seulement
+  ensuite en toucher un autre.
+
+- **Un paramètre qui ne fait rien doit être documenté comme tel.** Le verrou de
+  mêlée du Mage, balayé à 1,4 / 1,7 / 2,2 s, rend 15 / 12 / 14 victoires :
+  **non monotone, donc du bruit**. Il est resté à 1,7 s — c'est la
+  configuration sur laquelle la matrice a été relevée — mais son commentaire
+  dit qu'il n'équilibre pas. Un commentaire qui attribue un résultat au mauvais
+  paramètre coûte plus cher que pas de commentaire du tout : le suivant le
+  tournera dans le vide.
 - **Seuil d'arrondi.** `Math.round(stat/18)` → `stat/15` a doublé des dégâts
   (round(1,33)=1 vs round(1,6)=2) et fait passer le Vent de 5 à 19 victoires.
   Toujours repasser la matrice après un changement de formule.
@@ -546,6 +592,14 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   et le titre d'arène ; les écrans DOM étaient français en dur. On lisait
   « CHOISIS TES COMBATTANTS » au-dessus d'un duel « DARK vs ICE ». Tout
   l'affichage passe désormais par `src/ui/lang.js`, un seul interrupteur.
+  **Il en restait une ligne, trouvée trois mois plus tard en ajoutant le
+  Mage** : la ligne « Projectile » de la fiche de sélection lisait `labelRef`
+  sans regarder la langue, donc restait **en anglais pour les onze
+  combattants**. Elle a échappé à l'aide `label()` parce que c'est le seul
+  endroit du dépôt où le couple des deux langues s'appelle `label`/`labelRef`
+  et non `name`/`nameRef` — et à `lang-check`, qui vérifie que les champs
+  *existent*, pas qu'ils sont *lus*. Un garde-fou sur l'existence ne dit rien
+  sur l'usage.
 - **La fiche de sélection lit des valeurs qui peuvent être des fonctions.**
   `melee.damage`, `melee.cooldown` et `projectile.damage` peuvent dépendre de la
   pile courante : affichées telles quelles, elles imprimaient le **code source

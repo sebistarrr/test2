@@ -1,9 +1,10 @@
 # Fiches des combattants
 
 Huit éléments : **Ombre**, **Glace**, **Feu**, **Eau**, **Lumière**, **Foudre**,
-**Vent**, **Plante**, plus trois personnages invités repris de la chaîne
+**Vent**, **Plante**, plus quatre personnages invités repris de la chaîne
 « ballthingsim » — **Hors-la-loi** et **Bretteur** du duel *Outlaw vs
-Bladesman*, et **Lancier** de *Dragoon vs Outlaw*.
+Bladesman*, **Lancier** de *Dragoon vs Outlaw*, et **Mage** de
+*Dragoon vs Magia*.
 Ces fiches sont la **transcription lisible** de `src/data/elements.js`. Le code
 est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
 fiche gelée correspondante.
@@ -1516,6 +1517,206 @@ moteur c'est `Fighter.offstage` : générique comme `invulnerable`, il ne dit pa
 *pourquoi* le combattant est parti. Toute boucle qui teste `f.alive` pour
 décider de le *voir* doit tester `f.onStage` — sinon il reste un ruban, une
 nappe de sol ou une hitbox au dernier point connu.
+
+---
+
+## 🌿 MAGE — `mage` (affiché « MAGE »)
+
+Quatrième invité, **demandé** : un mage vert, armé du sceptre d'une maquette
+fournie, qui **attaque à distance** avec des **orbes guidées**, dont l'arme est
+**posée sur le côté** et **vise** l'adversaire, sans mécanique propre par
+ailleurs, **construit sur la mécanique de Magia**, et **portant les pouvoirs de
+la Plante**.
+
+### Le repère de mesure n'est pas celui des autres
+
+Piège d'entrée, et il aurait faussé toutes les cotes. *Dragoon vs Magia* est en
+576 × 1024 comme les deux autres vidéos ballthingsim, **mais son cadrage
+diffère** : l'arène y mesure **502 px de bord extérieur** contre 640 dans le
+jeu, soit **×1,275** et non ×1,25.
+
+Vérifié par un objet dont on connaît déjà la taille : la bille fait 32 px de
+rayon (29,5 mesurés sur le masque de couleur, plus la moitié du contour sombre
+que le masque exclut), et 32 × 1,275 = **40,8**, soit les 41 px du roster. Deux
+mesures indépendantes qui tombent sur le même facteur : c'est ce qui l'établit.
+
+**Règle qui en sort :** ne pas supposer le facteur de conversion d'après le
+format de la vidéo. Le mesurer sur l'arène, le vérifier sur un objet connu.
+
+### Ce que Magia rend, et comment
+
+| Mesure | Valeur | Comment |
+| --- | --- | --- |
+| **Stat de HUD** | **« Attack Speed »**, une cadence de tir qui **monte toute seule** | lue image par image sur la bande de stat |
+| Départ | **1,00** | t = 0 |
+| Paliers | **1,10** à t≈1,2 s · **1,15** à 2,2 s · **1,25** à 3,2 s · **1,30** à 3,8 s | tous multiples de **0,05** |
+| Plus tard | **2,00** à t≈13 s, **~3,7** en fin de duel | premier chiffre lisible malgré le filigrane |
+| Loi déduite | **+0,05 par orbe tirée**, à la cadence courante | six paliers en 4,5 s pour une cadence moyenne de 1,15/s ; donne `e^(0,05 t)`, soit 1,92 à 13 s |
+| Ultime | **HEARTBREAK FINALE** | non porté : le Mage prend celui de la Plante, demandé |
+| Déplacement | **548 px/s** de médiane (p25 507, p75 629) | 258 couples d'images |
+| Arme | baguette **posée sur le flanc**, ~100 px vidéo entre les deux bouts | soit **128 px** en repère jeu |
+| Projectiles | des cœurs roses, à trajectoire **courbe** | ~600-780 px/s en repère jeu selon la portion de vol |
+
+**Le filigrane TikTok couvrait la stat à partir de t = 5 s.** Le dépôt le
+savait déjà (« binariser la zone de texte avant de hacher une bande de
+stats ») ; ici la solution est plus simple et plus sûre : **ne garder que les
+pixels roses** du texte (`R − G > 45`). Le filigrane est blanc-gris neutre,
+donc il disparaît entièrement, et les chiffres restent lisibles là où il ne les
+recouvre pas.
+
+**La vitesse se recale toute seule.** Le Dragoon est dans la même vidéo, et on
+sait par ailleurs qu'il vaut ~540 px/s dans le jeu : il y mesure 521 avec le
+même code. L'écart de 4 % dit que le facteur ×1,275 est bon, et que les 548 de
+Magia valent bien ~550 en repère jeu. **Mesurer un personnage connu dans la
+même vidéo est le meilleur étalon disponible.**
+
+### Le sceptre
+
+Transcrit de la maquette fournie, pas dessiné.
+
+| | |
+| --- | --- |
+| Résolution de la maquette | **6,5 px par pixel d'art** — le damier de transparence fait 13 px, soit exactement deux pixels d'art. Confirmé par un balayage : l'erreur de reconstruction a un minimum net à 6,5 (15,2) contre 17-21 aux valeurs voisines |
+| Grille native | 72 × 158 pour l'image entière, **33 × 139** pour le sceptre seul |
+| Carte livrée | **70 × 17**, la native réduite de moitié, dessinée à `scale: 2` |
+| Portée | **128 px**, `handle.length` = −12, largeur dessinée 140 → la somme retombe sur la portée |
+| Hitbox | **0,87 → 1** de la portée, rayon 15 : **seul le cristal blesse** |
+
+**Pourquoi la moitié de la résolution.** Livré à `scale: 1`, le sceptre faisait
+139 px d'écran avec **un pixel d'art par pixel d'écran** : la hampe se
+réduisait à un trait et le cristal à une tache, là où tout le roster dessine
+ses armes à 2 ou 3 et y gagne son grain. La réduction est un **vote majoritaire
+par bloc 2 × 2**, le cristal l'emportant sur le bois — sans cette priorité ses
+quelques cellules brillantes disparaissaient sous la majorité de brun.
+
+**L'icône et l'orbe ne sont pas redessinées.** L'icône échantillonne la carte
+du sceptre (même vote majoritaire, même priorité au cristal) et l'orbe est
+composée des seules teintes de ce cristal. C'est la leçon d'`ICON_LANCE`, qui
+avait divergé deux fois de l'arme qu'elle annonçait. La corolle verte, elle,
+**partage le tableau `rows` de celle de la Plante** et n'en change que la
+palette : le dessin ne peut pas diverger puisqu'il n'existe qu'une fois.
+
+### L'arme braquée, troisième fois
+
+`weapon.spin: 0`, et `abilities/mage.js` recopie l'angle vers l'adversaire à
+chaque image. Le dépôt avait déjà payé deux fois « une arme braquée touche en
+permanence » — Hors-la-loi puis Lancier. Ici le garde-fou est **géométrique**
+et tient tout entier dans la fiche :
+
+- la hitbox ne couvre que les 17 derniers pixels (`hitbox.from: 0.87`) ;
+- l'arme est **décalée de 34 px sur le flanc** via `weaponLateral`, le compteur
+  générique du `Fighter` — donc le segment tranchant **ne passe pas par l'axe
+  qui vise**.
+
+34 px est réglé à l'image : à 20 le sceptre chevauche la bille et ne se lit
+plus, à 50 il flotte à côté sans lien avec le corps.
+
+Ça n'a pas suffi à le rendre inoffensif au contact — la mêlée pèse encore 17,8
+PV par duel, soit 20 % de ses dégâts — mais ça l'a rendu **rare**, ce qui est
+le point : ses touches de contact ne sont pas bornées par la recharge (voir
+plus bas).
+
+### Le guidage
+
+`projectiles.orb.homing = { turnRate: 2.6, delay: 0.1 }`, lu par
+`game/projectiles.js`. Le moteur ne nomme personne : il vise « le premier
+combattant en scène qui n'est pas le tireur », exactement le test que fait déjà
+sa boucle de touche. La branche n'existe pas pour les projectiles qui ne
+déclarent pas `homing`, et les dix affrontements d'avant sont restés
+**identiques au caractère près**.
+
+Le `delay` de 0,1 s laisse l'orbe sortir du sceptre avant de virer : sans lui,
+une orbe tirée vers l'arrière pivote dans l'arme même.
+
+### L'équilibrage : le levier évident n'était pas le bon
+
+Livré tel quel, le Mage gagnait **11 duels sur 12**. Le guidage semblait être
+son levier :
+
+| `turnRate` | 3,4 | 2,6 | 1,8 | 1,2 | 0,8 | 0,4 |
+| --- | --- | --- | --- | --- | --- | --- |
+| victoires / 24 | 22 | 20 | 22 | 19 | 18 | 16 |
+
+**Plat.** Un banc qui plafonne dit que le levier n'est pas le bon — le dépôt
+l'avait déjà appris sur la dispersion du Hors-la-loi. L'ablation a tranché en
+comptant les dégâts **par source** (`opts.kind` dans `game.damage`) :
+
+| Source | PV par duel | Part |
+| --- | --- | --- |
+| projectiles | 61,1 | **68 %** |
+| mêlée | 17,8 | 20 % |
+| tempête | 7,2 | 8 % |
+| bulbes | 3,8 | 4 % |
+
+C'est donc la **valeur** des orbes, pas leur trajectoire. Et elle est raide :
+
+| `orb.damage` | 3 | 2 | 1 |
+| --- | --- | --- | --- |
+| victoires / 24 | 20 | 15 | **0** |
+
+Deux choses apprises au passage :
+
+- **Deux leviers qui marchent chacun ne s'additionnent pas.** Orbe à 2 **et**
+  mêlée à 1 faisaient tomber le Mage à **8/24**, alors que chacun seul le
+  posait vers 15. Près du seuil, un point de dégât bascule des courses déjà
+  serrées.
+- **Le verrou de mêlée n'est pas un levier ici**, contrairement au
+  Hors-la-loi : balayé à 1,4 / 1,7 / 2,2 s il rend 15 / 12 / 14 victoires,
+  non monotone, donc du bruit. Il reste à 1,7 s parce que c'est la
+  configuration sur laquelle la matrice a été relevée, et son commentaire le
+  dit — pas parce qu'il équilibre.
+
+**Réglage retenu :** `orb.damage: 2`, mêlée 2 PV / 1,7 s → **12 victoires sur
+24** au banc des deux camps, **5 sur 12** dans la matrice officielle.
+
+Profil obtenu, et il est cohérent : le Mage **bat les deux combattants à
+portée courte** (Hors-la-loi 3-0, Bretteur 2-1) et **perd contre les deux qui
+referment vite** (Lancier 0-3, Shinobi 0-3). Un tireur se fait battre par qui
+arrive au contact.
+
+### Les pouvoirs de la Plante — délégués, pas recopiés
+
+Demandés tels quels. La fiche du Mage porte les **mêmes blocs** `ability.bulb`
+et `ultimate.storm`, et `abilities/mage.js` appelle `plantAbilities.update`,
+`.init`, `.drawUnder`, `.drawOver` et `.barValue`. Aucune ligne en double : une
+copie aurait divergé au premier réglage, exactement la duplication que le dépôt
+a déjà payée sur `drawGauge`.
+
+Trois écarts, tous volontaires :
+
+- **dégâts et soin constants** au lieu de suivre `self.stacks`. Chez la Plante
+  la pile est « Bulb Damage/Heal » ; ici elle est la cadence de tir, et la
+  faire piloter aussi les bulbes empilerait deux montées sur une seule stat ;
+- **`bulb.max: 3`** au lieu de 4 : le Mage sème en tirant, il ne se replie pas
+  sur ses bulbes ;
+- **tout est reteinté en vert**, corolle comprise.
+
+**Ce dernier point a demandé une correction dans `plant.js`.** Le module codait
+`'flower'` en dur dans `drawSwarm`, et la couleur rose de la gerbe d'un bulbe
+qui éclate en littéral : la tempête verte du Mage faisait donc voler des
+corolles **roses**. Les deux littéraux sont passés en clés de fiche
+(`swarm.flowerSprite`, `bulb.burstColors`) **avec le littéral d'origine en
+repli** — la Plante ne change pas d'un pixel, et la matrice le confirme.
+
+### Ce qui n'a pas été repris de Magia
+
+- **Sa couleur** — le personnage est vert, demandé. Vert `#1f7a3d`, plus sombre
+  et plus bleu que celui de la Plante (`#15c701`, un vert acide), pris sur la
+  sève du sceptre. Le chiffre de PV est en crème : sur un vert de cette
+  luminance il tranche mieux qu'un noir.
+- **Son arme** — remplacée par le sceptre de la maquette.
+- **Son ultime** *HEARTBREAK FINALE* — remplacé par la Tempête de sève.
+- **Ses cœurs** — remplacés par les orbes de sève.
+- **Sa vitesse** telle quelle : 548 mesurés, **520 retenus**, `calé` comme
+  toutes les vitesses du dépôt.
+
+### Comme le Shinobi : le chiffre de PV disparaît pendant le flash
+
+`bodyHit` est blanc et `hpColor` est crème : à l'image où le Mage encaisse, son
+chiffre de PV s'efface. Trait partagé avec le Shinobi (`hpColor: '#f5f2ea'`,
+`bodyHit: '#ffffff'`), connu et assumé — le flash dure une ou deux images.
+Le corriger demanderait un `hpColor` sombre, qui se lirait moins bien le reste
+du temps sur un corps de cette luminance.
 
 ---
 
