@@ -545,6 +545,24 @@ export class Match {
     }
     if (this.phase !== 'victory') {
       for (const [f, mod] of this.modules) mod.drawOver(ctx, f, this, this.time);
+      /**
+       * Un pouvoir dessiné dans `drawOver` peut recouvrir sa cible — la
+       * Tempête de sève du Mage, entre autres, qui masquait le chiffre de PV
+       * de l'adversaire sous sa nuée. Repassé pour tous plutôt que pour la
+       * seule cible touchée : le moteur ne sait toujours pas lequel a un
+       * pouvoir qui recouvre, et un second `fillText` opaque au même endroit
+       * ne change rien à l'écran pour qui n'est recouvert par rien.
+       *
+       * `globalAlpha` remis à 1 d'abord : un `drawOver` qui l'aurait laissé
+       * en cours de fondu (mal restauré derrière son propre `ctx.save()`)
+       * délaverait sinon le chiffre au lieu de le rendre net.
+       */
+      ctx.globalAlpha = 1;
+      for (const f of this.fighters) {
+        if (!f.alive && !showDead) continue;
+        if (f.offstage > 0) continue;
+        f.drawHpNumber(ctx);
+      }
     }
     if (this.phase === 'fight') this.flair.drawDanger(ctx, this.fighters, this.time);
     if (this.debug) {

@@ -649,6 +649,18 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   par duel laissait des pistes de capture vivantes.
 - Le filigrane TikTok dérive sur les vidéos : binariser la zone de texte avant
   de hacher une bande de stats.
+- **Un pouvoir dessiné dans `drawOver` peut recouvrir le chiffre de PV de sa
+  cible**, et rien dans le pipeline ne le rattrapait : `f.draw()` (qui trace ce
+  chiffre) tourne avant la boucle `drawOver` de `Match.draw()`, donc une nuée
+  opaque — la Tempête de sève du Mage — passait dessus sans recours, comme
+  `weaponLateral` couvrait déjà le manche avant `look.hpOverWeapon`. Le chiffre
+  est maintenant **repassé** après `drawOver`, pour tout le monde plutôt que
+  pour la seule cible touchée (`Fighter.drawHpNumber()`, appelée deux fois :
+  dans `draw()`, puis à nouveau à la fin de `Match.draw()`). Un second
+  `fillText` opaque au même endroit est invisible à l'écran, donc les neuf
+  combattants qu'aucun effet ne recouvre ne changent pas d'un pixel —
+  `globalAlpha` est remis à 1 avant ce second passage, sinon un `drawOver` mal
+  restauré aurait délavé le chiffre au lieu de le rendre net.
 
 ### Refactoriser
 

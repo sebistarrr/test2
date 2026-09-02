@@ -1825,6 +1825,27 @@ pas un accident à corriger. Si la portée doit revenir, les deux leviers
 disponibles sont d'agrandir le sprite (en acceptant un sceptre plus grand pour
 retrouver `reach: 128` en symétrique) ou de renoncer au centrage.
 
+### Le chiffre de PV repassé par-dessus la Tempête de sève
+
+**Signalé : pendant l'ultime, on ne voit plus combien de PV il reste à la
+cible.** La nuée de cubes verts (`drawSwarm`, dessinée par `drawOver`) est
+opaque et recouvre toute la bille — chiffre de PV compris, puisque
+`Match.draw()` trace les combattants (`f.draw()`, chiffre inclus) **avant**
+d'appeler `drawOver` sur les modules de pouvoirs. Le Mage n'invente rien de
+nouveau ici : c'est un trou générique du pipeline, juste jamais remarqué avant
+qu'un pouvoir ne pose quelque chose d'aussi opaque et aussi grand sur sa cible.
+
+Corrigé au niveau du moteur, pas de la fiche : `Fighter.drawHpNumber()`
+factorise le tracé du chiffre (jusque-là un closure local à `draw()`), et
+`Match.draw()` le rappelle pour tous les combattants en scène, juste après la
+boucle `drawOver` — `globalAlpha` remis à 1 d'abord, pour ne pas hériter d'un
+fondu mal restauré par un module. Un second `fillText` opaque au même endroit
+ne change rien à l'écran pour les neuf combattants qu'aucun `drawOver` ne
+recouvre : vérifié sur le Bretteur (Rage infernale) et le Hors-la-loi
+(HIGH NOON) sans aucun artefact de double-tracé, et la matrice reste
+**identique au caractère près** — c'est un second passage de rendu, rien qui
+touche à `game.rng` ou à l'état d'un combattant.
+
 ### Ce qui n'a pas été repris de Magia
 
 - **Sa couleur** — le personnage est vert, demandé. Vert `#1f7a3d`, plus sombre

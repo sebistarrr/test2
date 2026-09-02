@@ -481,14 +481,7 @@ export class Fighter {
      * `CLAUDE.md` documente déjà ce compromis-là comme voulu.
      */
     const hpOverWeapon = look.hpOverWeapon === true;
-    const drawHp = () => {
-      ctx.font = look.hpFont;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillStyle = look.hpColor;
-      ctx.fillText(String(Math.max(0, Math.ceil(this.hp))), this.x, this.y + look.hpOffsetY);
-    };
-    if (!hpOverWeapon) drawHp();
+    if (!hpOverWeapon) this.drawHpNumber(ctx);
 
     /**
      * `weapon.overBody` : l'arme est peinte **en dernier**, après le corps et
@@ -503,7 +496,23 @@ export class Fighter {
      * charge, la lance peut masquer une partie du chiffre.
      */
     if (overBody) this.paintWeapon(ctx);
-    if (hpOverWeapon) drawHp();
+    if (hpOverWeapon) this.drawHpNumber(ctx);
+  }
+
+  /**
+   * Le chiffre de PV, seul — factorisé pour être **repassé** par-dessus tout
+   * ce qui a pu le recouvrir après `draw()` (un pouvoir dessiné dans
+   * `drawOver`, par ex. la Tempête de sève du Mage sur sa cible). Voir l'appel
+   * dans `Match.draw()`.
+   * @param {CanvasRenderingContext2D} ctx
+   */
+  drawHpNumber(ctx) {
+    const look = this.el.look;
+    ctx.font = look.hpFont;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = look.hpColor;
+    ctx.fillText(String(Math.max(0, Math.ceil(this.hp))), this.x, this.y + look.hpOffsetY);
   }
 
   auraVisible() {
