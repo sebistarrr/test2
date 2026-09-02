@@ -562,6 +562,38 @@ clone traîne à côté, soit une famine remplacée par l'autre.
 1/3). C'est un correctif de bug, et il va dans le bon sens pour l'anomalie
 signalée à l'étape précédente.
 
+### Couleur des pouvoirs au gris
+
+**Demandé, purement visuel.** Derniers restes khaki-crème du Vent d'origine :
+
+| Bloc | Avant | Après |
+| --- | --- | --- |
+| Jauges (`ability`/`special` `barFill`/`barText`) | `#b9b295` / `#2a2518` | **`#71717a`** / **`#e0e0e5`** |
+| Disque de sable de la Tornade | sable | gris ardoise |
+| `hud.color` / `hud.stroke` | `#8a8163` / `#f4eddc` | `#71717a` / `#d0d0d5` |
+
+Aucune de ces clés n'est lue ailleurs que par le rendu — matrice inchangée.
+
+### Rotation ×1,2 de plus, clone allégé à 15 PV
+
+**Rotation :** `SPIN * 1,43` → **`SPIN * 1,716`** (encore ×1,2). Toujours sans
+effet de collision (la hitbox reste un disque centré) — matrice identique au
+caractère près.
+
+**PV du clone : 20 → 15**, demandé, gameplay assumé. Une seule ligne bouge :
+
+| Duel | Avant | Après |
+| --- | --- | --- |
+| `outlaw vs wind` | wind 3/3 | **wind 2/3, outlaw 1/3** |
+| `bladesman vs wind` | wind 3/3 | inchangé |
+| `lancer vs wind` | wind 1/3 | inchangé |
+
+Cohérent avec l'observation déjà faite sur les clones multiples face au
+canon asservi du Hors-la-loi : des clones plus fragiles meurent plus vite,
+donc gênent son tir moins longtemps. Bretteur et Lancier ne s'appuyaient pas
+sur la durée de vie du clone. **Total Shinobi : 6/9**, contre 7/9 avant.
+Lignes sans `wind` identiques au caractère près.
+
 ---
 
 ## ⚡ FOUDRE — `lightning` (affiché « LIGHTNING »)

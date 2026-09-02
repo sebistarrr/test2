@@ -837,13 +837,15 @@ const WIND = {
     reach: 75, // déduit : rayon des pointes du shuriken dessiné
     /**
      * Relevé à `SPIN * 1,1` (il tournait déjà plus vite que le reste du
-     * roster), **poussé ×1,3 sur demande** — écart assumé, et **purement
-     * visuel** : depuis que la hitbox est un disque centré (`from`/`to` à
+     * roster), poussé ×1,3 puis, sur cette nouvelle demande, **encore ×1,2**
+     * (1,43 → 1,716) — deux écarts assumés cumulés, et toujours **purement
+     * visuels** : depuis que la hitbox est un disque centré (`from`/`to` à
      * zéro), `weaponAngle` ne décide plus d'aucune collision. Il ne reste
      * que le sprite qui tourne sur lui-même et le ruban qui suit `reach`.
-     * La matrice le confirme — inchangée au caractère près.
+     * La matrice le confirme — inchangée au caractère près, comme pour le
+     * premier passage à ×1,3.
      */
-    spin: SPIN * 1.43,
+    spin: SPIN * 1.716,
     spinDir: 1,
     /**
      * **Aucun manche**, et `length` **négatif** : `width: 0` demande au moteur
@@ -983,7 +985,7 @@ const WIND = {
      *  paire. Passées au gris avec les autres, demandé. */
     barFill: '#71717a',
     barText: '#e0e0e5',
-    hp: 20, // demandé
+    hp: 15, // demandé — abaissé de 20, gameplay assumé, voir matrice dans CLAUDE.md
     /** Calé sur le même ordre de grandeur que le Blizzard (11 s) : les duels
      *  du roster réduit durent 10 à 30 s, une seule incantation par duel
      *  serait invisible, une en continu saturerait l'arène de deux corps. */

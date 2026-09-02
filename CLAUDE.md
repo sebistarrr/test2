@@ -824,6 +824,46 @@ tout ce qu'un module teste après coup arrive **derrière** les deux vrais
 combattants et peut être affamé par eux sans qu'aucune erreur ne se voie. Ça
 ne se lit pas dans le code : ça se compte.
 
+### Couleur des pouvoirs au gris
+
+**Demandé, purement visuel.** Les trois derniers éléments khaki-crème du
+combattant — hérités du Vent d'origine, jamais touchés par les passes
+précédentes du style ninja, qui portaient sur le corps et l'arme — passent au
+gris ardoise :
+
+| Bloc | Avant | Après |
+| --- | --- | --- |
+| Jauges (`ability.barFill`/`barText`, `special.barFill`/`barText`) | `#b9b295` / `#2a2518` | **`#71717a`** / **`#e0e0e5`** |
+| Disque de sable de la Tornade (`ability.tornado.color`/`.edge`/`.core`) | sable | gris ardoise, même gamme que le ruban |
+| Ligne de stat du HUD (`hud.color`/`.stroke`) | `#8a8163` / `#f4eddc` | `#71717a` / `#d0d0d5` |
+
+Rien de tout ça n'est lu ailleurs que par le rendu (`render/hud.js`,
+`render/flair.js`) : aucun levier de jeu dans ces clés, matrice inchangée.
+
+### Rotation ×1,2 supplémentaire, et clone allégé à 15 PV
+
+**Deux demandes distinctes, une seule à effet visuel.**
+
+**La rotation d'arme reprend le même levier qu'au tour précédent** :
+`SPIN * 1,43` → **`SPIN * 1,716`** (encore ×1,2, cumulé avec le ×1,3 déjà
+appliqué). Toujours sans effet sur la collision, pour la même raison que la
+première fois — la hitbox est un disque centré, `weaponAngle` n'y entre pour
+rien. La matrice confirme : inchangée au caractère près sur ce seul
+changement.
+
+**Les PV du clone, en revanche, sont un levier de jeu.** `special.hp` passe
+de 20 à **15**, sur demande explicite — et contrairement à la rotation, une
+seule ligne du roster bouge : `outlaw vs wind` perd une victoire (3/3 → 2/3
+pour le Shinobi). C'est cohérent avec ce que dit déjà cette fiche sur le
+Hors-la-loi et les clones multiples : « un canon asservi qui doit choisir
+entre plusieurs cibles perd l'essentiel de son avantage de précision » — des
+clones plus fragiles meurent plus vite, donc gênent moins longtemps son tir.
+Les duels contre le Bretteur et le Lancier ne bougent pas : ni l'un ni
+l'autre ne s'appuyait sur la durée de vie du clone pour perdre. **Total du
+Shinobi : 6/9**, contre 7/9 avant ce tour. Toutes les lignes n'impliquant pas
+`wind` restent identiques au caractère près ; `tools/matrix-reference.txt`
+régénérée en conséquence.
+
 ---
 
 ## Langue
