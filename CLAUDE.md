@@ -121,20 +121,24 @@ la matrice.
 archivistique, sans validation ni équilibre.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Lancier 9, Shinobi 9, **Mage 6**, Hors-la-loi 3, Bretteur 3.
+miroir chacun : Lancier 9, Mage 7, Shinobi 6, Hors-la-loi 4, Bretteur 4.
 
-C'est le relevé **le plus resserré depuis la réduction du roster** (9/9/6/3/3
-contre 10/8/4/4/4 auparavant), et c'est le Tir enraciné du Mage qui l'a
-resserré : le pouvoir greffé l'a ramené de 4 à 6 victoires, exactement à la
-médiane, en prenant une victoire au Lancier, une au Hors-la-loi et une au
-Bretteur — le Shinobi, lui, en gagne une, l'immobilité d'une seconde étant
-précisément ce que le plus rapide du roster sait punir. Il
-avait perdu ces deux victoires en centrant son sceptre — le centrage l'ayant
-mécaniquement raccourci de 128 à 70 px de portée (voir sa fiche). Leviers
-connus si on veut resserrer encore : Shinobi `hitbox.radius` (75),
-`melee.damage` (3), `melee.cooldown` (1 s) ; Mage `projectiles.orb.damage`,
-`projectiles.greatOrb.damage` ou `special.duration` (le temps d'immobilité,
-qui est son curseur de risque).
+Écart **4 à 9**, le plus resserré depuis la réduction du roster (il valait 3 à 9,
+et 4 à 10 avant le Tir enraciné du Mage).
+
+**Le dernier resserrement est venu du Shinobi, pas des deux derniers.** Le
+Hors-la-loi et le Bretteur étaient à 3/12 chacun ; leurs leviers propres sont
+morts (rayon de balle, palier de surchauffe : voir la fiche du Shinobi, qui
+porte le relevé) ou coûtent une mesure. Baisser `melee.damage` du Shinobi de 3
+à 2 les remonte **tous les deux** à 4/12 sans toucher à leur fiche.
+
+**Attention à la convention de la matrice quand on juge un écart.** Elle ne
+joue chaque paire qu'**une fois**, donc chacun est toujours du même côté, et le
+camp A pèse lourd (invariant 3). Le banc des **deux camps** donne une image
+sensiblement plus plate : avant ce réglage, Hors-la-loi 10/24 et Bretteur 9/24
+là où la matrice officielle disait 3/12 et 3/12. Un combattant « dernier » à la
+matrice ne l'est pas forcément au jeu — vérifier sur les deux camps avant de
+conclure qu'il faut le remonter.
 
 ---
 
@@ -500,6 +504,26 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   chacun seul le posait autour de 15. Près du seuil, un point de dégât bascule
   des courses déjà serrées. Régler **un** levier, remesurer, et seulement
   ensuite en toucher un autre.
+
+- **La matrice ne joue chaque paire qu'une fois, donc elle exagère les écarts.**
+  Chacun y est toujours du même côté, et le camp A pèse lourd (invariant 3).
+  Avant de remonter un « dernier », le remesurer sur **les deux camps** : le
+  Hors-la-loi et le Bretteur étaient à 3/12 et 3/12 à la matrice, mais à 10/24
+  et 9/24 sur les deux camps — presque la moyenne. L'outillage doit servir la
+  question posée : la matrice est un garde-fou de **non-régression** (elle doit
+  rester identique), pas une mesure de force.
+
+- **Chercher le levier là où l'ablation trouve la source ne suffit pas.** Le
+  Hors-la-loi tire 62 % de ses dégâts de ses balles, et pourtant grossir la
+  balle (`radius` 8 → 14) ne bouge rien : 10 / 9 / 10 / 9 victoires. La source
+  dit *quoi* regarder, pas *quelle poignée tourner* — ici c'est la dispersion
+  qui décide si la balle part sur la ligne, pas sa taille une fois partie.
+
+- **Le levier d'un combattant faible est parfois chez un autre.** Les leviers
+  propres du Hors-la-loi et du Bretteur étaient morts ou coûtaient une mesure ;
+  c'est **baisser les dégâts du Shinobi** qui les a remontés tous les deux,
+  sans toucher à leur fiche, et qui a le plus resserré le roster. Quand un
+  combattant plafonne, regarder aussi ce qui le bat.
 
 - **Un paramètre qui ne fait rien doit être documenté comme tel.** Le verrou de
   mêlée du Mage, balayé à 1,4 / 1,7 / 2,2 s, rend 15 / 12 / 14 victoires :

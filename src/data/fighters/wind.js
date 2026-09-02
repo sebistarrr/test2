@@ -184,7 +184,24 @@ export const WIND = fiche({
      */
     hitbox: { from: 0, to: 0, radius: 75 },
     melee: {
-      damage: 3,
+      /**
+       * **3 → 2, pour resserrer le roster réduit.** Le Shinobi était l'écart
+       * du relevé (18 victoires sur 24 au banc des deux camps, contre 9 à 10
+       * pour le Hors-la-loi, le Bretteur et le Mage), et sa hitbox en disque
+       * de 75 px lui donne une fenêtre de touche qu'aucun autre n'a.
+       *
+       * C'est **son** levier et pas celui des deux derniers, parce que leurs
+       * leviers à eux sont morts ou coûteux : le rayon de balle du Hors-la-loi
+       * ne bouge rien (8 / 10 / 12 / 14 → 10 / 9 / 10 / 9, du bruit), sa
+       * dispersion marche mais elle est **déduite d'une mesure** (0,75 rad
+       * reproduit les 0,60 coup/s relevés), et le palier de surchauffe du
+       * Bretteur est plat lui aussi (1,8 / 2,6 / 3,5 / 5 → 9 / 7 / 9 / 9).
+       *
+       * Écarté : réduire `hitbox.radius` (75). Il est **déduit du shuriken
+       * dessiné** — le rétrécir ferait mentir le sprite sur l'endroit où il
+       * touche, ce que le dépôt s'interdit.
+       */
+      damage: 2,
       cooldown: 1, // cadence la plus rapide du roster
       knockback: 205,
       selfRecoil: 70,

@@ -595,6 +595,53 @@ donc gênent son tir moins longtemps. Bretteur et Lancier ne s'appuyaient pas
 sur la durée de vie du clone. **Total Shinobi : 6/9**, contre 7/9 avant.
 Lignes sans `wind` identiques au caractère près.
 
+### Dégâts de mêlée 3 → 2 : le Shinobi paie le resserrement du roster
+
+Il n'y avait rien à reprocher au Shinobi — le réglage vient d'ailleurs. Le
+Hors-la-loi et le Bretteur étaient derniers ex æquo (3/12 chacun), et la
+question posée était de **les** remonter. Leurs leviers propres n'ont rien
+donné :
+
+| Levier essayé | Balayage | Résultat |
+| --- | --- | --- |
+| Hors-la-loi, `projectiles.shot.radius` | 8 / 10 / 12 / 14 | 10 / 9 / 10 / 9 — **plat et non monotone** |
+| Hors-la-loi, `ability.spread` | 0,75 / 0,55 / 0,35 / 0,2 / 0,1 | 10 / 14 / 21 / 22 / 24 — **vrai levier, mais** |
+| Bretteur, `ability.cooldown` (palier de surchauffe) | 1,8 / 2,6 / 3,5 / 5 | 9 / 7 / 9 / 9 — **plat** |
+| Bretteur, `movement.speed` | 560 / 600 / 620 / 660 | 11 / 13 / 12 / 10 — **bruit** une fois le Shinobi corrigé |
+
+*(24 duels par combattant, les deux camps.)*
+
+La dispersion du Hors-la-loi marche — c'est le seul levier vivant des deux —
+mais elle est **déduite d'une mesure** : 0,75 rad reproduit les 0,60 coup/s
+relevés sur sa vidéo, elle-même déduite des 25 paliers de `Damage` en 38,6 s.
+La baisser rendrait le pistolero plus précis que le pistolero filmé. Écarté.
+
+**Le levier qui restait était chez le Shinobi**, l'écart d'en haut :
+`melee.damage` de 3 à 2 remonte le Hors-la-loi **et** le Bretteur de 3/12 à
+4/12 chacun, sans toucher une ligne de leur fiche.
+
+| | Avant | Après |
+| --- | --- | --- |
+| Lancier | 9/12 | 9/12 |
+| Mage | 6/12 | 7/12 |
+| **Shinobi** | **9/12** | **6/12** |
+| Hors-la-loi | 3/12 | 4/12 |
+| Bretteur | 3/12 | 4/12 |
+| **Écart** | **3–9** | **4–9** |
+
+**Écarté : réduire `hitbox.radius` (75).** C'est le levier que `CLAUDE.md`
+citait en premier, et au banc il resserre encore mieux (à 50 : écart 9–15 sur
+les deux camps). Mais ce rayon est **déduit du shuriken dessiné** — c'est la
+demi-largeur du sprite. Le rétrécir ferait mentir le dessin sur l'endroit où il
+touche, exactement ce que le dépôt s'interdit depuis `handle.length`. Les
+dégâts, eux, ne sont écrits nulle part sur le sprite.
+
+**Un mot sur le chiffre de départ.** À la matrice, le Hors-la-loi et le
+Bretteur étaient à 3/12 — mais sur **les deux camps** ils étaient à 10/24 et
+9/24, soit presque la moyenne. La matrice ne joue chaque paire qu'une fois,
+donc chacun y reste du même côté et le camp A pèse lourd : elle exagère les
+écarts. Elle reste le garde-fou de non-régression, pas la mesure de force.
+
 ---
 
 ## ⚡ FOUDRE — `lightning` (affiché « LIGHTNING »)
