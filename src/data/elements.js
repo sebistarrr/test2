@@ -912,13 +912,15 @@ const WIND = {
       damageGain: 2, // mesuré : 10 → 24 par pas de 2
       damageMax: 24, // plafond mesuré, apparié au plancher de 0,5 s
       /**
-       * Aspect relevé : un **disque flou couleur sable** composé de larges
-       * pales en éventail qui rayonnent du centre, sans le moindre contour —
-       * pas des cercles concentriques. Le cœur est plus dense et plus chaud.
+       * **Aspect passé au gris, demandé — style ninja.** Était un disque flou
+       * couleur sable composé de larges pales en éventail qui rayonnent du
+       * centre, sans le moindre contour — pas des cercles concentriques. Le
+       * cœur était plus dense et plus chaud. Ramené à la gamme grise ardoise
+       * pour tenir le style cohérent.
        */
-      color: 'rgba(201,190,168,0.46)', // pipette du bord : rgb(201,190,168)
-      edge: 'rgba(178,168,146,0.42)', // le disque garde un bord net sur la vidéo
-      core: 'rgba(168,152,124,0.6)', // pipette du cœur : rgb(168,152,124)
+      color: 'rgba(78,78,88,0.46)', // gris ardoise, même gamme que le ruban
+      edge: 'rgba(102,102,112,0.42)', // bord un cran plus clair
+      core: 'rgba(55,55,65,0.6)', // cœur plus foncé
       blades: 9, // pales de l'éventail (comptées sur la vidéo)
     },
   },
@@ -933,8 +935,10 @@ const WIND = {
     nameRef: 'SHURIKEN TORNADO',
     barLabel: 'SHURIKEN TORNADO',
     barLabelFr: 'TORNADE DE SHURIKENS',
-    barFill: '#b9b295',
-    barText: '#2a2518',
+    /** **Jauges passées au gris, demandé.** Étaient en khaki-crème comme la
+     *  Tornade avant le style ninja. */
+    barFill: '#71717a',
+    barText: '#e0e0e5',
     /** Cycle de jauge mesuré : ~8 à 10 s entre deux décharges. */
     chargeRate: 11,
     chargeOnHit: 2,
@@ -976,9 +980,9 @@ const WIND = {
     /** Reprend la couleur de la jauge d'ultime juste au-dessus — même
      *  convention que les trois autres pouvoirs greffés (sixième vague du
      *  Bretteur) : les deux jauges d'un même combattant se lisent comme une
-     *  paire. */
-    barFill: '#b9b295',
-    barText: '#2a2518',
+     *  paire. Passées au gris avec les autres, demandé. */
+    barFill: '#71717a',
+    barText: '#e0e0e5',
     hp: 20, // demandé
     /** Calé sur le même ordre de grandeur que le Blizzard (11 s) : les duels
      *  du roster réduit durent 10 à 30 s, une seule incantation par duel
@@ -1032,8 +1036,10 @@ const WIND = {
       (f) => `Dégâts de shuriken : ${Math.round(f.stacks)}`,
       (f) => `Recharge : ${formatSeconds(f.ability.cooldown)}`,
     ],
-    color: '#8a8163',
-    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
+    /** Couleur passée au gris, demandé. Étaient khaki et crème clair comme le
+     *  reste du Vent avant le style ninja. */
+    color: '#71717a',
+    stroke: '#d0d0d5', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
