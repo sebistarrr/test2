@@ -1,14 +1,12 @@
-# Elemental Duel — six combattants, un duel
+# Elemental Duel — cinq combattants, un duel
 
-Duels en un contre un, cinq combattants repris de la chaîne
-**« ballthingsim »** et un conçu pour le jeu, en **HTML + CSS + JavaScript**
-avec un rendu **Canvas 2D**. Aucune dépendance, aucun build : le dépôt se
-publie tel quel sur GitHub Pages.
+Duels en un contre un repris de la chaîne **« ballthingsim »**, en
+**HTML + CSS + JavaScript** avec un rendu **Canvas 2D**. Aucune dépendance,
+aucun build : le dépôt se publie tel quel sur GitHub Pages.
 
-Les cinq premiers sont relevés image par image sur leur vidéo — couleurs à la
+Chaque combattant est relevé image par image sur sa vidéo — couleurs à la
 pipette, portées au pixel, cadences chronométrées. Ce qui n'a pas pu être
-mesuré est calé au banc d'essai, et le dit. Le sixième, le **Colosse**, ne
-vient d'aucune vidéo : sa fiche ne porte donc que du `calé` et du `déduit`.
+mesuré est calé au banc d'essai, et le dit.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
@@ -17,7 +15,6 @@ vient d'aucune vidéo : sa fiche ne porte donc que du `calé` et du `déduit`.
 | **Lancier** | Lance de dragon (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
 | **Mage** | Sceptre de sève (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Tempête de sève / SAPWOOD STORM |
-| **Colosse** | Pavois ovale (PNG dédié, relief calculé) — **il suit le cap**, il ne vise pas ; **la hitbox la plus large du jeu** (rayon 44), mais des dégâts dans la bande du roster : ce qui touche large frappe faible | **le corps est l'arme** : seul à peser 3 et seul à blesser **par la collision des corps** — jusqu'à **24 d'un seul choc** à élan plein, la plus grosse frappe du jeu et la plus rare. Son **Élan** monte en ligne droite et retombe à chaque virage, mur ou choc — la seule stat qui dépende de la géométrie de l'arène | Séisme / EARTHSHAKER — il se plante et envoie une onde qui traverse l'arène et ralentit 2,6 s |
 
 Chacun porte en plus un **pouvoir spécial**, sur horloge propre, avec sa jauge
 juste sous celle de l'ultime. Il s'ajoute à l'ultime, il ne le remplace pas —
@@ -30,9 +27,8 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 | **Lancier** | **Lien d'essence** — dôme figé + rayon qui draine |
 | **Shinobi** | **Clone d'ombre** — des clones de 15 PV, permanents, solides, qui ripostent |
 | **Mage** | **Tir enraciné** — des racines le clouent au sol une seconde, il cesse de bouger *et* de tirer, puis lâche une **orbe majeure** à trois fois les dégâts |
-| **Colosse** | **Ruée** — vitesse ×1,8 et **l'élan ne retombe plus**, murs compris : l'arène cesse de le casser |
 
-<sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png) · [les orbes guidées du Mage](docs/capture-mage.png) · [sa Tempête de sève](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png) · [le Colosse et son pavois](docs/capture-colosse.png).</sup>
+<sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png) · [les orbes guidées du Mage](docs/capture-mage.png) · [sa Tempête de sève](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
 
 ![Lancier contre Bretteur](docs/capture-duel.png)
 
@@ -63,7 +59,7 @@ empêche Jekyll d'ignorer les dossiers.
 
 | Paramètre    | Effet                                                             |
 | ------------ | ----------------------------------------------------------------- |
-| `?a=&b=`     | lance directement un duel sans écran de sélection — `outlaw`, `bladesman`, `lancer`, `wind` (le Shinobi), `mage`, `colossus` |
+| `?a=&b=`     | lance directement un duel sans écran de sélection — `outlaw`, `bladesman`, `lancer`, `wind` (le Shinobi), `mage` |
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
 | `?lang=fr`   | **toute l'interface** en français — HUD, titre d'arène et écrans DOM (par défaut : l'anglais de la vidéo) |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |
@@ -147,16 +143,15 @@ src/
 │       ├── bladesman.js   Courbe de rotation (surchauffe) + Ruée + Rage
 │       ├── lancer.js      Charge + Bond + Lien d'essence
 │       ├── wind.js        Tornade de shurikens + Clone d'ombre
-│       ├── mage.js        Orbes guidées + Tempête de sève + Tir enraciné
-│       └── colossus.js    Élan + charge d'épaule + Séisme + Ruée
+│       └── mage.js        Orbes guidées + Tempête de sève + Tir enraciné
 └── ui/
     ├── lang.js            libellés d'interface, anglais et français
     ├── select.js          écran de sélection (lit les fiches)
     └── result.js          écran de fin
 tools/                     outillage de vérification (non chargé par la page)
-├── matrix.mjs             21 affrontements x 3 seeds, sans rendu
+├── matrix.mjs             15 affrontements x 3 seeds, sans rendu
 ├── matrix-reference.txt   sortie de référence, à differ après tout changement
-├── fiche-snapshot.mjs     empreinte des 6 fiches + 17 cartes, sans serveur :
+├── fiche-snapshot.mjs     empreinte des 5 fiches + 15 cartes, sans serveur :
 │                          le garde-fou des réorganisations de `src/data/`
 ├── fiche-check.mjs        câblage, clés de sprite, fiche ↔ module
 ├── probe.mjs              durée, touches et coups/s d'un combattant sur tout
@@ -262,19 +257,10 @@ convertit en **×1,25** vers ce repère 720 × 1280 — **sauf celle de Magia,
 | Bond du Lancier               | jauge pleine en 10 s, 0,45 s d'élan, **1,5 s hors de l'arène**, impact de rayon 110 px |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les
-**21 affrontements** du roster (3 seeds chacun), un duel dure **12 à 30 s**, et
+**15 affrontements** du roster (3 seeds chacun), un duel dure **13 à 29 s**, et
 le Hors-la-loi termine autour de 5,0 de dégâts, comme sur sa vidéo. Une **mort
 subite** amplifie les dégâts au-delà de 55 s pour qu'aucun duel ne s'éternise.
-
-Sur le banc des **deux camps** — 30 duels chacun, la vraie mesure de force —
-l'écart va de **13 à 20 sur 30** : Lancier 20, Shinobi 15, Colosse 15,
-Bretteur 14, Hors-la-loi 13, Mage 13.
-
-Le Colosse est arrivé à **0/30** : il a été livré avec l'équilibrage
-explicitement différé, puis rééquilibré **en ne touchant que sa fiche**. Les
-trois leviers évidents étaient tous les trois plats, et c'est un comptage — pas
-un balayage — qui a nommé le vrai problème. Le récit complet est dans
-[`docs/FICHES.md`](docs/FICHES.md).
+Détail de l'équilibrage dans [`docs/FICHES.md`](docs/FICHES.md).
 
 ---
 

@@ -1,8 +1,8 @@
 # CLAUDE.md — mémoire du projet
 
-Duels en un contre un, **six combattants** — cinq repris de la chaîne
-« ballthingsim » (Hors-la-loi, Bretteur, Lancier, Shinobi, Mage) et un
-**conçu** (le Colosse) — sur un moteur écrit d'après les vidéos de référence.
+Duels en un contre un, **cinq combattants** repris de la chaîne
+« ballthingsim » — le Hors-la-loi, le Bretteur, le Lancier, le Shinobi et le
+Mage — sur un moteur écrit d'après les vidéos de référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -50,15 +50,10 @@ de navigation, pas un besoin.
 
 ## Roster
 
-**Six combattants, tous jouables.** Cinq viennent de la chaîne
+**Cinq combattants, tous jouables.** Ils viennent de la chaîne
 « ballthingsim », relevés sur trois vidéos en **576 × 1024, 30 fps** :
 *Outlaw vs Bladesman* (1159 images, 38,6 s), *Dragoon vs Outlaw* (33,6 s) et
 *Dragoon vs Magia* (24,4 s).
-
-Le sixième, le **Colosse**, ne vient d'aucune vidéo : il est **conçu**. Aucune
-de ses valeurs n'est `mesuré` — sa fiche ne porte que du `calé` et du `déduit`,
-et elle le dit. C'est aussi ce qui le rend facile à régler : rien chez lui n'est
-sanctuarisé par un relevé.
 
 | Personnage | Archétype | Signature |
 | --- | --- | --- |
@@ -67,7 +62,6 @@ sanctuarisé par un relevé.
 | `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence**, greffé |
 | `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des clones de 15 PV, permanents, solides, qui ripostent |
 | `mage` Mage | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte la **Tempête de sève** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
-| `colossus` Colosse | Masse | **le corps est l'arme** : premier à ne pas peser 1 (`movement.mass = 3`, seul lecteur de cette clé) et seul à blesser **par la collision des corps**. Sa stat, l'**Élan**, monte en ligne droite et retombe à chaque virage, mur ou choc — la seule qui dépende de la géométrie de l'arène. Pavois qui suit le cap, **hitbox la plus large du jeu**. Porte la **Ruée** (vitesse ×1,8, l'élan ne retombe plus) et le **Séisme** (onde qui traverse l'arène et ralentit) |
 
 **`wind` est l'identifiant interne du Shinobi**, hérité du Vent dont il est le
 reskin. Un id ne se renomme pas : il n'est montré à personne, et le changer
@@ -105,35 +99,16 @@ le Bretteur, le Lien d'essence chez le Lancier, la Tempête de sève chez le
 Mage, l'éclat de givre dans `pixelart/outlaw.js`. Un commentaire qui cite un
 élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
-**Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 15 duels hors
-miroir chacun : Lancier 11, **Colosse 9**, Shinobi 8, Mage 8, Bretteur 5,
-Hors-la-loi 4.
+**Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
+miroir chacun : Lancier 9, Mage 7, Shinobi 6, Hors-la-loi 4, Bretteur 4.
 
-**Le Colosse a été rééquilibré, en ne touchant que sa fiche.** Il était à 0/15
-à la livraison (équilibrage différé à la demande) ; il est maintenant à 9/15 à
-la matrice et **15/30 au banc des deux camps**, milieu de tableau. Le diff de
-la matrice ne contient que **ses six lignes** — invariant 3 : un changement
-confiné à un combattant ne doit déplacer que ses affrontements.
+Écart **4 à 9**, le plus resserré depuis la réduction du roster.
 
-**Le levier n'était aucun de ceux qu'on attendait, et c'est la leçon.** Trois
-balayages plats d'affilée (verrou de mêlée 1,5 → 0,7 : +0,26 PV/s ; vitesse
-330 → 540 : +0,20 ; charge d'ultime 3,4 → 10 : +0,26). Le comptage a tranché :
-il **n'était pas privé de touches** — 203 touches de mêlée sur 30 duels, 45 à
-71 % de ses contacts convertis, comme ses adversaires. Ce qui manquait était la
-**valeur** de chaque touche. Détail et chiffres dans `docs/FICHES.md`.
-
-**Un chiffre isolé ne dit rien : c'est la colonne des autres qui parle.** Ce
-qui a débloqué le diagnostic est d'avoir mesuré les six sur le même banc —
-inflige/encaisse par seconde. Les cinq tenaient dans 3,69–4,76 infligés et
-3,13–3,84 encaissés ; le Colosse à 1,31 / 4,39. Son attaque était l'anomalie
-d'un facteur 3, sa défense à peine hors bande. Sans cette colonne, « il
-encaisse 4,39 » se lisait comme un problème de défense.
-
-**Le resserrement précédent était venu du Shinobi, pas des deux derniers.** Le
+**Le dernier resserrement est venu du Shinobi, pas des deux derniers.** Le
 Hors-la-loi et le Bretteur étaient à 3/12 chacun ; leurs leviers propres sont
 morts (rayon de balle, palier de surchauffe : voir la fiche du Shinobi, qui
 porte le relevé) ou coûtent une mesure. Baisser `melee.damage` du Shinobi de 3
-à 2 les a remontés **tous les deux** sans toucher à leur fiche.
+à 2 les remonte **tous les deux** à 4/12 sans toucher à leur fiche.
 
 **Attention à la convention de la matrice quand on juge un écart.** Elle ne
 joue chaque paire qu'**une fois**, donc chacun est toujours du même côté, et le
@@ -273,10 +248,10 @@ sans que ça se voie.
    Le crochet a disparu dans une réécriture, le no-op est resté dans `wind.js`
    sans lecteur, et **chaque clone s'est mis à dessiner un shuriken grandeur
    nature**. Rien n'a crié, et rien ne pouvait crier : la matrice ne tourne
-   jamais `draw()`, `fiche-check` ne recoupe que des clés de fiche. Trouvé un
-   mois plus tard, en relisant les crochets du moteur pour livrer le Colosse.
-   Le réflexe qui l'aurait attrapé : quand une réécriture retire un crochet,
-   **chercher qui le fournissait encore**, pas seulement qui l'appelait.
+   jamais `draw()`, `fiche-check` ne recoupe que des clés de fiche — il a fallu
+   une capture d'écran, un mois plus tard. Le réflexe qui l'aurait attrapé :
+   quand une réécriture retire un crochet, **chercher qui le fournissait
+   encore**, pas seulement qui l'appelait.
 
 10. **Un ancrage d'arme se pose, il ne s'interpole pas.** `weaponLateral`
     bascule entre `lunge.lateral` et zéro **dans l'image même** où la phase
@@ -305,19 +280,6 @@ sans que ça se voie.
     branche n'existe pas pour ceux qui ne la déclarent pas : les affrontements
     d'avant sont restés identiques au caractère près.
 
-    **Troisième cas, et le plus instructif : `movement.mass` du Colosse.** La
-    clé était dans les cinq fiches depuis toujours **sans lecteur** — la
-    séparation des corps partageait le recouvrement 50/50, quoi qu'elles
-    disent. Le Colosse est le premier à ne pas peser 1, et lui donner du poids
-    n'a demandé qu'une pondération dans `resolveBodies`, aucun `if (id ===`.
-    Mais une pondération réécrit les expressions **de tout le monde**, et la
-    multiplication flottante n'est pas associative (piège déjà payé sur
-    `bladeSegment()`) : d'où une **branche rapide à masses égales** qui reprend
-    le chemin d'origine mot pour mot. Preuve : la matrice des cinq d'avant est
-    identique au caractère près. Une généralisation du moteur doit **prouver**
-    qu'elle laisse le cas courant sur ses anciennes expressions, pas seulement
-    sur ses anciennes valeurs.
-
     **Corollaire pour les modules de pouvoirs.** Un module qui code en dur une
     clé de sprite se ferme à sa propre réutilisation : `plant.js` dessinait
     `'flower'` en littéral, ce qui faisait voler des corolles **roses** dans la
@@ -341,8 +303,8 @@ Les écarts **par combattant** — arme du Lancier remplacée par une maquette,
 reskin du Bretteur en lame de braise, Shinobi en ninja sombre — sont détaillés
 dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 
-- **Quatre vrais PNG dans un dépôt « sans binaire »** : la lame du Bretteur, le
-  shuriken du Shinobi (deux versions, flamme et ombre), le pavois du Colosse.
+- **Trois vrais PNG dans un dépôt « sans binaire »** : la lame du Bretteur, le
+  shuriken du Shinobi (deux versions, flamme et ombre).
   `assets/sprites/manifest.json` fait pointer une clé de `PIXEL_MAPS` sur un
   fichier ; la carte pixel-art reste comme **repli automatique**
   (`render/sprites.js`). C'est cette couche d'indirection qui rend un changement
@@ -352,11 +314,11 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   dessinée de la **carte** (`map.h × scale`) et la largeur du ratio **du sprite
   affiché**. Un PNG au mauvais ratio change donc la largeur sans toucher à la
   hitbox, et `handle.length + largeur` cesse de valoir `reach` : le dessin ment
-  sur l'endroit où il coupe. Le pavois du Colosse tient 15/34 au chiffre près
-  pour cette raison ; celui du Bretteur, lui, a dérivé (3,47 contre 3,89).
+  sur l'endroit où il coupe. C'est arrivé à la lame du Bretteur, dont le PNG est
+  à 3,47 quand sa carte est à 3,89 — écart connu, pas corrigé.
 
   **Et les trois images d'une arme sortent du même dessin.** Carte de repli et
-  icône du titre sont *réduites du PNG* par script, jamais redessinées — sans
+  icône du titre se *réduisent du PNG* par script, jamais redessinées — sans
   quoi l'icône finit par annoncer une arme que le joueur ne voit pas (payé deux
   fois sur le Lancier).
 - **Fond hors-arène** : la vidéo est sur papier crème, le site est en **encre
@@ -411,7 +373,7 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 ```bash
 python3 -m http.server 8085 &            # requis par les outils Playwright
 
-node tools/fiche-snapshot.mjs            # empreinte des 6 fiches + 17 cartes,
+node tools/fiche-snapshot.mjs            # empreinte des 5 fiches + 15 cartes,
                                          # SANS serveur. Le garde-fou des
                                          # refactorisations de `src/data/` :
                                          # doit rester identique au caractère près
@@ -565,39 +527,14 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   combattant plafonne, regarder aussi ce qui le bat.
 
 - **Un chiffre de combattant ne se lit pas seul : il se lit contre la colonne
-  des cinq autres.** Le Colosse infligeait 1,31 PV/s et en encaissait 4,39. Pris
-  seuls, ces deux nombres se lisent comme « il est fragile ». Le même banc passé
-  sur tout le roster a montré la bande réelle — 3,69 à 4,76 infligés, 3,13 à
-  3,84 encaissés : son attaque était donc l'anomalie d'un **facteur 3**, et sa
-  défense à peine hors bande. Trois balayages avaient déjà été dépensés du
-  mauvais côté avant cette mesure, qui coûte une minute.
-
-- **« Il ne touche pas assez » et « ses touches ne valent rien » ne se
-  corrigent pas au même endroit, et seul un comptage les sépare.** Sur le
-  Colosse, trois leviers plats d'affilée (verrou de mêlée, vitesse, charge
-  d'ultime) disaient qu'on cherchait mal. Compter les **occasions** (fronts
-  montants de recouvrement arme/corps) et le **taux de conversion** a tranché en
-  une passe : 203 touches sur 30 duels, 45 à 71 % des contacts convertis, à
-  égalité avec ses adversaires. Il n'était pas privé d'occasions, chacune valait
-  3. Un levier de *fréquence* sur un problème de *valeur* est plat par
-  construction — et un balayage plat ne dit pas « ce combattant est
-  irrécupérable », il dit « ce n'est pas la bonne poignée ».
-
-- **Trois clés qui décrivent une seule idée se règlent ensemble, et il faut le
-  dire.** La charge d'épaule du Colosse ne partait que 3 à 11 fois par tranche
-  de six duels : `slam.min`, `slam.cooldown` et `slam.damagePer` ne sont pas
-  trois réglages mais un seul, sa fréquence utile. Balayées séparément elles
-  étaient plates ; bougées ensemble elles l'ont porté de 0/30 à 15/30. Ça ne
-  contredit pas « régler un levier, remesurer, puis en toucher un autre » —
-  cette règle vise deux leviers **indépendants** près d'un seuil (le Mage). Loin
-  du seuil et sur une même mécanique, l'additivité tient : vérifiée au banc,
-  pas supposée.
-
-- **Un ultime hors d'atteinte n'est pas un choix d'équilibrage.** Celui du
-  Colosse chargeait en 29,4 s quand ses duels duraient 22,8 : il ne partait
-  quasiment jamais et pesait 7 % de ses dégâts. Avant de traiter une mécanique
-  comme faible, vérifier qu'elle **part** — comparer son horloge à la durée
-  moyenne d'un duel, pas à l'intuition.
+  des autres.** « Il encaisse 4,4 PV/s » ne veut rien dire tant qu'on ne sait
+  pas que le roster tient dans 3,1–3,8 encaissés et 3,7–4,8 infligés. Passer le
+  **même banc sur tout le roster** coûte une minute et dit de quel côté est
+  l'anomalie — sans quoi on peut dépenser trois balayages sur la défense d'un
+  combattant dont c'est l'attaque qui décroche. Corollaire : « il ne touche pas
+  assez » et « ses touches ne valent rien » ne se corrigent pas au même endroit,
+  et seul un **comptage** des occasions et du taux de conversion les sépare — un
+  levier de fréquence sur un problème de valeur est plat par construction.
 
 - **Un paramètre qui ne fait rien doit être documenté comme tel.** Le verrou de
   mêlée du Mage, balayé à 1,4 / 1,7 / 2,2 s, rend 15 / 12 / 14 victoires :

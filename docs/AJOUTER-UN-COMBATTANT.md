@@ -142,15 +142,11 @@ les trois registres, **zéro ligne modifiée** dans une fiche existante —
 `fiche-snapshot` le confirme, et le diff de la matrice ne contient que des
 ajouts.
 
-Réédité sur le **Colosse**, sous la consigne explicite de ne modifier aucun
-combattant existant — avec une difficulté en plus : il fallait donner un
-lecteur à `movement.mass`, donc **toucher au moteur**. Preuve tenue quand même,
-par une branche rapide à masses égales qui reprend les expressions d'origine
-mot pour mot (`physics.js`). Quand un ajout demande de généraliser le moteur,
-la question n'est pas « le cas courant rend-il les mêmes valeurs » mais
-« passe-t-il par les mêmes expressions » : la multiplication flottante n'est pas
-associative, et regrouper autrement les mêmes produits a déjà déplacé deux
-affrontements.
+**Et si un ajout demande de généraliser le moteur**, la question n'est pas « le
+cas courant rend-il les mêmes valeurs » mais « passe-t-il par les mêmes
+expressions » : la multiplication flottante n'est pas associative, et regrouper
+autrement les mêmes produits a déjà déplacé deux affrontements où le combattant
+modifié n'était même pas.
 
 ---
 

@@ -1,8 +1,7 @@
 /**
  * Résolution des collisions.
  *
- *  - corps ⟷ corps : séparation + rebond élastique, pondérés par
- *    `movement.mass` — le léger encaisse ;
+ *  - corps ⟷ corps : séparation + rebond élastique (masses égales) ;
  *  - arme ⟷ corps  : segment (partie tranchante) contre cercle, avec un
  *    temps de recharge par arme pour éviter 120 touches/seconde.
  *
@@ -31,55 +30,19 @@ export function resolveBodies(a, b) {
   const nx = dx / d;
   const ny = dy / d;
   const overlap = min - d;
-  const push = 130 * PHYSICS.bodyRestitution;
 
-  const ma = a.el.movement.mass;
-  const mb = b.el.movement.mass;
+  // séparation
+  a.x -= nx * overlap * 0.5;
+  a.y -= ny * overlap * 0.5;
+  b.x += nx * overlap * 0.5;
+  b.y += ny * overlap * 0.5;
 
-  /**
-   * **À masses égales, le chemin d'origine mot pour mot.**
-   *
-   * `movement.mass` figurait dans toutes les fiches sans que personne ne le
-   * lise : la séparation partageait le recouvrement 50/50 et poussait les deux
-   * corps pareil. Le Colosse est le premier à ne pas peser 1, d'où cette
-   * branche — mais la multiplication flottante **n'est pas associative**, et
-   * regrouper autrement les mêmes produits a déjà déplacé deux affrontements
-   * où le combattant modifié n'était même pas. Les combattants qui pèsent tous
-   * 1 repassent donc exactement par les mêmes expressions qu'avant. Même
-   * discipline que `bladeSegment()` avec `weaponTwirl` à zéro.
-   */
-  if (ma === mb) {
-    a.x -= nx * overlap * 0.5;
-    a.y -= ny * overlap * 0.5;
-    b.x += nx * overlap * 0.5;
-    b.y += ny * overlap * 0.5;
-    a.heading = wrapAngle(Math.atan2(-ny, -nx));
-    b.heading = wrapAngle(Math.atan2(ny, nx));
-    a.push(-nx, -ny, push);
-    b.push(nx, ny, push);
-    return true;
-  }
-
-  /**
-   * Masses différentes : le **léger** encaisse la séparation et la poussée.
-   *
-   * Chacun cède la part de l'autre — `a` recule de `mb / (ma + mb)` du
-   * recouvrement — et reçoit une poussée dans le même rapport, doublée pour
-   * que la somme reste celle d'avant. Le lourd n'est donc pas immobile, il est
-   * *dur à bouger* : à masse 3 contre 1, il prend un quart du recul et en rend
-   * trois quarts.
-   */
-  const total = ma + mb;
-  const shareA = mb / total;
-  const shareB = ma / total;
-  a.x -= nx * overlap * shareA;
-  a.y -= ny * overlap * shareA;
-  b.x += nx * overlap * shareB;
-  b.y += ny * overlap * shareB;
+  // rebond : chacun repart à l'opposé de la normale de contact
   a.heading = wrapAngle(Math.atan2(-ny, -nx));
   b.heading = wrapAngle(Math.atan2(ny, nx));
-  a.push(-nx, -ny, push * 2 * shareA);
-  b.push(nx, ny, push * 2 * shareB);
+  const push = 130 * PHYSICS.bodyRestitution;
+  a.push(-nx, -ny, push);
+  b.push(nx, ny, push);
   return true;
 }
 
