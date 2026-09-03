@@ -106,18 +106,28 @@ Mage, l'éclat de givre dans `pixelart/outlaw.js`. Un commentaire qui cite un
 élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 15 duels hors
-miroir chacun : Lancier 12, Mage 10, Shinobi 9, Hors-la-loi 7, Bretteur 7,
-**Colosse 0**.
+miroir chacun : Lancier 11, **Colosse 9**, Shinobi 8, Mage 8, Bretteur 5,
+Hors-la-loi 4.
 
-**Le Colosse n'est pas équilibré, et c'est voulu.** Il a été livré à la demande
-expresse de ne pas régler l'équilibrage dans un premier temps, et de ne toucher
-à aucun combattant existant. Son 0/15 est donc un **point de départ mesuré**,
-pas une régression : le diff de la matrice ne contient que des **ajouts**, les
-quinze affrontements d'avant sont identiques au caractère près, et les cinq
-autres n'ont pas bougé d'une valeur. Ce qu'il faut savoir avant d'y toucher est
-dans `docs/FICHES.md` — l'ablation montre que ses trois mécaniques **partent
-toutes** (élan au plafond, charge d'épaule 7,4 PV/duel, séisme 2,1, pavois
-20,3) ; c'est le débit qui manque, 1,31 PV/s infligés contre 4,39 encaissés.
+**Le Colosse a été rééquilibré, en ne touchant que sa fiche.** Il était à 0/15
+à la livraison (équilibrage différé à la demande) ; il est maintenant à 9/15 à
+la matrice et **15/30 au banc des deux camps**, milieu de tableau. Le diff de
+la matrice ne contient que **ses six lignes** — invariant 3 : un changement
+confiné à un combattant ne doit déplacer que ses affrontements.
+
+**Le levier n'était aucun de ceux qu'on attendait, et c'est la leçon.** Trois
+balayages plats d'affilée (verrou de mêlée 1,5 → 0,7 : +0,26 PV/s ; vitesse
+330 → 540 : +0,20 ; charge d'ultime 3,4 → 10 : +0,26). Le comptage a tranché :
+il **n'était pas privé de touches** — 203 touches de mêlée sur 30 duels, 45 à
+71 % de ses contacts convertis, comme ses adversaires. Ce qui manquait était la
+**valeur** de chaque touche. Détail et chiffres dans `docs/FICHES.md`.
+
+**Un chiffre isolé ne dit rien : c'est la colonne des autres qui parle.** Ce
+qui a débloqué le diagnostic est d'avoir mesuré les six sur le même banc —
+inflige/encaisse par seconde. Les cinq tenaient dans 3,69–4,76 infligés et
+3,13–3,84 encaissés ; le Colosse à 1,31 / 4,39. Son attaque était l'anomalie
+d'un facteur 3, sa défense à peine hors bande. Sans cette colonne, « il
+encaisse 4,39 » se lisait comme un problème de défense.
 
 **Le resserrement précédent était venu du Shinobi, pas des deux derniers.** Le
 Hors-la-loi et le Bretteur étaient à 3/12 chacun ; leurs leviers propres sont
@@ -541,6 +551,41 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   c'est **baisser les dégâts du Shinobi** qui les a remontés tous les deux,
   sans toucher à leur fiche, et qui a le plus resserré le roster. Quand un
   combattant plafonne, regarder aussi ce qui le bat.
+
+- **Un chiffre de combattant ne se lit pas seul : il se lit contre la colonne
+  des cinq autres.** Le Colosse infligeait 1,31 PV/s et en encaissait 4,39. Pris
+  seuls, ces deux nombres se lisent comme « il est fragile ». Le même banc passé
+  sur tout le roster a montré la bande réelle — 3,69 à 4,76 infligés, 3,13 à
+  3,84 encaissés : son attaque était donc l'anomalie d'un **facteur 3**, et sa
+  défense à peine hors bande. Trois balayages avaient déjà été dépensés du
+  mauvais côté avant cette mesure, qui coûte une minute.
+
+- **« Il ne touche pas assez » et « ses touches ne valent rien » ne se
+  corrigent pas au même endroit, et seul un comptage les sépare.** Sur le
+  Colosse, trois leviers plats d'affilée (verrou de mêlée, vitesse, charge
+  d'ultime) disaient qu'on cherchait mal. Compter les **occasions** (fronts
+  montants de recouvrement arme/corps) et le **taux de conversion** a tranché en
+  une passe : 203 touches sur 30 duels, 45 à 71 % des contacts convertis, à
+  égalité avec ses adversaires. Il n'était pas privé d'occasions, chacune valait
+  3. Un levier de *fréquence* sur un problème de *valeur* est plat par
+  construction — et un balayage plat ne dit pas « ce combattant est
+  irrécupérable », il dit « ce n'est pas la bonne poignée ».
+
+- **Trois clés qui décrivent une seule idée se règlent ensemble, et il faut le
+  dire.** La charge d'épaule du Colosse ne partait que 3 à 11 fois par tranche
+  de six duels : `slam.min`, `slam.cooldown` et `slam.damagePer` ne sont pas
+  trois réglages mais un seul, sa fréquence utile. Balayées séparément elles
+  étaient plates ; bougées ensemble elles l'ont porté de 0/30 à 15/30. Ça ne
+  contredit pas « régler un levier, remesurer, puis en toucher un autre » —
+  cette règle vise deux leviers **indépendants** près d'un seuil (le Mage). Loin
+  du seuil et sur une même mécanique, l'additivité tient : vérifiée au banc,
+  pas supposée.
+
+- **Un ultime hors d'atteinte n'est pas un choix d'équilibrage.** Celui du
+  Colosse chargeait en 29,4 s quand ses duels duraient 22,8 : il ne partait
+  quasiment jamais et pesait 7 % de ses dégâts. Avant de traiter une mécanique
+  comme faible, vérifier qu'elle **part** — comparer son horloge à la durée
+  moyenne d'un duel, pas à l'intuition.
 
 - **Un paramètre qui ne fait rien doit être documenté comme tel.** Le verrou de
   mêlée du Mage, balayé à 1,4 / 1,7 / 2,2 s, rend 15 / 12 / 14 victoires :

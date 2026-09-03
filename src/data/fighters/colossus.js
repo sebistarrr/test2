@@ -56,18 +56,24 @@ export const COLOSSUS = fiche({
   },
 
   /**
-   * **Le plus lent et le plus lourd.** 330 px/s contre 430 à 560 pour les
+   * **Le plus lent et le plus lourd.** 400 px/s contre 430 à 560 pour les
    * autres, virage 1,1 rad/s contre 1,7 à 2,2 : il ne rattrape personne et ne
    * corrige pas sa trajectoire. En échange `seek: 0.65` — quand il choisit une
    * direction, il y va tout droit, ce qui est exactement ce que son élan
    * demande.
+   *
+   * `calé`, 330 au départ. Le banc a montré que la vitesse **ne le fait pas
+   * gagner** — 330 → 540 ne lui rendait que 1,31 → 1,51 PV/s infligés, plat —
+   * mais qu'elle fait baisser ce qu'il **encaisse** (4,39 → 3,95) : une cible
+   * lente est une cible facile. 400 le garde dernier du roster, ce que son
+   * archétype demande, tout en lui retirant l'écart le plus absurde.
    *
    * **`mass: 3` est la première dérogation du dépôt à `mass: 1`.**
    * `physics.js` répartit la séparation et la poussée au prorata : contre un
    * corps de masse 1 il prend un quart du recul et en rend trois quarts. Il ne
    * traverse pas l'adversaire, il le **pousse**.
    */
-  movement: { speed: 330, turnRate: 1.1, seek: 0.65, mass: 3 },
+  movement: { speed: 400, turnRate: 1.1, seek: 0.65, mass: 3 },
 
   weapon: {
     name: 'Pavois',
@@ -100,13 +106,22 @@ export const COLOSSUS = fiche({
      * dessinés), pas le bras.
      *
      * Un bouclier qui touche large **doit** frapper faible, sinon il devient
-     * une faux. D'où des dégâts de mêlée bas et un verrou long : l'essentiel de
-     * ses dégâts passe par la charge, pas par le pavois.
+     * une faux. D'où des dégâts de mêlée qui restent dans la bande du roster
+     * (2 à 5) même après le rééquilibrage : c'est la **charge d'épaule** qui a
+     * pris le poids, pas le pavois. Faire l'inverse marchait aussi au banc —
+     * mêlée à 8 le posait à 13/30 — mais donnait la plus grosse frappe du jeu
+     * à la plus grosse hitbox du jeu, et vidait la promesse de la fiche.
      */
     hitbox: { from: 0.48, radius: 44 },
     melee: {
-      damage: 3,
-      cooldown: 1.5,
+      /** `calé`, 3 au départ. Il porte 203 touches de mêlée sur 30 duels, donc
+       *  chaque point compte double ici : le banc rend +0,30 PV/s par point. */
+      damage: 5,
+      /** `calé`, 1,5 s au départ — c'était le plus long du roster. Seul, ce
+       *  verrou est un **faux levier** : 1,5 → 0,7 ne rendait que 1,31 → 1,57
+       *  PV/s. Il n'est descendu à 1,0 que pour rejoindre le milieu du roster,
+       *  pas parce qu'il décidait de quoi que ce soit. */
+      cooldown: 1.0,
       /** Recul énorme, le double du roster : c'est un bouclier de choc. */
       knockback: 420,
       /** Recul **sur lui-même quasi nul** : la masse, encore. Il encaisse le
@@ -156,16 +171,37 @@ export const COLOSSUS = fiche({
      * **La charge d'épaule** : le contact des corps blesse, proportionnellement
      * à l'élan. C'est le seul combattant qui inflige des dégâts sans arme.
      */
+    /**
+     * **C'est ici que le rééquilibrage a porté**, et c'était le bon endroit :
+     * la charge d'épaule est ce qui le distingue du reste du roster, et elle
+     * ne pesait que 25 % de ses dégâts parce qu'elle partait trop rarement —
+     * 3 à 11 fois par tranche de six duels.
+     *
+     * Trois clés bougent ensemble, ce qui est assumé : elles ne décrivent pas
+     * trois réglages mais **un seul**, la fréquence de la charge. Les séparer
+     * aurait donné trois balayages plats. Résultat au banc des deux camps :
+     * 0/30 → **15/30**, avec la répartition la plus régulière essayée
+     * (4/3/2/3/3 contre les cinq) — il bat tout le monde, il n'écrase
+     * personne.
+     */
     slam: {
       /** Élan minimum pour que le choc blesse. En dessous, il bouscule sans
-       *  faire mal — ce qui rend l'accélération lisible. */
-      min: 1.2,
-      /** Dégâts = `élan × damagePer`, arrondis. À élan plein : 4 × 2 = 8. */
-      damagePer: 2,
+       *  faire mal — ce qui rend l'accélération lisible. `calé`, 1,2 au
+       *  départ ; 0,8 parce que l'élan moyen tourne à 2,45 et qu'un choc casse
+       *  l'élan, donc le second choc d'un échange tombait presque toujours
+       *  sous le seuil. */
+      min: 0.8,
+      /** Dégâts = `élan × damagePer`, arrondis. À élan plein : 4 × 6 = **24**,
+       *  la plus grosse frappe du jeu — mais la plus rare, et elle se paie :
+       *  il faut une ligne droite entière sans mur ni virage pour l'armer, ou
+       *  une Ruée. `calé`, 2 au départ (+0,16 PV/s par point au banc). */
+      damagePer: 6,
       /** Verrou entre deux chocs, sans quoi un contact prolongé blesserait
        *  120 fois par seconde — c'est exactement ce que `weaponHit` évite pour
-       *  les armes, et il n'y a aucune raison que le corps y échappe. */
-      cooldown: 0.9,
+       *  les armes, et il n'y a aucune raison que le corps y échappe. `calé`,
+       *  0,9 s au départ : à 0,5 s un corps-à-corps prolongé rend deux chocs
+       *  au lieu d'un, ce qui est le geste qu'on veut voir de lui. */
+      cooldown: 0.5,
       /** Projection, en plus de celle que la physique applique déjà. */
       knockback: 300,
     },
@@ -188,7 +224,14 @@ export const COLOSSUS = fiche({
     barLabelFr: 'SÉISME',
     barFill: '#5b6473',
     barText: '#eef1f6',
-    chargeRate: 3.4,
+    /**
+     * `calé`, 3,4 au départ — soit **29,4 s de charge quand ses duels duraient
+     * 22,8 s** : son ultime ne partait quasiment jamais, et pesait 7 % de ses
+     * dégâts. Ce n'était pas un choix d'équilibrage, c'était un ultime hors
+     * d'atteinte. À 7, il tombe à 14,3 s et rejoint le reste du roster (7 à
+     * 10 s pour quatre d'entre eux, 27,8 s pour le Mage).
+     */
+    chargeRate: 7,
     chargeOnHit: 3,
     /** Le temps de l'onde, pas d'un état : elle part, elle passe, c'est fini. */
     duration: 1.1,

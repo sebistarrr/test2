@@ -1819,8 +1819,11 @@ Sixième combattant, et **le premier qui ne vienne d'aucune vidéo**. Il n'a pas
 sous deux consignes explicites — **ne modifier aucun combattant existant** et
 **ne pas chercher l'équilibrage dans un premier temps**.
 
-Les deux ont été tenues, et la seconde est une dette assumée : voir
-« L'équilibrage est différé, et voilà l'état des lieux » en fin de section.
+Les deux ont été tenues. La dette de la seconde a été **payée ensuite**, sur
+demande de le faire gagner, et toujours sans toucher à un autre combattant :
+0/15 à la livraison, 9/15 aujourd'hui. Le chemin est en fin de section,
+« L'équilibrage, en deux temps » — il vaut d'être lu, parce que les trois
+leviers évidents étaient tous les trois plats.
 
 Conséquence de méthode : **aucune de ses valeurs n'est `mesuré`**. Sa fiche ne
 porte que du `calé` et du `déduit`, et chaque commentaire le dit. Rien chez lui
@@ -1892,7 +1895,9 @@ version la *miroitait* pour montrer le bouclier de face — ça n'en faisait pas
 bouclier de face, juste un papillon symétrique.
 
 **Un bouclier qui touche large doit frapper faible**, sinon c'est une faux :
-`melee.damage: 3` et un verrou de 1,5 s, le plus long du roster. Son recul est
+`melee.damage: 5`, dans la bande du roster (2 à 5), et un verrou de 1,0 s. La
+promesse a survécu au rééquilibrage — c'est la charge d'épaule qui a pris le
+poids, pas le pavois. Son recul est
 en revanche le double de tout le monde (`knockback: 420`) et son recul sur
 lui-même quasi nul (`selfRecoil: 25`) — c'est la masse, dite une seconde fois.
 
@@ -1931,11 +1936,17 @@ module ne l'arme jamais et `ui/select.js` écrit « passif » (il teste
 
 ### La charge d'épaule — le seul dégât sans arme du dépôt
 
-Le contact des corps blesse, `dégâts = round(élan × 2)`, soit **8 à élan
-plein**. En dessous de `min: 1.2` d'élan il bouscule sans faire mal, ce qui rend
-l'accélération lisible à l'écran.
+Le contact des corps blesse, `dégâts = round(élan × 6)`, soit **24 à élan
+plein** — la plus grosse frappe du jeu, et la plus rare : il lui faut une ligne
+droite entière sans mur ni virage pour l'armer, ou une Ruée. En dessous de
+`min: 0.8` d'élan il bouscule sans faire mal, ce qui rend l'accélération
+lisible à l'écran.
 
-Elle porte **son propre verrou** (`cooldown: 0.9`), et ce n'était pas
+**C'est ici que le rééquilibrage a porté**, et pas par hasard : c'est la
+mécanique qui le distingue du reste du roster, et elle ne pesait que 25 % de
+ses dégâts faute de partir assez souvent. Voir « L'équilibrage, en deux temps ».
+
+Elle porte **son propre verrou** (`cooldown: 0.5`), et ce n'était pas
 facultatif : sans lui un contact prolongé blesse 120 fois par seconde. C'est
 exactement ce que `weaponHit` fait pour les armes, et il n'y avait aucune
 raison que le corps y échappe.
@@ -1958,6 +1969,11 @@ seule façon de rattraper, lui qui ne rattrape jamais.
 Il reste planté pendant l'onde (`boostFactor: 0`), comme la phase `brace` du
 Lancier et le Tir enraciné du Mage.
 
+Il charge en **14,3 s** (`chargeRate: 7`). À la livraison c'était 29,4 s, soit
+plus que la durée moyenne de ses duels : l'ultime ne partait quasiment jamais.
+Ce n'était pas un choix d'équilibrage, c'était une mécanique hors d'atteinte —
+comparer l'horloge d'un pouvoir à la durée d'un duel avant de le juger faible.
+
 **Ruée** — troisième créneau, sur `f.state.spec` et la seconde rangée de jauge
 (`specialBar`), même forme que le Blizzard. Vitesse ×1,8 (330 → 594 px/s, devant
 tout le roster) et **l'élan ne retombe plus**, murs compris.
@@ -1970,53 +1986,139 @@ plante, et rien ne le fait courir pendant qu'il frappe le sol. `boost` est
 **réécrit à chaque image** tant que l'état dure, parce que le moteur le
 décompte : un compteur générique se *tient*, il ne se pose pas une fois.
 
-### L'équilibrage est différé, et voilà l'état des lieux
+### L'équilibrage, en deux temps
 
-**Le Colosse perd 30 duels sur 30**, les deux camps confondus. Ce n'est pas un
-artefact de la convention de la matrice — elle exagère les écarts en ne jouant
-chaque paire qu'une fois, mais ici le banc des deux camps donne le même
-verdict.
+Il a été **livré à 0/15**, l'équilibrage explicitement différé à la demande, et
+rééquilibré ensuite — **en ne touchant que sa fiche**, à la demande également.
+Les deux étapes sont gardées ici parce que la seconde ne s'explique pas sans la
+première : c'est le relevé du 0/15 qui a permis de trouver le levier.
 
-C'est un **point de départ mesuré**, pas une régression : les cinq autres n'ont
-pas bougé d'une valeur, et le diff de la matrice ne contient que des ajouts.
+#### Le point de départ mesuré
 
-Ablation sur les 30 duels (683,8 s de combat), en comptant les dégâts par
-`opts.kind` dans `game.damage` — la méthode qui avait tranché en une minute
-pour le Mage :
+30 duels (les deux camps), 683,8 s de combat, dégâts comptés par `opts.kind`
+dans `game.damage` :
 
 | | |
 | --- | --- |
-| Inflige | **1,31 PV/s** |
-| Encaisse | **4,39 PV/s** |
-| Élan moyen | **2,45** sur 4, plafond **atteint** (4,00) |
-| Pavois (mêlée) | 20,3 PV/duel — **68 %** |
-| Charge d'épaule | 7,4 PV/duel — **25 %** |
-| Séisme | 2,1 PV/duel — **7 %** |
+| Victoires | **0/30** |
+| Inflige | 1,31 PV/s |
+| Encaisse | 4,39 PV/s |
+| Élan moyen | 2,45 sur 4, plafond **atteint** |
+| Pavois (mêlée) | 20,3 PV/duel — 68 % |
+| Charge d'épaule | 7,4 PV/duel — 25 % |
+| Séisme | 2,1 PV/duel — 7 % |
 
-**Les trois mécaniques partent toutes.** Il ne s'agit donc pas d'un pouvoir
-mort ni d'un bug : l'élan atteint son plafond, la charge d'épaule et le séisme
-touchent. Ce qui manque est le **débit** — un facteur 3,4 entre ce qu'il rend
-et ce qu'il prend.
+Les trois mécaniques partaient toutes : ce n'était ni un pouvoir mort, ni un
+bug. Il manquait du **débit**, d'un facteur 3,4.
 
-Ce que l'ablation dit à qui voudra le régler, et ce qu'elle ne dit pas : la
-source dit *quoi regarder*, pas *quelle poignée tourner* (le Hors-la-loi tire
-62 % de ses dégâts de ses balles, et pourtant les grossir ne bouge rien). Les
-leviers plausibles, dans l'ordre où ils méritent d'être balayés :
+#### Trois balayages plats, et ce qu'ils voulaient dire
 
-1. **`melee.cooldown` à 1,5 s** — le plus long du roster, et 68 % de ses dégâts
-   passent par là. C'est le premier à essayer.
-2. **`movement.speed` à 330** — le plus lent, et il ne rattrape rien hors Ruée.
-   Attention : la vitesse alimente aussi l'élan.
-3. **`slam.damagePer`** — raide par construction (il multiplie l'élan), donc à
-   toucher **seul** et à remesurer : deux leviers qui marchent chacun ne
-   s'additionnent pas, le Mage l'a montré (orbe à 2 **et** mêlée à 1 le
-   faisaient tomber de 20 à 8 victoires alors que chacun seul le posait à 15).
+Les trois leviers annoncés comme « plausibles » à la livraison ont tous
+plafonné :
 
-Et un rappel qui vaut pour lui plus que pour les autres : **son miroir dure 58
-à 70 s**, seul affrontement du roster à dépasser la minute — deux murs qui se
-poussent, refermés par la mort subite. Un réglage qui remonte ses dégâts
-raccourcira ce miroir en même temps ; c'est un signal utile, pas un effet de
-bord à corriger séparément.
+| Levier | Balayage | Effet sur les PV/s infligés | Victoires |
+| --- | --- | --- | --- |
+| `melee.cooldown` | 1,5 → 1,2 → 0,9 → 0,7 | 1,31 → 1,40 → 1,54 → 1,57 | 0/30 partout |
+| `movement.speed` | 330 → 400 → 470 → 540 | 1,31 → 1,40 → 1,46 → 1,51 | 0/30 partout |
+| `ultimate.chargeRate` | 3,4 → 6 → 8 → 10 | 1,31 → 1,44 → 1,44 → 1,57 | 0/30 partout |
+
+Trois de suite, c'est un signal, pas une malchance : **un banc qui plafonne dit
+que le levier n'est pas le bon.** Les trois sont des leviers de *fréquence* —
+frapper plus souvent, arriver plus vite, incanter plus tôt.
+
+#### Ce qui a débloqué le diagnostic : la colonne des autres
+
+Le même banc, passé sur les six :
+
+| | victoires | inflige | encaisse | ratio |
+| --- | --- | --- | --- | --- |
+| Hors-la-loi | 17/30 | 3,69 | 3,43 | 1,08 |
+| Bretteur | 17/30 | 4,37 | 3,84 | 1,14 |
+| Lancier | 22/30 | 4,76 | 3,13 | 1,52 |
+| Shinobi | 18/30 | 4,21 | 3,46 | 1,22 |
+| Mage | 16/30 | 3,90 | 3,77 | 1,03 |
+| **Colosse** | **0/30** | **1,31** | **4,39** | **0,30** |
+
+Lu seul, « il encaisse 4,39 » se lit comme un problème de défense. Lu contre la
+colonne, c'est faux : la bande encaissée du roster monte à 3,84, il n'en est
+qu'à 14 % au-dessus. **Son attaque, elle, est à un tiers du plancher.**
+
+#### Le comptage qui a nommé le vrai problème
+
+Restait à savoir si son attaque manquait d'**occasions** ou de **valeur**. Ça ne
+se lit pas dans le code — ça se compte. Fronts montants de recouvrement
+arme/corps (les occasions), et touches effectivement portées :
+
+| Adversaire | Colosse : occasions → touches | Adversaire : occasions → touches |
+| --- | --- | --- |
+| Hors-la-loi | 81 → 53 (65 %) | 103 → 43 (42 %) |
+| Bretteur | 84 → 42 (50 %) | 145 → 92 (63 %) |
+| Lancier | 62 → 28 (45 %) | 63 → 42 (67 %) |
+| Shinobi | 61 → 39 (64 %) | 73 → 63 (86 %) |
+| Mage | 58 → 41 (71 %) | 60 → 45 (75 %) |
+
+**Il n'était pas privé de touches.** 203 touches de mêlée sur 30 duels, un taux
+de conversion dans la même bande que ses adversaires. Chacune valait 3.
+
+D'où la platitude des trois premiers balayages, rétrospectivement évidente : un
+levier de fréquence sur un problème de valeur est plat **par construction**.
+
+#### Le réglage retenu
+
+Le poids est allé sur la **charge d'épaule**, et pas sur le pavois. Les deux
+marchaient au banc — mêlée à 8 le posait à 13/30 — mais donner la plus grosse
+frappe du jeu à la plus grosse hitbox du jeu vidait la promesse écrite dans sa
+propre fiche (*un bouclier qui touche large doit frapper faible*), et la charge
+d'épaule est ce qui le distingue du reste du roster.
+
+| Clé | Avant | Après | Pourquoi |
+| --- | --- | --- | --- |
+| `movement.speed` | 330 | **400** | pas pour l'attaque (plate) mais pour l'encaissé : 4,39 → 3,95 au balayage. Reste le plus lent du roster |
+| `melee.damage` | 3 | **5** | +0,30 PV/s par point ; 5 reste dans la bande du roster (2–5) |
+| `melee.cooldown` | 1,5 s | **1,0 s** | rejoint le milieu du roster. Faux levier, et son commentaire le dit maintenant |
+| `slam.min` | 1,2 | **0,8** | un choc casse l'élan, donc le second choc d'un échange retombait sous le seuil |
+| `slam.damagePer` | 2 | **6** | à élan plein, 4 × 6 = **24**, la plus grosse frappe du jeu — et la plus rare |
+| `slam.cooldown` | 0,9 s | **0,5 s** | un corps-à-corps prolongé rend deux chocs au lieu d'un |
+| `ultimate.chargeRate` | 3,4 | **7** | 29,4 s de charge pour des duels de 22,8 s : son ultime ne partait pas. 14,3 s le rend atteignable |
+
+Les trois clés de `slam` ont été bougées **ensemble**, et c'est assumé : elles
+ne décrivent pas trois réglages mais un seul, la fréquence utile de la charge.
+Séparées, elles étaient plates. Ça ne contredit pas « deux leviers qui marchent
+chacun ne s'additionnent pas » (le Mage) : cette règle vise deux leviers
+*indépendants* **près d'un seuil**. Loin du seuil et sur une même mécanique,
+l'additivité tient — vérifiée au banc, pas supposée.
+
+#### Le résultat
+
+| | Avant | Après |
+| --- | --- | --- |
+| Banc des deux camps | 0/30 | **15/30** |
+| Répartition | 0/6 partout | **4/6, 3/6, 2/6, 3/6, 3/6** |
+| Inflige / encaisse | 1,31 / 4,39 | **4,25 / 4,26** |
+| Matrice | 0/15 | **9/15** |
+| Durée de son miroir | 58 à 70 s | **18 à 30 s** |
+
+La répartition est ce qui a décidé du choix final parmi une douzaine de
+variantes : il bat les cinq au moins deux fois sur six, et n'en écrase aucun.
+Des variantes plus fortes existaient (22/30) et des plus égales n'existaient
+pas.
+
+Sur le banc des deux camps le roster passe d'un écart **0–22 à 13–20** : Lancier
+20, Shinobi 15, **Colosse 15**, Bretteur 14, Hors-la-loi 13, Mage 13.
+
+**La matrice, elle, le place deuxième (9/15) — et c'est sa convention qui
+parle**, pas sa force. Elle ne joue chaque paire qu'une fois, donc chacun y
+reste du même côté et le camp A pèse lourd ; le Colosse y est camp B partout
+(il est en queue de `ROSTER`), sauf contre lui-même. Le banc des deux camps le
+donne à égalité avec le Shinobi, au milieu. Comparer les deux avant de conclure
+qu'il faudrait le redescendre.
+
+**Effet de bord à connaître, et il n'était pas évitable sous la consigne.** Le
+Hors-la-loi et le Bretteur, déjà les deux derniers, perdent des duels contre
+lui : à la matrice ils passent de 7/15 à 4/15 et 5/15. Au banc des deux camps
+l'écart est bien plus petit (17 → 13 et 17 → 14). Les remonter demanderait de
+toucher leur fiche ou celle de ce qui les bat — donc de sortir du « uniquement
+le Colosse ». C'est un choix ouvert, pas un oubli.
 
 ---
 
@@ -2026,26 +2128,38 @@ Vérifié par simulation sans rendu sur les **21 affrontements** du roster
 (6 × 6 avec miroirs), 3 seeds chacun — c'est `tools/matrix.mjs`, et sa sortie
 est figée dans `tools/matrix-reference.txt`.
 
-**Relevé courant**, sur les 15 duels hors miroir de chacun :
+**Relevé courant**, sur les 15 duels hors miroir de chacun — et, à côté, le
+banc des **deux camps** (30 duels), qui est la mesure de force :
 
-| | victoires |
-| --- | --- |
-| Lancier | 12/15 |
-| Mage | 10/15 |
-| Shinobi | 9/15 |
-| Hors-la-loi | 7/15 |
-| Bretteur | 7/15 |
-| **Colosse** | **0/15** |
+| | matrice | deux camps |
+| --- | --- | --- |
+| Lancier | 11/15 | 20/30 |
+| **Colosse** | **9/15** | **15/30** |
+| Shinobi | 8/15 | 15/30 |
+| Mage | 8/15 | 13/30 |
+| Bretteur | 5/15 | 14/30 |
+| Hors-la-loi | 4/15 | 13/30 |
 
-**Le Colosse n'est pas équilibré, et c'est voulu** : il a été livré à la demande
-expresse de ne pas y toucher dans un premier temps, et de ne modifier aucun
-combattant existant. Son 0/15 est un point de départ mesuré — le relevé complet
-(ce que chaque mécanique rapporte, quels leviers restent) est dans sa section.
+**Les deux colonnes ne classent pas pareil, et c'est le sujet.** La matrice ne
+joue chaque paire qu'une fois, donc chacun y reste toujours du même côté ; le
+Colosse, en queue de `ROSTER`, y est camp B partout. Elle le donne deuxième là
+où le banc le met à égalité avec le Shinobi, au milieu. Et elle donne le
+Bretteur derrière le Mage là où le banc dit l'inverse. **La matrice est un
+garde-fou de non-régression, pas un classement.**
 
-**Entre les cinq autres, l'écart reste celui du dernier resserrement** : 7 à 12
-sur 15, soit la même bande relative qu'avant son arrivée. Aucun d'eux n'a bougé
-d'une valeur ; leurs quinze affrontements sont identiques au caractère près, et
-les trois victoires que chacun prend au Colosse s'ajoutent uniformément.
+Au banc, l'écart va de **13 à 20 sur 30** — le plus resserré qu'ait connu le
+dépôt, et sans qu'aucune fiche autre que celle du Colosse ait bougé.
+
+**Le Colosse a été rééquilibré en ne touchant que sa fiche** : 0/15 à la
+livraison, 9/15 aujourd'hui. Le diff de la matrice ne contient que **ses six
+lignes**. Le chemin — trois balayages plats, puis le comptage qui a nommé le
+vrai problème — est dans sa section, et c'est la partie qui se réutilise.
+
+**Le Hors-la-loi et le Bretteur en paient une part.** Déjà les deux derniers,
+ils perdent maintenant des duels au Colosse : 7/15 → 4/15 et 7/15 → 5/15 à la
+matrice, 17/30 → 13/30 et 17/30 → 14/30 au banc. Les remonter demanderait de
+toucher leur fiche ou celle de ce qui les bat — donc de sortir du « uniquement
+le Colosse » qui encadrait la demande. C'est un choix ouvert, pas un oubli.
 
 - **mort subite** : au-delà de 55 s, tous les dégâts sont multipliés par
   `1 + (t − 55) / 18` (plafond ×4). Aucun duel ne peut s'éterniser ;

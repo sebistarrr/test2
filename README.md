@@ -17,7 +17,7 @@ vient d'aucune vidéo : sa fiche ne porte donc que du `calé` et du `déduit`.
 | **Lancier** | Lance de dragon (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
 | **Mage** | Sceptre de sève (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Tempête de sève / SAPWOOD STORM |
-| **Colosse** | Pavois (composé, pas transcrit) — **il suit le cap**, il ne vise pas ; **la hitbox la plus large du jeu** (rayon 44) | **le corps est l'arme** : seul à peser 3 et seul à blesser **par la collision des corps**. Son **Élan** monte en ligne droite et retombe à chaque virage, mur ou choc — la seule stat qui dépende de la géométrie de l'arène | Séisme / EARTHSHAKER — il se plante et envoie une onde qui traverse l'arène et ralentit 2,6 s |
+| **Colosse** | Pavois (composé, pas transcrit) — **il suit le cap**, il ne vise pas ; **la hitbox la plus large du jeu** (rayon 44), mais des dégâts dans la bande du roster : ce qui touche large frappe faible | **le corps est l'arme** : seul à peser 3 et seul à blesser **par la collision des corps** — jusqu'à **24 d'un seul choc** à élan plein, la plus grosse frappe du jeu et la plus rare. Son **Élan** monte en ligne droite et retombe à chaque virage, mur ou choc — la seule stat qui dépende de la géométrie de l'arène | Séisme / EARTHSHAKER — il se plante et envoie une onde qui traverse l'arène et ralentit 2,6 s |
 
 Chacun porte en plus un **pouvoir spécial**, sur horloge propre, avec sa jauge
 juste sous celle de l'ultime. Il s'ajoute à l'ultime, il ne le remplace pas —
@@ -262,19 +262,19 @@ convertit en **×1,25** vers ce repère 720 × 1280 — **sauf celle de Magia,
 | Bond du Lancier               | jauge pleine en 10 s, 0,45 s d'élan, **1,5 s hors de l'arène**, impact de rayon 110 px |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les
-**21 affrontements** du roster (3 seeds chacun), un duel dure **12 à 35 s**, et
+**21 affrontements** du roster (3 seeds chacun), un duel dure **12 à 30 s**, et
 le Hors-la-loi termine autour de 5,0 de dégâts, comme sur sa vidéo. Une **mort
-subite** amplifie les dégâts au-delà de 55 s pour qu'aucun duel ne s'éternise —
-c'est elle qui referme le miroir du Colosse, seul affrontement à dépasser la
-minute (58 à 70 s : deux murs qui se poussent).
+subite** amplifie les dégâts au-delà de 55 s pour qu'aucun duel ne s'éternise.
 
-**Le Colosse n'est pas encore équilibré**, et c'est assumé : il a été livré à
-la demande expresse de ne pas y toucher dans un premier temps et de ne modifier
-aucun combattant existant. Il perd ses 15 duels hors miroir, les cinq autres
-n'ont pas bougé d'une valeur, et le relevé de ce point de départ — ce que
-chaque mécanique rapporte, et quels leviers restent — est dans
-[`docs/FICHES.md`](docs/FICHES.md), où se trouve aussi le détail de
-l'équilibrage du reste du roster.
+Sur le banc des **deux camps** — 30 duels chacun, la vraie mesure de force —
+l'écart va de **13 à 20 sur 30** : Lancier 20, Shinobi 15, Colosse 15,
+Bretteur 14, Hors-la-loi 13, Mage 13.
+
+Le Colosse est arrivé à **0/30** : il a été livré avec l'équilibrage
+explicitement différé, puis rééquilibré **en ne touchant que sa fiche**. Les
+trois leviers évidents étaient tous les trois plats, et c'est un comptage — pas
+un balayage — qui a nommé le vrai problème. Le récit complet est dans
+[`docs/FICHES.md`](docs/FICHES.md).
 
 ---
 
