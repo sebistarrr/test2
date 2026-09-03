@@ -1878,12 +1878,34 @@ est devenu le **quatrième vrai PNG du dépôt** —
 
 **Le dessin est calculé, pas peint.** Un dégradé posé à la main donnait une
 bouillie molle (première tentative, jetée) ; la version livrée construit une
-**carte de hauteur** — planche bombée, cadre riveté, quatre cerclages, nervure
+**carte de hauteur** — coque bombée, jante rivetée, quatre cerclages, nervure
 axiale, umbo à trois étages, chevrons gravés — puis en tire les normales et
 l'éclaire (diffus + spéculaire de Blinn + occlusion). Les biseaux sortent nets
 parce qu'ils sont des biseaux, pas des dégradés qui les imitent. C'est ce que
 demandait le voisinage : la lame du Bretteur et le shuriken du Shinobi sont durs
 et contrastés.
+
+**La silhouette est ovale, et c'est une correction, pas un choix initial.** Le
+premier PNG était un **octogone à arêtes droites** : techniquement un pavois, et
+signalé à la relecture comme ne ressemblant pas à un bouclier. Le diagnostic
+tenait en un mot — des arêtes droites font lire une *plaque*. Trois changements
+l'ont retourné, et ils vont ensemble :
+
+1. **une superellipse** (`0.470 × √(1 − t^3,4)`) à la place de l'octogone : elle
+   garde la largeur sur les deux tiers du milieu — sans quoi le bouclier
+   s'amincit trop pour couvrir — puis referme les extrémités en arrondi franc ;
+2. **un dôme et non un cylindre** : la coque se bombe en travers de sa largeur
+   *et* le long du pavois, si bien que les extrémités retombent ;
+3. **des cerclages qui s'incurvent**. C'est le détail qui fait le plus de
+   travail : sur une coque bombée, une barre droite trahit une surface plate. Le
+   décalage suit le **creusement du dôme** (`1 − bombé`), donc il est nul sur
+   l'axe et maximal au bord — la courbure du dessin est celle du relief, pas une
+   courbe posée par-dessus. Les rivets et les chevrons prennent le même
+   décalage, sans quoi ils flottent hors de leur bande.
+
+Le liseré de bois du premier jet est parti avec l'octogone : il décrivait une
+tranche de planche, ce qui ne veut plus rien dire sur une face ovale. Le bois
+reste dans `handle.color`, où il est la poignée.
 
 **Deux réglages appris à l'image, comme toujours ici :**
 
@@ -1903,8 +1925,14 @@ et contrastés.
 **largeur le long de l'axe de l'arme** (vers l'adversaire) et sa **hauteur en
 travers**. Le pavois y est donc dessiné **debout**, ce qui le fait apparaître en
 travers de la trajectoire, face à l'adversaire — tenu comme un mur, ce qu'on
-veut voir. Et il est **symétrique haut/bas** : en vue de dessus il n'y a pas de
-« haut », une pointe d'un seul côté désignerait une direction au hasard.
+veut voir.
+
+Et il est **symétrique haut/bas**, ce qui a coûté le repère le plus lisible du
+genre. Le blason en écu — sommet arrondi, pointe en bas — est ce qui dit
+« bouclier » au premier coup d'œil, mais en vue de dessus il n'y a pas de haut :
+sa pointe désignerait une direction au hasard et tournerait avec le cap. D'où
+l'**ovale**, forme de bouclier bien réelle (scutum, bouclier viking ovale) et
+sans orientation propre.
 
 | | Valeur | |
 | --- | --- | --- |
