@@ -1,8 +1,8 @@
 # CLAUDE.md — mémoire du projet
 
-Duels en un contre un, **cinq combattants** repris de la chaîne
-« ballthingsim » — le Hors-la-loi, le Bretteur, le Lancier, le Shinobi et le
-Mage — sur un moteur écrit d'après les vidéos de référence.
+Duels en un contre un, **six combattants** — cinq repris de la chaîne
+« ballthingsim » (Hors-la-loi, Bretteur, Lancier, Shinobi, Mage) et un
+**conçu** (le Colosse) — sur un moteur écrit d'après les vidéos de référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -50,10 +50,15 @@ de navigation, pas un besoin.
 
 ## Roster
 
-**Cinq combattants, tous jouables.** Ils viennent de la chaîne
+**Six combattants, tous jouables.** Cinq viennent de la chaîne
 « ballthingsim », relevés sur trois vidéos en **576 × 1024, 30 fps** :
 *Outlaw vs Bladesman* (1159 images, 38,6 s), *Dragoon vs Outlaw* (33,6 s) et
 *Dragoon vs Magia* (24,4 s).
+
+Le sixième, le **Colosse**, ne vient d'aucune vidéo : il est **conçu**. Aucune
+de ses valeurs n'est `mesuré` — sa fiche ne porte que du `calé` et du `déduit`,
+et elle le dit. C'est aussi ce qui le rend facile à régler : rien chez lui n'est
+sanctuarisé par un relevé.
 
 | Personnage | Archétype | Signature |
 | --- | --- | --- |
@@ -62,6 +67,7 @@ de navigation, pas un besoin.
 | `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence**, greffé |
 | `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des clones de 15 PV, permanents, solides, qui ripostent |
 | `mage` Mage | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte la **Tempête de sève** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
+| `colossus` Colosse | Masse | **le corps est l'arme** : premier à ne pas peser 1 (`movement.mass = 3`, seul lecteur de cette clé) et seul à blesser **par la collision des corps**. Sa stat, l'**Élan**, monte en ligne droite et retombe à chaque virage, mur ou choc — la seule qui dépende de la géométrie de l'arène. Pavois qui suit le cap, **hitbox la plus large du jeu**. Porte la **Ruée** (vitesse ×1,8, l'élan ne retombe plus) et le **Séisme** (onde qui traverse l'arène et ralentit) |
 
 **`wind` est l'identifiant interne du Shinobi**, hérité du Vent dont il est le
 reskin. Un id ne se renomme pas : il n'est montré à personne, et le changer
@@ -99,16 +105,25 @@ le Bretteur, le Lien d'essence chez le Lancier, la Tempête de sève chez le
 Mage, l'éclat de givre dans `pixelart/outlaw.js`. Un commentaire qui cite un
 élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
-**Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Lancier 9, Mage 7, Shinobi 6, Hors-la-loi 4, Bretteur 4.
+**Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 15 duels hors
+miroir chacun : Lancier 12, Mage 10, Shinobi 9, Hors-la-loi 7, Bretteur 7,
+**Colosse 0**.
 
-Écart **4 à 9**, le plus resserré depuis la réduction du roster.
+**Le Colosse n'est pas équilibré, et c'est voulu.** Il a été livré à la demande
+expresse de ne pas régler l'équilibrage dans un premier temps, et de ne toucher
+à aucun combattant existant. Son 0/15 est donc un **point de départ mesuré**,
+pas une régression : le diff de la matrice ne contient que des **ajouts**, les
+quinze affrontements d'avant sont identiques au caractère près, et les cinq
+autres n'ont pas bougé d'une valeur. Ce qu'il faut savoir avant d'y toucher est
+dans `docs/FICHES.md` — l'ablation montre que ses trois mécaniques **partent
+toutes** (élan au plafond, charge d'épaule 7,4 PV/duel, séisme 2,1, pavois
+20,3) ; c'est le débit qui manque, 1,31 PV/s infligés contre 4,39 encaissés.
 
-**Le dernier resserrement est venu du Shinobi, pas des deux derniers.** Le
+**Le resserrement précédent était venu du Shinobi, pas des deux derniers.** Le
 Hors-la-loi et le Bretteur étaient à 3/12 chacun ; leurs leviers propres sont
 morts (rayon de balle, palier de surchauffe : voir la fiche du Shinobi, qui
 porte le relevé) ou coûtent une mesure. Baisser `melee.damage` du Shinobi de 3
-à 2 les remonte **tous les deux** à 4/12 sans toucher à leur fiche.
+à 2 les a remontés **tous les deux** sans toucher à leur fiche.
 
 **Attention à la convention de la matrice quand on juge un écart.** Elle ne
 joue chaque paire qu'**une fois**, donc chacun est toujours du même côté, et le
@@ -242,6 +257,17 @@ sans que ça se voie.
    `weapon.lunge` et `special`, et c'est délibéré — `ability` a été essayé et
    criait à tort dix-neuf fois, or un garde-fou qui crie à tort n'est plus lu.
 
+   **Troisième instance, et elle échappe aussi à `fiche-check` : les crochets
+   de prototype.** `Fighter.paintWeapon()` consultait un `customWeapon`
+   facultatif, et les clones du Shinobi s'en servaient pour n'en porter aucune.
+   Le crochet a disparu dans une réécriture, le no-op est resté dans `wind.js`
+   sans lecteur, et **chaque clone s'est mis à dessiner un shuriken grandeur
+   nature**. Rien n'a crié, et rien ne pouvait crier : la matrice ne tourne
+   jamais `draw()`, `fiche-check` ne recoupe que des clés de fiche. Trouvé un
+   mois plus tard, en relisant les crochets du moteur pour livrer le Colosse.
+   Le réflexe qui l'aurait attrapé : quand une réécriture retire un crochet,
+   **chercher qui le fournissait encore**, pas seulement qui l'appelait.
+
 10. **Un ancrage d'arme se pose, il ne s'interpole pas.** `weaponLateral`
     bascule entre `lunge.lateral` et zéro **dans l'image même** où la phase
     change. La première version le rapprochait à vitesse bornée pour éviter un
@@ -268,6 +294,19 @@ sans que ça se voie.
     touche. Un autre combattant en hériterait sans une ligne de moteur, et la
     branche n'existe pas pour ceux qui ne la déclarent pas : les affrontements
     d'avant sont restés identiques au caractère près.
+
+    **Troisième cas, et le plus instructif : `movement.mass` du Colosse.** La
+    clé était dans les cinq fiches depuis toujours **sans lecteur** — la
+    séparation des corps partageait le recouvrement 50/50, quoi qu'elles
+    disent. Le Colosse est le premier à ne pas peser 1, et lui donner du poids
+    n'a demandé qu'une pondération dans `resolveBodies`, aucun `if (id ===`.
+    Mais une pondération réécrit les expressions **de tout le monde**, et la
+    multiplication flottante n'est pas associative (piège déjà payé sur
+    `bladeSegment()`) : d'où une **branche rapide à masses égales** qui reprend
+    le chemin d'origine mot pour mot. Preuve : la matrice des cinq d'avant est
+    identique au caractère près. Une généralisation du moteur doit **prouver**
+    qu'elle laisse le cas courant sur ses anciennes expressions, pas seulement
+    sur ses anciennes valeurs.
 
     **Corollaire pour les modules de pouvoirs.** Un module qui code en dur une
     clé de sprite se ferme à sa propre réutilisation : `plant.js` dessinait
@@ -350,7 +389,7 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 ```bash
 python3 -m http.server 8085 &            # requis par les outils Playwright
 
-node tools/fiche-snapshot.mjs            # empreinte des 5 fiches + 15 cartes,
+node tools/fiche-snapshot.mjs            # empreinte des 6 fiches + 17 cartes,
                                          # SANS serveur. Le garde-fou des
                                          # refactorisations de `src/data/` :
                                          # doit rester identique au caractère près

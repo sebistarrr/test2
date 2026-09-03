@@ -273,8 +273,6 @@ export const windAbilities = {
       tint: null,
       tintAlpha: 1,
       dots: [],
-      shield: 0,
-      shieldMax: 0,
       offstage: 0,
       invulnerable: 0,
       // l'aura ne doit jamais s'allumer sur le clone : un minuteur de pouvoir

@@ -1,9 +1,11 @@
 # Fiches des combattants
 
-**Cinq combattants** repris de la chaîne « ballthingsim » — **Hors-la-loi** et
-**Bretteur** du duel *Outlaw vs Bladesman*, **Lancier** de *Dragoon vs Outlaw*,
-**Mage** construit sur la mécanique de Magia dans *Dragoon vs Magia*, et
-**Shinobi**, reskin du Vent des vidéos *Elemental Armory League*.
+**Six combattants.** Cinq repris de la chaîne « ballthingsim » —
+**Hors-la-loi** et **Bretteur** du duel *Outlaw vs Bladesman*, **Lancier** de
+*Dragoon vs Outlaw*, **Mage** construit sur la mécanique de Magia dans
+*Dragoon vs Magia*, et **Shinobi**, reskin du Vent des vidéos *Elemental Armory
+League*. Le sixième, le **Colosse**, ne vient d'aucune vidéo : il est conçu, et
+sa fiche ne porte donc **aucune valeur `mesuré`**.
 
 Ces fiches sont la **transcription lisible** de `src/data/fighters/`. Le code
 est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
@@ -22,6 +24,7 @@ rassemblé dans l'**archive** en tête de document, juste après ces règles.
   | `Outlaw vs Bladesman` | Hors-la-loi, Bretteur | 576 × 1024, 30 fps, 1159 images, 38,6 s |
   | `Dragoon vs Outlaw` | Lancier, Hors-la-loi | 576 × 1024, 30 fps, 33,6 s |
   | `Dragoon vs Magia` | Mage (d'après Magia) | 576 × 1024, 30 fps, 24,4 s |
+  | *(aucune)* | **Colosse** — conçu, pas relevé | — |
   | *Elemental Armory League* (18 vidéos) | les huit éléments, dont le Vent devenu Shinobi | 720 × 1280 pour la première, 576 × 1024 pour les autres |
 
   **Le facteur de conversion n'est pas le même partout.** Les vidéos 576 se
@@ -403,6 +406,37 @@ clone traîne à côté, soit une famine remplacée par l'autre.
 **Matrice : 8/9 → 7/9**, le Lancier reprend son affrontement (2/3 contre
 1/3). C'est un correctif de bug, et il va dans le bon sens pour l'anomalie
 signalée à l'étape précédente.
+
+### Second correctif : chaque clone portait un shuriken
+
+Trouvé en livrant le **Colosse**, en relisant les crochets du moteur — pas en
+regardant le Shinobi.
+
+`paintWeapon()` consultait un crochet facultatif `customWeapon` avant de tracer
+l'arme, et le clone posait `customWeapon: () => {}` pour n'en porter aucune —
+c'est ce que demandait la consigne d'origine : *le clone riposte par ses propres
+shurikens, sans en porter un sur lui*. Le crochet a disparu du moteur dans une
+réécriture ; le no-op est resté dans `wind.js`, **sans lecteur**.
+
+Résultat : chaque clone dessinait un `windShuriken` grandeur nature centré sur
+lui. Compté plutôt que jugé à l'œil, sur un clone réel en cours de duel :
+
+| | appels à `drawWeapon()` |
+| --- | --- |
+| Clone, crochet en place | **0** |
+| Clone, sans le crochet (l'état livré) | **1** |
+| Le vrai Shinobi | 1 (inchangé) |
+
+**C'est l'invariant 9 dans sa forme silencieuse.** Perdre une *clé* que le
+module lit encore plante bruyamment (`lunge.recoil` → NaN). Perdre le *lecteur*
+d'une clé ne fait rien du tout : l'arme cesse simplement de ne pas se dessiner.
+Et la matrice ne pouvait pas l'attraper — elle ne tourne jamais `draw()`.
+`tools/fiche-check.mjs` non plus : il recoupe `weapon.lunge` et `special`, pas
+les crochets de prototype.
+
+**Matrice inchangée**, vérifiée : le correctif est purement visuel. Deux clés
+mortes sont parties avec (`shield`/`shieldMax` sur le clone, dont le lecteur
+était le bouclier de l'Égide, supprimé avec les sept éléments).
 
 ### Couleur des pouvoirs au gris
 
@@ -1778,23 +1812,240 @@ du temps sur un corps de cette luminance.
 
 ---
 
+## 🛡 COLOSSE — `colossus` (affiché « JUGGERNAUT »)
+
+Sixième combattant, et **le premier qui ne vienne d'aucune vidéo**. Il n'a pas
+été relevé, il a été **conçu** : proposé parmi trois idées, choisi, puis livré
+sous deux consignes explicites — **ne modifier aucun combattant existant** et
+**ne pas chercher l'équilibrage dans un premier temps**.
+
+Les deux ont été tenues, et la seconde est une dette assumée : voir
+« L'équilibrage est différé, et voilà l'état des lieux » en fin de section.
+
+Conséquence de méthode : **aucune de ses valeurs n'est `mesuré`**. Sa fiche ne
+porte que du `calé` et du `déduit`, et chaque commentaire le dit. Rien chez lui
+n'est sanctuarisé par un relevé — c'est ce qui le rend facile à régler, et ce
+qui interdit de justifier une de ses valeurs par « c'est ce que fait la vidéo ».
+
+### Ce qu'il occupe comme place
+
+Trois cases du roster étaient vides :
+
+| | Avant | Le Colosse |
+| --- | --- | --- |
+| **Poids** | tout le monde à `mass: 1` | `mass: 3`, et **premier lecteur** de cette clé |
+| **Source de dégât** | arme ou projectile | **le corps**, par la collision |
+| **Ce dont dépend la stat** | temps (Mage), touches (Lancier, Hors-la-loi), cycle interne (Bretteur) | la **géométrie de l'arène** |
+
+### `movement.mass` était une clé morte
+
+Elle figurait dans les cinq fiches **sans lecteur** : `resolveBodies` partageait
+le recouvrement 50/50 et poussait les deux corps pareil, quelle que soit la
+valeur écrite. Personne ne s'en était aperçu parce qu'elles valaient toutes 1 —
+une clé que plus personne ne lit ne crie pas (invariant 9), et une clé que
+personne n'a *jamais* lue crie encore moins.
+
+Lui donner un lecteur n'a demandé **aucun `if (id === 'colossus')`** : une
+pondération par les masses dans `physics.js`, et le poids se dit entièrement
+dans la fiche. À masse 3 contre 1, il prend un quart du recul et en rend trois
+quarts ; il ne traverse pas l'adversaire, il le **pousse**.
+
+**Mais une pondération réécrit les expressions de tout le monde.** Le dépôt a
+déjà payé ça : en réécrivant `bladeSegment()`, regrouper autrement les mêmes
+produits avait fait basculer deux affrontements où le combattant modifié
+n'était même pas — la multiplication flottante n'est pas associative. D'où une
+**branche rapide à masses égales** qui reprend le chemin d'origine *mot pour
+mot*, `× 0.5` compris, et la branche pondérée seulement quand les masses
+diffèrent.
+
+Preuve, et c'était la condition posée par la consigne « ne modifie pas les
+personnages existants » : le diff de `tools/matrix-reference.txt` ne contient
+**que des ajouts**. Les quinze affrontements d'avant sont identiques au
+caractère près.
+
+### Le pavois — composé, pas transcrit
+
+Il n'existe pas de maquette pour lui : personne n'en a fourni. Le sprite est
+donc **composé** dans un script (`gen-colossus.py`), en posant explicitement
+chaque arête — pas en laissant une formule interpoler une silhouette. C'est la
+leçon de la première lance, livrée en **feuille arrondie** là où la maquette
+montrait une pointe à bords droits, parce que le profil était tracé en
+`(1-u)**1.3`.
+
+**Vu du dessus**, comme toutes les armes du jeu : l'axe de l'arme est l'axe des
+x. Le pavois est donc **étroit en x** (son épaisseur : planche de bois au dos,
+plaque de fer devant) et **haut en y** (sa hauteur). L'umbo de bronze dépasse
+vers la droite, côté adversaire — c'est lui qui touche en premier.
+
+| | Valeur | |
+| --- | --- | --- |
+| Carte | 15 × 34 cellules, `scale: 3` → **45 × 102 px** | seule arme plus haute que longue |
+| Portée (`reach`) | **86 px** | `calé` |
+| `handle.length` | **41 px** | `déduit` : 41 + 45 = 86, la somme retombe sur la portée |
+| `handle.width` | 0 | pas de manche à tracer, le sprite est toute l'arme |
+| Hitbox | `from: 0.48`, `radius: 44` | **la plus large du jeu** ; ne couvre que la plaque, pas le bras |
+
+L'icône du titre (`ICON_PAVISE`) **échantillonne `COLOSSUS_SHIELD`** au plus
+proche voisin, elle n'est pas redessinée : même discipline que l'icône du
+Lancier, qui avait lâché deux fois en divergeant de son arme. Une première
+version la *miroitait* pour montrer le bouclier de face — ça n'en faisait pas un
+bouclier de face, juste un papillon symétrique.
+
+**Un bouclier qui touche large doit frapper faible**, sinon c'est une faux :
+`melee.damage: 3` et un verrou de 1,5 s, le plus long du roster. Son recul est
+en revanche le double de tout le monde (`knockback: 420`) et son recul sur
+lui-même quasi nul (`selfRecoil: 25`) — c'est la masse, dite une seconde fois.
+
+### L'arme suit le cap, et c'est ce qui la dispense de garde-fou
+
+`weapon.spin: 0` comme la lance du Lancier et le sceptre du Mage, et le module
+recopie `heading`. Mais le piège de l'**arme braquée** — « une arme qui vise
+touche en permanence », payé deux fois, sur le Hors-la-loi puis sur le Lancier
+— ne s'applique pas ici : le pavois **ne vise pas**. Il se met *devant*, dans
+l'axe du déplacement. Il ne pointe l'adversaire que lorsque le Colosse lui
+fonce dessus, ce qui est exactement le geste qu'on veut voir.
+
+C'est la première arme `spin: 0` du dépôt qui n'ait pas besoin de son propre
+garde-fou, et la raison tient en une phrase : **elle est asservie au cap, pas à
+la cible**.
+
+### L'Élan — la stat, et toute son identité
+
+`f.stacks`, affiché « Momentum ». Il **monte tant qu'il avance droit** et
+retombe dès qu'il tourne sec, touche un mur ou percute un corps.
+
+| Clé | Valeur | Pourquoi |
+| --- | --- | --- |
+| `rise` | 1,6 /s | `calé` : ~2,5 s de course franche pour atteindre le plafond, soit la largeur de l'arène |
+| `max` | 4 | au-delà, une arène de 628 px ne suffirait plus à l'atteindre |
+| `turnTolerance` | 0,9 rad/s | `calé` juste au-dessus du pilotage nominal (`turnRate × seek` = 0,715) : une poursuite normale ne le casse pas, un virage serré si |
+| `keepOnBreak` | 0,25 | ce qu'il en reste après une cassure. **Pas zéro** : à zéro franc il ne redémarrait jamais dans une arène où l'on rebondit sans cesse |
+
+Le cap est comparé **d'une image à l'autre puis ramené à la seconde**. Comparer
+des écarts bruts ferait dépendre le seuil du pas de simulation — et le pas
+n'est pas le même à l'export vidéo qu'à l'écran.
+
+Passif, donc `cooldown: Infinity` : même patron que la Furie du Lancier, le
+module ne l'arme jamais et `ui/select.js` écrit « passif » (il teste
+`Number.isFinite`, sans quoi la carte afficherait « recharge Infinitys »).
+
+### La charge d'épaule — le seul dégât sans arme du dépôt
+
+Le contact des corps blesse, `dégâts = round(élan × 2)`, soit **8 à élan
+plein**. En dessous de `min: 1.2` d'élan il bouscule sans faire mal, ce qui rend
+l'accélération lisible à l'écran.
+
+Elle porte **son propre verrou** (`cooldown: 0.9`), et ce n'était pas
+facultatif : sans lui un contact prolongé blesse 120 fois par seconde. C'est
+exactement ce que `weaponHit` fait pour les armes, et il n'y avait aucune
+raison que le corps y échappe.
+
+Le choc **casse son propre élan**, comme un mur : il repart de `keepOnBreak`.
+
+### Le Séisme (ultime) et la Ruée (troisième créneau)
+
+**Séisme** — l'ultime d'un personnage d'élan ne pouvait pas être une course de
+plus : c'est le seul moment où il **s'arrête volontairement**. Il plante le
+pavois et une onde part de lui.
+
+L'onde **voyage** : son rayon s'ouvre de 60 à 720 px pendant les 1,1 s de
+l'ultime, et elle ne blesse qu'à l'instant où elle **dépasse** l'adversaire
+(`prev < d && quakeR >= d`). Ce qui la distingue d'une explosion : un
+adversaire loin est touché plus tard, et pas du tout s'il quitte l'arène
+entre-temps. 7 de dégâts, et surtout **−50 % de vitesse pendant 2,6 s** — sa
+seule façon de rattraper, lui qui ne rattrape jamais.
+
+Il reste planté pendant l'onde (`boostFactor: 0`), comme la phase `brace` du
+Lancier et le Tir enraciné du Mage.
+
+**Ruée** — troisième créneau, sur `f.state.spec` et la seconde rangée de jauge
+(`specialBar`), même forme que le Blizzard. Vitesse ×1,8 (330 → 594 px/s, devant
+tout le roster) et **l'élan ne retombe plus**, murs compris.
+
+C'est l'inverse exact de son problème : hors Ruée, l'arène le casse à chaque
+rebond ; pendant, elle ne peut plus rien contre lui.
+
+**Le Séisme l'emporte sur la Ruée** quand les deux tombent ensemble — il se
+plante, et rien ne le fait courir pendant qu'il frappe le sol. `boost` est
+**réécrit à chaque image** tant que l'état dure, parce que le moteur le
+décompte : un compteur générique se *tient*, il ne se pose pas une fois.
+
+### L'équilibrage est différé, et voilà l'état des lieux
+
+**Le Colosse perd 30 duels sur 30**, les deux camps confondus. Ce n'est pas un
+artefact de la convention de la matrice — elle exagère les écarts en ne jouant
+chaque paire qu'une fois, mais ici le banc des deux camps donne le même
+verdict.
+
+C'est un **point de départ mesuré**, pas une régression : les cinq autres n'ont
+pas bougé d'une valeur, et le diff de la matrice ne contient que des ajouts.
+
+Ablation sur les 30 duels (683,8 s de combat), en comptant les dégâts par
+`opts.kind` dans `game.damage` — la méthode qui avait tranché en une minute
+pour le Mage :
+
+| | |
+| --- | --- |
+| Inflige | **1,31 PV/s** |
+| Encaisse | **4,39 PV/s** |
+| Élan moyen | **2,45** sur 4, plafond **atteint** (4,00) |
+| Pavois (mêlée) | 20,3 PV/duel — **68 %** |
+| Charge d'épaule | 7,4 PV/duel — **25 %** |
+| Séisme | 2,1 PV/duel — **7 %** |
+
+**Les trois mécaniques partent toutes.** Il ne s'agit donc pas d'un pouvoir
+mort ni d'un bug : l'élan atteint son plafond, la charge d'épaule et le séisme
+touchent. Ce qui manque est le **débit** — un facteur 3,4 entre ce qu'il rend
+et ce qu'il prend.
+
+Ce que l'ablation dit à qui voudra le régler, et ce qu'elle ne dit pas : la
+source dit *quoi regarder*, pas *quelle poignée tourner* (le Hors-la-loi tire
+62 % de ses dégâts de ses balles, et pourtant les grossir ne bouge rien). Les
+leviers plausibles, dans l'ordre où ils méritent d'être balayés :
+
+1. **`melee.cooldown` à 1,5 s** — le plus long du roster, et 68 % de ses dégâts
+   passent par là. C'est le premier à essayer.
+2. **`movement.speed` à 330** — le plus lent, et il ne rattrape rien hors Ruée.
+   Attention : la vitesse alimente aussi l'élan.
+3. **`slam.damagePer`** — raide par construction (il multiplie l'élan), donc à
+   toucher **seul** et à remesurer : deux leviers qui marchent chacun ne
+   s'additionnent pas, le Mage l'a montré (orbe à 2 **et** mêlée à 1 le
+   faisaient tomber de 20 à 8 victoires alors que chacun seul le posait à 15).
+
+Et un rappel qui vaut pour lui plus que pour les autres : **son miroir dure 58
+à 70 s**, seul affrontement du roster à dépasser la minute — deux murs qui se
+poussent, refermés par la mort subite. Un réglage qui remonte ses dégâts
+raccourcira ce miroir en même temps ; c'est un signal utile, pas un effet de
+bord à corriger séparément.
+
+---
+
 ## Équilibrage du roster
 
-Vérifié par simulation sans rendu sur les **15 affrontements** du roster
-(5 × 5 avec miroirs), 3 seeds chacun — c'est `tools/matrix.mjs`, et sa sortie
+Vérifié par simulation sans rendu sur les **21 affrontements** du roster
+(6 × 6 avec miroirs), 3 seeds chacun — c'est `tools/matrix.mjs`, et sa sortie
 est figée dans `tools/matrix-reference.txt`.
 
-**Relevé courant**, sur les 12 duels hors miroir de chacun :
+**Relevé courant**, sur les 15 duels hors miroir de chacun :
 
 | | victoires |
 | --- | --- |
-| Lancier | 9/12 |
-| Mage | 7/12 |
-| Shinobi | 6/12 |
-| Hors-la-loi | 4/12 |
-| Bretteur | 4/12 |
+| Lancier | 12/15 |
+| Mage | 10/15 |
+| Shinobi | 9/15 |
+| Hors-la-loi | 7/15 |
+| Bretteur | 7/15 |
+| **Colosse** | **0/15** |
 
-Écart **4 à 9**, le plus resserré depuis la réduction du roster.
+**Le Colosse n'est pas équilibré, et c'est voulu** : il a été livré à la demande
+expresse de ne pas y toucher dans un premier temps, et de ne modifier aucun
+combattant existant. Son 0/15 est un point de départ mesuré — le relevé complet
+(ce que chaque mécanique rapporte, quels leviers restent) est dans sa section.
+
+**Entre les cinq autres, l'écart reste celui du dernier resserrement** : 7 à 12
+sur 15, soit la même bande relative qu'avant son arrivée. Aucun d'eux n'a bougé
+d'une valeur ; leurs quinze affrontements sont identiques au caractère près, et
+les trois victoires que chacun prend au Colosse s'ajoutent uniformément.
 
 - **mort subite** : au-delà de 55 s, tous les dégâts sont multipliés par
   `1 + (t − 55) / 18` (plafond ×4). Aucun duel ne peut s'éterniser ;

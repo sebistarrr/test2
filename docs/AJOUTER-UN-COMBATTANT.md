@@ -78,10 +78,18 @@ Trois règles qui coûtent cher à rattraper :
 ### 3. `src/game/abilities/<id>.js` — les pouvoirs
 
 Implémente `init / update / drawUnder / drawOver / barValue`, plus les crochets
-optionnels `onDamage`, `onLand`, `drawWeapon`, `specialBar`. L'inscrire dans
-`abilities/index.js` : **un module oublié retombe sur le module neutre**, donc
-le combattant se joue sans pouvoir ni ultime, sans erreur — `fiche-check` le
-détecte.
+optionnels `onLand`, `drawUnbounded` (effets qui débordent de l'arène) et
+`specialBar` (deuxième rangée de jauge, pour un troisième créneau de pouvoir).
+L'inscrire dans `abilities/index.js` : **un module oublié retombe sur le module
+neutre**, donc le combattant se joue sans pouvoir ni ultime, sans erreur —
+`fiche-check` le détecte.
+
+Cette liste est celle que le moteur appelle **vraiment** : la vérifier plutôt
+que la recopier. Elle a déjà porté `onDamage` et `drawWeapon` longtemps après
+leur suppression, et un crochet fantôme dans une doc coûte une implémentation
+qui ne sera jamais appelée. Il reste par ailleurs un crochet **par entité** et
+non par module, `customWeapon`, posé sur l'objet lui-même pour remplacer le
+tracé de son arme (les clones du Shinobi, qui n'en portent pas).
 
 Tout aléa de simulation passe par `game.rng`, **tout aléa décoratif par
 `game.viewRng`** : une décoration qui tire dans le flux de simulation décale
@@ -133,6 +141,16 @@ node tools/shot.mjs "?a=<id>&b=outlaw&seed=11" /tmp/s 4,10
 les trois registres, **zéro ligne modifiée** dans une fiche existante —
 `fiche-snapshot` le confirme, et le diff de la matrice ne contient que des
 ajouts.
+
+Réédité sur le **Colosse**, sous la consigne explicite de ne modifier aucun
+combattant existant — avec une difficulté en plus : il fallait donner un
+lecteur à `movement.mass`, donc **toucher au moteur**. Preuve tenue quand même,
+par une branche rapide à masses égales qui reprend les expressions d'origine
+mot pour mot (`physics.js`). Quand un ajout demande de généraliser le moteur,
+la question n'est pas « le cas courant rend-il les mêmes valeurs » mais
+« passe-t-il par les mêmes expressions » : la multiplication flottante n'est pas
+associative, et regrouper autrement les mêmes produits a déjà déplacé deux
+affrontements.
 
 ---
 

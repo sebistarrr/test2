@@ -562,9 +562,10 @@ export class Match {
     ctx.restore();
 
     // 3. HUD
-    // `specialBar` est optionnel : les neuf combattants sans troisième créneau
-    // de pouvoir ne l'implémentent pas, et n'affichent donc pas de deuxième
-    // jauge — même forme d'accord que `drawUnbounded`.
+    // `specialBar` est optionnel : un combattant sans troisième créneau de
+    // pouvoir ne l'implémente pas et n'affiche donc pas de deuxième jauge —
+    // même forme d'accord que `drawUnbounded`. Les six actuels en ont tous un,
+    // mais l'accord reste : c'est ce qui évite un cadre vide au prochain venu.
     const modA = this.modules.get(this.a);
     const modB = this.modules.get(this.b);
     drawFighterHud(ctx, this.a, 'left', modA.barValue(this.a), this.lang, modA.specialBar?.(this.a));

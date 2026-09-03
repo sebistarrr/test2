@@ -20,6 +20,7 @@ import { outlawAbilities } from './outlaw.js';
 import { bladesmanAbilities } from './bladesman.js';
 import { lancerAbilities } from './lancer.js';
 import { mageAbilities } from './mage.js';
+import { colossusAbilities } from './colossus.js';
 
 const REGISTRY = {
   wind: windAbilities,
@@ -27,6 +28,7 @@ const REGISTRY = {
   bladesman: bladesmanAbilities,
   lancer: lancerAbilities,
   mage: mageAbilities,
+  colossus: colossusAbilities,
 };
 
 /** Module neutre : sert de repli pour un élément sans pouvoirs dédiés. */

@@ -32,6 +32,7 @@ import { OUTLAW_REVOLVER, OUTLAW_SHOT, ICON_REVOLVER, ICE_SHARD } from './pixela
 import { BLADESMAN_FLAMEBLADE, BLADESMAN_FLAMEWHEEL, ICON_SABRE } from './pixelart/bladesman.js';
 import { LANCER_SPEAR, ICON_LANCE } from './pixelart/lancer.js';
 import { MAGE_STAFF, MAGE_ORB, MAGE_FLOWER, ICON_STAFF } from './pixelart/mage.js';
+import { COLOSSUS_SHIELD, ICON_PAVISE } from './pixelart/colossus.js';
 
 export const PIXEL_MAPS = deepFreeze({
   // Hors-la-loi
@@ -54,4 +55,7 @@ export const PIXEL_MAPS = deepFreeze({
   mageOrb: MAGE_ORB,
   mageFlower: MAGE_FLOWER,
   iconStaff: ICON_STAFF,
+  // Colosse
+  colossusShield: COLOSSUS_SHIELD,
+  iconPavise: ICON_PAVISE,
 });
