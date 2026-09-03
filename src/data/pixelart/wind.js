@@ -51,41 +51,6 @@ export const WIND_SHURIKEN = deepFreeze({
   ],
 });
 
-/**
- * VENT — croissant de lame d'air : **aucun contour noir**, un vrai croissant
- * (deux cercles décalés) au dégradé doux. Relevé sur WIND vs PLANT : la corne
- * qui traîne est vert-olive sombre, le ventre qui mène est crème, et le dos
- * convexe porte un liseré clair.
- */
-export const WIND_CRESCENT = deepFreeze({
-  w: 16,
-  h: 16,
-  palette: {
-    d: '#8e7c52', // corne sombre
-    t: '#b1a082', // corps
-    w: '#c7b99a', // éclairci
-    l: '#e6ddc4', // liseré du dos convexe
-  },
-  rows: [
-    '.....ddwwww.....',
-    '......ddttww....',
-    '.......ddtttw...',
-    '........dddttw..',
-    '........ddddtww.',
-    '.........tttwwl.',
-    '.........ttttwl.',
-    '.........ttttwl.',
-    '.........ttttwl.',
-    '.........ttttwl.',
-    '.........tttwwl.',
-    '........tttwwl..',
-    '........ttwwll..',
-    '.......twwwll...',
-    '......ttwwll....',
-    '.....ttlll......',
-  ],
-});
-
 export const ICON_TORNADO = deepFreeze({
   w: 16,
   h: 16,

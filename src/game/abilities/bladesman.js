@@ -279,9 +279,10 @@ export const bladesmanAbilities = {
   },
 
   /**
-   * Braises qui montent du corps + aura brûlante : reprise du `tickRage` de
-   * `fire.js`, sans la partie qui ne concerne que l'ultime du Feu (pas de
-   * bonus de vitesse ici, voir `tickInfernalRage`). `onStage` et non `alive` :
+   * Braises qui montent du corps + aura brûlante. Repris du Feu, dont la Rage
+   * infernale est greffée ici — mais sans la partie qui ne concernait que son
+   * ultime à lui (pas de bonus de vitesse ici, voir `tickInfernalRage`). Le Feu
+   * a depuis été supprimé du dépôt ; ce code est tout ce qui en reste. `onStage` et non `alive` :
    * pendant le Bond du Lancier, l'adversaire est vivant mais absent du
    * plateau, l'aura ne doit pas le mordre à son dernier point connu
    * (invariant 8).

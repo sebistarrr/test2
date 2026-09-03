@@ -1,8 +1,8 @@
 # CLAUDE.md — mémoire du projet
 
-Clone haute fidélité des duels d'éléments *Elemental Armory League*, **plus les
-quatre personnages venus de la chaîne « ballthingsim »** — le Hors-la-loi, le
-Bretteur, le Lancier et le Mage — portés sur le même moteur.
+Duels en un contre un, **cinq combattants** repris de la chaîne
+« ballthingsim » — le Hors-la-loi, le Bretteur, le Lancier, le Shinobi et le
+Mage — sur un moteur écrit d'après les vidéos de référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -27,7 +27,7 @@ qui est dans `docs/AJOUTER-UN-COMBATTANT.md`.
 | --- | --- |
 | Stats, couleurs, armes, pouvoirs d'un combattant | `src/data/fighters/<id>.js` |
 | Valeurs universelles + helper `fiche()` | `src/data/defaults.js` |
-| Registre du roster (`ELEMENTS`, `ROSTER`, `DISABLED`) | `src/data/elements.js` |
+| Registre du roster (`ELEMENTS`, `ROSTER`) | `src/data/elements.js` |
 | Sprites pixel-art (texte) | `src/data/pixelart/<id>.js`, recensés dans `src/data/pixelmaps.js` |
 | Overrides de sprites en vrai PNG (écart assumé à « aucun binaire ») | `assets/sprites/` + `manifest.json` |
 | Géométrie de scène, phases, export vidéo | `src/data/tuning.js` |
@@ -50,81 +50,59 @@ de navigation, pas un besoin.
 
 ## Roster
 
-Douze combattants, de **deux origines**.
-
-Huit éléments : `shadow ice fire water light lightning wind plant`, relevés sur
-les vidéos *Elemental Armory League* (720 × 1280).
-
-Quatre personnages : `outlaw bladesman lancer mage`, relevés sur trois vidéos
-de la chaîne « ballthingsim », toutes en **576 × 1024, 30 fps** :
+**Cinq combattants, tous jouables.** Ils viennent de la chaîne
+« ballthingsim », relevés sur trois vidéos en **576 × 1024, 30 fps** :
 *Outlaw vs Bladesman* (1159 images, 38,6 s), *Dragoon vs Outlaw* (33,6 s) et
 *Dragoon vs Magia* (24,4 s).
 
-**Conséquence : plusieurs repères de mesure cohabitent, et ils ne sont pas
-tous les mêmes.** Les deux premières vidéos 576 se convertissent **×1,25** vers
-le repère logique 720 × 1280 du jeu. **Celle de Magia, non : ×1,275** — son
-arène mesure 502 px de bord extérieur contre 640 dans le jeu, et la bille le
-confirme (32 px de rayon × 1,275 = 40,8, soit les 41 du roster). Ne pas
-supposer le facteur : le mesurer sur l'arène, le vérifier sur la bille.
-Chaque valeur convertie cite la mesure d'origine dans son commentaire ; ne
-jamais « corriger » un commentaire qui cite un chiffre en 576.
-
-Ce qui **n'a pas** été reporté tel quel : les vitesses et les cadences. Le jeu
-d'origine tournait sous Matter.js à pas fixe, celui-ci intègre à la main et
-pilote au cap ; sa propre documentation le disait déjà — « recaler
-l'équilibrage après tout changement de moteur, jamais reporter les constantes
-telles quelles ». Ces valeurs-là sont donc `calé`, mesure d'origine en
-commentaire.
-
 | Personnage | Archétype | Signature |
 | --- | --- | --- |
-| `outlaw` Hors-la-loi | Pistolero de **glace** | **revolver de givre**, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`weaponTwirl`). Porte en plus le **Blizzard** de la Glace, greffé |
-| `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale** du Feu, greffée |
-| `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence** de l'Ombre, greffé |
-| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, greffé et conçu pour lui : des clones de 15 PV, permanents, solides, qui ripostent |
-| `mage` Mage | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte l'ultime de la Plante (Tempête de sève), **délégué** à son module, et le **Tir enraciné** greffé — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
+| `outlaw` Hors-la-loi | Pistolero de **glace** | **revolver de givre**, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`weaponTwirl`). Porte en plus le **Blizzard**, greffé |
+| `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale**, greffée |
+| `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence**, greffé |
+| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des clones de 15 PV, permanents, solides, qui ripostent |
+| `mage` Mage | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte la **Tempête de sève** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
+
+**`wind` est l'identifiant interne du Shinobi**, hérité du Vent dont il est le
+reskin. Un id ne se renomme pas : il n'est montré à personne, et le changer
+toucherait `ROSTER`, `abilities/index.js` et les registres sans rien apporter
+au joueur. Seuls `name`/`nameRef` changent.
 
 Le détail de chacun — relevés, écarts, historique des demandes — est dans
 `docs/FICHES.md`, une section par combattant.
 
----
+### Le repère de mesure n'est pas le même partout
 
-## Roster actif — les autres sont obsolètes
+Les deux premières vidéos se convertissent **×1,25** vers le repère logique
+720 × 1280 du jeu. **Celle de Magia, non : ×1,275** — son arène mesure 502 px
+de bord extérieur contre 640 dans le jeu, et la bille le confirme (32 px de
+rayon × 1,275 = 40,8, soit les 41 du roster). Ne pas supposer le facteur : le
+mesurer sur l'arène, le vérifier sur la bille. Chaque valeur convertie cite sa
+mesure d'origine en commentaire ; ne jamais « corriger » un commentaire qui
+cite un chiffre en 576.
 
-**Le Hors-la-loi, le Bretteur, le Lancier, le Shinobi et le Mage sont les
-combattants actifs.** Les sept éléments restants restent **obsolètes et gelés**
-via `DISABLED`.
+Ce qui **n'a pas** été reporté tel quel : les vitesses et les cadences. Le jeu
+d'origine tournait sous Matter.js à pas fixe, celui-ci intègre à la main et
+pilote au cap. Ces valeurs-là sont donc `calé`, mesure d'origine en commentaire.
 
-```js
-// src/data/elements.js
-export const DISABLED = deepFreeze(['shadow', 'ice', 'fire', 'water', 'light', 'lightning', 'plant']);
-export const PLAYABLE = deepFreeze(ROSTER.filter((id) => !DISABLED.includes(id)));
-```
+### Huit éléments supprimés
 
-**Ce ne sont ni des désactivations temporaires ni des candidats à la
-réactivation** : pas de rééquilibrage si leurs valeurs changent, pas de
-rééquilibrage en fonction d'eux, pas de matrice, pas de vérification de langue.
+Le dépôt a longtemps porté huit **éléments** relevés sur les vidéos *Elemental
+Armory League* — Ombre, Glace, Feu, Eau, Lumière, Foudre, Vent, Plante. Sept
+ont été gelés, puis **supprimés** ; le huitième, le Vent, survit sous les traits
+du Shinobi.
 
-Le Bretteur et le Shinobi n'entrent pas dans cette règle : leur réactivation
-était une **demande explicite**, ce sont des guest characters retravaillés
-(lame de braise, shuriken de flamme puis d'ombre), leur fiche passe
-`fiche-check` et `lang-check` comme n'importe quel actif, et ils comptent dans
-la matrice.
-
-| Touché par la désactivation | Raison |
-| --- | --- |
-| écran de sélection (`ui/select.js` lit `PLAYABLE`) | seuls les actifs sont jouables |
-| duel par défaut (`main.js`) | Hors-la-loi vs Bretteur (`PLAYABLE[0]`/`[1]`) |
-| `tools/matrix.mjs` | 15 affrontements × 3 seeds = 45 duels |
-
-**L'accès par URL reste disponible** (`?a=fire&b=ice`) pour la consultation
-archivistique, sans validation ni équilibre.
+Ils ne sont pas masqués, ils ne sont plus là : ni fiche, ni module, ni sprite,
+ni liste `DISABLED`. Ce qu'il en reste est **greffé sur un survivant** et
+documenté comme tel — le Blizzard chez le Hors-la-loi, la Rage infernale chez
+le Bretteur, le Lien d'essence chez le Lancier, la Tempête de sève chez le
+Mage, l'éclat de givre dans `pixelart/outlaw.js`. Un commentaire qui cite un
+élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
 miroir chacun : Lancier 9, Mage 7, Shinobi 6, Hors-la-loi 4, Bretteur 4.
 
-Écart **4 à 9**, le plus resserré depuis la réduction du roster (il valait 3 à 9,
-et 4 à 10 avant le Tir enraciné du Mage).
+Écart **4 à 9**, le plus resserré depuis la réduction du roster.
 
 **Le dernier resserrement est venu du Shinobi, pas des deux derniers.** Le
 Hors-la-loi et le Bretteur étaient à 3/12 chacun ; leurs leviers propres sont
@@ -215,9 +193,9 @@ sans que ça se voie.
    - **Un changement confiné à un combattant ne doit déplacer que *ses*
      affrontements.** Une ligne déplacée ailleurs est un bug, pas un effet de
      bord acceptable.
-   - Le relevé historique à onze combattants, et les leviers qu'il a livrés
-     (Lancier à 30/30, Hors-la-loi à 25, Lumière à 21…), sont dans
-     `docs/FICHES.md`, section « Équilibrage du roster ».
+   - Le relevé historique du temps des douze combattants, et les leviers qu'il
+     a livrés (Lancier à 30/30, Hors-la-loi à 25…), sont dans `docs/FICHES.md`,
+     section « Équilibrage du roster ». Il ne se régénère plus.
 
 4. **Le décor ne bouge jamais** (cahier des charges) — rasterisé une fois dans
    `scene.js`, blitté en un `drawImage`.
@@ -288,8 +266,8 @@ sans que ça se voie.
     `projectiles.js` l'applique en visant « le premier combattant en scène qui
     n'est pas le tireur » — exactement le test que fait déjà sa boucle de
     touche. Un autre combattant en hériterait sans une ligne de moteur, et la
-    branche n'existe pas pour ceux qui ne la déclarent pas : les dix
-    affrontements d'avant sont restés identiques au caractère près.
+    branche n'existe pas pour ceux qui ne la déclarent pas : les affrontements
+    d'avant sont restés identiques au caractère près.
 
     **Corollaire pour les modules de pouvoirs.** Un module qui code en dur une
     clé de sprite se ferme à sa propre réutilisation : `plant.js` dessinait
@@ -341,7 +319,7 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   de perles), la cassure doit être **perpendiculaire** à la trajectoire (sinon
   le trait s'allonge au lieu de zigzaguer), et son amplitude doit **s'annuler au
   point le plus récent** (sinon la traînée se décroche et flotte à côté). Les
-  onze combattants passent par ce code ; seul celui qui déclare le mode prend la
+  Tout le roster passe par ce code ; seul celui qui déclare le mode prend la
   branche.
 - **Les arcs électriques le long d'une lame** (`look.flair.weaponArc`) sont
   tracés par un **hachage pur** de (indice, temps quantifié), pas par un
@@ -372,7 +350,7 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 ```bash
 python3 -m http.server 8085 &            # requis par les outils Playwright
 
-node tools/fiche-snapshot.mjs            # empreinte des 11 fiches + 31 cartes,
+node tools/fiche-snapshot.mjs            # empreinte des 5 fiches + 15 cartes,
                                          # SANS serveur. Le garde-fou des
                                          # refactorisations de `src/data/` :
                                          # doit rester identique au caractère près
@@ -385,7 +363,7 @@ node tools/fiche-check.mjs               # trois pannes silencieuses :
 node tools/lang-check.mjs                # les deux tables de ui/lang.js portent les
                                          # mêmes clés, et chaque fiche ses champs `Ref`
 
-node tools/matrix.mjs                    # affrontements de PLAYABLE x 3 seeds, sans rendu
+node tools/matrix.mjs                    # tous les affrontements x 3 seeds, sans rendu
 node tools/matrix.mjs > /tmp/a.txt && diff tools/matrix-reference.txt /tmp/a.txt
 
 node tools/probe.mjs outlaw              # durée, touches et coups/s d'un combattant
@@ -400,9 +378,9 @@ python3 tools/crop.py <image> <sortie.png> x0 y0 x1 y1 [zoom]
 ```
 
 **Lequel pour quoi.** `fiche-snapshot` prouve qu'une **réorganisation** n'a rien
-changé — il couvre les onze fiches, y compris les sept gelées que la matrice ne
-joue pas. `matrix` prouve qu'un changement **visuel** n'a rien changé — il
-couvre le comportement, que l'empreinte ne voit pas. Les deux sont
+changé : il sérialise **les valeurs**, y compris celles qu'aucun duel
+n'exerce. `matrix` prouve qu'un changement **visuel** n'a rien changé — il
+couvre le **comportement**, que l'empreinte ne voit pas. Les deux sont
 complémentaires, aucun ne remplace l'autre.
 
 Vérification syntaxique (pas d'ESLint dans le dépôt) :
@@ -557,8 +535,8 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   flocon dans le flux de simulation. La monotonie observée après coup avait fait
   croire l'affaire réglée — elle ne prouvait rien. **Vérifier la correction à la
   source, pas au symptôme.** Note pour la suite : `fx.burst` tire encore 4 fois
-  par particule dans le flux de simulation, pour les onze combattants. Le
-  corriger déplacerait toutes les matrices d'un coup — chantier à part.
+  par particule dans le flux de simulation, pour tout le roster. Le corriger
+  déplacerait toute la matrice d'un coup — chantier à part.
 - **Un garde-fou du moteur réutilisé depuis un module hérite de l'ordre d'appel
   du moteur, pas seulement de sa géométrie.** `weaponHit()` refuse la touche
   quand `attacker.meleeCd > 0`, et `Match.resolveMelee` tourne **avant** les
@@ -624,8 +602,7 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   l'affichage passe désormais par `src/ui/lang.js`, un seul interrupteur.
   **Il en restait une ligne, trouvée trois mois plus tard en ajoutant le
   Mage** : la ligne « Projectile » de la fiche de sélection lisait `labelRef`
-  sans regarder la langue, donc restait **en anglais pour les onze
-  combattants**. Elle a échappé à l'aide `label()` parce que c'est le seul
+  sans regarder la langue, donc restait **en anglais pour tout le roster**. Elle a échappé à l'aide `label()` parce que c'est le seul
   endroit du dépôt où le couple des deux langues s'appelle `label`/`labelRef`
   et non `name`/`nameRef` — et à `lang-check`, qui vérifie que les champs
   *existent*, pas qu'ils sont *lus*. Un garde-fou sur l'existence ne dit rien
@@ -699,14 +676,31 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   supprimé et remplacé par la découpe réelle. Une refactorisation se mesure à ce
   qu'elle **retire**, pas à ce qu'elle ajoute.
 - **La duplication annoncée n'était pas là où on la cherchait.** Recompter avant
-  de factoriser : sur les onze fiches, **six** clés seulement sont identiques
-  partout (rayon, contour, police et décalage du chiffre de PV, masse,
-  `head.anchorY`), soit ~5 % des lignes. Le vrai coût n'était pas la répétition
-  mais le **monolithe** : ouvrir 2 995 lignes pour en toucher 130.
+  de factoriser : sur les onze fiches d'alors, **six** clés seulement étaient
+  identiques partout (rayon, contour, police et décalage du chiffre de PV,
+  masse, `head.anchorY`), soit ~5 % des lignes. Le vrai coût n'était pas la
+  répétition mais le **monolithe** : ouvrir 2 995 lignes pour en toucher 130.
+- **Supprimer un combattant, ce n'est pas effacer ses fichiers.** Les sept
+  éléments gelés partaient avec des morceaux d'eux-mêmes greffés ailleurs : le
+  module du Mage **déléguait** sa tempête à `plant.js`, sa corolle *partageait*
+  le tableau `rows` de celle de la Plante, et le Hors-la-loi tirait l'éclat de
+  givre dessiné dans `pixelart/ice.js`. La méthode qui a marché : **rapatrier
+  d'abord, vérifier la matrice inchangée, supprimer ensuite** — deux étapes,
+  deux preuves, au lieu d'un `rm` suivi d'une chasse aux imports cassés.
+
+- **Le code mort d'un combattant supprimé ne se voit pas dans son dossier.**
+  Retirer les sept fiches laissait derrière : le bouclier de l'Égide dans
+  `fighter.js`, le crochet `onDamage` dans `match.js`, le rendu d'arme sur
+  mesure (`customWeapon`), `fx.ghost` et trois `clear()` sans appelant. Rien de
+  tout ça ne plante ni ne crie — il faut le **chercher**, un crochet à la fois,
+  en se demandant qui le fournit encore.
+
 - **Prouver une réorganisation demande son propre garde-fou.** La matrice ne
-  joue que `PLAYABLE` : elle serait restée verte avec les sept fiches gelées
-  corrompues. `tools/fiche-snapshot.mjs` sérialise les onze fiches et les
-  trente et une cartes, et c'est lui qui a validé chaque étape de la découpe.
+  couvre que ce qu'un duel exerce : elle serait restée verte avec des fiches
+  corrompues sur des valeurs qu'aucun combat ne lit. `tools/fiche-snapshot.mjs`
+  sérialise toutes les fiches et toutes les cartes, et c'est lui qui a validé
+  chaque étape de la découpe — puis chaque étape de la suppression des sept
+  éléments.
 
 ---
 

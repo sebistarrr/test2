@@ -1,5 +1,4 @@
-// Matrice d'équilibrage : affrontements entre personnages activés x 3 seeds, SANS rendu.
-// Les personnages désactivés (DISABLED) ne sont pas pris en compte.
+// Matrice d'équilibrage : tous les affrontements du roster x 3 seeds, SANS rendu.
 // La sortie doit rester identique après tout changement purement visuel :
 //   node tools/matrix.mjs > /tmp/apres.txt && diff /tmp/avant.txt /tmp/apres.txt
 // Prérequis : un serveur statique sur $URL (defaut http://127.0.0.1:8085).
@@ -13,12 +12,12 @@ await page.goto(`${URL}/index.html?a=shadow&b=ice`, { waitUntil: 'networkidle' }
 const out = await page.evaluate(async () => {
   const { Match } = await import('/src/game/match.js');
   const { createRng } = await import('/src/core/rng.js');
-  const { PLAYABLE } = await import('/src/data/elements.js');
+  const { ROSTER } = await import('/src/data/elements.js');
   const res = [];
   const dt = 1/120;
-  for (let i = 0; i < PLAYABLE.length; i++) {
-    for (let j = i; j < PLAYABLE.length; j++) {
-      const pair = [PLAYABLE[i], PLAYABLE[j]];
+  for (let i = 0; i < ROSTER.length; i++) {
+    for (let j = i; j < ROSTER.length; j++) {
+      const pair = [ROSTER[i], ROSTER[j]];
       const durations = []; const wins = {};
       for (const seed of [11, 22, 33]) {
         let m;

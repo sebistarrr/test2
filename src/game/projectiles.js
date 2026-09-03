@@ -1,9 +1,9 @@
 /**
- * Projectiles (traits d'ombre, éclats de givre).
+ * Projectiles : balles, éclats de givre, shurikens, orbes guidées.
  *
- * Le comportement (vitesse, dégâts, rebonds, traînée, sprite) est entièrement
- * décrit dans la fiche de l'élément : ce module ne fait qu'appliquer la
- * description.
+ * Le comportement (vitesse, dégâts, rebonds, guidage, traînée, sprite) est
+ * entièrement décrit dans la fiche du combattant : ce module ne fait
+ * qu'appliquer la description.
  *
  * @module game/projectiles
  */
@@ -22,10 +22,6 @@ export class Projectiles {
     this.fx = fx;
     /** @type {Array<any>} */
     this.list = [];
-  }
-
-  clear() {
-    this.list.length = 0;
   }
 
   /**
@@ -59,7 +55,8 @@ export class Projectiles {
    * Une émission de traînée.
    *
    * Par défaut, un point unique sur la trajectoire — c'est le comportement
-   * historique, et celui des dix autres combattants.
+   * historique, et celui de tous les projectiles sauf la balle du
+   * Hors-la-loi.
    *
    * Avec `trail.puff`, l'émission devient une **bouffée** : plusieurs grains
    * dispersés autour du point, décalés perpendiculairement à la vitesse et

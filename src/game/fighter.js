@@ -55,8 +55,9 @@ export class Fighter {
     this.ult = { charge: 0, active: 0, ready: false };
 
     // stats évolutives affichées dans le HUD, valeurs de départ dans la fiche
-    // `stacks`  : stat principale (Glace « Damage/Slow », Feu « Burn », …)
-    // `stacks2` : stat secondaire (Lumière « Knockback », Eau « Size », …)
+    // `stacks`  : stat principale (Hors-la-loi « Damage », Bretteur « Spin
+    //             Speed », Mage « Attack Speed », …)
+    // `stacks2` : stat secondaire, quand la fiche en déclare une
     this.stacks = element.progression?.stack ?? 1;
     this.stacks2 = element.progression?.stack2 ?? 0;
 
@@ -65,7 +66,7 @@ export class Fighter {
     this.slows = [];
 
     /**
-     * Dégâts sur la durée (brûlure du Feu, etc.). Le tic est appliqué par
+     * Dégâts sur la durée (la brûlure du Bretteur). Le tic est appliqué par
      * Match, seul point d'entrée des dégâts.
      * @type {Array<{damage:number, interval:number, timer:number, until:number,
      *               source:Fighter, ring:string|null}>}
@@ -76,8 +77,6 @@ export class Fighter {
     this.tintUntil = 0;
     this.tintAlpha = 1; // 1 = remplace la couleur, <1 = se mélange
     /** Bouclier absorbant (Lumière). */
-    this.shield = 0;
-    this.shieldMax = 0;
 
     /**
      * Temps restant **hors du plateau**. Un combattant qui saute quitte
@@ -131,8 +130,6 @@ export class Fighter {
     /** @type {Fighter|null} */
     this.opponent = null;
     this.state = {}; // bac à sable pour les modules de pouvoirs
-    /** @type {((ctx:CanvasRenderingContext2D)=>void)|null} */
-    this.customWeapon = null;
     /** Suivi de l'incantation d'ultime, pour la mise en scène (rendu seul). */
     this.wasUlting = false;
     /** Mur touché à ce pas, pour la mise en scène (rendu seul). */
@@ -168,7 +165,7 @@ export class Fighter {
   /**
    * Applique (ou rafraîchit) un dégât sur la durée.
    * Un seul DoT par source : une nouvelle application remplace la précédente,
-   * comme la brûlure du Feu qui se « rafraîchit » à chaque coup.
+   * comme la brûlure du Bretteur, qui se « rafraîchit » à chaque coup.
    */
   applyDot({ damage, interval, duration, source, ring = null, tint = null }, now) {
     const existing = this.dots.find((d) => d.source === source);
@@ -452,25 +449,6 @@ export class Fighter {
       ctx.stroke();
     }
 
-    // Égide : sur la vidéo, aucune bulle grise — le bouclier se lit sur un
-    // **liseré doré** collé au corps, d'autant plus épais qu'il est plein.
-    if (this.shield > 0 && this.shieldMax > 0 && look.shield) {
-      const k = this.shield / this.shieldMax;
-      const rr = this.radius + look.outlineWidth * 1.15;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, rr, 0, TAU);
-      ctx.lineWidth = 1.5 + 3 * k;
-      ctx.strokeStyle = look.shield.color;
-      ctx.stroke();
-      const g = ctx.createRadialGradient(this.x, this.y, rr, this.x, this.y, rr * 1.35);
-      g.addColorStop(0, look.shield.glow);
-      g.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, rr * 1.35, 0, TAU);
-      ctx.fill();
-    }
-
     /**
      * `look.hpOverWeapon` : le chiffre de PV se pose **après** l'arme au lieu
      * d'avant — opt-in, faux par défaut, donc n'affecte que qui le demande.
@@ -522,10 +500,8 @@ export class Fighter {
     return true;
   }
 
-  /** Un module de pouvoirs peut fournir son propre rendu d'arme. */
   paintWeapon(ctx) {
-    if (this.customWeapon) this.customWeapon(ctx);
-    else this.drawWeapon(ctx);
+    this.drawWeapon(ctx);
   }
 
   /** @param {CanvasRenderingContext2D} ctx */
@@ -550,7 +526,8 @@ export class Fighter {
     }
 
     // manche : rectangle sombre + liseré, comme sur la vidéo.
-    // `width: 0` = arme posée à même la boule (shuriken du Vent) : rien à tracer,
+    // `width: 0` = arme posée à même la boule (shuriken du Shinobi, sceptre du
+    // Mage) : rien à tracer,
     // `length` ne sert plus qu'à décaler le sprite.
     const h = w.handle;
     if (h.width > 0) {

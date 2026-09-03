@@ -23,7 +23,7 @@ registres, ils n'ont pas de valeur de combattant.
 **`<id>` est l'identifiant interne, pas le nom affiché.** Le Shinobi est
 `wind`, hérité du Vent dont il est le reskin. Un id ne se renomme pas : il
 n'est montré à personne (URL d'archive, clés de module et de sprite), et le
-changer touche `ROSTER`, `DISABLED`, `abilities/index.js` et les registres sans
+changer touche `ROSTER`, `abilities/index.js` et les registres sans
 rien apporter au joueur. Seuls `name`/`nameRef` changent.
 
 ---
@@ -114,8 +114,8 @@ node tools/shot.mjs "?a=<id>&b=outlaw&seed=11" /tmp/s 4,10
   Si elle bouge, le changement n'était pas visuel.
 - **Réorganisation de `src/data/`** (découpe, défauts, réécriture de
   commentaires) → `fiche-snapshot` doit être identique. C'est plus fort que la
-  matrice, qui ne joue que les combattants de `PLAYABLE` et laisserait
-  passer une régression sur les sept fiches gelées.
+  matrice, qui ne couvre que ce qu'un duel exerce et laisserait passer une
+  régression sur une valeur qu'aucun combat ne lit.
 - **Changement de jeu** → régénérer `tools/matrix-reference.txt` et
   **justifier** le nouvel équilibre dans `CLAUDE.md` et `docs/FICHES.md`.
 

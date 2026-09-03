@@ -16,15 +16,15 @@
  *  • **Orbes guidées.** Le guidage vit dans `game/projectiles.js`, piloté par
  *    `projectiles.orb.homing` de la fiche ; ce module ne fait que tirer.
  *
- *  • **Tempête de sève, et rien d'autre de la Plante.** Le Semis (les bulbes
- *    posés au sol) a été retiré, demandé — le Mage est un tireur, une mine
- *    plantée par terre n'a rien à faire dans son jeu. Seule reste la tempête :
- *    la fiche porte `ultimate.storm` et ce module délègue à
- *    `plantAbilities.updateStorm` / `.drawOver` / `.barValue`, jamais aux
- *    méthodes qui touchent aux bulbes (`updateBulbs`, `updateSemis`,
- *    `drawUnder`). Une copie aurait divergé au premier réglage — c'est
- *    exactement la duplication que le dépôt a déjà payée deux fois sur
- *    `drawGauge`.
+ *  • **Tempête de sève** (ultime) — la cible disparaît sous une nuée de cubes
+ *    verts, clouée sur place, pendant que le Mage se régénère.
+ *
+ *    Elle vient de la Plante, à qui ce module la **déléguait** tant que celle-ci
+ *    existait. La Plante supprimée avec les six autres éléments gelés, il n'y
+ *    avait plus rien à qui déléguer : les quatre méthodes concernées sont
+ *    rapatriées ici, à comportement identique — matrice vérifiée inchangée. Le
+ *    Semis (les bulbes posés au sol), lui, avait déjà été retiré sur demande et
+ *    n'est pas revenu.
  *
  *  • **Tir enraciné** (troisième créneau, `special`) — le seul pouvoir du Mage
  *    qui ne soit emprunté à personne. Des racines le clouent au sol une
@@ -38,7 +38,7 @@
  */
 
 import { clamp, hash01, TAU } from '../../core/math.js';
-import { plantAbilities } from './plant.js';
+import { drawSpriteCentered } from '../../render/sprites.js';
 
 /** Pas de la cadence, par orbe tirée. Mesuré : tous les paliers de la vidéo
  *  sont des multiples de 0,05, et les six premiers tombent en 4,5 s. */
@@ -60,9 +60,9 @@ export const mageAbilities = {
   id: 'mage',
 
   init(f) {
-    // Seul l'état de la tempête est repris — pas `initBulbs` : le Mage ne sème
-    // rien, `f.state.bulbs` resterait un tableau vide et mort.
-    plantAbilities.initStorm(f);
+    f.state.stormTick = 0;
+    f.state.stormHeal = 0;
+    f.state.stormSpin = 0; // angle de la nuée : rendu seul
     /** Décompte avant la prochaine orbe. Le premier tir attend une cadence
      *  entière : sans ça le Mage ouvre le duel par une orbe gratuite. */
     f.state.shotTimer = 1 / f.stacks;
@@ -74,8 +74,8 @@ export const mageAbilities = {
   },
 
   update(f, dt, now, game) {
-    /* ---------- Tempête de sève, tel quel ---------- */
-    plantAbilities.updateStorm(f, dt, now, game);
+    /* ---------- Tempête de sève ---------- */
+    this.updateStorm(f, dt, now, game);
 
     /* ---------- le sceptre vise ---------- */
     const target = f.opponent;
@@ -170,8 +170,7 @@ export const mageAbilities = {
    * l'impression que l'arme n'y est pour rien.
    *
    * `spawn` place le projectile à `offset` du **porteur** : on emprunte donc la
-   * position du bout du sceptre le temps du tir, comme `plant.js` le fait pour
-   * tirer depuis un bulbe. Emprunter plutôt que passer une copie du
+   * position du bout du sceptre le temps du tir. Emprunter plutôt que passer une copie du
    * combattant : `Projectiles` garde `owner` par **identité** pour savoir qui
    * ne pas toucher, et une copie ferait que l'orbe frappe son propre tireur.
    */
@@ -261,7 +260,7 @@ export const mageAbilities = {
   },
 
   drawOver(ctx, f, game, now) {
-    plantAbilities.drawOver(ctx, f, game, now);
+    this.drawStorm(ctx, f);
 
     // Halo qui enfle au bout du sceptre : sans lui, l'immobilité se lit comme
     // un blocage plutôt que comme une charge.
@@ -286,6 +285,141 @@ export const mageAbilities = {
    * Méthode **optionnelle** côté moteur — les combattants sans troisième
    * créneau n'affichent pas de cadre vide.
    */
+  /* ------------------------------------------------------------------ */
+  /* Tempête de sève — rapatriée de la Plante à sa suppression             */
+  /* ------------------------------------------------------------------ */
+
+  updateStorm(f, dt, now, game) {
+    const ult = f.el.ultimate;
+    if (f.ult.active > 0) {
+      f.ult.active -= dt;
+      f.state.stormSpin += ult.storm.swarm.churn * dt;
+      this.tickStorm(f, dt, now, game);
+      if (f.ult.active <= 0) {
+        f.ult.active = 0;
+        f.ult.charge = 0;
+        f.ult.ready = false;
+      }
+    } else if (game.phase === 'fight') {
+      f.ult.charge = clamp(f.ult.charge + ult.chargeRate * dt, 0, 100);
+      f.ult.ready = f.ult.charge >= 100;
+      if (f.ult.ready) this.castStorm(f, game);
+    }
+  },
+
+  castStorm(f, game) {
+    const ult = f.el.ultimate;
+    f.ult.active = ult.duration;
+    f.ult.ready = false;
+    f.state.stormTick = 0;
+    f.state.stormHeal = 0;
+    const target = f.opponent;
+    if (target) {
+      game.fx.ring(target.x, target.y, 20, 220, 0.55, 'rgba(74,222,128,0.9)', 8, true);
+    }
+    game.shake(5, 0.3);
+  },
+
+  tickStorm(f, dt, now, game) {
+    const storm = f.el.ultimate.storm;
+    const target = f.opponent;
+
+    // le Mage se régénère pendant sa tempête
+    f.state.stormHeal -= dt;
+    if (f.state.stormHeal <= 0) {
+      f.state.stormHeal = storm.healInterval;
+      game.heal(f, storm.healAmount, f);
+    }
+
+    if (!target || !target.alive) return;
+
+    // clouée sur place par le cerceau de lianes
+    target.applySlow(storm.root, 0.2, now);
+
+    // nuée de pétales autour de la cible
+    const p = storm.petals;
+    if (game.rng.chance(dt * p.rate)) {
+      const ang = game.rng.range(0, TAU);
+      const rad = target.radius * game.rng.range(0.6, 2.4);
+      game.fx.spawn({
+        kind: 'spark',
+        x: target.x + Math.cos(ang) * rad,
+        y: target.y + Math.sin(ang) * rad,
+        vx: game.rng.spread(p.speed),
+        vy: game.rng.spread(p.speed),
+        life: p.life * game.rng.range(0.6, 1.2),
+        size: p.size * game.rng.range(0.5, 1.2),
+        color: game.rng.pick(p.colors),
+        drag: 2,
+      });
+    }
+
+    f.state.stormTick -= dt;
+    if (f.state.stormTick <= 0) {
+      f.state.stormTick = storm.tickInterval;
+      game.damage(target, storm.tickDamage(f), f, { kind: 'storm', silent: true });
+    }
+  },
+
+  drawStorm(ctx, f) {
+    if (f.ult.active <= 0) return;
+    const target = f.opponent;
+    if (!target || !target.alive) return;
+    const fade = Math.min(1, f.ult.active / 0.5);
+    const sw = f.el.ultimate.storm.swarm;
+    if (!sw) return;
+
+    /**
+     * Amas de cubes qui recouvre la cible. Rendu **pur** : la disposition sort
+     * d'un hachage de l'indice, jamais d'un tirage — une décoration qui
+     * puiserait dans `game.rng` décalerait tous les duels.
+     */
+    ctx.save();
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = sw.color;
+    const reach = target.radius * sw.radius;
+
+    for (let c = 0; c < sw.clusters; c++) {
+      const u = hash01(c * 12.9898);
+      const w = hash01(c * 78.233 + 4.7);
+      const a = u * TAU + f.state.stormSpin * (0.4 + w * 0.9);
+      const rad = reach * (0.06 + 0.94 * w * w); // masse ramenée vers le centre
+      const cx = target.x + Math.cos(a) * rad;
+      const cy = target.y + Math.sin(a) * rad;
+
+      for (let k = 0; k < sw.perCluster; k++) {
+        const i = c * 7 + k;
+        const p = hash01(i * 31.7 + 1.3);
+        const q = hash01(i * 53.1 + 9.1);
+        const s = Math.round(sw.size * (1 - sw.sizeVar + sw.sizeVar * 2 * p));
+        const x = cx + (p - 0.5) * sw.spread * 2;
+        const y = cy + (q - 0.5) * sw.spread * 2;
+        ctx.fillRect(Math.round(x - s / 2), Math.round(y - s / 2), s, s);
+      }
+    }
+
+    // quelques corolles qui volent dans la nuée, chacune à son propre rythme
+    for (let i = 0; i < sw.flowers; i++) {
+      const u = hash01(i * 17.3 + 2.9);
+      const w = hash01(i * 41.9 + 6.2);
+      const a = u * TAU + f.state.stormSpin * (0.45 + w);
+      const rad = reach * (0.25 + 0.6 * w);
+      drawSpriteCentered(
+        ctx,
+        sw.flowerSprite,
+        target.x + Math.cos(a) * rad,
+        target.y + Math.sin(a) * rad,
+        sw.flowerSize,
+      );
+    }
+    ctx.restore();
+  },
+
+  barValue(f) {
+    if (f.ult.active > 0) return f.ult.active / f.el.ultimate.duration;
+    return f.ult.charge / 100;
+  },
+
   specialBar(f) {
     const sp = f.el.special;
     // Pendant la charge la jauge **se remplit** au lieu de se vider : c'est un
@@ -297,7 +431,4 @@ export const mageAbilities = {
     return { value: 1 - clamp(f.state.specCd / f.state.specSpan, 0, 1), active: false };
   },
 
-  barValue(f) {
-    return plantAbilities.barValue(f);
-  },
 };

@@ -9,18 +9,31 @@
  */
 
 import { deepFreeze } from '../freeze.js';
-import { FLOWER } from './plant.js';
 
 /**
- * Corolle du Mage — **la carte de la Plante, repeinte**.
+ * Corolle du Mage — la corolle de la Plante, repeinte.
  *
- * `rows` n'est pas recopié mais **partagé** : seule la palette change. Une
- * copie du dessin aurait divergé au premier retouchage, et c'est exactement ce
- * qui est arrivé deux fois à `ICON_LANCE`. Les teintes sortent du cristal du
- * sceptre, comme tout le reste de la fiche.
+ * Elle **partageait** le tableau `rows` de `FLOWER` plutôt que de le recopier,
+ * pour qu'aucune des deux ne puisse dériver de l'autre. La Plante supprimée,
+ * il n'y a plus de second exemplaire dont diverger : le dessin est recopié ici,
+ * et c'est maintenant le seul.
  */
 export const MAGE_FLOWER = deepFreeze({
-  ...FLOWER,
+  w: 11,
+  h: 11,
+  rows: [
+    '...KK.KK...',
+    '..KppKppK..',
+    '.KpppppppK.',
+    'KpppPPPpppK',
+    'KppPPywPppK',
+    'KppPyyyPppK',
+    'KppPPyyPppK',
+    'KpppPPPpppK',
+    '.KpppppppK.',
+    '..KppKppK..',
+    '...KK.KK...',
+  ],
   palette: {
     K: '#0a1a0f', // contour
     p: '#38cd65', // pétale

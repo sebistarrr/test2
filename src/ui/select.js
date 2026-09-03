@@ -8,7 +8,7 @@
  * @module ui/select
  */
 
-import { ELEMENTS, PLAYABLE } from '../data/elements.js';
+import { ELEMENTS, ROSTER } from '../data/elements.js';
 import { UI, label } from './lang.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { compilePixelMap } from '../render/pixelart.js';
@@ -27,14 +27,14 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
   const startBtn = root.querySelector('#btn-start');
 
   /** @type {{a:string|null,b:string|null}} */
-  // Duel par défaut. Il se prend dans `PLAYABLE` et non en dur : avec un
+  // Duel par défaut. Il se prend dans `ROSTER` et non en dur : avec un
   // roster réduit, un défaut codé en dur pointerait sur une carte absente de
   // la grille, et l'écran s'ouvrirait sur une sélection impossible à défaire.
-  const picks = { a: PLAYABLE[0], b: PLAYABLE[1] ?? PLAYABLE[0] };
+  const picks = { a: ROSTER[0], b: ROSTER[1] ?? ROSTER[0] };
   let active = 'a';
 
   // --- cartes du roster
-  for (const id of PLAYABLE) {
+  for (const id of ROSTER) {
     const el = ELEMENTS[id];
     const card = document.createElement('button');
     card.type = 'button';
@@ -43,8 +43,11 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
     card.dataset.id = id;
 
     const cv = document.createElement('canvas');
-    cv.width = 96;
-    cv.height = 96;
+    // Format **large et bas**, comme ce qu'elle dessine : un combattant est une
+    // bille de 82 px suivie d'une arme qui va jusqu'à 208. Dans un carré, la
+    // largeur bornait seule l'échelle et la moitié de la hauteur restait vide.
+    cv.width = 144;
+    cv.height = 72;
     drawElementBadge(cv, el);
 
     const name = document.createElement('span');
@@ -186,30 +189,54 @@ function projectileLine(el, t, lang) {
     .join(' · ');
 }
 
-/** Vignette : la boule de l'élément + la tête de son arme. */
+/**
+ * Vignette : la boule du combattant et son arme, **placées comme en jeu**.
+ *
+ * La version précédente posait toujours l'arme *à droite* de la bille, à une
+ * distance arbitraire. C'est juste pour une arme portée sur le flanc, et faux
+ * pour une arme **centrée sur la bille** : le Shinobi, dont le corps *est* le
+ * shuriken, s'affichait en boule noire avec un petit shuriken flottant à côté —
+ * ce qu'on ne voit jamais en jeu.
+ *
+ * La vignette lit donc la géométrie de la fiche, exactement celle dont se sert
+ * `Fighter.drawWeapon()` : le sprite occupe `[handle.length, reach]` autour du
+ * centre du corps, et `weapon.overBody` décide s'il passe devant ou derrière.
+ * Rien n'est codé par combattant — un futur venu s'affichera juste.
+ */
 function drawElementBadge(canvas, el) {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
-  const cx = canvas.width * 0.42;
-  const cy = canvas.height / 2;
-  const r = canvas.width * 0.3;
 
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, TAU);
-  ctx.fillStyle = el.look.body;
-  ctx.fill();
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = el.look.outline;
-  ctx.stroke();
+  const w = el.weapon;
+  const key = w.head.sprite ?? Object.values(el.projectiles ?? {})[0]?.sprite ?? el.icon;
+  const map = PIXEL_MAPS[key];
+  const drawnW = map.w * w.head.scale;
+  const drawnH = map.h * w.head.scale;
 
-  // certaines armes n'ont pas de sprite (liane courbe dessinée en tracé) :
-  // on retombe alors sur le projectile, puis sur l'icône de l'élément
-  const key =
-    el.weapon.head.sprite ?? Object.values(el.projectiles ?? {})[0]?.sprite ?? el.icon;
-  const sprite = compilePixelMap(PIXEL_MAPS[key], 3);
-  // la tête d'arme est cadrée dans la place restante, ratio conservé
-  const availW = canvas.width - (cx + r * 0.6);
-  const availH = canvas.height * 0.62;
-  const k = Math.min(availW / sprite.width, availH / sprite.height);
-  ctx.drawImage(sprite, cx + r * 0.6, cy - (sprite.height * k) / 2, sprite.width * k, sprite.height * k);
+  // encombrement en unités de jeu, corps et arme réunis
+  const left = Math.min(-el.look.radius, w.handle.length);
+  const right = Math.max(el.look.radius, w.handle.length + drawnW);
+  const halfH = Math.max(el.look.radius, drawnH / 2);
+  const k = Math.min((canvas.width * 0.94) / (right - left), (canvas.height * 0.94) / (halfH * 2));
+
+  // le tout est centré sur l'encombrement, pas sur la bille : une arme longue
+  // ne doit pas pousser le combattant hors du cadre
+  const ox = canvas.width / 2 - ((left + right) / 2) * k;
+  const oy = canvas.height / 2;
+
+  const ball = () => {
+    ctx.beginPath();
+    ctx.arc(ox, oy, el.look.radius * k, 0, TAU);
+    ctx.fillStyle = el.look.body;
+    ctx.fill();
+    ctx.lineWidth = Math.max(2, el.look.outlineWidth * k);
+    ctx.strokeStyle = el.look.outline;
+    ctx.stroke();
+  };
+  const weapon = () => {
+    const sprite = compilePixelMap(map, 3);
+    ctx.drawImage(sprite, ox + w.handle.length * k, oy - (drawnH / 2) * k, drawnW * k, drawnH * k);
+  };
+
+  if (w.overBody) { ball(); weapon(); } else { weapon(); ball(); }
 }

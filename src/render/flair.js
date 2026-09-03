@@ -1029,12 +1029,4 @@ export class Flair {
     ctx.restore();
   }
 
-  clear() {
-    for (const r of this.smears.values()) { r.head = 0; r.n = 0; }
-    for (const g of this.ghosts.values()) { g.head = 0; g.n = 0; g.debt = 0; }
-    for (const m of this.motes) m.alive = false;
-    for (const p of this.pops) p.alive = false;
-    for (const r of this.ribbons.values()) r.n = 0;
-    this.flash = 0;
-  }
 }

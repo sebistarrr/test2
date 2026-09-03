@@ -17,7 +17,7 @@ import { createLoop } from './core/loop.js';
 import { loadSprites } from './render/sprites.js';
 import { ensureFonts } from './core/fonts.js';
 import { createRng, seedFromLocation } from './core/rng.js';
-import { ELEMENTS, PLAYABLE } from './data/elements.js';
+import { ELEMENTS, ROSTER } from './data/elements.js';
 import { Match } from './game/match.js';
 import { createSelectScreen } from './ui/select.js';
 import { createResultScreen } from './ui/result.js';
@@ -77,9 +77,9 @@ const resultScreen = createResultScreen({
 });
 
 /** @type {[string,string]} */
-// Pris dans `PLAYABLE` : codé en dur, il pointerait sur un combattant
+// Pris dans `ROSTER` : codé en dur, il pointerait sur un combattant
 // désactivé et le premier duel partirait hors du roster affiché.
-let lastPair = [PLAYABLE[0], PLAYABLE[1] ?? PLAYABLE[0]];
+let lastPair = [ROSTER[0], ROSTER[1] ?? ROSTER[0]];
 let lastSeed = 0;
 
 /**

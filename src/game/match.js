@@ -61,12 +61,7 @@ export class Match {
       [this.a, abilitiesFor(elA.id)],
       [this.b, abilitiesFor(elB.id)],
     ]);
-    for (const [f, mod] of this.modules) {
-      mod.init(f, this);
-      // un module peut prendre la main sur le rendu de son arme
-      // (la liane courbe de la Plante n'est pas un sprite droit)
-      if (mod.drawWeapon) f.customWeapon = (ctx) => mod.drawWeapon(ctx, f);
-    }
+    for (const [f, mod] of this.modules) mod.init(f, this);
 
     this.flair.attach(this.fighters);
     this.backdrop = buildBackdrop({ a: elA, b: elB, lang });
@@ -293,19 +288,8 @@ export class Match {
 
     let amt = Math.max(0, Math.round(amount * this.damageScale()));
 
-    // le module de la cible peut absorber tout ou partie des dégâts
-    // (bouclier de la Lumière) avant qu'ils ne touchent les PV
-    const targetMod = this.modules.get(target);
-    const before = amt;
-    if (targetMod?.onDamage) amt = Math.max(0, Math.round(targetMod.onDamage(target, amt, source, opts, this)));
-
-    // un coup entièrement absorbé ne coûte pas de PV mais reste un coup :
-    // la cible clignote quand même (c'est ce que montrent les vidéos de la
-    // Lumière, qui encaisse en restant à 100 PV)
-    if (amt === 0) {
-      if (before > 0) target.flash = PHYSICS.hitFlash;
-      return;
-    }
+    // un coup à zéro reste un coup : la cible clignote quand même
+    if (amt === 0) return;
 
     target.hp = Math.max(0, target.hp - amt);
     target.flash = PHYSICS.hitFlash;

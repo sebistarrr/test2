@@ -30,10 +30,6 @@ export class Effects {
     this.cursor = 0;
   }
 
-  clear() {
-    for (const p of this.pool) p.alive = false;
-  }
-
   /** Récupère un slot libre (écrase le plus ancien si le pool est plein). */
   _slot() {
     for (let i = 0; i < MAX; i++) {
@@ -79,10 +75,6 @@ export class Effects {
         drag: 2.4,
       });
     }
-  }
-
-  ghost(x, y, radius, color, life = 0.28) {
-    this.spawn({ kind: 'ghost', x, y, size: radius, color, life });
   }
 
   ring(x, y, r0, r1, time, color, width, clip = false) {
@@ -158,13 +150,6 @@ export class Effects {
           ctx.beginPath();
           ctx.arc(p.x, p.y, Math.max(1, r), 0, TAU);
           ctx.stroke();
-          break;
-        }
-        case 'ghost': {
-          ctx.fillStyle = p.color;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * (0.6 + 0.4 * t), 0, TAU);
-          ctx.fill();
           break;
         }
         case 'snow':

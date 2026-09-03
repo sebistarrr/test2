@@ -175,3 +175,29 @@ export const ICON_REVOLVER = deepFreeze({
     '................',
   ],
 });
+
+/* Éclat de givre — le projectile du Blizzard greffé sur le Hors-la-loi.
+ *
+ * Carte **rapatriée de la Glace** lors de sa suppression : le Hors-la-loi en
+ * était le dernier lecteur (`special.shards.projectile`), et une carte dont le
+ * propriétaire a disparu n'a plus de fichier où vivre. La clé de registre reste
+ * `iceShard` — la renommer aurait touché la fiche pour rien.
+ */
+export const ICE_SHARD = deepFreeze({
+  w: 8,
+  h: 11,
+  palette: { K: '#0d2b3a', I: '#cfeffd', w: '#ffffff', b: '#7cc7ea' },
+  rows: [
+    '...KK...',
+    '..KIIK..',
+    '.KIIIIK.',
+    '.KIwIIK.',
+    'KIIwIIIK',
+    'KIIwIIbK',
+    'KIIIIIbK',
+    '.KIIIbK.',
+    '.KIIbK..',
+    '..KIK...',
+    '...K....',
+  ],
+});

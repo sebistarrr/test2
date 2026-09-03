@@ -2,41 +2,27 @@
  * Registre des modules de pouvoirs.
  *
  * Un module implémente : init / update / drawUnder / drawOver / barValue,
- * plus deux crochets optionnels :
- *   • `onDamage(f, amount, source, opts, game)` → dégâts restants après
- *     absorption (bouclier de la Lumière) ;
+ * plus trois crochets optionnels :
  *   • `onLand(f, target, hit, game)` → réaction à sa propre touche d'arme
- *     (la Foudre y plante une borne) ;
- *   • `drawWeapon(ctx, f)` → rendu d'arme sur mesure, à la place du couple
- *     manche + sprite (la liane courbe de la Plante).
+ *     (la brûlure du Bretteur, la pile du Lancier) ;
+ *   • `drawUnbounded(ctx, f, game, now)` → passe de rendu **hors arène**, pour
+ *     un effet qui déborde volontairement du cadre (le dôme du Lancier) ;
+ *   • `specialBar(f)` → seconde rangée de jauge, pour un troisième créneau de
+ *     pouvoir.
  *
- * Ajouter un élément = ajouter sa fiche + son module ici.
+ * Ajouter un combattant = ajouter sa fiche + son module ici.
  *
  * @module game/abilities
  */
 
-import { shadowAbilities } from './shadow.js';
-import { iceAbilities } from './ice.js';
-import { fireAbilities } from './fire.js';
-import { lightAbilities } from './light.js';
 import { windAbilities } from './wind.js';
-import { lightningAbilities } from './lightning.js';
-import { waterAbilities } from './water.js';
-import { plantAbilities } from './plant.js';
 import { outlawAbilities } from './outlaw.js';
 import { bladesmanAbilities } from './bladesman.js';
 import { lancerAbilities } from './lancer.js';
 import { mageAbilities } from './mage.js';
 
 const REGISTRY = {
-  shadow: shadowAbilities,
-  ice: iceAbilities,
-  fire: fireAbilities,
-  light: lightAbilities,
   wind: windAbilities,
-  lightning: lightningAbilities,
-  water: waterAbilities,
-  plant: plantAbilities,
   outlaw: outlawAbilities,
   bladesman: bladesmanAbilities,
   lancer: lancerAbilities,

@@ -27,58 +27,28 @@
 
 import { deepFreeze } from './freeze.js';
 
-import { DARK_BLADE, ORB_DARK } from './pixelart/shadow.js';
-import { ICE_AXE_HEAD, ICE_SHARD, SNOWFLAKE } from './pixelart/ice.js';
-import { FIRE_BLADE, EMBER, ICON_FLAME } from './pixelart/fire.js';
-import { LIGHT_HAMMER_HEAD, ICON_SHIELD } from './pixelart/light.js';
-import { WIND_SHURIKEN, WIND_CRESCENT, ICON_TORNADO } from './pixelart/wind.js';
-import { BOLT_BLADE, TESLA_NODE, ICON_BOLT } from './pixelart/lightning.js';
-import { WATER_TRIDENT, WATER_DROP, WATER_WHIRLPOOL, ICON_DROPLET } from './pixelart/water.js';
-import { PLANT_BULB, FLOWER, ICON_LEAF } from './pixelart/plant.js';
-import { OUTLAW_REVOLVER, OUTLAW_SHOT, ICON_REVOLVER } from './pixelart/outlaw.js';
+import { WIND_SHURIKEN, ICON_TORNADO } from './pixelart/wind.js';
+import { OUTLAW_REVOLVER, OUTLAW_SHOT, ICON_REVOLVER, ICE_SHARD } from './pixelart/outlaw.js';
 import { BLADESMAN_FLAMEBLADE, BLADESMAN_FLAMEWHEEL, ICON_SABRE } from './pixelart/bladesman.js';
 import { LANCER_SPEAR, ICON_LANCE } from './pixelart/lancer.js';
 import { MAGE_STAFF, MAGE_ORB, MAGE_FLOWER, ICON_STAFF } from './pixelart/mage.js';
 
 export const PIXEL_MAPS = deepFreeze({
-  // Ombre & Glace
-  darkBlade: DARK_BLADE,
-  iceAxeHead: ICE_AXE_HEAD,
-  iceShard: ICE_SHARD,
-  orbDark: ORB_DARK,
-  snowflake: SNOWFLAKE,
-  // armes
-  fireBlade: FIRE_BLADE,
-  lightHammerHead: LIGHT_HAMMER_HEAD,
-  windShuriken: WIND_SHURIKEN,
-  boltBlade: BOLT_BLADE,
-  waterTrident: WATER_TRIDENT,
-  // projectiles & entités
-  ember: EMBER,
-  windCrescent: WIND_CRESCENT,
-  waterDrop: WATER_DROP,
-  teslaNode: TESLA_NODE,
-  waterWhirlpool: WATER_WHIRLPOOL,
-  // plante
-  plantBulb: PLANT_BULB,
-  flower: FLOWER,
-  // icônes
-  iconFlame: ICON_FLAME,
-  iconShield: ICON_SHIELD,
-  iconTornado: ICON_TORNADO,
-  iconBolt: ICON_BOLT,
-  iconDroplet: ICON_DROPLET,
-  iconLeaf: ICON_LEAF,
-  // Hors-la-loi & Bretteur
+  // Hors-la-loi
   outlawRevolver: OUTLAW_REVOLVER,
   outlawShot: OUTLAW_SHOT,
+  iceShard: ICE_SHARD,
+  iconRevolver: ICON_REVOLVER,
+  // Bretteur
   bladesmanFlameBlade: BLADESMAN_FLAMEBLADE,
   bladesmanFlameWheel: BLADESMAN_FLAMEWHEEL,
-  iconRevolver: ICON_REVOLVER,
   iconSabre: ICON_SABRE,
-  // Dragoon
+  // Lancier
   lancerSpear: LANCER_SPEAR,
   iconLance: ICON_LANCE,
+  // Shinobi
+  windShuriken: WIND_SHURIKEN,
+  iconTornado: ICON_TORNADO,
   // Mage
   mageStaff: MAGE_STAFF,
   mageOrb: MAGE_ORB,

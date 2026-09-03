@@ -72,7 +72,6 @@ const { fiches, wiring } = await page.evaluate(async () => {
     wiring: {
       roster: [...m.ROSTER],
       registered: Object.keys(m.ELEMENTS),
-      disabled: [...m.DISABLED],
       sprites: Object.keys(PIXEL_MAPS),
       // `abilitiesFor` retombe sur un module neutre : un combattant dont le
       // module n'est pas inscrit dans `abilities/index.js` se joue sans
@@ -101,9 +100,6 @@ for (const id of wiring.registered) {
 for (const id of wiring.roster) {
   if (!wiring.registered.includes(id)) say(`câblage — ROSTER cite ${id}, absent d'ELEMENTS`);
   else if (fiches[id].id !== id) say(`câblage — ELEMENTS.${id} porte id: '${fiches[id].id}' : les deux doivent coïncider`);
-}
-for (const id of wiring.disabled) {
-  if (!wiring.roster.includes(id)) say(`câblage — DISABLED cite ${id}, absent de ROSTER`);
 }
 for (const id of wiring.noop) {
   say(`câblage — ${id} n'a pas de module dans abilities/index.js : il se jouera sans pouvoir ni ultime`);
