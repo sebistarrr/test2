@@ -84,13 +84,6 @@ L'inscrire dans `abilities/index.js` : **un module oublié retombe sur le module
 neutre**, donc le combattant se joue sans pouvoir ni ultime, sans erreur —
 `fiche-check` le détecte.
 
-Cette liste est celle que le moteur appelle **vraiment** : la vérifier plutôt
-que la recopier. Elle a déjà porté `onDamage` et `drawWeapon` longtemps après
-leur suppression, et un crochet fantôme dans une doc coûte une implémentation
-qui ne sera jamais appelée. Il reste par ailleurs un crochet **par entité** et
-non par module, `customWeapon`, posé sur l'objet lui-même pour remplacer le
-tracé de son arme (les clones du Shinobi, qui n'en portent pas).
-
 Tout aléa de simulation passe par `game.rng`, **tout aléa décoratif par
 `game.viewRng`** : une décoration qui tire dans le flux de simulation décale
 tous les duels (invariant 2).
@@ -141,12 +134,6 @@ node tools/shot.mjs "?a=<id>&b=outlaw&seed=11" /tmp/s 4,10
 les trois registres, **zéro ligne modifiée** dans une fiche existante —
 `fiche-snapshot` le confirme, et le diff de la matrice ne contient que des
 ajouts.
-
-**Et si un ajout demande de généraliser le moteur**, la question n'est pas « le
-cas courant rend-il les mêmes valeurs » mais « passe-t-il par les mêmes
-expressions » : la multiplication flottante n'est pas associative, et regrouper
-autrement les mêmes produits a déjà déplacé deux affrontements où le combattant
-modifié n'était même pas.
 
 ---
 

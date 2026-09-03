@@ -40,13 +40,8 @@ Règles :
   `imageSmoothingEnabled = false`) ;
 - le sprite est dessiné **pointe vers la droite**, angle 0 = est. Le moteur
   applique lui-même la rotation de l'arme ;
-- le ratio largeur/hauteur **doit être celui de la carte pixel-art qu'il
-  remplace**. Le moteur impose la hauteur (`head.scale × hauteur du pixel-map`)
-  et calcule la largeur à partir du ratio **du PNG** : un ratio différent change
-  donc la largeur dessinée *sans toucher à la hitbox*, la somme
-  `handle.length + largeur` cesse de valoir `reach`, et le dessin ment sur
-  l'endroit où il coupe. C'est arrivé à la lame du Bretteur, dont le PNG est à
-  3,47 quand sa carte est à 3,89 — écart connu, pas corrigé.
+- le ratio largeur/hauteur est conservé : le moteur impose la **hauteur**
+  (`head.scale × hauteur du pixel-map`) et calcule la largeur.
 
 ## 2. Déposer le fichier ici
 

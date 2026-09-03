@@ -242,17 +242,6 @@ sans que ça se voie.
    `weapon.lunge` et `special`, et c'est délibéré — `ability` a été essayé et
    criait à tort dix-neuf fois, or un garde-fou qui crie à tort n'est plus lu.
 
-   **Troisième instance, et elle échappe aussi à `fiche-check` : les crochets
-   de prototype.** `Fighter.paintWeapon()` consultait un `customWeapon`
-   facultatif, et les clones du Shinobi s'en servaient pour n'en porter aucune.
-   Le crochet a disparu dans une réécriture, le no-op est resté dans `wind.js`
-   sans lecteur, et **chaque clone s'est mis à dessiner un shuriken grandeur
-   nature**. Rien n'a crié, et rien ne pouvait crier : la matrice ne tourne
-   jamais `draw()`, `fiche-check` ne recoupe que des clés de fiche — il a fallu
-   une capture d'écran, un mois plus tard. Le réflexe qui l'aurait attrapé :
-   quand une réécriture retire un crochet, **chercher qui le fournissait
-   encore**, pas seulement qui l'appelait.
-
 10. **Un ancrage d'arme se pose, il ne s'interpole pas.** `weaponLateral`
     bascule entre `lunge.lateral` et zéro **dans l'image même** où la phase
     change. La première version le rapprochait à vitesse bornée pour éviter un
@@ -304,23 +293,11 @@ reskin du Bretteur en lame de braise, Shinobi en ninja sombre — sont détaill�
 dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 
 - **Trois vrais PNG dans un dépôt « sans binaire »** : la lame du Bretteur, le
-  shuriken du Shinobi (deux versions, flamme et ombre).
-  `assets/sprites/manifest.json` fait pointer une clé de `PIXEL_MAPS` sur un
-  fichier ; la carte pixel-art reste comme **repli automatique**
-  (`render/sprites.js`). C'est cette couche d'indirection qui rend un changement
-  d'apparence réversible en une ligne de JSON.
-
-  **Le ratio d'un override n'est pas libre.** `drawSpriteLeft` prend la hauteur
-  dessinée de la **carte** (`map.h × scale`) et la largeur du ratio **du sprite
-  affiché**. Un PNG au mauvais ratio change donc la largeur sans toucher à la
-  hitbox, et `handle.length + largeur` cesse de valoir `reach` : le dessin ment
-  sur l'endroit où il coupe. C'est arrivé à la lame du Bretteur, dont le PNG est
-  à 3,47 quand sa carte est à 3,89 — écart connu, pas corrigé.
-
-  **Et les trois images d'une arme sortent du même dessin.** Carte de repli et
-  icône du titre se *réduisent du PNG* par script, jamais redessinées — sans
-  quoi l'icône finit par annoncer une arme que le joueur ne voit pas (payé deux
-  fois sur le Lancier).
+  shuriken du Shinobi (deux versions, flamme et ombre). `assets/sprites/manifest.json`
+  fait pointer une clé de `PIXEL_MAPS` sur un fichier ; la carte pixel-art reste
+  comme **repli automatique** (`render/sprites.js`). C'est cette couche
+  d'indirection qui rend un changement d'apparence réversible en une ligne de
+  JSON.
 - **Fond hors-arène** : la vidéo est sur papier crème, le site est en **encre
   sombre `#1c1a26`**. L'arène reste blanche → le pixel-art garde ses contours
   noirs mesurés. Le « chrome » posé sur le fond sombre passe à un liseré crème
@@ -525,16 +502,6 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   c'est **baisser les dégâts du Shinobi** qui les a remontés tous les deux,
   sans toucher à leur fiche, et qui a le plus resserré le roster. Quand un
   combattant plafonne, regarder aussi ce qui le bat.
-
-- **Un chiffre de combattant ne se lit pas seul : il se lit contre la colonne
-  des autres.** « Il encaisse 4,4 PV/s » ne veut rien dire tant qu'on ne sait
-  pas que le roster tient dans 3,1–3,8 encaissés et 3,7–4,8 infligés. Passer le
-  **même banc sur tout le roster** coûte une minute et dit de quel côté est
-  l'anomalie — sans quoi on peut dépenser trois balayages sur la défense d'un
-  combattant dont c'est l'attaque qui décroche. Corollaire : « il ne touche pas
-  assez » et « ses touches ne valent rien » ne se corrigent pas au même endroit,
-  et seul un **comptage** des occasions et du taux de conversion les sépare — un
-  levier de fréquence sur un problème de valeur est plat par construction.
 
 - **Un paramètre qui ne fait rien doit être documenté comme tel.** Le verrou de
   mêlée du Mage, balayé à 1,4 / 1,7 / 2,2 s, rend 15 / 12 / 14 victoires :

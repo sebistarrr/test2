@@ -500,16 +500,9 @@ export class Fighter {
   }
 
   /**
-   * Point d'entrée du dessin de l'arme, et **crochet facultatif** : une entité
-   * peut poser un `customWeapon` pour remplacer ce tracé — c'est ainsi que les
-   * clones du Shinobi, qui empruntent ce prototype, n'en portent pas.
-   *
-   * Le crochet avait disparu dans une réécriture, et **rien n'a crié** : les
-   * clones se sont mis à dessiner chacun un shuriken grandeur nature, et il a
-   * fallu une capture pour s'en apercevoir. Exactement l'invariant 9 — la
-   * perte du *lecteur* est silencieuse là où la perte de la *clé* plante.
-   * C'est purement du rendu : la matrice ne tourne pas `draw()`, elle ne
-   * pouvait pas le voir non plus.
+   * Dessin de l'arme, et **crochet facultatif** : une entité peut poser un
+   * `customWeapon` pour remplacer ce tracé — c'est ainsi que les clones du
+   * Shinobi, qui empruntent ce prototype, n'en portent aucune.
    */
   paintWeapon(ctx) {
     if (this.customWeapon) { this.customWeapon(ctx); return; }

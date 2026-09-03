@@ -404,37 +404,6 @@ clone traîne à côté, soit une famine remplacée par l'autre.
 1/3). C'est un correctif de bug, et il va dans le bon sens pour l'anomalie
 signalée à l'étape précédente.
 
-### Second correctif : chaque clone portait un shuriken
-
-Trouvé en relisant les crochets du moteur — pas en regardant le Shinobi, où
-rien ne signalait quoi que ce soit.
-
-`paintWeapon()` consultait un crochet facultatif `customWeapon` avant de tracer
-l'arme, et le clone posait `customWeapon: () => {}` pour n'en porter aucune —
-c'est ce que demandait la consigne d'origine : *le clone riposte par ses propres
-shurikens, sans en porter un sur lui*. Le crochet a disparu du moteur dans une
-réécriture ; le no-op est resté dans `wind.js`, **sans lecteur**.
-
-Résultat : chaque clone dessinait un `windShuriken` grandeur nature centré sur
-lui. Compté plutôt que jugé à l'œil, sur un clone réel en cours de duel :
-
-| | appels à `drawWeapon()` |
-| --- | --- |
-| Clone, crochet en place | **0** |
-| Clone, sans le crochet (l'état livré) | **1** |
-| Le vrai Shinobi | 1 (inchangé) |
-
-**C'est l'invariant 9 dans sa forme silencieuse.** Perdre une *clé* que le
-module lit encore plante bruyamment (`lunge.recoil` → NaN). Perdre le *lecteur*
-d'une clé ne fait rien du tout : l'arme cesse simplement de ne pas se dessiner.
-Et la matrice ne pouvait pas l'attraper — elle ne tourne jamais `draw()`.
-`tools/fiche-check.mjs` non plus : il recoupe `weapon.lunge` et `special`, pas
-les crochets de prototype.
-
-**Matrice inchangée**, vérifiée : le correctif est purement visuel. Deux clés
-mortes sont parties avec (`shield`/`shieldMax` sur le clone, dont le lecteur
-était le bouclier de l'Égide, supprimé avec les sept éléments).
-
 ### Couleur des pouvoirs au gris
 
 **Demandé, purement visuel.** Derniers restes khaki-crème du Vent d'origine :
