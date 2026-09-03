@@ -3,103 +3,119 @@
  *
  * Chargées par `data/pixelmaps.js`, qui les recense dans `PIXEL_MAPS`.
  *
+ * **Les deux cartes de ce fichier sont réduites du même PNG**,
+ * `assets/sprites/colossus-pavise.png` — celui que `manifest.json` fait passer
+ * devant `colossusShield`. Aucune n'est dessinée à la main : c'est ce qui
+ * interdit à l'icône de diverger de l'arme qu'elle annonce, panne déjà payée
+ * deux fois sur le Lancier.
+ *
  * @module data/pixelart/colossus
  */
 
 import { deepFreeze } from '../freeze.js';
 
 
-/* Pavois — composé, pas transcrit : il n'existe pas de maquette pour lui.
+/* Pavois — **repli** du PNG, et référence de géométrie.
 
- * **Vu du dessus**, comme toutes les armes du jeu : l'axe de l'arme est l'axe
- * des x, donc le pavois est étroit en x (son épaisseur : planche de bois au dos,
- * plaque de fer devant) et haut en y (sa hauteur). L'umbo de bronze **dépasse
- * vers la droite**, côté adversaire — c'est lui qui touche en premier. */
+ * `head.scale` multiplie sa hauteur (34 x 3 = 102 px dessinés) et son ratio
+ * 15/34 décide de la largeur (45 px) : `handle.length` 41 + 45 = 86, la portée.
+ * Un PNG d'override doit donc garder ce ratio, sinon la pointe ment sur la
+ * hitbox.
+ *
+ * **Vu de dessus** : le moteur pose l'image avec sa largeur le long de l'axe de
+ * l'arme et sa hauteur en travers, donc ce pavois dessiné debout apparaît en
+ * travers de la trajectoire, face à l'adversaire — tenu comme un mur. Il est
+ * symétrique haut/bas pour la même raison : en vue de dessus il n'y a pas de
+ * haut, et une pointe d'un seul côté désignerait une direction au hasard. */
 export const COLOSSUS_SHIELD = deepFreeze({
   w: 15,
   h: 34,
   palette: {
     K: '#141118',
+    d: '#252b36',
+    e: '#39404e',
+    f: '#5b6473',
     b: '#5a4632',
-    i: '#39404e',
-    I: '#5b6473',
-    L: '#8b96a7',
-    r: '#b9c2d0',
-    o: '#a8762f',
-    O: '#d9a441',
+    o: '#8a5f26',
+    O: '#a8762f',
+    P: '#d9a441',
   },
   rows: [
-    '.KKKKKKKKKK....',
-    'KKbbiiIILIKK...',
-    'KbbbiiILIIIK...',
-    'KbbbiiILIIIK...',
-    'KbbbiiILIIIKK..',
-    'bbbbiiLrIIIIK..',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLrIoooKK.',
-    'bbbbiiLIIooooKK',
-    'bbbbiiLIIoooooK',
-    'bbbbiiLIIoooooK',
-    'bbbbiiLIIOOOOOo',
-    'bbbbiiLIIOOOOOo',
-    'bbbbiiLIIOOOOOo',
-    'bbbbiiLIIOOOOOo',
-    'bbbbiiLIIoooooK',
-    'bbbbiiLIIoooooK',
-    'bbbbiiLIIooooKK',
-    'bbbbiiLrIoooKK.',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLIIIIIK..',
-    'bbbbiiLrIIIIK..',
-    'KbbbiiILIIIKK..',
-    'KbbbiiILIIIK...',
-    'KbbbiiILIIIK...',
-    'KKbbiiIILIKK...',
-    '.KKKKKKKKKK....',
+    '..Kddeeeffffe..',
+    '.Kdddeeefffffe.',
+    '.ddddeeeeffeff.',
+    'Kdddeeeeefffffd',
+    'Kddeeeeeffffffe',
+    'Kdddeeeeefeeffd',
+    'KKddddeeefffeed',
+    'Kdddeeeeefffffe',
+    'Kdddeeeeefffefe',
+    'Kdddedeeeffeffe',
+    'Kdddeeeeefffefe',
+    'Kddeeeeeffffffe',
+    'Kddeeeebbbbfffe',
+    'KKddddboooOofee',
+    'KddddboooOOOOfe',
+    'KKdddbbooOOOOfe',
+    'KKddbboooPOOOoe',
+    'KKddbboooOOOOoe',
+    'KKdddbboooOOOfe',
+    'KKdddbbbooooofe',
+    'Kdddeeboooooffe',
+    'Kddeeeebbfffffe',
+    'Kdddeeeeefffffe',
+    'Kdddeedeefeeeee',
+    'Kdddeeeeefeeefe',
+    'Kdddeeeeefeeefe',
+    'Kdddeeeeefeeefe',
+    'Kdddeeeeeffeffd',
+    'Kddeeefeefffffe',
+    'Kdddeeeeffffffd',
+    'KKdddeeeefeeeed',
+    '.ddddeeeffffff.',
+    '.Kdddeeefffffe.',
+    '..Kdddeeeffed..',
   ],
 });
 
-/* Icône du titre — **échantillonnée sur `COLOSSUS_SHIELD`**, jamais redessinée.
+/* Icône du titre — **réduite du même PNG** que le pavois, jamais redessinée.
 
- * Simple rééchantillonnage au plus proche voisin, 15 x 34 vers 16 x 16 : le
- * pavois y est tassé, mais il garde ses trois bandes — bois, fer, umbo de
- * bronze — et se lit. Une première version le *miroitait* pour le montrer de
- * face : ça n'en faisait pas un bouclier vu de face, juste un papillon. */
+ * Elle ne peut donc pas dériver de l'arme : toute retouche du PNG se propage
+ * aux deux par le même script.
+ *
+ * Carrée 16 x 16 comme les cinq autres icônes, parce que `scene.js` les pose
+ * avec `drawSpriteCentered(..., icon)` en supposant la largeur égale à la
+ * hauteur. Le pavois y est donc **centré** (9 x 16) plutôt qu'étiré au
+ * carré : étiré il ne se lisait plus, et à son ratio exact (7 x 16) il ne
+ * restait qu'une barre grise et un point de bronze. */
 export const ICON_PAVISE = deepFreeze({
   w: 16,
   h: 16,
   palette: {
     K: '#141118',
+    d: '#252b36',
+    e: '#39404e',
+    f: '#5b6473',
     b: '#5a4632',
-    i: '#39404e',
-    I: '#5b6473',
-    L: '#8b96a7',
-    o: '#a8762f',
-    O: '#d9a441',
+    o: '#8a5f26',
+    O: '#a8762f',
   },
   rows: [
-    '..KKKKKKKKKK....',
-    'KKbbbiiILIIIK...',
-    'KKbbbiiILIIIKK..',
-    'bbbbbiiLIIIIIK..',
-    'bbbbbiiLIIIIIK..',
-    'bbbbbiiLIIIIIK..',
-    'bbbbbiiLIIooooKK',
-    'bbbbbiiLIIoooooK',
-    'bbbbbiiLIIOOOOOo',
-    'bbbbbiiLIIoooooK',
-    'bbbbbiiLIIooooKK',
-    'bbbbbiiLIIIIIK..',
-    'bbbbbiiLIIIIIK..',
-    'bbbbbiiLIIIIIK..',
-    'KKbbbiiILIIIKK..',
-    'KKbbbiiILIIIK...',
+    '....ddeeffe.....',
+    '...Kdeeefffe....',
+    '...Kdeeefffe....',
+    '...Kddeefffe....',
+    '...Kdeeefffe....',
+    '...Kdeeefffe....',
+    '...KddbooOfe....',
+    '...KddboOOOe....',
+    '...KddbooOOe....',
+    '...Kdebooofe....',
+    '...Kdeeefffe....',
+    '...Kdeeefeee....',
+    '...Kdeeefefe....',
+    '...Kdeeefffe....',
+    '...Kddeefffe....',
+    '....ddeeffe.....',
   ],
 });

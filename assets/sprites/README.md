@@ -40,8 +40,13 @@ Règles :
   `imageSmoothingEnabled = false`) ;
 - le sprite est dessiné **pointe vers la droite**, angle 0 = est. Le moteur
   applique lui-même la rotation de l'arme ;
-- le ratio largeur/hauteur est conservé : le moteur impose la **hauteur**
-  (`head.scale × hauteur du pixel-map`) et calcule la largeur.
+- le ratio largeur/hauteur **doit être celui de la carte pixel-art qu'il
+  remplace**. Le moteur impose la hauteur (`head.scale × hauteur du pixel-map`)
+  et calcule la largeur à partir du ratio **du PNG** : un ratio différent change
+  donc la largeur dessinée *sans toucher à la hitbox*, la somme
+  `handle.length + largeur` cesse de valoir `reach`, et le dessin ment sur
+  l'endroit où il coupe. Le pavois du Colosse tient 15/34 au chiffre près pour
+  cette raison ; la lame du Bretteur, elle, a dérivé (3,47 contre 3,89).
 
 ## 2. Déposer le fichier ici
 

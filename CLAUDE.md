@@ -341,12 +341,24 @@ Les écarts **par combattant** — arme du Lancier remplacée par une maquette,
 reskin du Bretteur en lame de braise, Shinobi en ninja sombre — sont détaillés
 dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 
-- **Trois vrais PNG dans un dépôt « sans binaire »** : la lame du Bretteur, le
-  shuriken du Shinobi (deux versions, flamme et ombre). `assets/sprites/manifest.json`
-  fait pointer une clé de `PIXEL_MAPS` sur un fichier ; la carte pixel-art reste
-  comme **repli automatique** (`render/sprites.js`). C'est cette couche
-  d'indirection qui rend un changement d'apparence réversible en une ligne de
-  JSON.
+- **Quatre vrais PNG dans un dépôt « sans binaire »** : la lame du Bretteur, le
+  shuriken du Shinobi (deux versions, flamme et ombre), le pavois du Colosse.
+  `assets/sprites/manifest.json` fait pointer une clé de `PIXEL_MAPS` sur un
+  fichier ; la carte pixel-art reste comme **repli automatique**
+  (`render/sprites.js`). C'est cette couche d'indirection qui rend un changement
+  d'apparence réversible en une ligne de JSON.
+
+  **Le ratio d'un override n'est pas libre.** `drawSpriteLeft` prend la hauteur
+  dessinée de la **carte** (`map.h × scale`) et la largeur du ratio **du sprite
+  affiché**. Un PNG au mauvais ratio change donc la largeur sans toucher à la
+  hitbox, et `handle.length + largeur` cesse de valoir `reach` : le dessin ment
+  sur l'endroit où il coupe. Le pavois du Colosse tient 15/34 au chiffre près
+  pour cette raison ; celui du Bretteur, lui, a dérivé (3,47 contre 3,89).
+
+  **Et les trois images d'une arme sortent du même dessin.** Carte de repli et
+  icône du titre sont *réduites du PNG* par script, jamais redessinées — sans
+  quoi l'icône finit par annoncer une arme que le joueur ne voit pas (payé deux
+  fois sur le Lancier).
 - **Fond hors-arène** : la vidéo est sur papier crème, le site est en **encre
   sombre `#1c1a26`**. L'arène reste blanche → le pixel-art garde ses contours
   noirs mesurés. Le « chrome » posé sur le fond sombre passe à un liseré crème

@@ -1866,33 +1866,73 @@ personnages existants » : le diff de `tools/matrix-reference.txt` ne contient
 **que des ajouts**. Les quinze affrontements d'avant sont identiques au
 caractère près.
 
-### Le pavois — composé, pas transcrit
+### Le pavois — un vrai PNG, calculé et non peint
 
-Il n'existe pas de maquette pour lui : personne n'en a fourni. Le sprite est
-donc **composé** dans un script (`gen-colossus.py`), en posant explicitement
-chaque arête — pas en laissant une formule interpoler une silhouette. C'est la
-leçon de la première lance, livrée en **feuille arrondie** là où la maquette
-montrait une pointe à bords droits, parce que le profil était tracé en
-`(1-u)**1.3`.
+Le premier jet était une carte pixel-art **composée** à la main, faute de
+maquette : une planche vue par la tranche, umbo à droite. Elle tenait, mais elle
+se lisait comme un madrier et n'était pas au niveau de ses voisines. Sur demande
+d'un bouclier « dans le même style ultra design que les autres personnages », il
+est devenu le **quatrième vrai PNG du dépôt** —
+`assets/sprites/colossus-pavise.png`, 360 × 816, fond transparent, branché par
+`manifest.json` sur la clé `colossusShield`.
 
-**Vu du dessus**, comme toutes les armes du jeu : l'axe de l'arme est l'axe des
-x. Le pavois est donc **étroit en x** (son épaisseur : planche de bois au dos,
-plaque de fer devant) et **haut en y** (sa hauteur). L'umbo de bronze dépasse
-vers la droite, côté adversaire — c'est lui qui touche en premier.
+**Le dessin est calculé, pas peint.** Un dégradé posé à la main donnait une
+bouillie molle (première tentative, jetée) ; la version livrée construit une
+**carte de hauteur** — planche bombée, cadre riveté, quatre cerclages, nervure
+axiale, umbo à trois étages, chevrons gravés — puis en tire les normales et
+l'éclaire (diffus + spéculaire de Blinn + occlusion). Les biseaux sortent nets
+parce qu'ils sont des biseaux, pas des dégradés qui les imitent. C'est ce que
+demandait le voisinage : la lame du Bretteur et le shuriken du Shinobi sont durs
+et contrastés.
+
+**Deux réglages appris à l'image, comme toujours ici :**
+
+- **Un rayon exprimé en `u` vaut `R × W/H` en `v`.** Multiplié par `H/W` — le
+  même facteur à l'envers — l'umbo avalait le bouclier entier. Une seule
+  inversion sur un sprite deux fois plus haut que large, et il n'y a plus de
+  dessin du tout.
+- **`np.gradient` rend une pente *par pixel*.** Elle est donc deux fois plus
+  faible sur une image deux fois plus large : le rendu final, sorti en 360 ×
+  816, était plus plat que l'aperçu en 240 × 544 sur lequel il avait été réglé.
+  Le facteur de relief est maintenant proportionnel à la largeur, donc
+  indépendant de la résolution. Un paramètre réglé à l'œil sur un aperçu doit
+  être **normalisé** avant de servir en production, sinon il ne veut plus rien
+  dire à la taille livrée.
+
+**Vu du dessus**, comme toutes les armes du jeu : le moteur pose l'image avec sa
+**largeur le long de l'axe de l'arme** (vers l'adversaire) et sa **hauteur en
+travers**. Le pavois y est donc dessiné **debout**, ce qui le fait apparaître en
+travers de la trajectoire, face à l'adversaire — tenu comme un mur, ce qu'on
+veut voir. Et il est **symétrique haut/bas** : en vue de dessus il n'y a pas de
+« haut », une pointe d'un seul côté désignerait une direction au hasard.
 
 | | Valeur | |
 | --- | --- | --- |
-| Carte | 15 × 34 cellules, `scale: 3` → **45 × 102 px** | seule arme plus haute que longue |
+| PNG | 360 × 816, **ratio 15/34 exact** | contrainte dure, voir ci-dessous |
+| Carte de repli | 15 × 34 cellules, `scale: 3` → **45 × 102 px** | seule arme plus haute que longue |
 | Portée (`reach`) | **86 px** | `calé` |
 | `handle.length` | **41 px** | `déduit` : 41 + 45 = 86, la somme retombe sur la portée |
 | `handle.width` | 0 | pas de manche à tracer, le sprite est toute l'arme |
 | Hitbox | `from: 0.48`, `radius: 44` | **la plus large du jeu** ; ne couvre que la plaque, pas le bras |
 
-L'icône du titre (`ICON_PAVISE`) **échantillonne `COLOSSUS_SHIELD`** au plus
-proche voisin, elle n'est pas redessinée : même discipline que l'icône du
-Lancier, qui avait lâché deux fois en divergeant de son arme. Une première
-version la *miroitait* pour montrer le bouclier de face — ça n'en faisait pas un
-bouclier de face, juste un papillon symétrique.
+**Le ratio du PNG n'est pas libre.** `drawSpriteLeft` tire la largeur dessinée
+du ratio **du sprite affiché** (`w = h × width/height`) alors que la hauteur
+vient de la **carte** (`map.h × scale`). Un override au mauvais ratio change
+donc la largeur dessinée sans toucher à la hitbox : la somme `handle.length +
+largeur` cesse de valoir `reach`, et le dessin ment sur l'endroit où il touche.
+Le PNG du Bretteur en a déjà fait les frais dans l'autre sens (3,47 contre 3,89
+pour sa carte) ; ici le ratio est tenu à 15/34 au chiffre près.
+
+**Les trois images sortent du même dessin.** La carte de repli et l'icône du
+titre sont **réduites du PNG** par un script, jamais redessinées : c'est ce qui
+interdit à l'icône de diverger de l'arme, panne déjà payée deux fois sur le
+Lancier (restée indigo quand l'arme est passée au cuivre, restée une lame fine
+quand la tête est devenue une pointe de flèche). L'icône reste **carrée
+16 × 16** comme les cinq autres — `scene.js` les pose avec
+`drawSpriteCentered(…, icon)` en supposant la largeur égale à la hauteur — donc
+le pavois y est **centré** sur 9 colonnes plutôt qu'étiré au carré : étiré il ne
+se lisait plus, et à son ratio exact (7 × 16) il ne restait qu'une barre grise
+et un point de bronze.
 
 **Un bouclier qui touche large doit frapper faible**, sinon c'est une faux :
 `melee.damage: 5`, dans la bande du roster (2 à 5), et un verrou de 1,0 s. La
