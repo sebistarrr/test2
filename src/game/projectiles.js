@@ -131,7 +131,9 @@ export class Projectiles {
         p.homingDelay -= dt;
         if (p.homingDelay <= 0) {
           for (const f of fighters) {
-            if (f === p.owner || !f.onStage || !f.alive) continue;
+            // même camp = pas une cible. En duel les deux camps diffèrent
+            // toujours, donc ce test n'y change rien.
+            if (f === p.owner || f.team === p.owner.team || !f.onStage || !f.alive) continue;
             const want = Math.atan2(f.y - p.y, f.x - p.x);
             const cur = Math.atan2(p.vy, p.vx);
             const step = clamp(wrapAngle(want - cur), -hm.turnRate * dt, hm.turnRate * dt);
@@ -172,7 +174,7 @@ export class Projectiles {
       // cible
       for (const f of fighters) {
         // `onStage` : un combattant en l'air laisse passer les projectiles
-        if (f === p.owner || !f.onStage) continue;
+        if (f === p.owner || f.team === p.owner.team || !f.onStage) continue;
         if (dist(p.x, p.y, f.x, f.y) <= f.radius + r) {
           // les dégâts peuvent dépendre des stats évolutives du tireur, comme
           // ceux de l'arme : la balle du Hors-la-loi porte la même stat

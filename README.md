@@ -1,6 +1,7 @@
-# Elemental Duel — cinq combattants, un duel
+# Elemental Duel — cinq combattants, trois formats
 
-Duels en un contre un repris de la chaîne **« ballthingsim »**, en
+Duels **à deux, en 2 contre 2 ou en bataille royale** (jusqu'à cinq, chacun pour
+soi), avec des combattants repris de la chaîne **« ballthingsim »**, en
 **HTML + CSS + JavaScript** avec un rendu **Canvas 2D**. Aucune dépendance,
 aucun build : le dépôt se publie tel quel sur GitHub Pages.
 
@@ -15,6 +16,23 @@ mesuré est calé au banc d'essai, et le dit.
 | **Lancier** | Lance de dragon (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
 | **Mage** | Sceptre de sève (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Tempête de sève / SAPWOOD STORM |
+
+### Trois formats
+
+| Format | Ce que c'est |
+| --- | --- |
+| **Duel** | un contre un, le format d'origine — c'est lui, et lui seul, dont l'équilibrage est relevé |
+| **2 contre 2** | deux équipes de deux. Les armes ne touchent que le camp adverse, mais les **corps se bousculent entre tous** : un coéquipier reste un obstacle |
+| **Bataille royale** | 3 à 5 combattants, chacun pour soi, dernier debout |
+
+Le moteur ne connaît aucun de ces trois noms : il reçoit une liste de
+combattants et **un camp pour chacun**. « 2 contre 2 » et « chacun pour soi »
+sont deux façons de remplir la même liste de camps. Ajouter un format ne demande
+donc pas une ligne de moteur.
+
+Au-delà de deux combattants, chacun vise l'**ennemi vivant le plus proche** et
+peut changer de cible d'un pas à l'autre ; le HUD passe à une plaque compacte
+par combattant, et l'écran de fin affiche un classement.
 
 Chacun porte en plus un **pouvoir spécial**, sur horloge propre, avec sa jauge
 juste sous celle de l'ultime. Il s'ajoute à l'ultime, il ne le remplace pas —
@@ -31,6 +49,8 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 <sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png) · [les orbes guidées du Mage](docs/capture-mage.png) · [sa Tempête de sève](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
 
 ![Lancier contre Bretteur](docs/capture-duel.png)
+
+<sup>Les nouveaux formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [une bataille royale à cinq](docs/capture-royale.png).</sup>
 
 <sup>Le Lancier (charge, Lien d'essence) contre le Bretteur (surchauffe, Rage infernale). Voir aussi [l'écran de sélection](docs/capture-selection.png), [le Hors-la-loi sous HIGH NOON](docs/capture-horsloi.png), [la ruée du Bretteur](docs/capture-bretteur.png), [le Bond du Lancier](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
 
@@ -60,6 +80,8 @@ empêche Jekyll d'ignorer les dossiers.
 | Paramètre    | Effet                                                             |
 | ------------ | ----------------------------------------------------------------- |
 | `?a=&b=`     | lance directement un duel sans écran de sélection — `outlaw`, `bladesman`, `lancer`, `wind` (le Shinobi), `mage` |
+| `?f=`        | une liste de combattants, pour une partie à plusieurs : `?f=outlaw,mage,lancer,wind` |
+| `?teams=`    | les camps, dans le même ordre que `?f=` : `0,0,1,1` fait un 2 contre 2. Omis, chacun pour soi |
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
 | `?lang=fr`   | **toute l'interface** en français — HUD, titre d'arène et écrans DOM (par défaut : l'anglais de la vidéo) |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |

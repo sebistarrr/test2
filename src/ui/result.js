@@ -16,6 +16,7 @@ import { UI, label } from './lang.js';
 export function createResultScreen({ root, onRematch, onReplay, onBack, onExport, lang = 'ref' }) {
   const t = UI[lang] ?? UI.ref;
   const winnerEl = root.querySelector('#result-winner');
+  const standingsEl = root.querySelector('#result-standings');
   const detailEl = root.querySelector('#result-detail');
   const exportBtn = root.querySelector('#btn-export');
   const exportNote = root.querySelector('#result-export-note');
@@ -51,8 +52,27 @@ export function createResultScreen({ root, onRematch, onReplay, onBack, onExport
       detailEl.textContent = t.resultDetail(
         r.winnerHp,
         r.duration.toFixed(1),
-        r.hits[0] + r.hits[1],
+        // **Tous** les combattants, pas les deux premiers : à cinq, additionner
+        // `hits[0] + hits[1]` ne comptait que le premier tiers des touches.
+        r.hits.reduce((s, n) => s + n, 0),
         r.seed,
+      );
+
+      /**
+       * Classement, du vainqueur au premier tombé. Il n'a de sens qu'à plus de
+       * deux : en duel il dirait « le vainqueur, puis le perdant », ce que la
+       * ligne au-dessus dit déjà.
+       */
+      const rang = r.standings ?? [];
+      standingsEl.hidden = rang.length === 0;
+      standingsEl.replaceChildren(
+        ...rang.map((el, i) => {
+          const li = document.createElement('li');
+          li.textContent = label(el, lang);
+          li.style.setProperty('--accent', el.look.body);
+          if (i === 0) li.classList.add('is-winner');
+          return li;
+        }),
       );
     },
     setExport,

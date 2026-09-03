@@ -165,6 +165,20 @@ export const MATCH = deepFreeze({
     { x: 0.29, y: 0.5, heading: -0.35 },
     { x: 0.71, y: 0.5, heading: Math.PI + 0.35 },
   ],
+
+  /**
+   * **Placement au-delà de deux combattants.** Les deux points ci-dessus sont
+   * relevés sur la vidéo et ne servent qu'au duel ; à trois et plus, on répartit
+   * les combattants sur un cercle centré dans l'arène, chacun tourné vers le
+   * centre. `rayon` est en fraction du demi-côté : 0,62 laisse une bonne
+   * seconde de course avant le premier contact, et personne ne démarre collé à
+   * un mur.
+   *
+   * `depart` décale le premier combattant pour que l'anneau ne soit pas aligné
+   * sur les axes — à 4, un anneau non décalé posait deux paires exactement
+   * face à face et le duel s'ouvrait par deux chocs simultanés.
+   */
+  ring: { rayon: 0.62, depart: -Math.PI / 2 + 0.4 },
 });
 
 /**

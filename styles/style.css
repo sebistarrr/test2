@@ -136,11 +136,92 @@ body {
 }
 
 /* --- slots gauche / droite --- */
+/* Barre de format : duel, 2 contre 2, bataille royale. Même grammaire visuelle
+   que les cartes du roster — panneau blanc, contour noir franc — pour qu'on
+   comprenne d'un coup qu'on y clique. */
+.modes {
+  display: flex;
+  gap: 1.4cqw;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mode {
+  appearance: none;
+  background: #fff;
+  color: #17141d;
+  border: 0.6cqw solid #000;
+  border-radius: 0;
+  padding: 1cqw 2cqw;
+  font: 700 2.1cqw/1 'Oswald', 'Arial Narrow', sans-serif;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  box-shadow: 0.5cqw 0.5cqw 0 rgba(0, 0, 0, .85);
+  transition: transform .08s, box-shadow .08s;
+}
+
+.mode:hover { transform: translate(-0.2cqw, -0.2cqw); box-shadow: 0.7cqw 0.7cqw 0 rgba(0,0,0,.85); }
+
+.mode[aria-pressed="true"] {
+  background: #ffd93d;
+  box-shadow: 0.2cqw 0.2cqw 0 rgba(0, 0, 0, .85);
+  transform: translate(0.3cqw, 0.3cqw);
+}
+
+/* Nombre de combattants, en bataille royale seulement. */
+.royale-size {
+  display: flex;
+  align-items: center;
+  gap: 1.6cqw;
+}
+
+/* `display: flex` l'emporte sur l'attribut `hidden`, qui ne pose qu'un
+   `display: none` de feuille par défaut : sans cette ligne, le sélecteur de
+   nombre restait visible en duel. */
+.royale-size[hidden] { display: none; }
+
+.size-btn {
+  appearance: none;
+  background: #fff;
+  color: #17141d;
+  border: 0.6cqw solid #000;
+  width: 5cqw;
+  height: 5cqw;
+  font: 700 2.6cqw/1 'Oswald', 'Arial Narrow', sans-serif;
+  cursor: pointer;
+  box-shadow: 0.4cqw 0.4cqw 0 rgba(0, 0, 0, .85);
+}
+
+.size-label {
+  font: 700 3.2cqw/1 'Archivo Black', 'Arial Black', sans-serif;
+  color: #f4f0e4;
+  min-width: 3cqw;
+  text-align: center;
+}
+
 .slots {
   display: flex;
   align-items: center;
-  gap: 4cqw;
+  justify-content: center;
+  gap: 3cqw;
+  flex-wrap: wrap;
 }
+
+/* Un camp = un bloc. C'est ce qui garde le « VS » entre les camps plutôt qu'au
+   fil du texte quand la ligne passe à la ligne. */
+.slot-team {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+}
+
+/* À trois emplacements et plus, les cartes du duel ne tiennent plus : on les
+   resserre plutôt que de laisser la ligne déborder. */
+.slots:not([data-count="2"]) .slot { padding: 1.2cqw 1.6cqw; border-width: 0.6cqw; }
+.slots:not([data-count="2"]) .slot-orb { width: 6cqw; height: 6cqw; }
+.slots:not([data-count="2"]) .slot-name { font-size: 2.4cqw; }
+.slots:not([data-count="2"]) .slot-tag { font-size: 1.5cqw; }
+.slots:not([data-count="2"]) .slot-vs { font-size: 3.4cqw; }
 
 .slot {
   appearance: none;
@@ -323,3 +404,39 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .slot, .card, .start-btn { transition: none; }
 }
+
+
+/* Classement d'une partie à plusieurs : une ligne par combattant, du vainqueur
+   au premier tombé, chacun dans sa couleur. */
+.result-standings {
+  list-style: none;
+  margin: 2cqw 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8cqw;
+  counter-reset: rang;
+}
+
+.result-standings[hidden] { display: none; }
+
+.result-standings li {
+  counter-increment: rang;
+  display: flex;
+  align-items: center;
+  gap: 1.4cqw;
+  background: #fff;
+  border-left: 1cqw solid var(--accent, #000);
+  padding: 0.8cqw 1.6cqw;
+  font: 700 2.2cqw/1.2 'Oswald', 'Arial Narrow', sans-serif;
+  color: #17141d;
+}
+
+.result-standings li::before {
+  content: counter(rang);
+  font-family: 'Archivo Black', 'Arial Black', sans-serif;
+  opacity: .45;
+  min-width: 2.4cqw;
+}
+
+.result-standings li.is-winner { background: #ffd93d; }

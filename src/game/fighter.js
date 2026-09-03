@@ -17,15 +17,25 @@ import { drawSpriteLeft } from '../render/sprites.js';
 export class Fighter {
   /**
    * @param {object} element fiche gelée
-   * @param {0|1} slot 0 = gauche, 1 = droite
+   * @param {number} slot rang d'entrée : 0 = gauche, 1 = droite en duel
    * @param {object} rng
+   * @param {{x:number,y:number,heading:number}} [spawn] point de départ imposé.
+   *   Absent, on prend `MATCH.spawn[slot]`, les deux points **relevés sur la
+   *   vidéo**. Au-delà de deux combattants ces deux points ne suffisent plus et
+   *   c'est `Match` qui répartit l'anneau, mais le duel repasse exactement par
+   *   la valeur d'origine.
    */
-  constructor(element, slot, rng) {
+  constructor(element, slot, rng, spawn = MATCH.spawn[slot]) {
     this.el = element;
     this.slot = slot;
     this.rng = rng;
+    /**
+     * Camp. En duel c'est le rang (0 et 1), donc « chacun pour soi » et
+     * « deux équipes » se confondent ; à plusieurs c'est `Match` qui l'impose,
+     * et c'est lui qui décide qui peut blesser qui.
+     */
+    this.team = slot;
 
-    const spawn = MATCH.spawn[slot];
     const inner = ARENA.inner;
     this.x = inner.left + (inner.right - inner.left) * spawn.x;
     this.y = inner.top + (inner.bottom - inner.top) * spawn.y;

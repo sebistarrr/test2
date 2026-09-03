@@ -20,8 +20,18 @@ let cacheKey = '';
  * Construit (ou réutilise) le décor pour un duel donné.
  * @param {{a:object,b:object,lang:'ref'|'fr'}} opts
  */
-export function buildBackdrop({ a, b, lang }) {
-  const key = `${a.id}|${b.id}|${lang}`;
+/**
+ * @param {{fighters:Array, teams:number[], lang:string}} opts
+ *
+ * À deux, le bandeau relevé sur la vidéo, inchangé. Au-delà, les noms se
+ * suivent séparés par des points médians et les icônes disparaissent : à cinq
+ * combattants, cinq icônes de 28 px et quatre « VS » ne tiennent plus dans la
+ * largeur de l'arène, et la réduction automatique rendait les noms illisibles
+ * avant de rendre la ligne courte.
+ */
+export function buildBackdrop({ fighters, teams, lang }) {
+  const [a, b] = fighters;
+  const key = `${fighters.map((e) => e.id).join(',')}|${(teams ?? []).join('')}|${lang}`;
   if (cache && cacheKey === key) return cache;
 
   const cv = document.createElement('canvas');
@@ -34,7 +44,8 @@ export function buildBackdrop({ a, b, lang }) {
   ctx.fillStyle = STAGE.paper;
   ctx.fillRect(0, 0, STAGE.width, STAGE.height);
 
-  drawTitle(ctx, a, b, lang);
+  if (fighters.length === 2) drawTitle(ctx, a, b, lang);
+  else drawTitleMulti(ctx, fighters, teams, lang);
   drawArena(ctx);
 
   cache = cv;
@@ -56,6 +67,72 @@ function drawArena(ctx) {
   ctx.lineWidth = border;
   ctx.lineJoin = 'miter';
   ctx.strokeRect(x + border / 2, y + border / 2, size - border, size - border);
+}
+
+/**
+ * Bandeau à plusieurs : les noms à la suite, chacun dans sa couleur, séparés
+ * par des points médians — et **regroupés par camp** quand il y a des camps,
+ * avec un « VS » entre les groupes. C'est ce qui distingue à l'œil un 2 contre
+ * 2 d'un chacun-pour-soi, sans rien écrire de plus.
+ */
+function drawTitleMulti(ctx, els, teams, lang) {
+  // groupes de camp, dans l'ordre d'apparition
+  const groupes = [];
+  els.forEach((el, i) => {
+    const camp = teams?.[i] ?? i;
+    const g = groupes.find((x) => x.camp === camp);
+    if (g) g.els.push(el);
+    else groupes.push({ camp, els: [el] });
+  });
+
+  const maxWidth = ARENA.size - 8;
+  let size = TITLE.fontSize;
+  const mesure = (s) => {
+    ctx.font = `400 ${s}px "Archivo Black", "Arial Black", sans-serif`;
+    let w = 0;
+    groupes.forEach((g, gi) => {
+      g.els.forEach((el, i) => {
+        w += ctx.measureText(lang === 'fr' ? el.name : el.nameRef).width;
+        if (i < g.els.length - 1) w += ctx.measureText(' · ').width;
+      });
+      if (gi < groupes.length - 1) {
+        ctx.font = `400 ${s * (TITLE.vsSize / TITLE.fontSize)}px "Archivo Black", "Arial Black", sans-serif`;
+        w += ctx.measureText(' VS ').width;
+        ctx.font = `400 ${s}px "Archivo Black", "Arial Black", sans-serif`;
+      }
+    });
+    return w;
+  };
+  for (let i = 0; i < 10 && mesure(size) > maxWidth; i++) size *= maxWidth / mesure(size);
+
+  const font = `400 ${size}px "Archivo Black", "Arial Black", sans-serif`;
+  const vsFont = `400 ${size * (TITLE.vsSize / TITLE.fontSize)}px "Archivo Black", "Arial Black", sans-serif`;
+
+  ctx.save();
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  ctx.lineJoin = 'round';
+  let x = TITLE.centerX - mesure(size) / 2;
+  const base = TITLE.baseline;
+
+  groupes.forEach((g, gi) => {
+    g.els.forEach((el, i) => {
+      const nom = lang === 'fr' ? el.name : el.nameRef;
+      ctx.font = font;
+      strokeFill(ctx, nom, x, base, el.look.body, TITLE.stroke, TITLE.strokeWidth);
+      x += ctx.measureText(nom).width;
+      if (i < g.els.length - 1) {
+        strokeFill(ctx, ' · ', x, base, TITLE.vsColor, TITLE.stroke, TITLE.strokeWidth);
+        x += ctx.measureText(' · ').width;
+      }
+    });
+    if (gi < groupes.length - 1) {
+      ctx.font = vsFont;
+      strokeFill(ctx, ' VS ', x, base - 2, TITLE.vsColor, TITLE.stroke, 6);
+      x += ctx.measureText(' VS ').width;
+    }
+  });
+  ctx.restore();
 }
 
 /**

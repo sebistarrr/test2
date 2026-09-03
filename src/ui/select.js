@@ -16,22 +16,41 @@ import { TAU } from '../core/math.js';
 
 export function createSelectScreen({ root, onStart, lang = 'ref' }) {
   const t = UI[lang] ?? UI.ref;
-  const slots = {
-    a: root.querySelector('#slot-a'),
-    b: root.querySelector('#slot-b'),
-  };
-  const orbs = { a: root.querySelector('#orb-a'), b: root.querySelector('#orb-b') };
-  const names = { a: root.querySelector('#name-a'), b: root.querySelector('#name-b') };
+  const slotsEl = root.querySelector('#slots');
+  const modesEl = root.querySelector('#modes');
+  const sizeEl = root.querySelector('#royale-size');
+  const sizeLabel = root.querySelector('#size-label');
   const rosterEl = root.querySelector('#roster');
   const sheetEl = root.querySelector('#element-sheet');
   const startBtn = root.querySelector('#btn-start');
 
-  /** @type {{a:string|null,b:string|null}} */
-  // Duel par défaut. Il se prend dans `ROSTER` et non en dur : avec un
-  // roster réduit, un défaut codé en dur pointerait sur une carte absente de
-  // la grille, et l'écran s'ouvrirait sur une sélection impossible à défaire.
-  const picks = { a: ROSTER[0], b: ROSTER[1] ?? ROSTER[0] };
-  let active = 'a';
+  /**
+   * **Formats.** `duel` est le duel d'origine ; `teams` forme deux camps de
+   * deux ; `royale` met 3 à 5 combattants chacun pour soi. Le nombre
+   * d'emplacements et leur groupement en découlent — c'est la seule chose que
+   * le format décide ici, le moteur ne connaissant, lui, que des camps.
+   */
+  const FORMATS = {
+    duel: { taille: 2, camps: () => [0, 1] },
+    teams: { taille: 4, camps: () => [0, 0, 1, 1] },
+    royale: { taille: 4, min: 3, max: Math.min(5, ROSTER.length), camps: (n) => ROSTER.slice(0, n).map((_, i) => i) },
+  };
+  let mode = 'duel';
+  let taille = FORMATS.duel.taille;
+
+  /**
+   * Choix courants, un par emplacement. Ils se prennent dans `ROSTER` et non en
+   * dur : avec un roster réduit, un défaut codé en dur pointerait sur une carte
+   * absente de la grille, et l'écran s'ouvrirait sur une sélection impossible à
+   * défaire. Le tableau garde 5 entrées quel que soit le format, pour qu'un
+   * aller-retour entre formats ne perde pas les choix.
+   * @type {string[]}
+   */
+  const picks = Array.from({ length: 5 }, (_, i) => ROSTER[i % ROSTER.length]);
+  let active = 0;
+
+  /** Les emplacements du DOM, reconstruits à chaque changement de format. */
+  let slotBtns = [];
 
   // --- cartes du roster
   for (const id of ROSTER) {
@@ -62,7 +81,9 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
     card.setAttribute('aria-pressed', 'false');
     card.addEventListener('click', () => {
       picks[active] = id;
-      active = active === 'a' ? 'b' : 'a';
+      // on avance d'un emplacement, en bouclant : cliquer trois cartes de suite
+      // remplit trois emplacements, ce qui est le geste attendu
+      active = (active + 1) % taille;
       showSheet(id);
       refresh();
     });
@@ -71,16 +92,101 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
     rosterEl.append(card);
   }
 
-  for (const key of ['a', 'b']) {
-    slots[key].addEventListener('click', () => {
-      active = key;
-      refresh();
-    });
+  // --- barre de format
+  modesEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-mode]');
+    if (!btn || !FORMATS[btn.dataset.mode]) return;
+    mode = btn.dataset.mode;
+    taille = FORMATS[mode].taille;
+    active = 0;
+    buildSlots();
+    refresh();
+  });
+
+  // --- nombre de combattants, en bataille royale seulement
+  root.querySelector('#size-less').addEventListener('click', () => setSize(taille - 1));
+  root.querySelector('#size-more').addEventListener('click', () => setSize(taille + 1));
+
+  function setSize(n) {
+    const f = FORMATS.royale;
+    const clamped = Math.max(f.min, Math.min(f.max, n));
+    if (clamped === taille) return;
+    taille = clamped;
+    f.taille = clamped; // retenu pour le prochain passage en bataille royale
+    if (active >= taille) active = taille - 1;
+    buildSlots();
+    refresh();
+  }
+
+  /**
+   * (Re)construit les emplacements. Ils ne sont pas dans `index.html` parce que
+   * leur nombre dépend du format : les figer à deux obligerait à en cacher ou
+   * à en inventer, et le « VS » du duel n'a pas de place en bataille royale.
+   */
+  function buildSlots() {
+    slotsEl.replaceChildren();
+    slotBtns = [];
+    const camps = FORMATS[mode].camps(taille);
+    // Le nombre pilote la taille des cartes en CSS : à quatre ou cinq, les
+    // cartes du duel débordent.
+    slotsEl.dataset.count = String(taille);
+
+    /**
+     * Chaque camp va dans **son propre bloc**, et le « VS » entre les blocs.
+     * Posés à plat, les emplacements et le « VS » passaient à la ligne au fil
+     * du texte : le « VS » se retrouvait en bout de première ligne et le
+     * groupement ne se lisait plus.
+     */
+    // Le « VS » ne sépare que **deux** camps. En chacun-pour-soi chacun est son
+    // propre camp : un séparateur entre chaque carte ne dirait rien et
+    // encombrerait la ligne.
+    const duelDeCamps = new Set(camps).size === 2;
+    let groupe = null;
+    for (let i = 0; i < taille; i++) {
+      if (i === 0 || camps[i] !== camps[i - 1]) {
+        if (i > 0 && duelDeCamps) {
+          const vs = document.createElement('span');
+          vs.className = 'slot-vs';
+          vs.textContent = 'VS';
+          slotsEl.append(vs);
+        }
+        groupe = document.createElement('div');
+        groupe.className = 'slot-team';
+        slotsEl.append(groupe);
+      }
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot';
+      btn.dataset.slot = String(i);
+
+      const tag = document.createElement('span');
+      tag.className = 'slot-tag';
+      tag.textContent =
+        mode === 'duel' ? (i === 0 ? t.slotLeft : t.slotRight)
+          : mode === 'teams' ? (camps[i] === 0 ? t.teamA : t.teamB)
+            : t.slotN(i + 1);
+
+      const orb = document.createElement('span');
+      orb.className = 'slot-orb';
+      const name = document.createElement('span');
+      name.className = 'slot-name';
+
+      btn.append(tag, orb, name);
+      btn.addEventListener('click', () => { active = i; refresh(); });
+      groupe.append(btn);
+      slotBtns.push({ btn, orb, name });
+    }
+    sizeEl.hidden = mode !== 'royale';
+    sizeLabel.textContent = String(taille);
+    for (const b of modesEl.querySelectorAll('[data-mode]')) {
+      b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
+    }
   }
 
   startBtn.addEventListener('click', () => {
-    if (!picks.a || !picks.b) return;
-    onStart([picks.a, picks.b]);
+    const ids = picks.slice(0, taille);
+    if (ids.some((id) => !id)) return;
+    onStart(ids, FORMATS[mode].camps(taille));
   });
 
   function showSheet(id) {
@@ -116,28 +222,29 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
   }
 
   function refresh() {
+    const retenus = picks.slice(0, taille);
     for (const card of rosterEl.children) {
-      const id = card.dataset.id;
-      card.setAttribute('aria-pressed', String(id === picks.a || id === picks.b));
+      card.setAttribute('aria-pressed', String(retenus.includes(card.dataset.id)));
     }
-    for (const key of ['a', 'b']) {
-      const id = picks[key];
-      const el = id ? ELEMENTS[id] : null;
-      slots[key].setAttribute('aria-current', String(active === key));
-      slots[key].style.setProperty('--accent', el ? el.look.body : '#000');
-      orbs[key].style.background = el ? el.look.body : '#e6e6e6';
-      names[key].textContent = el ? label(el, lang) : '—';
-    }
-    startBtn.disabled = !picks.a || !picks.b;
+    slotBtns.forEach(({ btn, orb, name }, i) => {
+      const el = picks[i] ? ELEMENTS[picks[i]] : null;
+      btn.setAttribute('aria-current', String(active === i));
+      btn.style.setProperty('--accent', el ? el.look.body : '#000');
+      orb.style.background = el ? el.look.body : '#e6e6e6';
+      name.textContent = el ? label(el, lang) : '—';
+    });
+    startBtn.textContent = mode === 'royale' ? t.startRoyale : t.start;
+    startBtn.disabled = retenus.some((id) => !id);
   }
 
+  buildSlots();
   refresh();
-  showSheet(picks.a);
+  showSheet(picks[0]);
 
   return {
     show() { root.classList.remove('hidden'); refresh(); },
     hide() { root.classList.add('hidden'); },
-    get picks() { return { ...picks }; },
+    get picks() { return picks.slice(0, taille); },
   };
 }
 

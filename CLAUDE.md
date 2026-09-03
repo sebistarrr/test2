@@ -1,8 +1,8 @@
 # CLAUDE.md — mémoire du projet
 
-Duels en un contre un, **cinq combattants** repris de la chaîne
-« ballthingsim » — le Hors-la-loi, le Bretteur, le Lancier, le Shinobi et le
-Mage — sur un moteur écrit d'après les vidéos de référence.
+Duels **à deux, en 2 contre 2 ou en bataille royale**, avec cinq combattants
+repris de la chaîne « ballthingsim » — le Hors-la-loi, le Bretteur, le Lancier,
+le Shinobi et le Mage — sur un moteur écrit d'après les vidéos de référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -39,6 +39,7 @@ qui est dans `docs/AJOUTER-UN-COMBATTANT.md`.
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
 | Libellés d'interface (les deux langues) | `src/ui/lang.js` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
+| **Formats de partie** (duel, 2 contre 2, bataille royale) | `src/ui/select.js` (les camps) + `src/game/match.js` (le moteur) |
 | **Ajouter / modifier un combattant** | `docs/AJOUTER-UN-COMBATTANT.md` |
 | Relevés vidéo détaillés, par combattant | `docs/FICHES.md` |
 
@@ -117,6 +118,46 @@ sensiblement plus plate : avant ce réglage, Hors-la-loi 10/24 et Bretteur 9/24
 là où la matrice officielle disait 3/12 et 3/12. Un combattant « dernier » à la
 matrice ne l'est pas forcément au jeu — vérifier sur les deux camps avant de
 conclure qu'il faut le remonter.
+
+---
+
+## Formats de partie
+
+Trois, et **un seul mécanisme** : le moteur reçoit une liste de combattants et
+un camp pour chacun. Il ne sait pas ce qu'est un « 2 contre 2 » ; il sait qui
+peut blesser qui.
+
+| Format | `elements` | `teams` |
+| --- | --- | --- |
+| Duel | 2 identifiants | omis → `[0, 1]` |
+| 2 contre 2 | 4 identifiants | `[0, 0, 1, 1]` |
+| Bataille royale | 3 à 5 identifiants | omis → chacun le sien |
+
+`ui/select.js` porte la table des formats et fabrique les camps ; `main.js` les
+lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format (3 contre 3,
+deux équipes de trois, un contre tous) ne demande **qu'une entrée dans cette
+table** — pas une ligne de moteur.
+
+**Ce qui change à l'écran au-delà de deux :**
+
+- **le HUD**. Les deux grandes jauges d'ultime sont mesurées à gauche et à
+  droite, et il n'y a pas de troisième bord : au-delà de deux on passe à des
+  plaques compactes, une par combattant, sur la même grille. Y disparaissent la
+  jauge d'ultime, celle du pouvoir spécial et la ligne de stat — à cinq plaques
+  il n'y a plus la place, et le chiffre de points de vie reste **sur la bille**,
+  qui est là où on le regarde ;
+- **le titre d'arène**. À deux, le bandeau relevé sur la vidéo. Au-delà, les
+  noms se suivent, groupés par camp, et les icônes tombent : cinq icônes de
+  28 px et quatre « VS » ne tiennent pas dans la largeur de l'arène ;
+- **le placement**. Les deux points de départ sont mesurés et ne servent qu'au
+  duel ; à trois et plus, un anneau centré, chacun tourné vers le centre — seule
+  disposition qui ne donne à personne deux voisins immédiats quand les autres
+  n'en ont qu'un ;
+- **l'écran de fin** gagne un classement, du vainqueur au premier tombé.
+
+**La matrice reste un outil de duel**, et c'est délibéré : elle est le garde-fou
+de non-régression du 1v1, la seule configuration dont l'équilibrage soit relevé.
+Un banc multi-combattants serait une autre mesure, pas la même en plus grand.
 
 ---
 
@@ -277,10 +318,42 @@ sans que ça se voie.
     d'origine en repli**, donc la Plante ne change pas d'un pixel — matrice
     vérifiée identique.
 
-13. **Le moteur ne connaît que *deux* combattants**, et ce n'est pas près de
-    changer : `match.js`, `physics.js` et `projectiles.js` sont écrits pour
-    `this.a`/`this.b` de bout en bout. Une troisième entité (les clones du
-    Shinobi) reste donc **confinée à son module**, coiffée du prototype
+13. **Le moteur accepte *n* combattants répartis en camps** — et le duel passe
+    toujours par ses propres expressions.
+
+    Cet invariant disait l'inverse (« deux combattants, et ce n'est pas près de
+    changer »). Il est tombé en ajoutant le 2 contre 2 et la bataille royale, et
+    la surprise est que ça a coûté peu : le couplage réputé « de bout en bout »
+    tenait en **vingt lignes de `match.js` et trois de `fighter.js`**.
+    `physics.js`, `projectiles.js`, `flair.js`, le HUD et le décor prenaient déjà
+    leurs arguments. **Recompter avant de croire un couplage sur parole** — le
+    dépôt a déjà payé la leçon inverse en cherchant une duplication qui n'était
+    pas là où on la disait.
+
+    Ce qui structure le code désormais :
+
+    - `Match({ elements, teams })` — `elements` est une liste d'identifiants,
+      `teams` le camp de chacun. Omis, chacun a le sien : à deux, c'est le duel ;
+      au-delà, la bataille royale. `[0,0,1,1]` fait un 2 contre 2.
+    - Le moteur ne connaît **que « même camp » ou « camp adverse »**. Il n'y a
+      ni notion d'équipe nommée, ni de format : « 2 contre 2 » et « chacun pour
+      soi » sont deux façons de remplir `teams`, décidées par `ui/select.js`.
+    - Les corps se bousculent entre **tous**, alliés compris ; les armes et les
+      projectiles ne touchent que le camp adverse.
+    - `f.opponent` devient l'**ennemi vivant le plus proche**, recalculé une fois
+      par pas. Les modules le lisent sans le tester, comme avant.
+
+    **Et le duel garde ses expressions, littéralement.** Partout où la
+    généralisation aurait réécrit le chemin à deux — placement, collisions,
+    mêlée, index de stats, fin de partie — la branche `length === 2` reprend le
+    code d'origine mot pour mot. Ce n'est pas de la prudence de principe : la
+    multiplication flottante n'est pas associative, et regrouper autrement les
+    mêmes produits a déjà déplacé deux affrontements où le combattant modifié
+    n'était même pas. Preuve exigée à chaque étape : **matrice identique au
+    caractère près**.
+
+    Ce qui n'a pas changé : une entité qui n'est pas un combattant du tableau
+    (les clones du Shinobi) reste **confinée à son module**, coiffée du prototype
     `Fighter` (`Object.setPrototypeOf`) pour hériter du rendu sans le dupliquer.
     Contrepartie assumée : elle ne se déplace pas.
 

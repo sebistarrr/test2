@@ -30,6 +30,15 @@ export const UI = {
     slotRight: 'RIGHT',
     selectHint: 'Pick a slot, then pick a fighter.',
     start: 'START THE DUEL',
+    // --- formats de partie
+    modeDuel: 'DUEL',
+    modeTeams: '2 VS 2',
+    modeRoyale: 'BATTLE ROYALE',
+    teamA: 'TEAM A',
+    teamB: 'TEAM B',
+    slotN: (i) => `FIGHTER ${i}`,
+    startRoyale: 'START THE BRAWL',
+    standings: 'FINAL STANDINGS',
     // --- écran de fin (statique)
     ko: 'K.O.',
     rematch: 'REMATCH',
@@ -96,6 +105,15 @@ export const UI = {
     slotLeft: 'GAUCHE',
     slotRight: 'DROITE',
     selectHint: 'Clique sur un slot puis sur un combattant.',
+    // --- formats de partie
+    modeDuel: 'DUEL',
+    modeTeams: '2 CONTRE 2',
+    modeRoyale: 'BATAILLE ROYALE',
+    teamA: 'ÉQUIPE A',
+    teamB: 'ÉQUIPE B',
+    slotN: (i) => `COMBATTANT ${i}`,
+    startRoyale: 'LANCER LA MÊLÉE',
+    standings: 'CLASSEMENT',
     start: 'LANCER LE DUEL',
     ko: 'K.O.',
     rematch: 'REVANCHE',
@@ -171,8 +189,11 @@ export function applyStaticLabels(root, lang) {
   };
 
   set('.select-title', t.selectTitle);
-  set('#slot-a .slot-tag', t.slotLeft);
-  set('#slot-b .slot-tag', t.slotRight);
+  // Les emplacements sont construits en JS et portent déjà leur libellé ; il ne
+  // reste ici que ce qui est écrit en dur dans `index.html`.
+  set('[data-mode="duel"]', t.modeDuel);
+  set('[data-mode="teams"]', t.modeTeams);
+  set('[data-mode="royale"]', t.modeRoyale);
   set('.select-hint', t.selectHint);
   set('#btn-start', t.start);
   set('.result-kicker', t.ko);

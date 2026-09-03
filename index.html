@@ -25,18 +25,20 @@
     <section id="screen-select" class="screen" aria-label="Fighter selection">
       <h1 class="select-title">CHOOSE YOUR FIGHTERS</h1>
 
-      <div class="slots">
-        <button class="slot" id="slot-a" data-slot="a" type="button">
-          <span class="slot-tag">LEFT</span>
-          <span class="slot-orb" id="orb-a"></span>
-          <span class="slot-name" id="name-a">—</span>
-        </button>
-        <span class="slot-vs">VS</span>
-        <button class="slot" id="slot-b" data-slot="b" type="button">
-          <span class="slot-tag">RIGHT</span>
-          <span class="slot-orb" id="orb-b"></span>
-          <span class="slot-name" id="name-b">—</span>
-        </button>
+      <div class="modes" id="modes" role="group" aria-label="Match format">
+        <button class="mode" data-mode="duel" type="button" aria-pressed="true">DUEL</button>
+        <button class="mode" data-mode="teams" type="button" aria-pressed="false">2 VS 2</button>
+        <button class="mode" data-mode="royale" type="button" aria-pressed="false">BATTLE ROYALE</button>
+      </div>
+
+      <!-- Les emplacements sont construits par `ui/select.js` : leur nombre et
+           leur groupement dépendent du format choisi. -->
+      <div class="slots" id="slots"></div>
+
+      <div class="royale-size" id="royale-size" hidden>
+        <button class="size-btn" id="size-less" type="button" aria-label="One fewer fighter">−</button>
+        <span class="size-label" id="size-label">4</span>
+        <button class="size-btn" id="size-more" type="button" aria-label="One more fighter">+</button>
       </div>
 
       <p class="select-hint">Pick a slot, then pick a fighter.</p>
@@ -54,6 +56,8 @@
         <p class="result-kicker">K.O.</p>
         <h2 class="result-winner" id="result-winner">—</h2>
         <p class="result-detail" id="result-detail"></p>
+        <!-- Classement d'une partie à plusieurs. Vide et masqué en duel. -->
+        <ol class="result-standings" id="result-standings" hidden></ol>
         <div class="result-actions">
           <button class="start-btn" id="btn-rematch" type="button">REMATCH</button>
           <button class="ghost-btn" id="btn-replay" type="button">WATCH IT AGAIN</button>

@@ -55,17 +55,17 @@ applyStaticLabels(document, LANG);
 
 const selectScreen = createSelectScreen({
   root: document.querySelector('#screen-select'),
-  onStart: (pair) => startMatch(pair),
+  onStart: (ids, teams) => startMatch(ids, undefined, teams),
   lang: LANG,
 });
 
 const resultScreen = createResultScreen({
   root: document.querySelector('#screen-result'),
   // revanche : même affiche, nouveau tirage
-  onRematch: () => startMatch(lastPair),
+  onRematch: () => startMatch(lastPair, undefined, lastTeams),
   // revoir : même affiche ET même seed, donc exactement le même duel
-  onReplay: () => startMatch(lastPair, lastSeed),
-  onExport: () => recorder.download(`duel-${lastPair[0]}-vs-${lastPair[1]}-seed${lastSeed}`),
+  onReplay: () => startMatch(lastPair, lastSeed, lastTeams),
+  onExport: () => recorder.download(`duel-${lastPair.join('-')}-seed${lastSeed}`),
   lang: LANG,
   onBack: () => {
     resultScreen.hide();
@@ -80,14 +80,19 @@ const resultScreen = createResultScreen({
 // Pris dans `ROSTER` : codé en dur, il pointerait sur un combattant
 // désactivé et le premier duel partirait hors du roster affiché.
 let lastPair = [ROSTER[0], ROSTER[1] ?? ROSTER[0]];
+/** Camps de la dernière partie : la revanche et le replay doivent les garder. */
+let lastTeams;
 let lastSeed = 0;
 
 /**
- * @param {[string,string]} pair
+ * @param {string[]} pair identifiants des combattants, dans l'ordre d'entrée
  * @param {number} [seed] fournie = duel rejoué à l'identique, sinon nouveau tirage
+ * @param {number[]} [teams] camp de chacun. Omis, chacun le sien — ce qui donne
+ *   le duel à deux et la bataille royale au-delà.
  */
-function startMatch(pair, seed) {
+function startMatch(pair, seed, teams) {
   lastPair = pair;
+  lastTeams = teams;
   lastSeed = seed ?? seedFromLocation();
   selectScreen.hide();
   resultScreen.hide();
@@ -95,6 +100,7 @@ function startMatch(pair, seed) {
 
   match = new Match({
     elements: pair,
+    teams: lastTeams,
     rng: createRng(lastSeed),
     lang: LANG,
     debug: DEBUG,
@@ -133,9 +139,18 @@ async function finishRecording() {
 async function boot() {
   await Promise.all([loadSprites(), ensureFonts()]);
 
+  /**
+   * `?f=` lance directement une partie à plusieurs : une liste d'identifiants,
+   * et `?teams=` les camps dans le même ordre. Sans `teams`, chacun le sien —
+   * donc bataille royale. `?a=&b=` reste la forme courte du duel.
+   */
+  const liste = (params.get('f') ?? '').split(',').filter(Boolean);
+  const camps = (params.get('teams') ?? '').split(',').filter((s) => s !== '').map(Number);
   const a = params.get('a');
   const b = params.get('b');
-  if (a && b && ELEMENTS[a] && ELEMENTS[b]) {
+  if (liste.length >= 2 && liste.every((id) => ELEMENTS[id])) {
+    startMatch(liste, undefined, camps.length === liste.length ? camps : undefined);
+  } else if (a && b && ELEMENTS[a] && ELEMENTS[b]) {
     startMatch([a, b]);
   } else {
     selectScreen.show();

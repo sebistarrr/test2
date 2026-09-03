@@ -11,9 +11,10 @@
  * @module render/hud
  */
 
-import { HUD, STAGE } from '../data/tuning.js';
+import { HUD, MATCH, STAGE } from '../data/tuning.js';
 import { clamp } from '../core/math.js';
 import { drawFittedText } from './text.js';
+import { label } from '../ui/lang.js';
 
 const BAR_FONT = `700 ${HUD.bar.labelSize}px "Oswald", "Arial Narrow", sans-serif`;
 const STAT_FONT = `700 ${HUD.stat.fontSize}px "Oswald", "Arial Narrow", sans-serif`;
@@ -95,6 +96,104 @@ function drawGauge(ctx, g, side, value, style) {
     strokeWidth: 3,
   });
 }
+
+/**
+ * **HUD à plusieurs combattants.** Les deux grandes jauges d'ultime n'ont de
+ * sens qu'en duel : elles sont mesurées à gauche et à droite, et il n'y a pas
+ * de troisième bord. Au-delà de deux, on passe donc à des **plaques compactes**
+ * — une par combattant, nom dans sa couleur et barre de points de vie — sur la
+ * même grille que les jauges du duel (deux colonnes, les mêmes abscisses et la
+ * même hauteur de rangée), pour que les deux HUD se ressemblent.
+ *
+ * Ce qui disparaît, et c'est assumé : la jauge d'ultime, celle du pouvoir
+ * spécial et la ligne de stat. À six plaques il n'y a plus la place, et le
+ * chiffre de points de vie reste lisible **sur la bille** — c'est lui qu'on
+ * regarde. Une barre par combattant dit l'essentiel : qui est en train de
+ * perdre.
+ *
+ * Le camp se lit au liseré : un trait de la couleur du camp le long du bord
+ * gauche de la plaque. En chacun-pour-soi chaque combattant est son propre
+ * camp, donc chaque liseré est unique et l'information est simplement neutre.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {Array} fighters
+ * @param {string} lang
+ */
+export function drawRosterHud(ctx, fighters, lang) {
+  const g = HUD.bar;
+  const n = fighters.length;
+  const rows = Math.ceil(n / 2);
+  const rowH = HUD.special.y - g.y; // 40 : le pas des deux rangées du duel
+  const barH = Math.min(g.height, rowH - 5);
+
+  /**
+   * **Ordre des plaques.** À deux camps, une colonne par camp : c'est la
+   * lecture qu'on attend d'un 2 contre 2, et remplir par paires entrelaçait les
+   * équipes (gauche = un de chaque). Au-delà de deux camps il n'y a plus de
+   * groupement à montrer, on remplit donc colonne par colonne.
+   */
+  const camps = [...new Set(fighters.map((f) => f.team))];
+  const places = camps.length === 2
+    ? fighters
+        .map((f, i) => ({ f, col: camps.indexOf(f.team) }))
+        .map((p, _, tous) => ({
+          ...p,
+          row: tous.filter((q) => q.col === p.col).indexOf(p),
+        }))
+    : fighters.map((f, i) => ({ f, col: i % 2, row: (i / 2) | 0 }));
+
+  ctx.save();
+  ctx.lineJoin = 'miter';
+  for (let i = 0; i < n; i++) {
+    const { f, col, row } = places[i];
+    const x = col === 0 ? g.leftX : g.rightX;
+    const y = g.y + row * rowH;
+    const v = clamp(f.hp / MATCH.maxHp, 0, 1);
+
+    // plaque crème, comme les jauges du duel
+    ctx.fillStyle = STAGE.plate;
+    ctx.fillRect(x, y, g.width, barH);
+    // points de vie, dans la couleur du combattant
+    ctx.fillStyle = f.el.look.body;
+    ctx.fillRect(x, y, g.width * v, barH);
+    // mort : la plaque se barre, pour qu'on voie d'un coup qui reste
+    if (!f.alive) {
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(x, y, g.width, barH);
+      ctx.globalAlpha = 1;
+    }
+    // cadre
+    ctx.lineWidth = g.border;
+    ctx.strokeStyle = '#000000';
+    ctx.strokeRect(x + g.border / 2, y + g.border / 2, g.width - g.border, barH - g.border);
+    // liseré de camp
+    ctx.fillStyle = TEAM_COLORS[f.team % TEAM_COLORS.length];
+    ctx.fillRect(x, y, 6, barH);
+
+    ctx.font = BAR_FONT;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    drawFittedText(ctx, label(f.el, lang), x + g.labelPad + 6, y + barH / 2 + 1, g.width - g.labelPad * 2 - 44, {
+      fill: STAGE.plate,
+      stroke: '#000000',
+      strokeWidth: 3,
+    });
+    ctx.textAlign = 'right';
+    drawFittedText(ctx, String(Math.max(0, Math.ceil(f.hp))), x + g.width - g.labelPad, y + barH / 2 + 1, 40, {
+      fill: STAGE.plate,
+      stroke: '#000000',
+      strokeWidth: 3,
+    });
+  }
+  ctx.restore();
+}
+
+/**
+ * Couleurs de camp. Elles ne servent qu'au liseré du HUD et au titre d'arène :
+ * les combattants gardent leurs propres couleurs, qui sont leur identité.
+ */
+export const TEAM_COLORS = ['#3fa7d6', '#e8621b', '#7046ac', '#4ade80', '#d9a441', '#c2410c'];
 
 /**
  * Une ou deux lignes de statistiques selon l'élément.

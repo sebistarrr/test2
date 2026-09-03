@@ -1,6 +1,19 @@
 /**
  * Déroulement d'un duel : machine à états, mise à jour et rendu.
  *
+ * **Deux combattants ou plus.** Le moteur a longtemps été écrit pour `a`/`b`
+ * de bout en bout ; il accepte maintenant `n` combattants répartis en camps,
+ * ce qui donne le 2 contre 2 et le chacun-pour-soi. Un camp par combattant
+ * (le défaut) et deux combattants redonnent exactement le duel d'origine.
+ *
+ * **Et « exactement » est à prendre au pied de la lettre** : partout où la
+ * généralisation aurait réécrit les expressions du duel, le chemin à deux est
+ * conservé mot pour mot dans une branche à part — même discipline que la
+ * pondération des masses ou `bladeSegment()`. La multiplication flottante n'est
+ * pas associative, et regrouper autrement les mêmes produits a déjà déplacé
+ * deux affrontements. Preuve : `tools/matrix.mjs` doit rester identique au
+ * caractère près.
+ *
  * Phases : intro → fight → ko → **victory** → over
  *
  * `victory` est la seconde de gloire : le perdant a disparu de l'arène, le
@@ -22,19 +35,45 @@ import { Effects } from '../render/effects.js';
 import { Flair } from '../render/flair.js';
 import { createRng } from '../core/rng.js';
 import { buildBackdrop, drawBackdrop } from '../render/scene.js';
-import { drawFighterHud } from '../render/hud.js';
+import { drawFighterHud, drawRosterHud } from '../render/hud.js';
+
+/**
+ * Point de départ du combattant de rang `i` sur `n`.
+ *
+ * **À deux, les deux points relevés sur la vidéo, tels quels** — c'est la même
+ * discipline que partout ailleurs ici : le duel ne doit pas passer par un
+ * calcul, fût-il équivalent. Au-delà, un anneau centré, chacun tourné vers le
+ * centre : c'est la seule disposition qui ne privilégie personne, alors qu'une
+ * grille ou deux lignes donneraient à ceux du milieu deux voisins immédiats et
+ * aux autres un seul.
+ */
+function spawnFor(i, n) {
+  if (n === 2) return MATCH.spawn[i];
+  const a = MATCH.ring.depart + (TAU * i) / n;
+  return {
+    x: 0.5 + Math.cos(a) * MATCH.ring.rayon * 0.5,
+    y: 0.5 + Math.sin(a) * MATCH.ring.rayon * 0.5,
+    // face au centre, plus le léger écart que le `rng` ajoutera
+    heading: wrapAngle(a + Math.PI),
+  };
+}
 
 export class Match {
   /**
-   * @param {{elements:[string,string], rng:object, lang:'ref'|'fr', debug?:boolean,
-   *          onEnd:(result:object)=>void}} opts
+   * @param {{elements:string[], teams?:number[], rng:object, lang:'ref'|'fr',
+   *          debug?:boolean, onEnd:(result:object)=>void}} opts
+   *
+   * `teams` donne le camp de chaque combattant, dans l'ordre d'`elements`.
+   * Omis, chacun a le sien — chacun pour soi, et le duel d'origine quand il y
+   * en a deux. `[0, 0, 1, 1]` fait un 2 contre 2.
    */
-  constructor({ elements, rng, lang = 'ref', debug = false, onEnd }) {
-    const [idA, idB] = elements;
-    const elA = getElement(idA);
-    const elB = getElement(idB);
-    assertFrozen(elA, elA.id);
-    assertFrozen(elB, elB.id);
+  constructor({ elements, teams = null, rng, lang = 'ref', debug = false, onEnd }) {
+    const els = elements.map((id) => getElement(id));
+    if (els.length < 2) throw new Error('[match] il faut au moins deux combattants');
+    for (const el of els) assertFrozen(el, el.id);
+    const n = els.length;
+    const elA = els[0];
+    const elB = els[1];
 
     this.rng = rng;
     // Aléa réservé au rendu (tremblement de caméra) : il ne doit jamais
@@ -51,20 +90,31 @@ export class Match {
     this.flair = new Flair(this.viewRng);
     this.projectiles = new Projectiles(this.fx);
 
-    this.a = new Fighter(elA, 0, rng);
-    this.b = new Fighter(elB, 1, rng);
-    this.a.opponent = this.b;
-    this.b.opponent = this.a;
-    this.fighters = [this.a, this.b];
+    /**
+     * Camps. Par défaut le rang de chacun : à deux, cela redonne 0 et 1, donc
+     * le duel. `teams` n'est lu que pour former les camps — le moteur ne
+     * connaît ensuite que « même camp » ou « camp adverse ».
+     */
+    this.teams = teams ? teams.slice(0, n) : els.map((_, i) => i);
 
-    this.modules = new Map([
-      [this.a, abilitiesFor(elA.id)],
-      [this.b, abilitiesFor(elB.id)],
-    ]);
+    this.fighters = els.map((el, i) => new Fighter(el, i, rng, spawnFor(i, n)));
+    this.fighters.forEach((f, i) => { f.team = this.teams[i]; });
+    // `a` et `b` restent les deux premiers : le HUD du duel, la mise au point et
+    // l'écran de fin les lisent, et ils n'ont de sens qu'à deux.
+    this.a = this.fighters[0];
+    this.b = this.fighters[1];
+    if (n === 2) {
+      this.a.opponent = this.b;
+      this.b.opponent = this.a;
+    } else {
+      this.retarget();
+    }
+
+    this.modules = new Map(this.fighters.map((f) => [f, abilitiesFor(f.el.id)]));
     for (const [f, mod] of this.modules) mod.init(f, this);
 
     this.flair.attach(this.fighters);
-    this.backdrop = buildBackdrop({ a: elA, b: elB, lang });
+    this.backdrop = buildBackdrop({ fighters: els, teams: this.teams, lang });
 
     this.phase = 'intro';
     this.time = 0;
@@ -76,9 +126,15 @@ export class Match {
     this.victoryTo = { x: 0, y: 0 };
     this.victoryRing = 0;
     this.victorySpark = 0;
-    this.stats = { hits: [0, 0], damage: [0, 0], duration: 0 };
+    this.stats = {
+      hits: new Array(n).fill(0),
+      damage: new Array(n).fill(0),
+      duration: 0,
+    };
     /** @type {Fighter|null} */
     this.winner = null;
+    /** Ordre des chutes, pour le classement d'une partie à plusieurs. */
+    this.fallen = [];
   }
 
   /** Le sort du duel est scellé : plus aucun dégât ni soin ne compte. */
@@ -133,10 +189,35 @@ export class Match {
 
     // corps à corps + collisions
     if (this.phase === 'fight') {
-      resolveBodies(this.a, this.b);
-      this.resolveMelee(this.a, this.b);
-      this.resolveMelee(this.b, this.a);
+      if (this.fighters.length === 2) {
+        // **Le chemin du duel, mot pour mot.** Les boucles ci-dessous rendent
+        // les mêmes appels dans le même ordre pour deux combattants, mais
+        // « les mêmes appels » ne suffit pas ici : c'est « les mêmes
+        // expressions » qui est exigé (invariant 3).
+        resolveBodies(this.a, this.b);
+        this.resolveMelee(this.a, this.b);
+        this.resolveMelee(this.b, this.a);
+      } else {
+        const fs = this.fighters;
+        // Les corps se bousculent **entre tous**, alliés compris : un coéquipier
+        // reste un obstacle, et c'est ce qui rend le 2 contre 2 lisible.
+        for (let i = 0; i < fs.length; i++) {
+          for (let j = i + 1; j < fs.length; j++) resolveBodies(fs[i], fs[j]);
+        }
+        // Les armes, elles, ne touchent que le camp adverse.
+        for (let i = 0; i < fs.length; i++) {
+          for (let j = 0; j < fs.length; j++) {
+            if (i !== j && fs[i].team !== fs[j].team) this.resolveMelee(fs[i], fs[j]);
+          }
+        }
+      }
     }
+
+    // À plusieurs, chacun vise l'ennemi vivant le plus proche, et il peut
+    // changer d'un pas à l'autre. En duel, `opponent` est posé une fois pour
+    // toutes à la construction : ne pas y toucher, les modules le lisent sans
+    // jamais le tester.
+    if (this.fighters.length > 2) this.retarget();
 
     // pouvoirs (arrêtés dès le K.O. : la parade doit rester lisible)
     if (this.phase !== 'victory') {
@@ -294,7 +375,16 @@ export class Match {
     target.hp = Math.max(0, target.hp - amt);
     target.flash = PHYSICS.hitFlash;
 
-    const idx = source === this.a ? 0 : 1;
+    /**
+     * En duel, l'expression d'origine : un dégât venu d'ailleurs que du camp A
+     * (un clone du Shinobi, par exemple) est porté au compte du camp B, ce qui
+     * est le comportement historique. À plusieurs, le vrai rang — et `-1`
+     * ramené à 0 pour une source qui n'est pas un combattant du tableau.
+     */
+    const idx =
+      this.fighters.length === 2
+        ? (source === this.a ? 0 : 1)
+        : Math.max(0, this.fighters.indexOf(source));
     this.stats.damage[idx] += amt;
     if (opts.kind === 'melee' || opts.kind === 'projectile') this.stats.hits[idx]++;
 
@@ -353,8 +443,32 @@ export class Match {
 
   knockout(loser, winner) {
     if (this.settled || this.phase === 'ko') return;
+    this.fallen.push(loser);
+
+    if (this.fighters.length > 2) {
+      /**
+       * **À plusieurs, une mort n'arrête pas le duel** : elle ne l'arrête que
+       * s'il ne reste qu'un camp debout. C'est la seule règle qui sépare le 2
+       * contre 2 du chacun-pour-soi — dans le second, chacun est son propre
+       * camp, donc « un seul camp debout » veut dire « un seul survivant ».
+       */
+      this.deathFx(loser);
+      const debout = new Set(this.fighters.filter((f) => f.alive).map((f) => f.team));
+      if (debout.size > 1) return;
+      // Le vainqueur affiché est le survivant ; à égalité stricte (deux morts
+      // dans la même image) on retombe sur l'auteur du coup.
+      this.winner = this.fighters.find((f) => f.alive) ?? winner ?? loser;
+      this.setPhase('ko');
+      return;
+    }
+
     this.winner = winner ?? (loser === this.a ? this.b : this.a);
     this.setPhase('ko');
+    this.deathFx(loser);
+  }
+
+  /** Gerbe, anneau et secousse d'une mort. Extrait pour servir aux deux cas. */
+  deathFx(loser) {
     this.fx.burst(loser.x, loser.y, 60, {
       color: [loser.el.look.body, '#ffffff', loser.el.look.accent],
       speed: 520,
@@ -363,6 +477,30 @@ export class Match {
     });
     this.fx.ring(loser.x, loser.y, 10, 260, 0.7, loser.el.look.body, 10, true);
     this.shake(12, 0.6);
+  }
+
+  /**
+   * Recalcule la cible de chacun : l'**ennemi vivant et en scène le plus
+   * proche**. Appelé une fois par pas, avant les modules, uniquement à plus de
+   * deux combattants.
+   *
+   * Le repli garde la cible précédente plutôt que de rendre `null` : les
+   * modules lisent `f.opponent` sans le tester, parce qu'en duel il ne peut pas
+   * manquer. Leur imposer un test partout pour un cas de fin de partie aurait
+   * coûté une ligne dans chacun, avec une chance de l'oublier.
+   */
+  retarget() {
+    for (const f of this.fighters) {
+      let best = null;
+      let bestD = Infinity;
+      for (const g of this.fighters) {
+        if (g === f || g.team === f.team || !g.alive || !g.onStage) continue;
+        const d = (g.x - f.x) ** 2 + (g.y - f.y) ** 2;
+        if (d < bestD) { bestD = d; best = g; }
+      }
+      if (best) f.opponent = best;
+      else if (!f.opponent) f.opponent = this.fighters.find((g) => g !== f) ?? null;
+    }
   }
 
   /* ------------------------------------------------------------------ */
@@ -459,7 +597,16 @@ export class Match {
 
   result() {
     const winner = this.winner ?? this.a;
-    const loser = winner === this.a ? this.b : this.a;
+    /**
+     * `loser` n'a de sens qu'en duel. À plusieurs on rend **le dernier tombé**
+     * — celui qui a tenu le plus longtemps face au vainqueur, donc le seul
+     * second qui veuille dire quelque chose. `ui/result.js` s'en sert pour la
+     * ligne « X bat Y » et affiche en plus le classement quand il y en a un.
+     */
+    const loser =
+      this.fighters.length === 2
+        ? (winner === this.a ? this.b : this.a)
+        : (this.fallen[this.fallen.length - 1] ?? this.fighters.find((f) => f !== winner));
     return {
       winner: winner.el,
       loser: loser.el,
@@ -467,6 +614,12 @@ export class Match {
       duration: this.stats.duration,
       hits: this.stats.hits,
       damage: this.stats.damage,
+      /** Classement du dernier au premier tombé, vainqueur en tête. Vide en duel. */
+      standings:
+        this.fighters.length === 2
+          ? []
+          : [winner, ...this.fallen.slice().reverse().filter((f) => f !== winner)].map((f) => f.el),
+      teams: this.teams,
     };
   }
 
@@ -565,10 +718,14 @@ export class Match {
     // `specialBar` est optionnel : un combattant sans troisième créneau de
     // pouvoir ne l'implémente pas et n'affiche donc pas de deuxième jauge —
     // même forme d'accord que `drawUnbounded`.
-    const modA = this.modules.get(this.a);
-    const modB = this.modules.get(this.b);
-    drawFighterHud(ctx, this.a, 'left', modA.barValue(this.a), this.lang, modA.specialBar?.(this.a));
-    drawFighterHud(ctx, this.b, 'right', modB.barValue(this.b), this.lang, modB.specialBar?.(this.b));
+    if (this.fighters.length === 2) {
+      const modA = this.modules.get(this.a);
+      const modB = this.modules.get(this.b);
+      drawFighterHud(ctx, this.a, 'left', modA.barValue(this.a), this.lang, modA.specialBar?.(this.a));
+      drawFighterHud(ctx, this.b, 'right', modB.barValue(this.b), this.lang, modB.specialBar?.(this.b));
+    } else {
+      drawRosterHud(ctx, this.fighters, this.lang);
+    }
 
     if (this.phase === 'intro') this.drawIntro(ctx);
     if (this.debug) this.drawDebugOverlay(ctx);
@@ -622,8 +779,10 @@ export class Match {
     ctx.textBaseline = 'top';
     const lines = [
       `phase ${this.phase}  t=${this.time.toFixed(1)}s  seed=${this.rng.seed}`,
-      `A ${this.a.el.id} hp=${this.a.hp} spd=${Math.round(this.a.currentSpeed(this.time))} ult=${Math.round(this.a.ult.charge)}`,
-      `B ${this.b.el.id} hp=${this.b.hp} spd=${Math.round(this.b.currentSpeed(this.time))} ult=${Math.round(this.b.ult.charge)}`,
+      ...this.fighters.map(
+        (f, i) =>
+          `${i} ${f.el.id} camp=${f.team} hp=${f.hp} spd=${Math.round(f.currentSpeed(this.time))} ult=${Math.round(f.ult.charge)}`,
+      ),
       `projectiles ${this.projectiles.list.length}`,
     ];
     lines.forEach((l, i) => ctx.fillText(l, 12, 12 + i * 22));
