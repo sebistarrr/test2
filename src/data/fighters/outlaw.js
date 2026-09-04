@@ -17,10 +17,10 @@ import { formatHalf } from '../format.js';
  * ========================================================================== */
 export const OUTLAW = fiche({
   id: 'outlaw',
-  name: 'HORS-LA-LOI',
-  nameRef: 'OUTLAW',
-  tagline: 'Pistolero de glace — vise, tire, et gèle sa cible balle après balle',
-  taglineRef: 'Ice gunslinger — aims, fires, and freezes its mark with every bullet',
+  name: 'CALAMITY',
+  nameRef: 'CALAMITY',
+  tagline: 'Gâchette de givre — vise, tire, et gèle sa cible balle après balle',
+  taglineRef: 'Frost trigger — aims, fires, and freezes its mark with every bullet',
   icon: 'iconRevolver',
 
   look: {
@@ -183,8 +183,8 @@ export const OUTLAW = fiche({
   movement: { speed: 546, turnRate: 1.9, seek: 0.44 },
 
   weapon: {
-    name: 'Revolver de glace',
-    nameRef: 'Ice Revolver',
+    name: 'Pacificateur',
+    nameRef: 'Peacemaker',
     /** Mesuré : pointe du canon à 97 px du centre sur la vidéo 576 → ×1,25.
      *  Elle **découle** du sprite : 37 (garde) + 34 cellules × 2,5. */
     reach: 122,
@@ -250,10 +250,10 @@ export const OUTLAW = fiche({
 
   ultimate: {
     id: 'highNoon',
-    name: 'Plein soleil',
-    nameRef: 'HIGH NOON',
-    barLabel: 'HIGH NOON',
-    barLabelFr: 'PLEIN SOLEIL',
+    name: 'Grêle de plomb',
+    nameRef: 'HAILFIRE',
+    barLabel: 'HAILFIRE',
+    barLabelFr: 'GRÊLE DE PLOMB',
     /** **Écart assumé, demandé.** Reprend exactement la couleur de la jauge
      *  de Blizzard juste en dessous (`special.barFill`/`barText`) : les deux
      *  jauges d'un même combattant doivent se lire comme une paire — taille,
@@ -297,13 +297,13 @@ export const OUTLAW = fiche({
    */
   special: {
     id: 'blizzard',
-    name: 'Blizzard',
-    nameRef: 'Blizzard',
+    name: 'Vent de tombe',
+    nameRef: 'Boneyard Wind',
     /** Jauge propre, sous celle de l'ultime — voir `HUD.special`. Le pouvoir
      *  greffé n'en avait pas au départ ; c'est ce qui manquait pour qu'on voie
      *  venir son déclenchement au lieu de le subir. */
-    barLabel: 'BLIZZARD',
-    barLabelFr: 'BLIZZARD',
+    barLabel: 'BONEYARD WIND',
+    barLabelFr: 'VENT DE TOMBE',
     /** Même traitement de libellé que les jauges d'ultime — texte clair cerné
      *  de noir — donc le fond doit être assez tenu pour le porter : `#67d6ec`
      *  était trop pâle une fois le libellé passé à la taille de l'ultime. */

@@ -12,8 +12,8 @@ import { formatHalf } from '../format.js';
  * ========================================================================== */
 export const LANCER = fiche({
   id: 'lancer',
-  name: 'LANCIER',
-  nameRef: 'LANCER',
+  name: 'TEMPEST',
+  nameRef: 'TEMPEST',
   tagline: 'Chargeur — pointe en avant, il frappe de plus en plus fort',
   taglineRef: 'Charger — spear first, and every hit lands harder',
   icon: 'iconLance',
@@ -224,8 +224,8 @@ export const LANCER = fiche({
   movement: { speed: 430, turnRate: 1.85, seek: 0 },
 
   weapon: {
-    name: 'Lance électrique',
-    nameRef: 'Electric Lance',
+    name: 'Croc d’orage',
+    nameRef: 'Stormfang',
     /** Mesuré : centre → pointe = 131 px sur la vidéo 576 → ×1,25 = 164.
      *  **La plus longue portée du roster.** Elle découle du sprite :
      *  −52 (talon) + 54 cellules × 4 = 164, pour que hitbox et dessin ne
@@ -422,8 +422,8 @@ export const LANCER = fiche({
    */
   ability: {
     id: 'lancersFury',
-    name: 'Furie du lancier',
-    nameRef: 'Lancer’s Fury',
+    name: 'Fer de lance',
+    nameRef: 'Spearhead',
     cooldown: Infinity,
     cooldownStep: 0,
     cooldownFloor: Infinity,
@@ -431,10 +431,10 @@ export const LANCER = fiche({
 
   ultimate: {
     id: 'jump',
-    name: 'Bond',
-    nameRef: 'JUMP',
-    barLabel: 'JUMP',
-    barLabelFr: 'BOND',
+    name: 'Foudre tombante',
+    nameRef: 'THUNDERFALL',
+    barLabel: 'THUNDERFALL',
+    barLabelFr: 'FOUDRE TOMBANTE',
     /** **Écart assumé, demandé.** La jauge suivait la teinte du corps
      *  (`#5d3d8e`, le violet sombre de la hampe). Reprend maintenant
      *  exactement la couleur de la jauge du Lien d'essence juste en dessous :

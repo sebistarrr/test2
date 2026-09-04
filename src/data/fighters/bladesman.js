@@ -8,8 +8,8 @@ import { formatHalf } from '../format.js';
  * ========================================================================== */
 export const BLADESMAN = fiche({
   id: 'bladesman',
-  name: 'BRETTEUR',
-  nameRef: 'BLADESMAN',
+  name: 'CINDER',
+  nameRef: 'CINDER',
   tagline: 'Duelliste — sa lame accélère jusqu’à la surchauffe, puis fond sur sa cible',
   taglineRef: 'Duellist — his blade winds up to overheat, then rushes his target',
   icon: 'iconSabre',
@@ -204,8 +204,8 @@ export const BLADESMAN = fiche({
   /** Surchauffe : la lame monte au plafond, y tient un palier, puis lâche. */
   ability: {
     id: 'overheat',
-    name: 'Surchauffe',
-    nameRef: 'Overheat',
+    name: 'Danse d’acier',
+    nameRef: 'Steel Dance',
     /** Mesuré : une fois à 3,00 tours/s, palier d'environ 55 images à 30 fps.
      *  Ce qui déclenche l'effondrement n'est **pas** identifiable sur la
      *  vidéo — il ne coïncide ni avec BLADE RUSH ni avec HIGH NOON. Le modèle
@@ -221,10 +221,10 @@ export const BLADESMAN = fiche({
 
   ultimate: {
     id: 'bladeRush',
-    name: 'Ruée de lame',
-    nameRef: 'BLADE RUSH',
-    barLabel: 'BLADE RUSH',
-    barLabelFr: 'RUÉE DE LAME',
+    name: 'Fauche ardente',
+    nameRef: 'EMBER SWEEP',
+    barLabel: 'EMBER SWEEP',
+    barLabelFr: 'FAUCHE ARDENTE',
     /** **Écart assumé, demandé — deux passages.** D'abord passée à l'orange
      *  de l'aura (`#f97316`, texte assombri) pour suivre le reskin flamme.
      *  Reprend maintenant exactement la couleur de la jauge de Rage infernale

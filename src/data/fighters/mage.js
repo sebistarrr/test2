@@ -27,8 +27,8 @@ import { formatHalf } from '../format.js';
  * ========================================================================== */
 export const MAGE = fiche({
   id: 'mage',
-  name: 'MAGE',
-  nameRef: 'MAGE',
+  name: 'BRIAR',
+  nameRef: 'BRIAR',
   tagline: 'Distance — des orbes guidées, et une cadence qui monte sans fin',
   taglineRef: 'Ranged — homing orbs, and a fire rate that never stops climbing',
   icon: 'iconStaff',
@@ -77,8 +77,8 @@ export const MAGE = fiche({
   movement: { speed: 520, turnRate: 2, seek: 0.34 },
 
   weapon: {
-    name: 'Sceptre de sève',
-    nameRef: 'Sapwood Scepter',
+    name: 'Bâton de ronce',
+    nameRef: 'Briarstaff',
     /**
      * **Arme braquée** (`spin: 0`) : le sceptre pointe l'adversaire à chaque
      * image, c'est `abilities/mage.js` qui recopie l'angle. Troisième du
@@ -179,8 +179,8 @@ export const MAGE = fiche({
    */
   ability: {
     id: 'none',
-    name: 'Aucun',
-    nameRef: 'None',
+    name: 'Sève montante',
+    nameRef: 'Rising Sap',
     cooldown: Infinity,
     cooldownStep: 0,
     cooldownFloor: Infinity,
@@ -196,10 +196,10 @@ export const MAGE = fiche({
    */
   ultimate: {
     id: 'flowerStorm',
-    name: 'Tempête de sève',
-    nameRef: 'SAPWOOD STORM',
-    barLabel: 'SAPWOOD STORM',
-    barLabelFr: 'TEMPÊTE DE SÈVE',
+    name: 'Ronceraie',
+    nameRef: 'BRIARSTORM',
+    barLabel: 'BRIARSTORM',
+    barLabelFr: 'RONCERAIE',
     barFill: '#1f7a3d',
     barText: '#dcfce7',
     chargeRate: 3.6,
@@ -327,8 +327,8 @@ export const MAGE = fiche({
      * et c'est leur valeur, pas leur trajectoire, qui décide.
      */
     orb: {
-      label: 'Orbe de sève',
-      labelRef: 'Sap Orb',
+      label: 'Orbe de ronce',
+      labelRef: 'Briar Orb',
       sprite: 'mageOrb',
       scale: 2.2, // carte de 11 px -> orbe de 24 px, la taille du cristal
       speed: 470,

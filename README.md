@@ -11,11 +11,11 @@ mesuré est calé au banc d'essai, et le dit.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
-| **Hors-la-loi** | Revolver de glace | **canon asservi à la cible** — il ne tourne pas ; barillet de 6, balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Plein soleil / HIGH NOON (cadence doublée, recul ×8) |
-| **Bretteur** | Lame de braise (transcrite d'une maquette) | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
-| **Lancier** | Lance de dragon (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Bond / JUMP — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
+| **Calamity** | Pacificateur | **canon asservi à la cible** — il ne tourne pas ; barillet de 6, balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Grêle de plomb / HAILFIRE (cadence doublée, recul ×8) |
+| **Cinder** | Lame de braise (transcrite d'une maquette) | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Fauche ardente / EMBER SWEEP (verrou de touche à 115 ms, éventail vert grand ouvert) |
+| **Tempest** | Croc d'orage (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Foudre tombante / THUNDERFALL — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
-| **Mage** | Sceptre de sève (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Tempête de sève / SAPWOOD STORM |
+| **Briar** | Bâton de ronce (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Ronceraie / BRIARSTORM |
 
 ### Trois formats
 
@@ -47,8 +47,8 @@ l'arène s'éclaircit, les armes tournent, mais personne n'avance.
 
 Chaque emplacement porte un champ **PV**, à 100 par défaut — la valeur du cahier
 des charges — et réglable de 1 à 999. C'est le moyen le plus direct de corriger
-un déséquilibre ou de poser un handicap sans toucher à une fiche : le Bretteur à
-150 PV contre le Lancier à 100, par exemple. Tout ce qui affiche une proportion
+un déséquilibre ou de poser un handicap sans toucher à une fiche : Cinder à
+150 PV contre Tempest à 100, par exemple. Tout ce qui affiche une proportion
 de vie (barre du HUD, cerclage rouge sous un quart de vie) suit la valeur du
 combattant, pas une constante.
 
@@ -61,19 +61,19 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 
 | | Pouvoir spécial |
 | --- | --- |
-| **Hors-la-loi** | **Blizzard** — champ de givre qui le suit, ralentit et grignote |
-| **Bretteur** | **Rage infernale** — braises, aura brûlante |
-| **Lancier** | **Lien d'essence** — dôme figé + rayon qui draine |
+| **Calamity** | **Vent de tombe** — champ de givre qui le suit, ralentit et grignote |
+| **Cinder** | **Rage infernale** — braises, aura brûlante |
+| **Tempest** | **Lien d'essence** — dôme figé + rayon qui draine |
 | **Shinobi** | **Clone d'ombre** — des clones de 15 PV, permanents, solides, qui ripostent |
-| **Mage** | **Tir enraciné** — des racines le clouent au sol une seconde, il cesse de bouger *et* de tirer, puis lâche une **orbe majeure** à trois fois les dégâts |
+| **Briar** | **Tir enraciné** — des racines le clouent au sol une seconde, il cesse de bouger *et* de tirer, puis lâche une **orbe majeure** à trois fois les dégâts |
 
-<sup>[Le Blizzard du Hors-la-loi](docs/capture-blizzard.png) · [le Lien d'essence du Lancier](docs/capture-lien.png) · [les orbes guidées du Mage](docs/capture-mage.png) · [sa Tempête de sève](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
+<sup>[Le Vent de tombe de Calamity](docs/capture-blizzard.png) · [le Lien d'essence de Tempest](docs/capture-lien.png) · [les orbes guidées de Briar](docs/capture-mage.png) · [sa Ronceraie](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
 
-![Lancier contre Bretteur](docs/capture-duel.png)
+![Tempest contre Cinder](docs/capture-duel.png)
 
 <sup>Les nouveaux formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [une bataille royale à cinq](docs/capture-royale.png) · [la parade à deux vainqueurs](docs/capture-fin-2v2.png).</sup>
 
-<sup>Le Lancier (charge, Lien d'essence) contre le Bretteur (surchauffe, Rage infernale). Voir aussi [l'écran de sélection](docs/capture-selection.png), [le Hors-la-loi sous HIGH NOON](docs/capture-horsloi.png), [la ruée du Bretteur](docs/capture-bretteur.png), [le Bond du Lancier](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
+<sup>Tempest (charge, Lien d'essence) contre Cinder (surchauffe, Rage infernale). Voir aussi [l'écran de sélection](docs/capture-selection.png), [Calamity sous HAILFIRE](docs/capture-horsloi.png), [la ruée de Cinder](docs/capture-bretteur.png), [la Foudre tombante de Tempest](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
 
 ---
 
@@ -189,11 +189,11 @@ src/
 │   ├── projectiles.js     projectiles génériques pilotés par la fiche
 │   └── abilities/
 │       ├── index.js       registre
-│       ├── outlaw.js      Visée asservie + Barillet + Plein soleil + Blizzard
+│       ├── outlaw.js      Visée asservie + Barillet + Grêle de plomb + Vent de tombe
 │       ├── bladesman.js   Courbe de rotation (surchauffe) + Ruée + Rage
-│       ├── lancer.js      Charge + Bond + Lien d'essence
+│       ├── lancer.js      Charge + Foudre tombante + Lien d'essence
 │       ├── wind.js        Tornade de shurikens + Clone d'ombre
-│       └── mage.js        Orbes guidées + Tempête de sève + Tir enraciné
+│       └── mage.js        Orbes guidées + Ronceraie + Tir enraciné
 └── ui/
     ├── lang.js            libellés d'interface, anglais et français
     ├── select.js          écran de sélection (lit les fiches)
@@ -205,7 +205,7 @@ tools/                     outillage de vérification (non chargé par la page)
 │                          le garde-fou des réorganisations de `src/data/`
 ├── fiche-check.mjs        câblage, clés de sprite, fiche ↔ module
 ├── probe.mjs              durée, touches et coups/s d'un combattant sur tout
-│                          le roster — garde-fou chiffré du Hors-la-loi
+│                          le roster — garde-fou chiffré de Calamity
 ├── lang-check.mjs         garde-fou de la langue (tables et champs `Ref`)
 ├── shot.mjs               captures d'écran, avec déclenchement de pouvoir
 ├── frames.py              extraction d'images d'une vidéo de référence
@@ -252,7 +252,7 @@ identique sur un écran 60 Hz ou 144 Hz, et les collisions arme/corps ne
 ## Langue
 
 **L'application est en anglais** — c'est la langue de la vidéo de référence
-(`DARK`, `HIGH NOON`, `Damage: 5.50`), donc celle du HUD et du titre d'arène
+(`DARK`, `HAILFIRE`, `Damage: 5.50`), donc celle du HUD et du titre d'arène
 depuis toujours ; les écrans de sélection et de fin ont suivi. `?lang=fr`
 bascule l'ensemble, chrome DOM compris.
 
@@ -276,9 +276,9 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 | Jauges du HUD                 | 268 × 35 px, en x = 39 et x = 412, y = 965 |
 | Ligne de stat                 | ligne de base y = 1036            |
 | Dôme du Lien d'essence        | rayon ≈ 265 px, `rgb(52,46,70)`, 5,65 s, non clippé |
-| Champ de Blizzard             | rayon ≈ 130 px                    |
-| Tempête de sève               | grappes de cubes de 11 à 26 px, aucun cerceau |
-| Brûlure du Bretteur           | teinte du corps **et** anneau orange sur la victime |
+| Champ de Vent de tombe             | rayon ≈ 130 px                    |
+| Ronceraie               | grappes de cubes de 11 à 26 px, aucun cerceau |
+| Brûlure de Cinder           | teinte du corps **et** anneau orange sur la victime |
 
 Ces quatre dernières lignes viennent des vidéos *Elemental Armory League*, dont
 les huit éléments ont depuis été supprimés — les pouvoirs, eux, ont été
@@ -290,25 +290,25 @@ convertit en **×1,25** vers ce repère 720 × 1280 — **sauf celle de Magia,
 
 | Élément mesuré                | Valeur relevée (convertie)        |
 | ----------------------------- | --------------------------------- |
-| Boule Hors-la-loi / Bretteur  | `#8a5934` / mesurée `#dcc462` ; le jeu met le Bretteur en **orange `#e8621b`**, avec sa lame de braise (écart assumé, voir `docs/FICHES.md`) |
+| Boule Calamity / Cinder  | `#8a5934` / mesurée `#dcc462` ; le jeu met Cinder en **orange `#e8621b`**, avec sa lame de braise (écart assumé, voir `docs/FICHES.md`) |
 | Portée d'arme                 | revolver 122 px, sabre/lame 152 px |
 | Rotation du sabre             | 0,80 → 3,00 tour/s, palier de 1,8 s au plafond, effondrement à −3,0/s |
-| Recul du revolver             | 119 px/s, **988 px/s sous HIGH NOON** |
-| Progression « Damage » (Hors-la-loi) | 3,00 → 5,50 par pas de 0,10, **au coup au but** |
-| « Damage » du Bretteur        | `2,00 × Spin Speed`, exact, jamais stocké |
-| HIGH NOON                     | horloge de 7,0 s, effet 6,2 s, cadence doublée |
-| BLADE RUSH                    | horloge de 9 s + 6 % par coup, ruée de 1,5 s, verrou à 115 ms |
-| Précision du Hors-la-loi      | 25 coups au but en 38,6 s = **0,65 coup/s** |
-| Boule Lancier                 | mesurée `#574a84` indigo ; le jeu la met en **violet `#7046ac`**, la teinte de la lance électrique — donc tout près du relevé. Traînée cramoisie `#a32b4a` conservée |
-| Lance du Lancier              | centre → pointe 164 px, talon 42 px **derrière** le pivot. Le **dessin** ne vient pas de la vidéo mais d'une maquette : une **lance électrique** violette — pommeau doré, hampe fissurée de blanc, garde, tête hérissée à gemme. Elle est *transcrite* et non redessinée : réduction par blocs 3 × 3 exacts, 624 × 129 → 208 × 43. L'encombrement, lui, reste celui du relevé |
-| Progression « Damage » (Lancier) | 10,00 → 20,00 par pas de **2,00**, à la touche portée ; 5 touches en 27,6 s, soit 0,181 coup/s et 2,54 PV/s (le moteur rend 0,195 et **2,52**) |
-| Angle de lance (Lancier)      | **elle suit le cap de déplacement**, `weapon.spin: 0`. Le chiffre qui figurait ici a été **retiré** après un quatrième relevé qui ne tranche pas — voir `docs/FICHES.md` |
-| Charge du Lancier             | le corps file à ~1 400 px/s pendant ~0,15 s contre 540 en croisière, lance dans l'axe |
-| Bond du Lancier               | jauge pleine en 10 s, 0,45 s d'élan, **1,5 s hors de l'arène**, impact de rayon 110 px |
+| Recul du revolver             | 119 px/s, **988 px/s sous HAILFIRE** |
+| Progression « Damage » (Calamity) | 3,00 → 5,50 par pas de 0,10, **au coup au but** |
+| « Damage » de Cinder        | `2,00 × Spin Speed`, exact, jamais stocké |
+| HAILFIRE                     | horloge de 7,0 s, effet 6,2 s, cadence doublée |
+| EMBER SWEEP                    | horloge de 9 s + 6 % par coup, ruée de 1,5 s, verrou à 115 ms |
+| Précision de Calamity      | 25 coups au but en 38,6 s = **0,65 coup/s** |
+| Boule Tempest                 | mesurée `#574a84` indigo ; le jeu la met en **violet `#7046ac`**, la teinte de la lance électrique — donc tout près du relevé. Traînée cramoisie `#a32b4a` conservée |
+| Lance de Tempest              | centre → pointe 164 px, talon 42 px **derrière** le pivot. Le **dessin** ne vient pas de la vidéo mais d'une maquette : une **lance électrique** violette — pommeau doré, hampe fissurée de blanc, garde, tête hérissée à gemme. Elle est *transcrite* et non redessinée : réduction par blocs 3 × 3 exacts, 624 × 129 → 208 × 43. L'encombrement, lui, reste celui du relevé |
+| Progression « Damage » (Tempest) | 10,00 → 20,00 par pas de **2,00**, à la touche portée ; 5 touches en 27,6 s, soit 0,181 coup/s et 2,54 PV/s (le moteur rend 0,195 et **2,52**) |
+| Angle de lance (Tempest)      | **elle suit le cap de déplacement**, `weapon.spin: 0`. Le chiffre qui figurait ici a été **retiré** après un quatrième relevé qui ne tranche pas — voir `docs/FICHES.md` |
+| Charge de Tempest             | le corps file à ~1 400 px/s pendant ~0,15 s contre 540 en croisière, lance dans l'axe |
+| Foudre tombante de Tempest               | jauge pleine en 10 s, 0,45 s d'élan, **1,5 s hors de l'arène**, impact de rayon 110 px |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les
 **15 affrontements** du roster (3 seeds chacun), un duel dure **13 à 29 s**, et
-le Hors-la-loi termine autour de 5,0 de dégâts, comme sur sa vidéo. Une **mort
+Calamity termine autour de 5,0 de dégâts, comme sur sa vidéo. Une **mort
 subite** amplifie les dégâts au-delà de 55 s pour qu'aucun duel ne s'éternise.
 Détail de l'équilibrage dans [`docs/FICHES.md`](docs/FICHES.md).
 

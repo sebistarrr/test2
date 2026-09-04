@@ -1,8 +1,8 @@
 # Fiches des combattants
 
-**Cinq combattants** repris de la chaîne « ballthingsim » — **Hors-la-loi** et
-**Bretteur** du duel *Outlaw vs Bladesman*, **Lancier** de *Dragoon vs Outlaw*,
-**Mage** construit sur la mécanique de Magia dans *Dragoon vs Magia*, et
+**Cinq combattants** repris de la chaîne « ballthingsim » — **Calamity** et
+**Cinder** du duel *Outlaw vs Bladesman*, **Tempest** de *Dragoon vs Outlaw*,
+**Briar** construit sur la mécanique de Magia dans *Dragoon vs Magia*, et
 **Shinobi**, reskin du Vent des vidéos *Elemental Armory League*.
 
 Ces fiches sont la **transcription lisible** de `src/data/fighters/`. Le code
@@ -19,9 +19,9 @@ rassemblé dans l'**archive** en tête de document, juste après ces règles.
 
   | Vidéo | Combattants observés | Format |
   | --- | --- | --- |
-  | `Outlaw vs Bladesman` | Hors-la-loi, Bretteur | 576 × 1024, 30 fps, 1159 images, 38,6 s |
-  | `Dragoon vs Outlaw` | Lancier, Hors-la-loi | 576 × 1024, 30 fps, 33,6 s |
-  | `Dragoon vs Magia` | Mage (d'après Magia) | 576 × 1024, 30 fps, 24,4 s |
+  | `Outlaw vs Bladesman` | Calamity, Cinder | 576 × 1024, 30 fps, 1159 images, 38,6 s |
+  | `Dragoon vs Outlaw` | Tempest, Calamity | 576 × 1024, 30 fps, 33,6 s |
+  | `Dragoon vs Magia` | Briar (d'après Magia) | 576 × 1024, 30 fps, 24,4 s |
   | *Elemental Armory League* (18 vidéos) | les huit éléments, dont le Vent devenu Shinobi | 720 × 1280 pour la première, 576 × 1024 pour les autres |
 
   **Le facteur de conversion n'est pas le même partout.** Les vidéos 576 se
@@ -61,7 +61,7 @@ Leurs relevés complets sont dans l'historique git. Ce qui suit est ce qui
 **sert encore** : les mesures d'origine des pouvoirs greffés sur les
 survivants, qui restent la justification des valeurs de leurs fiches.
 
-### Blizzard (Glace) → Hors-la-loi
+### Vent de tombe (Glace) → Calamity
 
 | Propriété          | Valeur                                                 | Source |
 | ------------------ | ------------------------------------------------------ | ------ |
@@ -70,14 +70,14 @@ survivants, qui restent la justification des valeurs de leurs fiches.
 | Champ              | rayon 130 px, **suit le porteur**                      | mesuré |
 | Effet du champ     | −35 % de vitesse, 1 PV toutes les 0,7 s                | calé   |
 | Neige              | 90 flocons/s sur toute l'arène                         | mesuré |
-| Salve d'éclats     | 7 en étoile (360°) ; 10 par salve toutes les 1,2 s pendant le Blizzard | mesuré |
+| Salve d'éclats     | 7 en étoile (360°) ; 10 par salve toutes les 1,2 s pendant le Vent de tombe | mesuré |
 
 **Éclat de givre** (`iceShard`, carte rapatriée dans `pixelart/outlaw.js`) :
 sprite ×2,4, 380 px/s, 2 PV (`calé`), rayon 10 px (`déduit`), 3,4 s et
 **2 rebonds** sur les murs, −12 % de vitesse pendant 1,6 s, traînée en
 pointillé bleu pâle toutes les 35 ms.
 
-### Rage infernale (Feu) → Bretteur
+### Rage infernale (Feu) → Cinder
 
 6 s : nova de **90 cubes orange**, ailes de flammes battantes, aura brûlante de
 150 px (2 PV / 0,6 s + brûlure), vitesse ×1,2. Cycle de jauge mesuré à **25-27 s**.
@@ -86,7 +86,7 @@ pointillé bleu pâle toutes les 35 ms.
 **cercle d'un gros anneau orange**. Vérifié au zoom sur FIRE vs WATER — c'est ce
 que reproduisent `statusTint` et `statusRing` dans `fighter.js`.
 
-### Lien d'essence (Ombre) → Lancier
+### Lien d'essence (Ombre) → Tempest
 
 | Propriété          | Valeur                                             | Source |
 | ------------------ | -------------------------------------------------- | ------ |
@@ -100,7 +100,7 @@ que reproduisent `statusTint` et `statusRing` dans `fighter.js`.
 Le suivi automatique confirme qu'il est bien **ancré** : sur ses 5,6 s, la
 distance entre son centre et son lanceur passe de 71 px à 324 px.
 
-### Tempête de fleurs (Plante) → Mage
+### Tempête de fleurs (Plante) → Briar
 
 5 s : la cible est clouée sur place (−70 %) et battue par une nuée de pétales,
 pendant que le lanceur regagne 1 PV/s.
@@ -108,13 +108,13 @@ pendant que le lanceur regagne 1 PV/s.
 **Aspect** : des grappes de **carrés plats et opaques**, toujours alignés sur
 les axes, sans contour ni dégradé, denses au point de masquer la cible, mêlées
 de quelques corolles. **Aucun cerceau** sur les vidéos. Le rose d'origine
-(`rgb(248,120,184)`) est passé au vert chez le Mage.
+(`rgb(248,120,184)`) est passé au vert chez Briar.
 
 **Corolle** : 11 × 11 ×3,6 (≈ 40 px), contour noir épais et cœur clair.
 
 ### Ce qui est parti avec eux
 
-Le **Semis** de la Plante (bulbes posés au sol) avait été greffé sur le Mage
+Le **Semis** de la Plante (bulbes posés au sol) avait été greffé sur Briar
 puis retiré à sa demande. L'Égide de la Lumière, les tourbillons de l'Eau et
 les bornes de la Foudre n'ont été greffés nulle part : leur code a disparu avec
 leur fiche, y compris le crochet `onDamage` du moteur qui n'existait que pour
@@ -168,10 +168,10 @@ décréments séparés dans la fiche (`cooldownStepOnCast` et `cooldownStep`).
 
 ### Reskin — Shinobi
 
-**Réactivé et redessiné à la demande, comme le Bretteur avant lui.** Le Vent
+**Réactivé et redessiné à la demande, comme Cinder avant lui.** Le Vent
 était gelé ; il est réactivé, déplacé en queue de `ROSTER` (après
-le Lancier, pas à sa place d'origine) pour ne pas déplacer le camp A des six
-duels déjà établis entre Hors-la-loi, Bretteur et Lancier — voir `CLAUDE.md`
+Tempest, pas à sa place d'origine) pour ne pas déplacer le camp A des six
+duels déjà établis entre Calamity, Cinder et Tempest — voir `CLAUDE.md`
 pour le détail. `id: 'wind'` ne change pas ; seuls `name`/`nameRef`
 (`VENT`/`WIND` → `SHINOBI`/`SHINOBI`), l'arme et les projectiles bougent.
 
@@ -191,7 +191,7 @@ sur un projectile devenu plus grand.
 `head.sprite: 'windShuriken'` est servi par
 `assets/sprites/shinobi-shuriken.png` (déclaré dans
 `assets/sprites/manifest.json`), un recadrage de la maquette fournie sur sa
-plus grande composante connexe — même méthode que la lame du Bretteur.
+plus grande composante connexe — même méthode que la lame de Cinder.
 Différence notable : cette maquette isolait mal l'objet du damier de
 transparence sur ses zones sombres (le disque derrière le crâne, les creux
 entre les branches) — un simple retrait de fond y laissait des poches de
@@ -208,7 +208,7 @@ moindre recalcul.
 **Corps passé au noir, à la demande.** `look.body` `#bcbf9e` → `#141414`.
 Le contour (`outline`) et le chiffre de PV (`hpColor`) étaient déjà proches du
 noir (`#0a0a0a`) : laissés tels quels, ils auraient disparu **noir sur noir**
-sur le nouveau corps — le même piège déjà payé sur le Bretteur (voir sa
+sur le nouveau corps — le même piège déjà payé sur Cinder (voir sa
 section, « HP au-dessus de la manche »). Contour repassé à l'orange de braise
 du shuriken (`#e8621b`), chiffre de PV au crème mesuré du reste du roster
 (`#f5f2ea`). Vérifié à l'écran (`tools/shot.mjs`), lisible dans toutes les
@@ -231,7 +231,7 @@ d'avant le corps noir. `look.flair` (ruban, motes, éclair d'incantation)
 n'est pas touché, non demandé. Purement visuel.
 
 **Nouveau pouvoir demandé : un clone de lui-même, 20 PV.** Troisième
-créneau greffé (même patron que le Blizzard/la Rage infernale/le Lien
+créneau greffé (même patron que le Vent de tombe/la Rage infernale/le Lien
 d'essence), mais **conçu** pour le Shinobi plutôt que repris d'un autre
 combattant — voir `CLAUDE.md` pour le détail technique (pourquoi il est
 stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
@@ -248,17 +248,17 @@ stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
 | Jauge | `SHADOW CLONE`, sous `TEMPEST VOLLEY`, mêmes couleurs |
 
 **Relevé de matrice après ajout : 3/9 contre les trois autres actifs
-(1/3 Hors-la-loi, 2/3 Bretteur, 0/3 Lancier), 3/3 en miroir inchangé.**
+(1/3 Calamity, 2/3 Cinder, 0/3 Tempest), 3/3 en miroir inchangé.**
 Toutes les lignes n'impliquant pas `wind` restent identiques au caractère
 près. `tools/matrix-reference.txt` régénérée.
 
-**Rendu permanent, second relevé : 4/9** (0/3 Hors-la-loi, **3/3** Bretteur,
-1/3 Lancier). Le plafond de 6 s (`sp.duration`) est retiré de la fiche — plus
+**Rendu permanent, second relevé : 4/9** (0/3 Calamity, **3/3** Cinder,
+1/3 Tempest). Le plafond de 6 s (`sp.duration`) est retiré de la fiche — plus
 rien n'expire le clone, seuls ses PV le peuvent. Toujours confiné aux seules
 lignes `wind` ; `tools/matrix-reference.txt` régénérée une seconde fois.
 
-**Rendu solide, troisième relevé : 5/9** (**1/3** Hors-la-loi, 3/3 Bretteur
-inchangé, 1/3 Lancier inchangé). Réutilise la géométrie de `resolveBodies()`
+**Rendu solide, troisième relevé : 5/9** (**1/3** Calamity, 3/3 Cinder
+inchangé, 1/3 Tempest inchangé). Réutilise la géométrie de `resolveBodies()`
 (`physics.js`) à sens unique — le clone ne bouge jamais, l'autre corps
 encaisse tout l'écartement — écrite dans `wind.js` pour rester confinée au
 module. Le blocage joue dans les deux sens : le vrai Shinobi peut aussi se
@@ -280,8 +280,7 @@ même pas — `weaponHit()` pose `target.meleeCd` dès le premier clone touché,
 et un projectile est retiré de la liste dès qu'il touche — donc aucun
 verrou supplémentaire n'a été nécessaire pour garder cette règle avec
 plusieurs clones. **Relevé de matrice : 7/9**, contre 5/9 avec un seul
-clone à la fois — 3/3 contre le Hors-la-loi (contre 1/3), 3/3 contre le
-Bretteur (inchangé, déjà maximal), 1/3 contre le Lancier (inchangé, sa
+clone à la fois — 3/3 contre Calamity (contre 1/3), 3/3 contre Cinder (inchangé, déjà maximal), 1/3 contre Tempest (inchangé, sa
 charge traverse l'écart sans ralentir). `tools/matrix-reference.txt`
 régénérée une quatrième fois.
 
@@ -321,9 +320,9 @@ suivent **pas** la nouvelle taille : la règle « des shurikens de la même
 taille que l'arme » valait pour l'arme tenue, un projectile de 150 px serait
 illisible.
 
-**Relevé de matrice : 8/9** (3/3 Hors-la-loi, 3/3 Bretteur, **2/3** Lancier
+**Relevé de matrice : 8/9** (3/3 Calamity, 3/3 Cinder, **2/3** Tempest
 contre 1/3 avant). Une hitbox qui ne dépend plus de l'orientation de l'arme
-punit la charge du Lancier, qui passait jusque-là entre deux tours de lame.
+punit la charge de Tempest, qui passait jusque-là entre deux tours de lame.
 Les durées se raccourcissent partout — signature d'une cadence de touche en
 hausse. **Le Shinobi devient l'anomalie du roster réduit**, conséquence
 directe de la demande, documentée telle quelle. Leviers pour le ramener si
@@ -384,9 +383,9 @@ Banc instrumenté, pas par pas, sur les instants où un clone est
 
 | Adversaire | pas à portée | bloqués par `meleeCd` | PV perdus (avant → après) | morts (avant → après) |
 | --- | --- | --- | --- | --- |
-| Hors-la-loi | 15 | **15 (100 %)** | 22 → **36** | 1 → 1 |
-| Bretteur | 49 | **49 (100 %)** | 14 → **21** | 0 → **1** |
-| Lancier | 34 | **34 (100 %)** | 14 → **30** | 0 → **2** |
+| Calamity | 15 | **15 (100 %)** | 22 → **36** | 1 → 1 |
+| Cinder | 49 | **49 (100 %)** | 14 → **21** | 0 → **1** |
+| Tempest | 34 | **34 (100 %)** | 14 → **30** | 0 → **2** |
 
 **Cause : un ordre d'exécution.** `weaponHit()` refuse la touche quand
 `attacker.meleeCd > 0`, et `Match.resolveMelee` tourne avant les modules :
@@ -400,7 +399,7 @@ par `clone.hitCd`, propre à chaque clone. Une touche sur un clone ne pose
 jamais `opponent.meleeCd` : ça rendrait le vrai Shinobi intouchable dès qu'un
 clone traîne à côté, soit une famine remplacée par l'autre.
 
-**Matrice : 8/9 → 7/9**, le Lancier reprend son affrontement (2/3 contre
+**Matrice : 8/9 → 7/9**, Tempest reprend son affrontement (2/3 contre
 1/3). C'est un correctif de bug, et il va dans le bon sens pour l'anomalie
 signalée à l'étape précédente.
 
@@ -431,43 +430,42 @@ caractère près.
 | `lancer vs wind` | wind 1/3 | inchangé |
 
 Cohérent avec l'observation déjà faite sur les clones multiples face au
-canon asservi du Hors-la-loi : des clones plus fragiles meurent plus vite,
-donc gênent son tir moins longtemps. Bretteur et Lancier ne s'appuyaient pas
+canon asservi de Calamity : des clones plus fragiles meurent plus vite,
+donc gênent son tir moins longtemps. Cinder et Tempest ne s'appuyaient pas
 sur la durée de vie du clone. **Total Shinobi : 6/9**, contre 7/9 avant.
 Lignes sans `wind` identiques au caractère près.
 
 ### Dégâts de mêlée 3 → 2 : le Shinobi paie le resserrement du roster
 
-Il n'y avait rien à reprocher au Shinobi — le réglage vient d'ailleurs. Le
-Hors-la-loi et le Bretteur étaient derniers ex æquo (3/12 chacun), et la
+Il n'y avait rien à reprocher au Shinobi — le réglage vient d'ailleurs. Calamity et Cinder étaient derniers ex æquo (3/12 chacun), et la
 question posée était de **les** remonter. Leurs leviers propres n'ont rien
 donné :
 
 | Levier essayé | Balayage | Résultat |
 | --- | --- | --- |
-| Hors-la-loi, `projectiles.shot.radius` | 8 / 10 / 12 / 14 | 10 / 9 / 10 / 9 — **plat et non monotone** |
-| Hors-la-loi, `ability.spread` | 0,75 / 0,55 / 0,35 / 0,2 / 0,1 | 10 / 14 / 21 / 22 / 24 — **vrai levier, mais** |
-| Bretteur, `ability.cooldown` (palier de surchauffe) | 1,8 / 2,6 / 3,5 / 5 | 9 / 7 / 9 / 9 — **plat** |
-| Bretteur, `movement.speed` | 560 / 600 / 620 / 660 | 11 / 13 / 12 / 10 — **bruit** une fois le Shinobi corrigé |
+| Calamity, `projectiles.shot.radius` | 8 / 10 / 12 / 14 | 10 / 9 / 10 / 9 — **plat et non monotone** |
+| Calamity, `ability.spread` | 0,75 / 0,55 / 0,35 / 0,2 / 0,1 | 10 / 14 / 21 / 22 / 24 — **vrai levier, mais** |
+| Cinder, `ability.cooldown` (palier de surchauffe) | 1,8 / 2,6 / 3,5 / 5 | 9 / 7 / 9 / 9 — **plat** |
+| Cinder, `movement.speed` | 560 / 600 / 620 / 660 | 11 / 13 / 12 / 10 — **bruit** une fois le Shinobi corrigé |
 
 *(24 duels par combattant, les deux camps.)*
 
-La dispersion du Hors-la-loi marche — c'est le seul levier vivant des deux —
+La dispersion de Calamity marche — c'est le seul levier vivant des deux —
 mais elle est **déduite d'une mesure** : 0,75 rad reproduit les 0,60 coup/s
 relevés sur sa vidéo, elle-même déduite des 25 paliers de `Damage` en 38,6 s.
 La baisser rendrait le pistolero plus précis que le pistolero filmé. Écarté.
 
 **Le levier qui restait était chez le Shinobi**, l'écart d'en haut :
-`melee.damage` de 3 à 2 remonte le Hors-la-loi **et** le Bretteur de 3/12 à
+`melee.damage` de 3 à 2 remonte Calamity **et** Cinder de 3/12 à
 4/12 chacun, sans toucher une ligne de leur fiche.
 
 | | Avant | Après |
 | --- | --- | --- |
-| Lancier | 9/12 | 9/12 |
-| Mage | 6/12 | 7/12 |
+| Tempest | 9/12 | 9/12 |
+| Briar | 6/12 | 7/12 |
 | **Shinobi** | **9/12** | **6/12** |
-| Hors-la-loi | 3/12 | 4/12 |
-| Bretteur | 3/12 | 4/12 |
+| Calamity | 3/12 | 4/12 |
+| Cinder | 3/12 | 4/12 |
 | **Écart** | **3–9** | **4–9** |
 
 **Écarté : réduire `hitbox.radius` (75).** C'est le levier que `CLAUDE.md`
@@ -477,15 +475,14 @@ demi-largeur du sprite. Le rétrécir ferait mentir le dessin sur l'endroit où 
 touche, exactement ce que le dépôt s'interdit depuis `handle.length`. Les
 dégâts, eux, ne sont écrits nulle part sur le sprite.
 
-**Un mot sur le chiffre de départ.** À la matrice, le Hors-la-loi et le
-Bretteur étaient à 3/12 — mais sur **les deux camps** ils étaient à 10/24 et
+**Un mot sur le chiffre de départ.** À la matrice, Calamity et Cinder étaient à 3/12 — mais sur **les deux camps** ils étaient à 10/24 et
 9/24, soit presque la moyenne. La matrice ne joue chaque paire qu'une fois,
 donc chacun y reste du même côté et le camp A pèse lourd : elle exagère les
 écarts. Elle reste le garde-fou de non-régression, pas la mesure de force.
 
 ---
 
-## 🤠 HORS-LA-LOI — `outlaw` (affiché « OUTLAW »)
+## 🤠 CALAMITY — `outlaw` (affiché « CALAMITY »)
 
 > Pistolero — vise, tire, recule, et affûte ses dégâts balle après balle.
 
@@ -503,16 +500,16 @@ citée entre parenthèses.
 | Sprite | 34 × 15 cellules ×2,5 : crosse brune côté bille, carcasse et barillet en acier bleuté-violine, puis un **canon fin** de 6 cellules sur 15. C'est le contraste corps épais / canon fin qui identifie l'arme | mesuré |
 | Corps à corps | pile courante en PV, toutes les **3 s** — le verrou le plus long du roster, parce que le canon est **toujours** aligné. À 1,5 s le pistolero gagnait 27 duels sur 27 | calé |
 | **Barillet** | 6 coups, ~0,6 s entre deux (≈ 18 images à 30 fps), puis un rechargement de 1,4 s — le trou observé entre `0/6` et `6/6` | mesuré + calé |
-| **Recul** | 119 px/s par coup (95), **988 px/s (790) sous HIGH NOON**. C'est lui qui produit le pic de 1 380 px/s relevé à l'image 1011 : chaque coup de la rafale le propulse violemment | mesuré |
+| **Recul** | 119 px/s par coup (95), **988 px/s (790) sous HAILFIRE**. C'est lui qui produit le pic de 1 380 px/s relevé à l'image 1011 : chaque coup de la rafale le propulse violemment | mesuré |
 | **Dispersion** | ±0,75 rad. **Déduite d'une mesure** : la vidéo montre 25 paliers de +0,10 en 38,6 s pour ~50 tirs, soit une balle sur deux et **0,65 coup/s**. Sans dispersion, une visée réécrite à chaque image touche toujours — le banc donnait 1,30 coup/s, exactement le double | déduit |
-| Ultime | *Plein soleil* (`HIGH NOON`) — horloge **pure** de 7,0 s (charge de 1,13 px/image sur 238 px utiles), effet 6,2 s (vidage à 1,28 px/image) : cadence doublée, +22 % de vitesse, recul ×8,3 | mesuré |
+| Ultime | *Grêle de plomb* (`HAILFIRE`) — horloge **pure** de 7,0 s (charge de 1,13 px/image sur 238 px utiles), effet 6,2 s (vidage à 1,28 px/image) : cadence doublée, +22 % de vitesse, recul ×8,3 | mesuré |
 | Rendu de l'ultime | la vidéo fait virer **toute l'arène** au crème `#FDF7ED`. Ici le décor ne bouge jamais : la lumière se pose **au sol, sous le pistolero** | écart assumé |
 | Projectile | *Balle* — `outlawShot` 9 × 3 ×3,2, 720 px/s, dégâts = la pile courante. Sillage **pâle** de 2 px, (213,182,153) à (236,206,177) : les cinq taches alignées de l'image 224 sont ce sillage en tirets, pas cinq projectiles | mesuré + calé |
 | HUD | `Damage: 3.00 → 5.50` (+0,10 **au coup au but**, pas au coup tiré) et `Ammo: n/6` | mesuré |
 
 ---
 
-## ⚔ BRETTEUR — `bladesman` (affiché « BLADESMAN »)
+## ⚔ CINDER — `bladesman` (affiché « CINDER »)
 
 > Duelliste — sa lame accélère jusqu'à la surchauffe, puis fond sur sa cible.
 
@@ -524,9 +521,9 @@ citée entre parenthèses.
 | **Arme** | *Sabre dentelé* — portée 152 px : garde à 45–56 (36–45), lame à 56–152 (45–122). La portée **découle** du sprite, jamais écrite en dur | mesuré |
 | Sprite | 40 × 16 cellules ×2,68. Garde **orange vif** (232,160,40), petite croix trapue. Lame **asymétrique** — bande gris-brun sur l'arête haute, corps ivoire en bas — et **fuselée** : une lame à côtés parallèles donne un bout carré que le relevé n'a pas. Les deux arêtes sont dentées, d'où l'aspect scie | mesuré |
 | **Rotation** | plancher **0,80** tour/s, plafond **3,00**, jamais franchis. Montée passive **+0,21/s**, sauts discrets de **+0,15** — un par coup porté. Au plafond : palier d'environ **1,8 s** (55 images), puis effondrement à **−3,0/s** jusqu'au plancher, et le cycle repart. Quatre cycles visibles : plafonds aux images 231, 441, 681, 951 | mesuré |
-| Ce qui déclenche l'effondrement | **non identifiable sur la vidéo** : il ne coïncide ni avec BLADE RUSH, ni avec HIGH NOON. Le modèle de surchauffe après palier reproduit exactement la courbe — c'est un `calé`, pas un `mesuré` | calé |
+| Ce qui déclenche l'effondrement | **non identifiable sur la vidéo** : il ne coïncide ni avec EMBER SWEEP, ni avec HAILFIRE. Le modèle de surchauffe après palier reproduit exactement la courbe — c'est un `calé`, pas un `mesuré` | calé |
 | Corps à corps | `Damage = 2,00 × Spin Speed`, **exact et sans exception**, soit 2 à 6 PV. Verrou de 1 000 ms entre deux touches. **Ajout demandé** : brûlure d'un tic à l'impact — voir « Brûlure et Rage infernale » | mesuré + demandé |
-| Ultime | *Ruée de lame* (`BLADE RUSH`) — horloge de 9 s **+ 6 % par coup porté** : les cycles relevés font 273, 214 et 333 images, donc pas une simple horloge. Ruée de 1,5 s minutée, vitesse ×1,55 (939 px/s contre 605), verrou de touche à **115 ms** | mesuré |
+| Ultime | *Fauche ardente* (`EMBER SWEEP`) — horloge de 9 s **+ 6 % par coup porté** : les cycles relevés font 273, 214 et 333 images, donc pas une simple horloge. Ruée de 1,5 s minutée, vitesse ×1,55 (939 px/s contre 605), verrou de touche à **115 ms** | mesuré |
 | Deux régimes de la ruée | **loin**, cap asservi sur l'adversaire à pleine vitesse ; **à portée** (120 px), la lame **orbite**. Foncer droit dessus traverse la zone utile en une centaine de millisecondes — au banc d'origine la lame n'y restait que 57 % de la ruée pour un seul coup porté | mesuré + calé |
 | **Éventail vert** | `#B1C404` à 55 % — mesuré image 643 : le cœur rend (211,219,109) sur l'arène crème. Ouverture bornée **en angle** : 1,6 rad en régime normal, 3,0 rad pendant la ruée, où il vire au vert fluo. L'aire verte passe de ~3 500 px² à 18 488 px² au pic, un facteur 5,3 : l'éventail **s'ouvre**, il ne fait pas que changer de teinte | mesuré |
 | Rendu de l'éventail | en régime normal c'est le **ruban de pointe d'arme** (`look.flair.ribbon`), qui est exactement le secteur balayé par la lame ; le surcroît d'ouverture de la ruée est un secteur plein tracé par le module | — |
@@ -535,8 +532,8 @@ citée entre parenthèses.
 
 ### Reskin — lame de braise
 
-**Réactivé et redessiné, à la demande.** Le Bretteur était gelé ; il est
-réactivé, entre le Hors-la-loi et le Lancier (queue de
+**Réactivé et redessiné, à la demande.** Cinder était gelé ; il est
+réactivé, entre Calamity et Tempest (queue de
 `ROSTER`, comme l'exige `tools/matrix.mjs`). Trois écarts assumés au relevé,
 tous purement visuels — aucune valeur `mesuré`, `calé` ou `déduit` de gameplay
 n'a bougé :
@@ -553,15 +550,14 @@ scale` retombe exactement sur les 152 px relevés — un reskin ne change pas la
 hitbox. (Elle bouge en revanche à la vague suivante, où l'agrandissement de la
 lame *est* la demande — voir « Lame agrandie, cendres et bas d'écran orange ».)
 
-**L'éventail vert de BLADE RUSH n'a pas été touché.** Il reste `#B1C404`,
+**L'éventail vert de EMBER SWEEP n'a pas été touché.** Il reste `#B1C404`,
 mesuré image 643 : c'est un effet vidéo, pas une couleur de thème, et rien
 dans la demande ne portait dessus. Le combattant affiche donc un corps et une
 aura en rouge-orangé avec un swing d'ultime resté vert — assumé, pas oublié.
 
 **Bilan de matrice, au moment du reskin.** Rejoindre le roster jouable fait
 passer `tools/matrix.mjs` de 3 à 6 affrontements (3 combattants, paires
-`i ≤ j`, 3 seeds — 18 duels). Le Bretteur perdait alors ses six duels contre le
-Hors-la-loi et le Lancier (0/6) — le relevé de sa fiche d'origine (9/30 dans
+`i ≤ j`, 3 seeds — 18 duels). Cinder perdait alors ses six duels contre Calamity et Tempest (0/6) — le relevé de sa fiche d'origine (9/30 dans
 l'historique à onze combattants), inchangé par ce reskin purement visuel.
 Aucun paramètre `calé` n'avait été retouché pour le remonter : ce n'était pas
 demandé, et le toucher aurait signifié s'écarter du relevé sans nouvelle
@@ -579,60 +575,58 @@ attendu et documenté, pas une dérive.
 | Ajout | Détail | Source |
 | --- | --- | --- |
 | Brûlure au contact | `weapon.melee.onHit.dot` — chaque coup de lame marque la cible d'un tic de brûlure, `Math.max(1, round(Spin Speed))`, sur 1 s | demandé, calé |
-| Rage infernale | pouvoir **greffé** en troisième créneau (`special.infernalRage`), même patron que le Blizzard et le Lien d'essence — voir la section suivante | demandé |
+| Rage infernale | pouvoir **greffé** en troisième créneau (`special.infernalRage`), même patron que le Vent de tombe et le Lien d'essence — voir la section suivante | demandé |
 | Aura et sillage | `look.aura` et `look.trail` passent du vert-jaune/or terne aux teintes exactes de l'aura du Feu (`#f97316`) | écart assumé |
 
 **La brûlure est le vrai levier, la Rage infernale presque pas.** Premier
-essai à 2 s de durée (deux tics par coup porté) : le Bretteur balayait les
+essai à 2 s de durée (deux tics par coup porté) : Cinder balayait les
 deux autres actifs, 5/6 contre 0/6 avant l'ajout — la brûlure s'additionnait à
 des dégâts au contact déjà mesurés (`Damage = 2 × Spin`) sans que sa cadence de
 touche n'ait bougé. Isoler la Rage infernale seule (brûlure quasi neutralisée,
 `duration: 0.01`) reproduisait quasi exactement la matrice d'avant l'ajout —
 la preuve que l'aura de la Rage infernale (`tickDamage: 1` toutes les 0,6 s)
 ne pesait presque rien à côté. Ramener la brûlure à **1 s (un seul tic)**
-donne 2/6 : le Bretteur gagne un vrai avantage sur son relevé d'origine, sans
+donne 2/6 : Cinder gagne un vrai avantage sur son relevé d'origine, sans
 en devenir le plus fort du roster réduit.
 
-**La Rage infernale n'utilise ni `f.boost` ni `f.boostFactor`.** BLADE RUSH
+**La Rage infernale n'utilise ni `f.boost` ni `f.boostFactor`.** EMBER SWEEP
 s'en sert déjà pour son propre sprint (vitesse ×1,55 pendant la ruée) ; lui
 faire partager le même compteur générique aurait fait qu'une ruée qui se
 termine coupe une Rage infernale encore active, ou l'inverse. Les deux
 horloges (`f.ult.active` et `f.state.spec`) tournent donc indépendamment, et
 peuvent être actives en même temps — l'aura brûlante se dessine alors
-**avant** l'éventail de BLADE RUSH dans `drawUnder`, comme la lumière de HIGH
-NOON passe par-dessus le champ de givre du Blizzard chez le Hors-la-loi.
+**avant** l'éventail de EMBER SWEEP dans `drawUnder`, comme la lumière de HIGH
+NOON passe par-dessus le champ de givre du Vent de tombe chez Calamity.
 
-**Relevé de matrice, après ces deux ajouts :** le Bretteur perd toujours 0/3
-contre le Hors-la-loi (le duel par défaut reste donc à l'image de son relevé
-d'origine), mais gagne 2/3 contre le Lancier — soit **2/6**, contre 0/6 avant.
+**Relevé de matrice, après ces deux ajouts :** Cinder perd toujours 0/3
+contre Calamity (le duel par défaut reste donc à l'image de son relevé
+d'origine), mais gagne 2/3 contre Tempest — soit **2/6**, contre 0/6 avant.
 `tools/matrix-reference.txt` a été régénérée ; seules les quatre lignes qui
-impliquent le Bretteur ont bougé.
+impliquent Cinder ont bougé.
 
 ### Lame agrandie, cendres et bas d'écran orange
 
-**Quatrième vague, demandée.** Trois ajouts sur le Bretteur, un sur le
-Hors-la-loi (vitesse, voir sa fiche plus haut) :
+**Quatrième vague, demandée.** Trois ajouts sur Cinder, un sur Calamity (vitesse, voir sa fiche plus haut) :
 
 | Ajout | Détail | Source |
 | --- | --- | --- |
 | Lame ×1,3 | `weapon.reach` 152 → 197,6 ; `handle.length` 45 → 58,5 ; `head.scale` 1,114583 → 1,448958 ; `hitbox.radius` 17 → 22,1. Les quatre bougent dans la même proportion : la pointe dessinée retombe exactement sur la nouvelle portée (invariant 5), ce n'est pas un agrandissement visuel seul | demandé, calé |
 | Cendres sur l'arme | `look.flair.weaponArc` (absent jusqu'ici), en mode `powder` — grains gris (`glow: '#3a332c'`) et braises ponctuelles (`core: '#fbbf24'`) le long de la lame, `jitter: 30` pour dépasser la demi-épaisseur du sprite agrandi (≈25,4 px) | demandé, écart assumé |
-| Cendres en traînée | `look.flair.smear` (absent jusqu'ici) : le Bretteur n'avait aucun fuseau de vitesse ; il en gagne un en cendre, distinct du ruban de lame (orange) | demandé, écart assumé |
+| Cendres en traînée | `look.flair.smear` (absent jusqu'ici) : Cinder n'avait aucun fuseau de vitesse ; il en gagne un en cendre, distinct du ruban de lame (orange) | demandé, écart assumé |
 | Bas d'écran orange | `ultimate.barFill` (or `#dcc462` → orange `#f97316`), `special.barFill` (rouge `#dc2626` → orange sombre `#ea580c`), `hud.color` (or sombre `#a8912f` → orange `#f97316`) | écart assumé, demandé |
 
 Les deux effets de cendre passent par `render/flair.js` (`weaponArc.powder`,
-`smear.powder`, même mécanisme que le givre du Hors-la-loi) : purement
+`smear.powder`, même mécanisme que le givre de Calamity) : purement
 décoratifs, aucun tirage dans `game.rng`, ne peuvent rien changer au duel.
 L'agrandissement de la lame, en revanche, est un vrai changement de gameplay :
 une lame plus longue touche de plus loin.
 
-**Relevé de matrice, après l'agrandissement de la lame et la vitesse du
-Hors-la-loi :** le total du Bretteur reste **2/6**, mais la répartition
-s'inverse — il gagne désormais 1/3 contre le Hors-la-loi (contre 0/3 avant) et
-seulement 1/3 contre le Lancier (contre 2/3 avant). Le Lancier, déjà l'écart le
-plus marqué du roster réduit, monte de 4/6 à 5/6 ; le Hors-la-loi descend de
-3/6 à 2/6 contre le Bretteur mais reste imbattu en mirroir et contre le
-Lancier. `tools/matrix-reference.txt` a été régénérée en conséquence.
+**Relevé de matrice, après l'agrandissement de la lame et la vitesse de
+Calamity :** le total de Cinder reste **2/6**, mais la répartition
+s'inverse — il gagne désormais 1/3 contre Calamity (contre 0/3 avant) et
+seulement 1/3 contre Tempest (contre 2/3 avant). Tempest, déjà l'écart le
+plus marqué du roster réduit, monte de 4/6 à 5/6 ; Calamity descend de
+3/6 à 2/6 contre Cinder mais reste imbattu en mirroir et contre Tempest. `tools/matrix-reference.txt` a été régénérée en conséquence.
 
 ### Manche : du rectangle au PNG
 
@@ -695,17 +689,17 @@ que le faire déborder **derrière** le pivot — jamais au-delà du bord de la
 bille (rayon 41 > 31,26), donc le pommeau reste sur la silhouette de la
 bille, il ne la transperce pas.
 
-**`weapon.overBody: true` — même drapeau que le Lancier.** La manche, jusque
+**`weapon.overBody: true` — même drapeau que Tempest.** La manche, jusque
 là en grande partie masquée par la bille (`Fighter.draw()` peint l'arme
 **avant** le corps par défaut), passe désormais par-dessus : bille, contour,
 anneaux d'état et chiffre de PV compris, comme documenté dans `fighter.js`
-pour le Lancier. C'est ce qui rend le `handle.length` négatif ci-dessus sans
+pour Tempest. C'est ce qui rend le `handle.length` négatif ci-dessus sans
 conséquence : la portion qui déborde derrière le pivot se voit maintenant
 **sur** la bille au lieu d'être coupée par elle. Purement visuel — ni
 `bladeSegment()` ni la hitbox ne lisent ce drapeau, seul l'ordre de dessin
 en dépend.
 
-**Roue de flamme au déclenchement de BLADE RUSH.** Remplace l'anneau plein
+**Roue de flamme au déclenchement de EMBER SWEEP.** Remplace l'anneau plein
 (`game.fx.ring`) par un sprite pixel-art dédié, `BLADESMAN_FLAMEWHEEL`
 (`pixelmaps.js`, 48 × 48) : un moyeu à rayons et gemme centrale, cerné de
 treize langues de flamme irrégulières et de grains de cendre. **Conçu, pas
@@ -720,7 +714,7 @@ franche puis fondu.
 Les cendres qui l'accompagnent (`_spawnRushAsh`) sont posées via
 `game.viewRng`, jamais `game.rng` : `Effects.burst()` aurait tiré dans le
 flux de simulation (voir sa note dans `render/effects.js`, un piège déjà payé
-sur le Blizzard) — `_spawnRushAsh` appelle `game.fx.spawn()` directement avec
+sur le Vent de tombe) — `_spawnRushAsh` appelle `game.fx.spawn()` directement avec
 des valeurs déjà tirées côté rendu, donc rien n'est consommé côté simulation.
 
 Purement décoratif : `render/flair.js` et ce nouvel effet passent tous deux
@@ -737,8 +731,7 @@ fois.
 
 **Nouveau drapeau `look.hpOverWeapon`, opt-in.** `fighter.js` (`draw()`) pose
 le chiffre de PV **après** l'arme quand ce drapeau est vrai, au lieu
-d'avant — l'ordre par défaut, gardé pour les dix autres combattants. Le
-Lancier (qui a aussi `overBody`) ne le porte pas : sa lance ne recouvre le
+d'avant — l'ordre par défaut, gardé pour les dix autres combattants. Tempest (qui a aussi `overBody`) ne le porte pas : sa lance ne recouvre le
 centre qu'en charge, et `CLAUDE.md` documente déjà ce compromis comme voulu ;
 le poser sur les onze aurait défait un choix qui n'était pas remis en cause.
 
@@ -752,16 +745,16 @@ Purement visuel — aucune valeur de gameplay ne bouge, matrice inchangée.
 
 ### Jauges d'ultime et de pouvoir spécial, même couleur
 
-**Demandé pour les trois combattants qui portent les deux jauges** (Hors-la-loi,
-Bretteur, Lancier) : la jauge d'ultime (la première) reprend désormais
+**Demandé pour les trois combattants qui portent les deux jauges** (Calamity,
+Cinder, Tempest) : la jauge d'ultime (la première) reprend désormais
 exactement la couleur de la jauge de pouvoir spécial (la seconde) juste en
 dessous.
 
 | Combattant | Jauge d'ultime | Couleur reprise de |
 | --- | --- | --- |
-| Hors-la-loi | HIGH NOON : `#3f97c9` → `#3fbde0` / texte `#fdf7ed` → `#f2fdff` | Blizzard |
-| Bretteur | BLADE RUSH : `#f97316` → `#ea580c` / texte `#2a0e05` → `#fff1f0` | Rage infernale |
-| Lancier | BOND : `#5d3d8e` → `#7c3aed` / texte `#ffffff` → `#f3e8ff` | Lien d'essence |
+| Calamity | HAILFIRE : `#3f97c9` → `#3fbde0` / texte `#fdf7ed` → `#f2fdff` | Vent de tombe |
+| Cinder | EMBER SWEEP : `#f97316` → `#ea580c` / texte `#2a0e05` → `#fff1f0` | Rage infernale |
+| Tempest | BOND : `#5d3d8e` → `#7c3aed` / texte `#ffffff` → `#f3e8ff` | Lien d'essence |
 
 **Taille et police l'étaient déjà.** `HUD.special` (`tuning.js`) recopie
 `HUD.bar` à l'ordonnée près, et les deux passent par la **même fonction**
@@ -773,19 +766,19 @@ Purement visuel — aucune valeur de gameplay ne bouge, matrice inchangée.
 
 ---
 
-## 🐲 DRAGOON — `lancer` (affiché « DRAGOON »)
+## 🐲 TEMPEST — `lancer` (affiché « TEMPEST »)
 
-### Le Hors-la-loi passe au type glace
+### Calamity passe au type glace
 
 | Ce qui change | Détail |
 | --- | --- |
 | Arme et munitions | même dessin, **teinte de glace** : chaque couleur des deux cartes est convertie à teinte fixe (~199°) en **conservant sa luminosité**, qui porte tout le modelé. Le revolver reste celui de la maquette, seule sa gamme bouge |
-| Bille et chrome | `#3f97c9`, un bleu **moyen** et non pâle : le chiffre de PV est crème (mesuré), et un bleu clair le noierait — c'est la leçon du cuivre clair du Lancier, qui avait forcé son chiffre en brun sombre |
+| Bille et chrome | `#3f97c9`, un bleu **moyen** et non pâle : le chiffre de PV est crème (mesuré), et un bleu clair le noierait — c'est la leçon du cuivre clair de Tempest, qui avait forcé son chiffre en brun sombre |
 | Gel à la touche | `onHit.slow: 0.30` pendant 1,6 s. Le moteur savait déjà le faire : `Match.damage` lit `slow`/`slowDuration` et appelle `Fighter.applySlow`, comme pour l'Ombre et la Glace. `slowFactor` retient le **pire** ralentissement actif et le plafonne à 0,75, donc deux balles coup sur coup prolongent au lieu de s'empiler |
 | Rechargement | le pistolet **reste où il est** et fait **un tour complet sur lui-même**, en sens antihoraire, sur les 1,4 s de recharge. L'angle est calculé depuis l'avancement et non incrémenté image par image : une accumulation dériverait et le tour ne se refermerait pas exactement sur zéro |
 | Tir | **déjà linéaire, déjà détruit au contact et au mur** — rien à écrire. `projectiles.js` intègre `vx`/`vy` sans pilotage, `bounces: 0` tue la balle au mur, et le contact d'un combattant la tue aussi |
 
-**Ce que le tour de rechargement coûte, et ce n'est pas le gel.** Le Hors-la-loi
+**Ce que le tour de rechargement coûte, et ce n'est pas le gel.** Calamity
 passe de 15 à **9 victoires sur 30**. Pendant 1,4 s l'arme n'est plus asservie à
 la cible, or le bout du canon porte la hitbox de mêlée (`hitbox.from: 0,62`) :
 il balaie au lieu de pointer, et perd ses touches de contact sur toute la
@@ -795,7 +788,7 @@ leviers pour le rattraper sont `onHit.slow` et `ability.reload`.
 
 #### Vriller n'est pas orbiter
 
-![Le rechargement du Hors-la-loi](capture-recharge.png)
+![Le rechargement de Calamity](capture-recharge.png)
 
 *Trois instants d'un même rechargement. Le revolver garde sa place par rapport
 à la bille — qui traverse pourtant l'arène de x = 162 à x = 509 — et seule son
@@ -827,16 +820,16 @@ pointe, donc l'erreur resterait cohérente.
 l'arme porte — même discipline que `weaponLateral`. Conséquence de jeu : le
 canon balaie désormais un petit cercle de 42,5 px autour de l'arme au lieu d'un
 grand cercle de 122 px autour de la bille. Cinq affrontements changent de
-score, **tous avec le Hors-la-loi**, et il passe de 15 à 16 victoires sur 30.
+score, **tous avec Calamity**, et il passe de 15 à 16 victoires sur 30.
 
-### Les pouvoirs greffés — Blizzard et Lien d'essence
+### Les pouvoirs greffés — Vent de tombe et Lien d'essence
 
 Deux pouvoirs **repris tels quels** d'autres fiches et posés sur les deux
-invités : le **Blizzard** de la Glace sur le Hors-la-loi, le **Lien d'essence**
-de l'Ombre sur le Lancier. Ni relevés ni mesurés — ce sont des ajouts demandés.
+invités : le **Vent de tombe** de la Glace sur Calamity, le **Lien d'essence**
+de l'Ombre sur Tempest. Ni relevés ni mesurés — ce sont des ajouts demandés.
 
 **Ils s'ajoutent, ils ne remplacent pas.** Les deux combattants avaient déjà un
-ultime (HIGH NOON, Bond) ; il fallait donc un **troisième créneau**. Chaque
+ultime (HAILFIRE, Foudre tombante) ; il fallait donc un **troisième créneau**. Chaque
 fiche porte un bloc `special`, et chaque module un compteur `f.state.spec` qui a
 exactement la forme des compteurs génériques du `Fighter` (`offstage`, `boost`,
 `ghosting`) : le module l'allume et le décompte, personne d'autre ne
@@ -874,7 +867,7 @@ forme que `drawUnbounded` : les neuf combattants sans troisième créneau ne
 l'implémentent pas, et n'affichent donc pas un cadre vide. L'écran de sélection
 les liste en plus sur une ligne « Special ».
 
-| | Blizzard (Hors-la-loi) | Lien d'essence (Lancier) |
+| | Vent de tombe (Calamity) | Lien d'essence (Tempest) |
 | --- | --- | --- |
 | Origine | ultime de la Glace | ultime de l'Ombre |
 | Durée | 5,2 s (mesuré sur la Glace) | 5,65 s (mesuré sur l'Ombre) |
@@ -884,18 +877,18 @@ les liste en plus sur une ligne « Special ».
 
 Les deux retouches du Lien ont la même cause. À 265 px le dôme couvrait plus de
 la moitié d'une arène de 640 px de côté : les deux combattants y restaient en
-permanence et il cessait d'être un lieu. Et le Lancier gagnait déjà 29 duels sur
+permanence et il cessait d'être un lieu. Et Tempest gagnait déjà 29 duels sur
 30 — lui ajouter 2,5 PV/s gratuits n'avait pas besoin d'être mesuré pour qu'on
 sache où ça allait.
 
 #### Le piège : une décoration qui tirait dans le flux de simulation
 
 **Le premier balayage de recharge a rendu des chiffres impossibles.** Un
-Blizzard *plus rare* rendait le Hors-la-loi *plus fort* — 19 victoires à 18 s de
+Vent de tombe *plus rare* rendait Calamity *plus fort* — 19 victoires à 18 s de
 recharge contre 17 à 13 s — et la recharge du Lien ne changeait strictement
 rien. Aucune mécanique n'a cette forme.
 
-La cause : la **neige** du Blizzard (90 flocons/s × 2 tirages) et la
+La cause : la **neige** du Vent de tombe (90 flocons/s × 2 tirages) et la
 **poussière** du dôme (90 grains × 6 tirages, plus une ré-injection continue)
 tiraient dans `game.rng`, le flux de **simulation**. Chaque valeur de recharge
 décalait donc tout le tirage de tous les duels au lieu de changer la force du
@@ -904,21 +897,20 @@ personnage : le balayage mesurait du bruit, pas un levier.
 Les deux sont passés à `game.viewRng`. Rien ne lit ces positions à part le
 dessin — c'est de la décoration, et la décoration passe par `viewRng` ou par un
 hachage pur, jamais par le flux du duel. Après correction, la recharge du
-Blizzard redevient monotone (9 s → 17 victoires, 11 s → 15, 18 s → 14), et
+Vent de tombe redevient monotone (9 s → 17 victoires, 11 s → 15, 18 s → 14), et
 celle du Lien se révèle n'être **pas un levier du tout** : à 15 s et à 24 s les
-matrices ne diffèrent que par des **durées**, jamais par un vainqueur — le
-Lancier gagne ses trente duels de toute façon.
+matrices ne diffèrent que par des **durées**, jamais par un vainqueur — Tempest gagne ses trente duels de toute façon.
 
 > **Cette correction était incomplète, et la suite le prouve.** Seules les
 > **positions** passées en argument avaient changé de flux. `Effects.snow`, lui,
 > continuait de tirer **quatre** fois dans `game.rng` par flocon — 360 tirages
-> par seconde de Blizzard. La monotonie observée avait fait croire l'affaire
+> par seconde de Vent de tombe. La monotonie observée avait fait croire l'affaire
 > réglée : elle ne prouvait rien, elle était seulement moins erratique qu'avant.
 >
 > `Effects` reçoit maintenant un second flux à la construction
 > (`new Effects(rng, viewRng)`), dont les générateurs purement décoratifs se
 > servent. Corriger cela a déplacé **cinq affrontements**, dont trois de la
-> **Glace** — son propre Blizzard sème la même neige. Le Hors-la-loi passe de 26
+> **Glace** — son propre Vent de tombe sème la même neige. Calamity passe de 26
 > à 25, la Glace de 13 à 15.
 >
 > La leçon : **vérifier une correction à la source, pas au symptôme.** Un
@@ -934,19 +926,19 @@ corriger là-bas déplacerait leur matrice ; c'est un autre chantier.*
 #### Les éclats de givre, et ce que l'ablation a montré
 
 Les **éclats de givre** (`frostShards` de la Glace) sont greffés sur le
-Blizzard — avec une différence : chez la Glace c'est un pouvoir *permanent* que
-le Blizzard accélère, ici il n'existe **que** pendant le Blizzard. Un pistolero
+Vent de tombe — avec une différence : chez la Glace c'est un pouvoir *permanent* que
+le Vent de tombe accélère, ici il n'existe **que** pendant le Vent de tombe. Un pistolero
 qui tire des éclats en continu n'est plus un pistolero.
 
 Les projectiles étant lus dans la fiche du **porteur**
-(`owner.el.projectiles[key]`), l'`iceShard` est **recopié** dans la fiche du
-Hors-la-loi, pas référencé.
+(`owner.el.projectiles[key]`), l'`iceShard` est **recopié** dans la fiche de
+Calamity, pas référencé.
 
 Trois changements sont arrivés ensemble — rechargement ×2 plus rapide, vitesse
-de balle ×1,3, éclats — et le Hors-la-loi est passé de 16 à 26 victoires sur
+de balle ×1,3, éclats — et Calamity est passé de 16 à 26 victoires sur
 30. Une ablation, un changement à la fois, dit lequel pèse :
 
-| Configuration | Hors-la-loi |
+| Configuration | Calamity |
 | --- | --- |
 | référence du tour précédent | 16 / 30 |
 | rechargement ×2 seul | **23 / 30** |
@@ -968,7 +960,7 @@ recharge par deux lui rend l'essentiel de ce qu'elle lui coûtait.
 
 | Levier | Résultat |
 | --- | --- |
-| cadence du Blizzard, 11 → 26 s | **plate** : 25–26 quel que soit le réglage |
+| cadence du Vent de tombe, 11 → 26 s | **plate** : 25–26 quel que soit le réglage |
 | cadence des éclats, 10×1,2 s → 5×5 s | 28 → 23, jamais en dessous |
 | dispersion, 0,75 → 1,35 rad | 26 → 16, mais 1,35 rad = un cône de 77° |
 | `ability.cooldown`, `magazine` | **mesurés** — hors d'atteinte (invariant 5) |
@@ -978,8 +970,8 @@ La dispersion plafonne parce qu'une part croissante des touches vient des
 plus bas, contre 0,65 relevé. Et à 1,35 rad le canon asservi à la cible cesse
 de se lire comme une visée — le personnage devient un fusil à pompe. C'est un
 prix de conception payé pour masquer un changement demandé ; il n'a pas été
-payé, et le 26 / 30 est **documenté plutôt que caché**, comme le 30 / 30 du
-Lancier.
+payé, et le 26 / 30 est **documenté plutôt que caché**, comme le 30 / 30 de
+Tempest.
 
 Pour le rentrer dans la bande si on le souhaite : `ability.spread` à **1,35** et
 `special.shards` à **5 éclats toutes les 5 s** donnent 16 / 30.
@@ -989,10 +981,9 @@ Pour le rentrer dans la bande si on le souhaite : `ability.spread` à **1,35** e
 ![Poudre de glace](capture-poudre.png)
 
 *Les deux balles laissent une bouffée granuleuse au lieu d'un chapelet de
-points ; le Hors-la-loi (à droite) traîne son propre sillage de poudre, et le
+points ; Calamity (à droite) traîne son propre sillage de poudre, et le
 canon porte une poussière au lieu d'arcs.*
-
-Le Hors-la-loi avait la suite d'effets du Lancier **recolorée** en bleu : un
+Calamity avait la suite d'effets de Tempest **recolorée** en bleu : un
 tracé électrique, des arcs le long du canon. Le dessin disait donc la foudre là
 où le personnage gèle. Un mode `powder` remplace le mode `electric`, et chacune
 de ses règles est **l'inverse** d'une règle du tracé électrique :
@@ -1027,7 +1018,7 @@ large vient en premier, le noyau étroit en dernier.
 
 Ensuite la gamme : premier réglage en `#e8f7ff` sur `#7cc3e4`, **invisible**.
 L'arène est blanche, et un grain quasi blanc de 3 px n'y existe pas. C'est la
-leçon des jaunes clairs du Lancier, refaite à l'envers — « poudre » avait
+leçon des jaunes clairs de Tempest, refaite à l'envers — « poudre » avait
 suggéré « pâle », alors que la contrainte de fond n'a pas changé. La gamme est
 en bleus **tenus** (`#2f8ec6`, `#1d78ad`), le cœur en `#8fd0ee` et non en blanc.
 
@@ -1051,9 +1042,8 @@ après l'ajout, ce qui a été vérifié.
 d'où `flair.js` et `projectiles.js` l'importent tous deux — plutôt qu'une
 troisième copie de la même fonction.
 
-#### La traînée de glace du Hors-la-loi
-
-Le Hors-la-loi reprend **la suite d'effets du Lancier en mode glace** : ruban et
+#### La traînée de glace de Calamity
+Calamity reprend **la suite d'effets de Tempest en mode glace** : ruban et
 fuseau `electric`, aura d'arme, arcs le long du canon. Le code est partagé —
 c'est tout l'intérêt de `render/flair.js` : seule la gamme change, et la matrice
 reste identique au fichier près.
@@ -1063,14 +1053,14 @@ Deux réglages appris à l'image :
 - **l'amplitude des arcs doit dépasser la demi-épaisseur du sprite.** Le
   revolver fait 46 px de haut dessiné, soit 23 de demi-épaisseur — d'où 32,
   le même rapport que les 38 de la lance sur ses 55 px ;
-- **c'est la teinte qui descend, pas l'opacité.** Les alphas sont ceux du
-  Lancier (0,55 / 0,40) ; au premier réglage (`#bfeaff` sur `#2a7fae`) la
+- **c'est la teinte qui descend, pas l'opacité.** Les alphas sont ceux de
+  Tempest (0,55 / 0,40) ; au premier réglage (`#bfeaff` sur `#2a7fae`) la
   traînée se lisait comme une volute grise, parce que sur l'arène blanche un
   bleu porte moins qu'un ambre à luminosité égale. Les deux tons sont
   descendus d'un cran.
 
 **Pas de `pierce`.** L'onde de pénétration est conditionnée à `Fighter.boost`,
-que le Hors-la-loi allume pendant HIGH NOON : un coin de charge planté devant un
+que Calamity allume pendant HAILFIRE : un coin de charge planté devant un
 pistolero qui recule à chaque tir se lirait comme un bug. C'est le seul effet de
 la suite qui ne se transpose pas.
 
@@ -1079,8 +1069,7 @@ la suite qui ne se transpose pas.
 > *Anciennement « Dragoon ». Renommé, redessiné d'après une maquette d'arme,
 > et remécanisé — voir « L'angle d'arme » plus bas.*
 
-Relevé sur `Dragoon vs Outlaw` (576 × 1024, 33,6 s) — la vidéo dont le
-Hors-la-loi est déjà tiré, vue depuis l'autre camp. Toutes les cotes `mesuré`
+Relevé sur `Dragoon vs Outlaw` (576 × 1024, 33,6 s) — la vidéo dont Calamity est déjà tiré, vue depuis l'autre camp. Toutes les cotes `mesuré`
 sont converties ×1,25 vers le repère 720 × 1280.
 
 | Bloc | Valeur | Source |
@@ -1097,19 +1086,19 @@ sont converties ×1,25 vers le repère 720 × 1280.
 | Garde | **aucune**. Ce qui ressemblait à un losange de garde sur les premières captures est derrière la bille, donc invisible en jeu : au-delà du bord de la bille le profil ne montre aucun renflement | mesuré |
 | Hitbox | de 0,32 à 1 de la portée (la lame commence à 52 px du centre), rayon 12 px | déduit du sprite |
 | **Corps à corps** | la stat « Damage » du HUD, **+2 à chaque touche portée**. Relevé image par image sur la bande de stat : elle passe 10 → 12 → 14 → 16 → 18 → 20 aux instants **12,53 / 13,63 / 14,77 / 16,37 / 21,00 s**, et l'Outlaw descend de 100 à 30 PV. 10+12+14+16+18 = 70 : le compte tombe au PV près sur **cinq touches** | mesuré |
-| Ce que le duel donne | **5 touches en 27,6 s = 0,181 coup/s**, pour un budget de **2,54 PV/s**. Deux de ces cinq touches sont des chutes du Bond (12,53 et 21,00) ; les trois touches de lance tombent à 13,63 / 14,77 / 16,37 s | mesuré |
+| Ce que le duel donne | **5 touches en 27,6 s = 0,181 coup/s**, pour un budget de **2,54 PV/s**. Deux de ces cinq touches sont des chutes de la Foudre tombante (12,53 et 21,00) ; les trois touches de lance tombent à 13,63 / 14,77 / 16,37 s | mesuré |
 | Cadence | **1,1 s entre deux touches**, la valeur que donnent les trois touches de lance consécutives. Elle a longtemps valu 6 s, et c'était alors le seul écart au relevé qui subsistait : une lance de 164 px qui *balaie en tournant* accroche 0,34 fois par seconde contre 0,181 relevé. Le mécanisme était faux, pas le chiffre — la charge l'a rendu, et le verrou avec | mesuré |
 | Fenêtre d'engagement | la charge ne part qu'entre **265 et 470 px** de l'adversaire, et seulement si l'adversaire est à moins de **0,15 rad du cap courant** (donc dans l'axe de la lance). C'est le paramètre de cadence du personnage, et il a remplacé une rustine : allonger la pause entre deux charges ramenait bien la cadence à 0,181 coup/s, mais à 2,5 s de temps mort, là où la vidéo montre *une charge par seconde environ dont une sur cinq porte*. La géométrie tranche — la charge couvre 224 px et la lance en ajoute 164, donc engagée sous ~250 px elle touche presque à coup sûr, et au-delà de ~430 elle n'arrive jamais | calé |
-| Garde-fou | **la lance ne blesse qu'en charge.** Hors charge elle est *portée*, pas poussée. Sans cette règle, une arme de 164 px braquée dans l'axe du déplacement, chez un combattant qui se déplace *vers* son adversaire, l'embroche en permanence : au banc, **0,42 coup/s** et 30 duels gagnés en 19 s. C'est le piège du Hors-la-loi, dont le canon asservi gagnait 27 duels sur 27 avant sa dispersion | calé |
-| Plafond de pile | **15**, déduit. La vidéo n'en montre aucun : elle s'arrête à 20 parce que le Lancier meurt, pas parce que la stat bute. Mais *tous* les combattants à stat croissante du roster en ont un (Araignée 14, Serpent 14, Hors-la-loi 8, Bretteur 3), et sans plafond la montée est quadratique en durée de duel. Il valait 16 du temps de la visée, où le mécanisme donnait peu de touches ; la charge sur cap en donne davantage — à 16 le Lancier monte à 19 victoires sur 30, à 14 il tombe à 12, à **15** il rend 2,43 PV/s et tient 13 | déduit |
-| Pouvoir | *Furie du lancier* — **passif**. Le Lancier n'a aucun pouvoir actif dans la vidéo : sa seule ligne de stat est « Damage », et elle ne bouge qu'aux touches | mesuré |
-| **Ultime** | *Bond* (`JUMP`). Jauge pleine en ~10 s (+0,10 de remplissage par seconde), marches de ~8 % à chaque touche | mesuré |
-| Déroulé du Bond | jauge vidée → **0,45 s d'élan** au sol → **1,5 s hors de l'arène** → chute. Chronométré deux fois : 10,60 / 11,02 / 12,53 s, puis 19,03 / 19,50 / 21,00 s | mesuré |
-| Pendant le vol | le Lancier **n'est plus dans l'arène** : ni touché, ni touchant, ni dessiné. Un disque gris suit l'adversaire, enfle jusqu'à 2,5 × le rayon au sommet du bond puis se resserre à 1,35 × — c'est le resserrement qui annonce la chute | mesuré |
+| Garde-fou | **la lance ne blesse qu'en charge.** Hors charge elle est *portée*, pas poussée. Sans cette règle, une arme de 164 px braquée dans l'axe du déplacement, chez un combattant qui se déplace *vers* son adversaire, l'embroche en permanence : au banc, **0,42 coup/s** et 30 duels gagnés en 19 s. C'est le piège de Calamity, dont le canon asservi gagnait 27 duels sur 27 avant sa dispersion | calé |
+| Plafond de pile | **15**, déduit. La vidéo n'en montre aucun : elle s'arrête à 20 parce que Tempest meurt, pas parce que la stat bute. Mais *tous* les combattants à stat croissante du roster en ont un (Araignée 14, Serpent 14, Calamity 8, Cinder 3), et sans plafond la montée est quadratique en durée de duel. Il valait 16 du temps de la visée, où le mécanisme donnait peu de touches ; la charge sur cap en donne davantage — à 16 Tempest monte à 19 victoires sur 30, à 14 il tombe à 12, à **15** il rend 2,43 PV/s et tient 13 | déduit |
+| Pouvoir | *Fer de lance* — **passif**. Tempest n'a aucun pouvoir actif dans la vidéo : sa seule ligne de stat est « Damage », et elle ne bouge qu'aux touches | mesuré |
+| **Ultime** | *Foudre tombante* (`THUNDERFALL`). Jauge pleine en ~10 s (+0,10 de remplissage par seconde), marches de ~8 % à chaque touche | mesuré |
+| Déroulé de la Foudre tombante | jauge vidée → **0,45 s d'élan** au sol → **1,5 s hors de l'arène** → chute. Chronométré deux fois : 10,60 / 11,02 / 12,53 s, puis 19,03 / 19,50 / 21,00 s | mesuré |
+| Pendant le vol | Tempest **n'est plus dans l'arène** : ni touché, ni touchant, ni dessiné. Un disque gris suit l'adversaire, enfle jusqu'à 2,5 × le rayon au sommet du bond puis se resserre à 1,35 × — c'est le resserrement qui annonce la chute | mesuré |
 | Impact | il retombe **collé à l'adversaire** — le marqueur, décalé de 0,9 × la somme des deux rayons pour que les billes se touchent sans s'interpénétrer : posé pile dessus, `resolveBodies` le séparait aussitôt et la chute devenait illisible. Il frappe dans un rayon de 110 px pour les dégâts courants de la lance, recul 520. L'arène blanchit d'un coup, une onde grise part jusqu'à 225 px en 0,35 s | mesuré |
-| Décollage | une **onde de choc grise au sol** part du point de départ, jusqu'à 190 px en 0,4 s. Le Lancier disparaît d'une image à l'autre : sans elle, rien ne dit d'où il est parti. Les deux bouts du bond se répondent — même disque gris au départ qu'à l'arrivée | déduit |
+| Décollage | une **onde de choc grise au sol** part du point de départ, jusqu'à 190 px en 0,4 s. Tempest disparaît d'une image à l'autre : sans elle, rien ne dit d'où il est parti. Les deux bouts du bond se répondent — même disque gris au départ qu'à l'arrivée | déduit |
 | Comptabilité de l'impact | la chute compte comme une touche : sur la vidéo l'Outlaw passe de 100 à 90 PV alors que le HUD affiche « Damage: 10.00 », et la stat monte ensuite à 12 | mesuré |
-| Projectile | aucun — tout passe par la lance et le Bond | mesuré |
+| Projectile | aucun — tout passe par la lance et la Foudre tombante | mesuré |
 | HUD | `Damage: 10` | mesuré |
 
 **L'angle d'arme, et les trois relevés qu'il a fallu.** C'est la mécanique
@@ -1119,7 +1108,7 @@ centrale du personnage, et les deux premiers portages l'avaient manquée chacun
 | Relevé | Conclusion | Ce qui clochait |
 | --- | --- | --- |
 | 1 | rotation libre à 327 °/s | le détecteur prenait le barycentre des pixels indigo les plus lointains ; pendant une charge, ce sont les **images fantômes**, pas la lance |
-| 2 | « elle vise l'adversaire, à ±5° » | mesuré sur les seules plages où le Lancier fonçait *sur* l'adversaire, là où cap de déplacement et cap adverse se confondent — un sous-ensemble biaisé |
+| 2 | « elle vise l'adversaire, à ±5° » | mesuré sur les seules plages où Tempest fonçait *sur* l'adversaire, là où cap de déplacement et cap adverse se confondent — un sous-ensemble biaisé |
 | 3 | **elle suit le cap de déplacement** | tient sur 141 images réparties sur toute la vidéo, et à tous les régimes de vitesse |
 | 4 | **rien** — les deux hypothèses tombent ensemble | voir la rétractation ci-dessous |
 
@@ -1161,8 +1150,8 @@ Ces cinq-là sont pris avec le **même code** des deux côtés, la conversion ×
 appliquée, et un **suivi temporel** de la bille — pas une détection image par
 image, qui la perdait 257 fois sur 747 pendant les charges.
 
-**Mesurer contre le bon adversaire.** `tools/probe.mjs` fait affronter au
-Lancier les dix autres, qui **pilotent vers lui** et entrent donc d'eux-mêmes
+**Mesurer contre le bon adversaire.** `tools/probe.mjs` fait affronter à
+Tempest les dix autres, qui **pilotent vers lui** et entrent donc d'eux-mêmes
 dans le couloir de charge : il y rend 0,506 coup/s. Dans le **miroir** — le
 duel le plus proche de la vidéo, où l'adversaire se déplace de son côté — il
 rend **0,202 coup/s pour 2,43 PV/s**, contre 0,181 et 2,54 relevés. Le même
@@ -1249,7 +1238,7 @@ lieu d'en étirer.
 **1,0 à 1,7 s**, parcourant **137 px logiques**, à un pic de **1 392 à
 1 770 px/s vidéo**, pour une cadence de touche de 0,181 coup/s. Autrement dit
 le Dragoon **charge souvent et rate souvent** : environ une charge sur trois
-porte. Le Lancier chargeait toutes les 4,3 s et touchait presque à chaque fois —
+porte. Tempest chargeait toutes les 4,3 s et touchait presque à chaque fois —
 même cadence de touche, comportement sans rapport. C'est cet écart-là qui
 faisait « mou et désynchronisé », et il était invisible tant qu'on ne comparait
 que la cadence.
@@ -1263,8 +1252,7 @@ qu'il y avait un creux. Avec un seuil neutre, la vitesse avant charge vaut
 effet de jeu.
 
 **Ce que disait l'ancienne version :** La vitesse tombe à **163 px/s une image
-avant le déclenchement**, contre ~1 700 juste avant et ~3 100 juste après : le
-Lancier se plante, puis part. L'échantillon est mince — deux déclenchements
+avant le déclenchement**, contre ~1 700 juste avant et ~3 100 juste après : Tempest se plante, puis part. L'échantillon est mince — deux déclenchements
 nets sur la vidéo — et c'est la lecture du mouvement qui le corrobore plutôt
 que la statistique seule.
 
@@ -1292,7 +1280,7 @@ dessin **et** par la hitbox : décaler seulement le dessin ferait mentir le
 sprite sur l'endroit où il coupe.
 
 **L'arme passe au-dessus du corps** (`weapon.overBody`), et **sous le chiffre de
-PV** — dans un miroir Lancier contre Lancier ce chiffre est le seul repère qui
+PV** — dans un miroir Tempest contre Tempest ce chiffre est le seul repère qui
 distingue les deux camps.
 
 **Cinq effets de traînée, tous dans `render/flair.js`.** Les trois d'origine —
@@ -1309,7 +1297,7 @@ propre banc de particules, et la matrice est vérifiée **identique** après
 l'ajout. C'est précisément ce que cette porte d'entrée sert à garantir.
 
 La charge a **un seul point de sortie**, `endDash()`, qui remet ensemble
-vitesse, facteur de vitesse et traînée — c'est le piège du Bretteur, dont la
+vitesse, facteur de vitesse et traînée — c'est le piège de Cinder, dont la
 ruée avait déjà laissé un éventail large accroché derrière la lame pour les
 avoir dispersés.
 
@@ -1326,16 +1314,16 @@ réussite** des charges, jamais leur fréquence.
 2,54 relevés : le budget de dégâts — ce qui décide les duels — tombe à 0,02
 près.
 
-**Le piège du verrou figé pendant le vol.** Pendant le Bond, `Fighter.step`
+**Le piège du verrou figé pendant le vol.** Pendant la Foudre tombante, `Fighter.step`
 sort avant de décompter `meleeCd` : le verrou de touche est donc **figé** pour
-toute la durée du vol, à la valeur qu'il avait au décollage. Si le Bond partait
+toute la durée du vol, à la valeur qu'il avait au décollage. Si la Foudre tombante partait
 en pleine charge — la seule phase où le garde-fou ne s'applique pas — cette
-valeur était zéro, et le Lancier touchait gratuitement à l'atterrissage, lance
+valeur était zéro, et Tempest touchait gratuitement à l'atterrissage, lance
 pointée sur une cible à 74 px. Une touche garantie tous les ~8 s, invisible au
 relevé, qui portait à elle seule dix victoires sur trente. `land()` pose
 maintenant le verrou comme le ferait `resolveMelee`.
 
-Le Bond est le seul pouvoir du jeu qui **retire son porteur du plateau**. Côté
+la Foudre tombante est le seul pouvoir du jeu qui **retire son porteur du plateau**. Côté
 moteur c'est `Fighter.offstage` : générique comme `invulnerable`, il ne dit pas
 *pourquoi* le combattant est parti. Toute boucle qui teste `f.alive` pour
 décider de le *voir* doit tester `f.onStage` — sinon il reste un ruban, une
@@ -1343,7 +1331,7 @@ nappe de sol ou une hitbox au dernier point connu.
 
 ---
 
-## 🌿 MAGE — `mage` (affiché « MAGE »)
+## 🌿 BRIAR — `mage` (affiché « BRIAR »)
 
 Quatrième invité, **demandé** : un mage vert, armé du sceptre d'une maquette
 fournie, qui **attaque à distance** avec des **orbes guidées**, dont l'arme est
@@ -1375,7 +1363,7 @@ format de la vidéo. Le mesurer sur l'arène, le vérifier sur un objet connu.
 | Paliers | **1,10** à t≈1,2 s · **1,15** à 2,2 s · **1,25** à 3,2 s · **1,30** à 3,8 s | tous multiples de **0,05** |
 | Plus tard | **2,00** à t≈13 s, **~3,7** en fin de duel | premier chiffre lisible malgré le filigrane |
 | Loi déduite | **+0,05 par orbe tirée**, à la cadence courante | six paliers en 4,5 s pour une cadence moyenne de 1,15/s ; donne `e^(0,05 t)`, soit 1,92 à 13 s |
-| Ultime | **HEARTBREAK FINALE** | non porté : le Mage prend celui de la Plante, demandé |
+| Ultime | **HEARTBREAK FINALE** | non porté : Briar prend celui de la Plante, demandé |
 | Déplacement | **548 px/s** de médiane (p25 507, p75 629) | 258 couples d'images |
 | Arme | baguette **posée sur le flanc**, ~100 px vidéo entre les deux bouts | soit **128 px** en repère jeu |
 | Projectiles | des cœurs roses, à trajectoire **courbe** | ~600-780 px/s en repère jeu selon la portion de vol |
@@ -1423,7 +1411,7 @@ palette : le dessin ne peut pas diverger puisqu'il n'existe qu'une fois.
 
 `weapon.spin: 0`, et `abilities/mage.js` recopie l'angle vers l'adversaire à
 chaque image. Le dépôt avait déjà payé deux fois « une arme braquée touche en
-permanence » — Hors-la-loi puis Lancier. Ici le garde-fou est **géométrique**
+permanence » — Calamity puis Tempest. Ici le garde-fou est **géométrique**
 et tient tout entier dans la fiche :
 
 - la hitbox ne couvre que les 17 derniers pixels (`hitbox.from: 0.87`) ;
@@ -1453,7 +1441,7 @@ une orbe tirée vers l'arrière pivote dans l'arme même.
 
 ### L'équilibrage : le levier évident n'était pas le bon
 
-Livré tel quel, le Mage gagnait **11 duels sur 12**. Le guidage semblait être
+Livré tel quel, Briar gagnait **11 duels sur 12**. Le guidage semblait être
 son levier :
 
 | `turnRate` | 3,4 | 2,6 | 1,8 | 1,2 | 0,8 | 0,4 |
@@ -1461,7 +1449,7 @@ son levier :
 | victoires / 24 | 22 | 20 | 22 | 19 | 18 | 16 |
 
 **Plat.** Un banc qui plafonne dit que le levier n'est pas le bon — le dépôt
-l'avait déjà appris sur la dispersion du Hors-la-loi. L'ablation a tranché en
+l'avait déjà appris sur la dispersion de Calamity. L'ablation a tranché en
 comptant les dégâts **par source** (`opts.kind` dans `game.damage`) :
 
 | Source | PV par duel | Part |
@@ -1480,11 +1468,11 @@ C'est donc la **valeur** des orbes, pas leur trajectoire. Et elle est raide :
 Deux choses apprises au passage :
 
 - **Deux leviers qui marchent chacun ne s'additionnent pas.** Orbe à 2 **et**
-  mêlée à 1 faisaient tomber le Mage à **8/24**, alors que chacun seul le
+  mêlée à 1 faisaient tomber Briar à **8/24**, alors que chacun seul le
   posait vers 15. Près du seuil, un point de dégât bascule des courses déjà
   serrées.
-- **Le verrou de mêlée n'est pas un levier ici**, contrairement au
-  Hors-la-loi : balayé à 1,4 / 1,7 / 2,2 s il rend 15 / 12 / 14 victoires,
+- **Le verrou de mêlée n'est pas un levier ici**, contrairement à
+  Calamity : balayé à 1,4 / 1,7 / 2,2 s il rend 15 / 12 / 14 victoires,
   non monotone, donc du bruit. Il reste à 1,7 s parce que c'est la
   configuration sur laquelle la matrice a été relevée, et son commentaire le
   dit — pas parce qu'il équilibre.
@@ -1494,15 +1482,15 @@ Deux choses apprises au passage :
 Semis encore en place (voir la section suivante pour son retrait, qui a depuis
 changé ce chiffre à 6/12).
 
-Profil obtenu à ce stade, et il était cohérent : le Mage **bat les deux
-combattants à portée courte** (Hors-la-loi 3-0, Bretteur 2-1) et **perd contre
-les deux qui referment vite** (Lancier 0-3, Shinobi 0-3). Un tireur se fait
+Profil obtenu à ce stade, et il était cohérent : Briar **bat les deux
+combattants à portée courte** (Calamity 3-0, Cinder 2-1) et **perd contre
+les deux qui referment vite** (Tempest 0-3, Shinobi 0-3). Un tireur se fait
 battre par qui arrive au contact — ça reste vrai après le retrait du Semis,
-seul le score contre le Bretteur et le Shinobi a un peu bougé.
+seul le score contre Cinder et le Shinobi a un peu bougé.
 
 ### Les pouvoirs de la Plante — délégués, pas recopiés
 
-**Historique : à la sortie, deux pouvoirs.** La fiche du Mage portait les
+**Historique : à la sortie, deux pouvoirs.** La fiche de Briar portait les
 **mêmes blocs** `ability.bulb` et `ultimate.storm`, et `abilities/mage.js`
 appelait `plantAbilities.update`, `.init`, `.drawUnder`, `.drawOver` et
 `.barValue`. Aucune ligne en double : une copie aurait divergé au premier
@@ -1513,15 +1501,15 @@ Trois écarts, tous volontaires :
 - **dégâts et soin constants** au lieu de suivre `self.stacks`. Chez la Plante
   la pile est « Bulb Damage/Heal » ; ici elle est la cadence de tir, et la
   faire piloter aussi les bulbes empilerait deux montées sur une seule stat ;
-- **`bulb.max: 3`** au lieu de 4 : le Mage sème en tirant, il ne se replie pas
+- **`bulb.max: 3`** au lieu de 4 : Briar sème en tirant, il ne se replie pas
   sur ses bulbes ;
 - **tout est reteinté en vert**, corolle comprise.
 
 **Ce dernier point a demandé une correction dans `plant.js`, conservée après
-le retrait du Semis** (section suivante) parce que la Tempête de sève en a
+le retrait du Semis** (section suivante) parce que la Ronceraie en a
 toujours besoin. Le module codait `'flower'` en dur dans `drawSwarm`, et la
 couleur rose de la gerbe d'un bulbe qui éclate en littéral : la tempête verte
-du Mage faisait donc voler des corolles **roses**. Les deux littéraux sont
+de Briar faisait donc voler des corolles **roses**. Les deux littéraux sont
 passés en clés de fiche (`swarm.flowerSprite`, `bulb.burstColors`) **avec le
 littéral d'origine en repli** — la Plante ne change pas d'un pixel, et la
 matrice le confirme.
@@ -1532,12 +1520,12 @@ Deux demandes, purement indépendantes l'une de l'autre.
 
 **Le Semis (les bulbes posés au sol) a été retiré.** Un tireur qui vise et
 guide ses orbes n'a pas besoin d'une mine plantée par terre — c'était le seul
-morceau du Mage qui se jouait **au sol** plutôt qu'en l'air, et il tranchait
+morceau de Briar qui se jouait **au sol** plutôt qu'en l'air, et il tranchait
 avec le reste de sa fiche.
 
 Retrait propre, pas un simple masquage visuel : `ability.bulb` a disparu de la
-fiche, `ability.cooldown` passe à `Infinity` (même patron que la Furie du
-Lancier — un cooldown jamais décompté, que `ui/select.js` affiche « passif »),
+fiche, `ability.cooldown` passe à `Infinity` (même patron que la Furie de
+Tempest — un cooldown jamais décompté, que `ui/select.js` affiche « passif »),
 et `abilities/mage.js` ne délègue plus que `updateStorm` / `drawOver` /
 `barValue`, jamais `updateBulbs` / `updateSemis` / `drawUnder`.
 
@@ -1547,7 +1535,7 @@ méthode. Découpés en `updateBulbs` / `updateStorm` / `updateSemis` (et
 `initBulbs` / `initStorm`), appelés dans le même ordre par `update()` — la
 Plante ne perd donc pas un pas de simulation, c'est une réorganisation pure.
 
-Le `projectile.flower` de la fiche du Mage a suivi : il n'était tiré que par
+Le `projectile.flower` de la fiche de Briar a suivi : il n'était tiré que par
 les bulbes (`ability.bulb.projectile`), donc il ne sert plus à rien — et une
 clé de fiche que plus personne ne lit ne crie pas (invariant 9), y compris
 dans `ui/select.js`, qui l'aurait affichée dans la ligne « Projectile » de la
@@ -1556,22 +1544,21 @@ la Tempête, elle, ne dépend pas de ce registre : `flowerSprite: 'mageFlower'`
 est lue directement dans `PIXEL_MAPS` par `drawSwarm`.
 
 **C'est un changement de jeu**, pas un simple nettoyage : le Semis pesait des
-dégâts, du soin et un ralentissement. Seules les lignes du Mage bougent dans la
+dégâts, du soin et un ralentissement. Seules les lignes de Briar bougent dans la
 matrice, le reste au caractère près :
 
 | | Avant (avec Semis) | Après |
 | --- | --- | --- |
-| vs Hors-la-loi | 3-0 | 3-0 |
-| vs Bretteur | 2-1 | 1-2 |
-| vs Lancier | 0-3 | 0-3 |
+| vs Calamity | 3-0 | 3-0 |
+| vs Cinder | 2-1 | 1-2 |
+| vs Tempest | 0-3 | 0-3 |
 | vs Shinobi | 0-3 | 2-1 |
 | **Total** | **5/12** | **6/12** |
 
 *(Correction : une première version de ce tableau inversait le score « après »
 contre le Shinobi — 1-2 au lieu de 2-1. La ligne ci-dessus est la bonne, et
 c'est elle que confirme `tools/matrix-reference.txt`.)*
-
-Le Mage bat toujours le Hors-la-loi et perd toujours contre le Lancier ; ce qui
+Briar bat toujours Calamity et perd toujours contre Tempest ; ce qui
 bouge nettement, c'est le Shinobi — une défaite sèche (0-3) devient une victoire
 nette (2-1). C'est plus que ce que le retrait des bulbes explique à lui seul :
 retirer toute une mécanique retire aussi ses propres décorations (gerbes de
@@ -1584,7 +1571,7 @@ de trancher la part de chaque cause. Aucun levier n'a été retouché pour
 autant : le retrait suffit à rester dans la bande, sans nouveau réglage.
 
 **Le sceptre se dessine maintenant par-dessus la bille**, `weapon.overBody:
-true` — même drapeau que le Lancier et le Bretteur, purement visuel : il ne
+true` — même drapeau que Tempest et Cinder, purement visuel : il ne
 pèse sur aucune hitbox (`bladeSegment()` ne le consulte pas), seul l'ordre de
 peinture dans `fighter.js` en dépend. Vérifié en isolant les deux changements :
 `overBody` seul laisse la matrice **identique au caractère près**, c'est le
@@ -1615,7 +1602,7 @@ rapport à la bille.
 
 **Même patron que le Shinobi**, seul autre combattant à porter une arme
 centrée sur son pivot : `handle.length: -75, reach: 75`, sa portée mesurée
-elle aussi ramenée par la symétrie et jamais recalée depuis. Le Mage suit le
+elle aussi ramenée par la symétrie et jamais recalée depuis. Briar suit le
 même choix — la portée `reach: 70` n'est plus la baguette mesurée sur Magia
 (128 px), elle est **déduite** de la symétrie demandée.
 
@@ -1627,34 +1614,34 @@ les 13 % derniers de l'arme, seule l'arme entière a raccourci.
 
 **C'est un changement de jeu, pas seulement un ajustement visuel**, et il a été
 accepté comme tel plutôt que compensé par un autre réglage. Seules les lignes
-du Mage bougent dans la matrice :
+de Briar bougent dans la matrice :
 
 | | Avant (reach 128, asymétrique) | Après (reach 70, centré) |
 | --- | --- | --- |
-| vs Hors-la-loi | 3-0 | 2-1 |
-| vs Bretteur | 1-2 | 1-2 |
-| vs Lancier | 0-3 | 0-3 |
+| vs Calamity | 3-0 | 2-1 |
+| vs Cinder | 1-2 | 1-2 |
+| vs Tempest | 0-3 | 0-3 |
 | vs Shinobi | 2-1 | 1-2 |
 | **Total** | **6/12** | **4/12** |
 
-Deux victoires perdues, une contre le Hors-la-loi et une contre le Shinobi —
+Deux victoires perdues, une contre Calamity et une contre le Shinobi —
 ses deux adversaires les plus rapides à revenir au contact une fois la portée
-raccourcie. Le score contre le Bretteur et le Lancier ne bouge pas. Le Mage
-descend dans la bande basse du roster réduit, aux côtés du Hors-la-loi et du
-Bretteur (4/12 chacun), sans tomber en dessous. Rien
+raccourcie. Le score contre Cinder et Tempest ne bouge pas. Briar
+descend dans la bande basse du roster réduit, aux côtés de Calamity et de
+Cinder (4/12 chacun), sans tomber en dessous. Rien
 d'autre n'a été retouché pour compenser : la demande portait sur l'apparence,
 pas sur l'équilibre, et le nouvel équilibre est *le* résultat de la demande,
 pas un accident à corriger. Si la portée doit revenir, les deux leviers
 disponibles sont d'agrandir le sprite (en acceptant un sceptre plus grand pour
 retrouver `reach: 128` en symétrique) ou de renoncer au centrage.
 
-### Le chiffre de PV repassé par-dessus la Tempête de sève
+### Le chiffre de PV repassé par-dessus la Ronceraie
 
 **Signalé : pendant l'ultime, on ne voit plus combien de PV il reste à la
 cible.** La nuée de cubes verts (`drawSwarm`, dessinée par `drawOver`) est
 opaque et recouvre toute la bille — chiffre de PV compris, puisque
 `Match.draw()` trace les combattants (`f.draw()`, chiffre inclus) **avant**
-d'appeler `drawOver` sur les modules de pouvoirs. Le Mage n'invente rien de
+d'appeler `drawOver` sur les modules de pouvoirs. Briar n'invente rien de
 nouveau ici : c'est un trou générique du pipeline, juste jamais remarqué avant
 qu'un pouvoir ne pose quelque chose d'aussi opaque et aussi grand sur sa cible.
 
@@ -1664,17 +1651,17 @@ factorise le tracé du chiffre (jusque-là un closure local à `draw()`), et
 boucle `drawOver` — `globalAlpha` remis à 1 d'abord, pour ne pas hériter d'un
 fondu mal restauré par un module. Un second `fillText` opaque au même endroit
 ne change rien à l'écran pour les neuf combattants qu'aucun `drawOver` ne
-recouvre : vérifié sur le Bretteur (Rage infernale) et le Hors-la-loi
-(HIGH NOON) sans aucun artefact de double-tracé, et la matrice reste
+recouvre : vérifié sur Cinder (Rage infernale) et Calamity
+(HAILFIRE) sans aucun artefact de double-tracé, et la matrice reste
 **identique au caractère près** — c'est un second passage de rendu, rien qui
 touche à `game.rng` ou à l'état d'un combattant.
 
-### Tir enraciné — le troisième créneau, et le seul pouvoir original du Mage
+### Tir enraciné — le troisième créneau, et le seul pouvoir original de Briar
 
-**Demandé : un pouvoir spécial à lui.** Le Mage était le seul des cinq
+**Demandé : un pouvoir spécial à lui.** Briar était le seul des cinq
 combattants actifs sans troisième créneau. Les quatre autres en portent un
-**emprunté** à un élément gelé — Blizzard (Glace) pour le Hors-la-loi, Rage
-infernale (Feu) pour le Bretteur, Lien d'essence (Ombre) pour le Lancier — sauf
+**emprunté** à un élément gelé — Vent de tombe (Glace) pour Calamity, Rage
+infernale (Feu) pour Cinder, Lien d'essence (Ombre) pour Tempest — sauf
 le Clone d'ombre du Shinobi, conçu pour lui. Celui-ci est du second type :
 original, rien ne le porte ailleurs.
 
@@ -1683,11 +1670,11 @@ original, rien ne le porte ailleurs.
 | | |
 | --- | --- |
 | Cycle | premier à **3,5 s**, puis toutes les **7 s** — trois enracinements dans un duel moyen de 20 à 25 s |
-| Ancrage | **1 s** à l'arrêt complet (`f.boost` / `f.boostFactor: 0`, le compteur générique, exactement la phase `brace` du Lancier) |
+| Ancrage | **1 s** à l'arrêt complet (`f.boost` / `f.boostFactor: 0`, le compteur générique, exactement la phase `brace` de Tempest) |
 | Pendant la charge | les orbes ordinaires **s'interrompent** — c'est ce qui fait *attendre* le grand coup au lieu de l'ajouter par-dessus le reste |
 | Récompense | une **orbe majeure** : 6 PV contre 2, 44 px contre 24, 620 px/s contre 470, guidage 3,4 rad/s contre 2,6 |
 
-C'est la seule dimension de risque de tout son jeu : partout ailleurs le Mage
+C'est la seule dimension de risque de tout son jeu : partout ailleurs Briar
 tire en fuyant, sans jamais rien exposer. Enraciné, il ne peut plus esquiver.
 La contrepartie devait donc être franche — une orbe à peine meilleure n'aurait
 jamais valu le risque, et le pouvoir n'aurait servi qu'à se faire toucher.
@@ -1704,7 +1691,7 @@ qu'il laissait des bulbes plantés dans l'arène.
   la charge, et on ne voyait rien venir. Elles sortent maintenant du corps dès
   la première image.
 - **La jauge se remplit, elle ne se vide pas.** Reprise telle quelle du
-  Blizzard, elle décomptait le temps restant — donc elle partait pleine et
+  Vent de tombe, elle décomptait le temps restant — donc elle partait pleine et
   tombait à zéro au moment du tir, ce qui se lit comme un pouvoir qui se
   termine à l'instant où il commence. Un tir qu'on charge veut l'inverse.
 - **Les racines sont en bois, pas en vert.** En vert uni (`#1f964d`) elles se
@@ -1732,20 +1719,19 @@ Aucun réglage n'a été nécessaire : les valeurs de départ tombent juste.
 
 | | Avant | Après |
 | --- | --- | --- |
-| vs Hors-la-loi | 2-1 | 3-0 |
-| vs Bretteur | 1-2 | 2-1 |
-| vs Lancier | 0-3 | 1-2 |
+| vs Calamity | 2-1 | 3-0 |
+| vs Cinder | 1-2 | 2-1 |
+| vs Tempest | 0-3 | 1-2 |
 | vs Shinobi | 1-2 | 0-3 |
 | **Total** | **4/12** | **6/12** |
-
-Le Mage revient exactement à la médiane, et **le roster entier se resserre** :
+Briar revient exactement à la médiane, et **le roster entier se resserre** :
 9/9/6/3/3 contre 10/8/4/4/4, le relevé le plus serré depuis la réduction à cinq
 combattants.
 
 Deux résultats se lisent tout seuls dans la mécanique :
 
-- **il prend une victoire au Lancier** (0-3 → 1-2), alors qu'il ne lui en avait
-  jamais pris une seule. Le Lancier charge en ligne droite ; une orbe guidée à
+- **il prend une victoire à Tempest** (0-3 → 1-2), alors qu'il ne lui en avait
+  jamais pris une seule. Tempest charge en ligne droite ; une orbe guidée à
   6 PV est exactement ce qui punit une trajectoire prévisible ;
 - **il en perd une contre le Shinobi** (1-2 → 0-3). L'immobilité d'une seconde
   est précisément ce que le combattant le plus rapide du roster sait punir.
@@ -1763,14 +1749,14 @@ d'immobilité, donc le risque), `projectiles.greatOrb.damage` (la récompense) o
   sève du sceptre. Le chiffre de PV est en crème : sur un vert de cette
   luminance il tranche mieux qu'un noir.
 - **Son arme** — remplacée par le sceptre de la maquette.
-- **Son ultime** *HEARTBREAK FINALE* — remplacé par la Tempête de sève.
+- **Son ultime** *HEARTBREAK FINALE* — remplacé par la Ronceraie.
 - **Ses cœurs** — remplacés par les orbes de sève.
 - **Sa vitesse** telle quelle : 548 mesurés, **520 retenus**, `calé` comme
   toutes les vitesses du dépôt.
 
 ### Comme le Shinobi : le chiffre de PV disparaît pendant le flash
 
-`bodyHit` est blanc et `hpColor` est crème : à l'image où le Mage encaisse, son
+`bodyHit` est blanc et `hpColor` est crème : à l'image où Briar encaisse, son
 chiffre de PV s'efface. Trait partagé avec le Shinobi (`hpColor: '#f5f2ea'`,
 `bodyHit: '#ffffff'`), connu et assumé — le flash dure une ou deux images.
 Le corriger demanderait un `hpColor` sombre, qui se lirait moins bien le reste
@@ -1788,10 +1774,10 @@ est figée dans `tools/matrix-reference.txt`.
 
 | | victoires |
 | --- | --- |
-| Lancier | 11/12 |
-| Bretteur | 6/12 |
-| Mage | 5/12 |
-| Hors-la-loi | 4/12 |
+| Tempest | 11/12 |
+| Cinder | 6/12 |
+| Briar | 5/12 |
+| Calamity | 4/12 |
 | Shinobi | 4/12 |
 
 Écart **4 à 11**, et il s'est **creusé** : il était de 4 à 9 au relevé
@@ -1800,13 +1786,13 @@ précédent.
 **Ce n'est pas un réglage qui l'a déplacé, c'est le gel de l'attente
 d'avant-combat.** Les combattants se déplaçaient pendant la seconde
 d'ouverture ; les figer était demandé, et c'est aussi plus juste au regard du
-relevé — mais partir vraiment des deux points de départ mesurés profite au
-Lancier, dont la charge aime les longues lignes de vue, et coûte au Shinobi.
+relevé — mais partir vraiment des deux points de départ mesurés profite à
+Tempest, dont la charge aime les longues lignes de vue, et coûte au Shinobi.
 Déséquilibre connu et non corrigé : le corriger est un autre chantier.
 
 - **mort subite** : au-delà de 55 s, tous les dégâts sont multipliés par
   `1 + (t − 55) / 18` (plafond ×4). Aucun duel ne peut s'éterniser ;
-- garde-fou du Hors-la-loi : `tools/probe.mjs outlaw` mesure ~0,60 coup/s
+- garde-fou de Calamity : `tools/probe.mjs outlaw` mesure ~0,60 coup/s
   contre les 0,65 relevés sur la vidéo, et sa stat `Damage` finit autour de 5,0
   contre 5,50 mesurés.
 
@@ -1814,11 +1800,11 @@ Déséquilibre connu et non corrigé : le corriger est un autre chantier.
 
 1. **La matrice ne joue chaque paire qu'une fois**, donc chacun y reste
    toujours du même côté et le camp A pèse lourd. Elle **exagère les écarts** :
-   le Hors-la-loi et le Bretteur y étaient à 3/12 quand le banc des deux camps
+   Calamity et Cinder y étaient à 3/12 quand le banc des deux camps
    les donnait à 10/24 et 9/24, presque la moyenne. C'est un garde-fou de
    **non-régression**, pas une mesure de force.
 2. **Le levier d'un combattant faible est parfois chez un autre.** Les leviers
-   propres du Hors-la-loi (rayon de balle) et du Bretteur (palier de surchauffe)
+   propres de Calamity (rayon de balle) et de Cinder (palier de surchauffe)
    sont plats ; c'est baisser les dégâts de mêlée du Shinobi qui les a remontés
    tous les deux. Le relevé complet de ces balayages est dans la section du
    Shinobi.
@@ -1832,23 +1818,22 @@ Le roster est réduit à cinq depuis, et les sept éléments gelés ont été
 supprimés : ce relevé n'est plus régénérable. Il est gardé parce qu'il porte
 des **leviers**, qui eux restent vrais — trois d'entre eux ont resservi
 depuis.
-
-Lancier 30, **Hors-la-loi 25**, Ombre 15, Lumière 15, Glace 15, Feu 13,
-Vent 12, Plante 11, Foudre 10, Eau 10, Bretteur 9 — sept hors de la bande
+Tempest 30, **Calamity 25**, Ombre 15, Lumière 15, Glace 15, Feu 13,
+Vent 12, Plante 11, Foudre 10, Eau 10, Cinder 9 — sept hors de la bande
 13–17. Ce qu'il faut en retenir :
 
-- **Le Lancier à 30/30 gagnait tous ses duels.** C'est le piège de l'arme
+- **Tempest à 30/30 gagnait tous ses duels.** C'est le piège de l'arme
   braquée dans sa forme la plus pure : une charge qui traverse l'arène contre
   dix adversaires qui **pilotent vers lui** et entrent donc dans le couloir. Le
   rayon de hitbox n'est pas le levier (de 12 à 3 px il ne descend que de 0,506
   à 0,439 coup/s — les charges ne frôlent pas, elles traversent) : les leviers
   sont `lunge.scanSpin` et le retour à une charge de longueur bornée. **À
   traiter avant toute réactivation du roster complet.**
-- **Le Hors-la-loi à 25–26 est un écart assumé**, conséquence directe de trois
+- **Calamity à 25–26 est un écart assumé**, conséquence directe de trois
   demandes (rechargement ×2 plus rapide, balle ×1,3, éclats de givre).
   L'ablation dit lequel pèse : rechargement seul **23**, éclats seuls **28**,
   vitesse de balle seule 14 — soit rien de mesurable. Aucun levier disponible
-  ne le ramène dans la bande sans défaire la demande : la cadence du Blizzard
+  ne le ramène dans la bande sans défaire la demande : la cadence du Vent de tombe
   est plate (25–26 de 11 s à 26 s), celle des éclats ne descend pas sous 23, et
   `ability.cooldown` comme `magazine` sont `mesuré`. La dispersion y arrive
   (1,35 rad → 16) mais un cône de 77° fait cesser le canon asservi de se lire
@@ -1858,19 +1843,19 @@ Vent 12, Plante 11, Foudre 10, Eau 10, Bretteur 9 — sept hors de la bande
   bouclier absorbe. Elle les bat 9-0. Couplage de fiches, pas dérive ; aucune
   valeur de la Lumière n'a jamais été touchée.
 - **L'Eau tenait la bande de justesse, à 13**, en perdant 0-3 contre l'Ombre,
-  la Lumière et le Lancier. C'est elle que la moindre retouche du Lancier
+  la Lumière et Tempest. C'est elle que la moindre retouche de Tempest
   faisait sortir : à `lunge.minRange` 220 il la balayait 3-0 (12), à 240 elle
   revenait. Ces 20 px coûtaient 0,13 PV/s de fidélité (2,53 contre 2,40) — la
   bande passe avant.
-- **Le tour de rechargement du Hors-la-loi lui coûtait ses touches de mêlée.**
+- **Le tour de rechargement de Calamity lui coûtait ses touches de mêlée.**
   Pendant 1,4 s l'arme n'est plus asservie, or le bout du canon porte la
   hitbox de contact (`hitbox.from: 0,62`) : il balaie au lieu de pointer. Il
   était tombé de 15 à **9/30**. Porter le gel de 0,30 à **0,50** l'a ramené à
   **16/30** — plus que compensé. Levier à retenir :
   `projectiles.shot.onHit.slow`.
-- **Les deux pouvoirs greffés** (Blizzard, Lien d'essence) ont déplacé sept
+- **Les deux pouvoirs greffés** (Vent de tombe, Lien d'essence) ont déplacé sept
   affrontements sur 66 et n'ont fait sortir personne de la bande.
-- **Le recul symétrique a ramené le Lancier de 19 à 17 tout seul**, sans
+- **Le recul symétrique a ramené Tempest de 19 à 17 tout seul**, sans
   qu'aucun levier d'équilibrage ne soit touché : un attaquant repoussé aussi
   fort que sa cible met plus longtemps à revenir au contact. Un réglage de mise
   en scène qui rend un équilibre — l'inverse arrive plus souvent.

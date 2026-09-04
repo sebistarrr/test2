@@ -1,8 +1,8 @@
 # CLAUDE.md — mémoire du projet
 
 Duels **à deux, en 2 contre 2 ou en bataille royale**, avec cinq combattants
-repris de la chaîne « ballthingsim » — le Hors-la-loi, le Bretteur, le Lancier,
-le Shinobi et le Mage — sur un moteur écrit d'après les vidéos de référence.
+repris de la chaîne « ballthingsim » — Calamity, Cinder, Tempest,
+le Shinobi et Briar — sur un moteur écrit d'après les vidéos de référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -58,16 +58,31 @@ de navigation, pas un besoin.
 
 | Personnage | Archétype | Signature |
 | --- | --- | --- |
-| `outlaw` Hors-la-loi | Pistolero de **glace** | **revolver de givre**, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`weaponTwirl`). Porte en plus le **Blizzard**, greffé |
-| `bladesman` Bretteur | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale**, greffée |
-| `lancer` Lancier | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et le **Bond** qui le sort de l'arène. Porte en plus le **Lien d'essence**, greffé |
+| `outlaw` Calamity | Pistolero de **glace** | **revolver de givre**, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`weaponTwirl`). Porte en plus le **Vent de tombe**, greffé |
+| `bladesman` Cinder | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale**, greffée |
+| `lancer` Tempest | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et la **Foudre tombante** qui le sort de l'arène. Porte en plus le **Lien d'essence**, greffé |
 | `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des clones de 15 PV, permanents, solides, qui ripostent |
-| `mage` Mage | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte la **Tempête de sève** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
+| `mage` Briar | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte la **Ronceraie** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
 
-**`wind` est l'identifiant interne du Shinobi**, hérité du Vent dont il est le
-reskin. Un id ne se renomme pas : il n'est montré à personne, et le changer
-toucherait `ROSTER`, `abilities/index.js` et les registres sans rien apporter
-au joueur. Seuls `name`/`nameRef` changent.
+**Les identifiants internes ne sont pas les noms affichés**, et l'écart est
+volontaire. Un id ne se renomme pas : il n'est montré à personne, et le changer
+toucherait `ROSTER`, `abilities/index.js`, les trois registres, les noms de
+fichiers et les URL d'archive — sans rien apporter au joueur. Seuls
+`name`/`nameRef` changent.
+
+| id | affiché | d'où vient l'id |
+| --- | --- | --- |
+| `outlaw` | **CALAMITY** | son archétype d'origine, le hors-la-loi de la vidéo |
+| `bladesman` | **CINDER** | idem, le bretteur |
+| `lancer` | **TEMPEST** | idem, le lancier |
+| `wind` | **SHINOBI** | le Vent, dont il est le reskin |
+| `mage` | **BRIAR** | son archétype d'origine |
+
+Le roster est donc passé de noms d'**archétypes** à des **noms propres** : un
+nom propre ne se traduit pas, `name` et `nameRef` sont identiques pour les
+cinq, et seuls les descriptifs (rôle, arme, pouvoirs) portent encore les deux
+langues. C'est aussi pourquoi la documentation dit « Calamity » et non « le
+Calamity » : un nom propre perd son article.
 
 Le détail de chacun — relevés, écarts, historique des demandes — est dans
 `docs/FICHES.md`, une section par combattant.
@@ -95,13 +110,12 @@ du Shinobi.
 
 Ils ne sont pas masqués, ils ne sont plus là : ni fiche, ni module, ni sprite,
 ni liste `DISABLED`. Ce qu'il en reste est **greffé sur un survivant** et
-documenté comme tel — le Blizzard chez le Hors-la-loi, la Rage infernale chez
-le Bretteur, le Lien d'essence chez le Lancier, la Tempête de sève chez le
-Mage, l'éclat de givre dans `pixelart/outlaw.js`. Un commentaire qui cite un
+documenté comme tel — le Vent de tombe chez Calamity, la Rage infernale chez
+Cinder, le Lien d'essence chez Tempest, la Ronceraie chez Briar, l'éclat de givre dans `pixelart/outlaw.js`. Un commentaire qui cite un
 élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Lancier 11, Bretteur 6, Mage 5, Hors-la-loi 4, Shinobi 4.
+miroir chacun : Tempest 11, Cinder 6, Briar 5, Calamity 4, Shinobi 4.
 
 Écart **4 à 11**, et il s'est **creusé** au dernier relevé : il était de 4 à 9.
 
@@ -109,8 +123,8 @@ miroir chacun : Lancier 11, Bretteur 6, Mage 5, Hors-la-loi 4, Shinobi 4.
 Les combattants se déplaçaient pendant la seconde d'ouverture — ce n'était donc
 pas une attente mais un début de course, et aucun duel ne partait vraiment des
 deux points de départ mesurés. Les figer était demandé, et c'est aussi plus
-juste au regard du relevé ; mais partir des vrais points de départ **profite au
-Lancier** (9 → 11), dont la charge en ligne droite aime les longues lignes de
+juste au regard du relevé ; mais partir des vrais points de départ **profite à
+Tempest** (9 → 11), dont la charge en ligne droite aime les longues lignes de
 vue, et coûte au Shinobi (6 → 4).
 
 C'est un déséquilibre connu et non corrigé : le corriger demanderait un
@@ -119,7 +133,7 @@ rééquilibrage complet, qui est un autre chantier que celui qui l'a produit.
 **Attention à la convention de la matrice quand on juge un écart.** Elle ne
 joue chaque paire qu'**une fois**, donc chacun est toujours du même côté, et le
 camp A pèse lourd (invariant 3). Le banc des **deux camps** donne une image
-sensiblement plus plate : avant ce réglage, Hors-la-loi 10/24 et Bretteur 9/24
+sensiblement plus plate : avant ce réglage, Calamity 10/24 et Cinder 9/24
 là où la matrice officielle disait 3/12 et 3/12. Un combattant « dernier » à la
 matrice ne l'est pas forcément au jeu — vérifier sur les deux camps avant de
 conclure qu'il faut le remonter.
@@ -206,7 +220,7 @@ Un banc multi-combattants serait une autre mesure, pas la même en plus grand.
 distinctes, à ne pas confondre :
 
 - **ce que voit le joueur** est en anglais — c'est la langue de la vidéo de
-  référence (`DARK`, `HIGH NOON`, `Damage: 5.50`), donc celle du HUD, du titre
+  référence (`DARK`, `HAILFIRE`, `Damage: 5.50`), donc celle du HUD, du titre
   d'arène et des écrans DOM ;
 - **le code, les commentaires, la doc et les réponses** restent en français.
   Les messages d'erreur console aussi : ils s'adressent à qui développe.
@@ -274,7 +288,7 @@ sans que ça se voie.
      affrontements.** Une ligne déplacée ailleurs est un bug, pas un effet de
      bord acceptable.
    - Le relevé historique du temps des douze combattants, et les leviers qu'il
-     a livrés (Lancier à 30/30, Hors-la-loi à 25…), sont dans `docs/FICHES.md`,
+     a livrés (Tempest à 30/30, Calamity à 25…), sont dans `docs/FICHES.md`,
      section « Équilibrage du roster ». Il ne se régénère plus.
 
 4. **Le décor ne bouge jamais** (cahier des charges) — rasterisé une fois dans
@@ -284,7 +298,7 @@ sans que ça se voie.
    direction dans laquelle l'arme **pointe depuis le corps** : la faire tourner
    fait *orbiter* l'arme autour de la bille, comme une aiguille d'horloge.
    `weaponTwirl` est la rotation **propre** de l'arme autour du milieu de sa
-   carte : elle la fait *vriller sur place*. Le rechargement du Hors-la-loi a
+   carte : elle la fait *vriller sur place*. Le rechargement de Calamity a
    été écrit avec la première avant d'être repris avec la seconde. Le centre de
    vrille est **déduit de la portée** (`(handle.length + reach) / 2`), pas
    mesuré sur le sprite, ce qui le garde cohérent avec la pointe.
@@ -292,7 +306,7 @@ sans que ça se voie.
 6. **Convention de commentaire dans les fiches** : chaque valeur porte
    `mesuré` (relevé vidéo), `calé` (ajusté par simulation) ou `déduit`.
    Ne jamais changer une valeur `mesuré` sans nouveau relevé. Et ne pas caler
-   par réflexe : la vitesse du Lancier a été mesurée à 540 px/s et **gardée**,
+   par réflexe : la vitesse de Tempest a été mesurée à 540 px/s et **gardée**,
    parce que le banc a montré qu'elle ne cassait rien (15/30 contre 16/30 à
    470). Un `calé` doit être justifié par une mesure, pas par une intuition.
 
@@ -306,7 +320,7 @@ sans que ça se voie.
 8. **`alive` ≠ `onStage`.** Un combattant peut être vivant *et absent* :
    `Fighter.offstage` le retire du déplacement, des collisions, des touches, des
    projectiles, du rendu et de toute la mise en scène. Le moteur ne sait pas
-   *pourquoi* il est parti — seul son module le sait (le Bond du Lancier).
+   *pourquoi* il est parti — seul son module le sait (la Foudre tombante de Tempest).
    **Toute boucle sur les combattants qui teste `f.alive` pour décider de le
    *voir* doit tester `f.onStage`** : `render/flair.js` (six boucles),
    `physics.js`, `projectiles.js` et le rendu de `match.js`. Un oubli laisse un
@@ -341,7 +355,7 @@ sans que ça se voie.
     disque du Shinobi l'a éprouvé : `hitbox.from` et `to` à zéro confondent les
     deux bouts du segment tranchant sur le pivot, `segmentPointDistance` traite
     déjà le cas dégénéré, et **la forme de la hitbox se dit entièrement dans la
-    fiche** — sans une ligne de moteur. Le guidage des orbes du Mage est le
+    fiche** — sans une ligne de moteur. Le guidage des orbes de Briar est le
     second cas : `projectiles.orb.homing` décrit un virage borné, et
     `projectiles.js` l'applique en visant « le premier combattant en scène qui
     n'est pas le tireur » — exactement le test que fait déjà sa boucle de
@@ -352,7 +366,7 @@ sans que ça se voie.
     **Corollaire pour les modules de pouvoirs.** Un module qui code en dur une
     clé de sprite se ferme à sa propre réutilisation : `plant.js` dessinait
     `'flower'` en littéral, ce qui faisait voler des corolles **roses** dans la
-    tempête verte du Mage. Les deux littéraux concernés (la corolle, la gerbe
+    tempête verte de Briar. Les deux littéraux concernés (la corolle, la gerbe
     d'éclatement d'un bulbe) sont passés en clés de fiche **avec le littéral
     d'origine en repli**, donc la Plante ne change pas d'un pixel — matrice
     vérifiée identique.
@@ -400,11 +414,11 @@ sans que ça se voie.
 
 ## Écarts volontaires au relevé
 
-Les écarts **par combattant** — arme du Lancier remplacée par une maquette,
-reskin du Bretteur en lame de braise, Shinobi en ninja sombre — sont détaillés
+Les écarts **par combattant** — arme de Tempest remplacée par une maquette,
+reskin de Cinder en lame de braise, Shinobi en ninja sombre — sont détaillés
 dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 
-- **Trois vrais PNG dans un dépôt « sans binaire »** : la lame du Bretteur, le
+- **Trois vrais PNG dans un dépôt « sans binaire »** : la lame de Cinder, le
   shuriken du Shinobi (deux versions, flamme et ombre). `assets/sprites/manifest.json`
   fait pointer une clé de `PIXEL_MAPS` sur un fichier ; la carte pixel-art reste
   comme **repli automatique** (`render/sprites.js`). C'est cette couche
@@ -415,9 +429,9 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   noirs mesurés. Le « chrome » posé sur le fond sombre passe à un liseré crème
   `STAGE.outline` ; les jauges gardent une plaque crème.
 - **L'arène est blanche, et ça contraint toutes les palettes.** Un jaune pâle,
-  un grain de poudre quasi blanc, un gris clair n'y existent pas. La traînée du
-  Lancier est donc en ambres saturés (`#f0b400`) et non en jaunes clairs ; la
-  poudre de givre du Hors-la-loi en bleus tenus ; le shuriken sombre du Shinobi
+  un grain de poudre quasi blanc, un gris clair n'y existent pas. La traînée de
+  Tempest est donc en ambres saturés (`#f0b400`) et non en jaunes clairs ; la
+  poudre de givre de Calamity en bleus tenus ; le shuriken sombre du Shinobi
   plafonné à 168/255. Même leçon que le mode additif, qui ne fonctionnait que
   sur le cadre sombre.
 - **Deux modes de traînée, `electric` et `powder`, et chaque règle de l'un est
@@ -449,8 +463,8 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   0,16 s (13 px tient). Et la largeur des passes d'aura calculée en `1/k` mettait
   la passe **la plus large en dernier**, donc le cœur opaque délavait l'arme au
   lieu de la cerner.
-- **HIGH NOON ne teinte pas l'arène.** Sur sa vidéo, l'arène entière vire au
-  crème pendant l'ultime du Hors-la-loi. Ici le décor est rasterisé une fois et
+- **HAILFIRE ne teinte pas l'arène.** Sur sa vidéo, l'arène entière vire au
+  crème pendant l'ultime de Calamity. Ici le décor est rasterisé une fois et
   **ne bouge jamais** (invariant 4) : la lumière se pose donc au sol.
 - Filigrane `@ElementalArmoryLeague` non reproduit — ni le « ballthing.com » /
   « @ballthingsim » des vidéos des trois invités.
@@ -523,7 +537,7 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
 - **Mesurer un angle contre la mauvaise référence donne une conclusion vraie et
   fausse à la fois.** Le deuxième relevé de la lance concluait « elle vise
   l'adversaire, à ±5° ». C'était exact **sur les images mesurées** — mais elles
-  avaient toutes été prises pendant que le Lancier fonçait *sur* l'adversaire,
+  avaient toutes été prises pendant que Tempest fonçait *sur* l'adversaire,
   là où cap de déplacement et cap adverse se confondent. Deux gardes-fous en
   sortent : échantillonner **toute** la vidéo et pas les plages où le détecteur
   marche bien ; et mettre les hypothèses **en concurrence** dans le même script
@@ -535,7 +549,7 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   si `v[i-1] < 0,35 × v[i]`, puis rapportait qu'il y avait un creux. Les deux
   chiffres ont été **retirés** (voir `docs/FICHES.md`).
 - **Un détecteur qui suit la traînée, pas l'arme.** Le premier portage donnait
-  au Lancier une rotation d'arme de 327 °/s « mesurée » : le relevé prenait le
+  à Tempest une rotation d'arme de 327 °/s « mesurée » : le relevé prenait le
   barycentre des pixels lointains, et pendant une charge ce sont les **images
   fantômes**. Mesurer une orientation demande une **ACP, jamais un barycentre**
   — un barycentre bascule d'un bout à l'autre d'un objet symétrique, et se
@@ -546,29 +560,27 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   33 °/s médians de rotation — aucun de ces trois nombres n'est écrit nulle
   part. Quand une hypothèse demande un paramètre par comportement observé,
   c'est qu'elle est fausse.
-- **La cadence d'un combattant n'a de sens qu'en nommant l'adversaire.** Le
-  Lancier rend 0,506 coup/s contre le panel de `probe.mjs` (qui pilote vers lui)
+- **La cadence d'un combattant n'a de sens qu'en nommant l'adversaire.** Tempest rend 0,506 coup/s contre le panel de `probe.mjs` (qui pilote vers lui)
   et 0,202 dans son miroir. Facteur 2,5, même personnage.
-- **Une maquette ne contient pas toujours ce qu'on vient y chercher.** Celle du
-  Hors-la-loi montre ses munitions en **paquet** : aucun recadrage n'en isole
+- **Une maquette ne contient pas toujours ce qu'on vient y chercher.** Celle de
+  Calamity montre ses munitions en **paquet** : aucun recadrage n'en isole
   une, une composante connexe en attrape deux. Transcrire quand c'est possible,
   **composer** quand la source ne s'y prête pas, et le dire dans le commentaire.
 
 ### Équilibrer
 
-- **Une arme braquée touche en permanence.** Le piège du Hors-la-loi, repayé à
-  l'identique sur le Lancier. Dès qu'une arme cesse de tourner pour **viser**,
+- **Une arme braquée touche en permanence.** Le piège de Calamity, repayé à
+  l'identique sur Tempest. Dès qu'une arme cesse de tourner pour **viser**,
   elle pointe sur la cible à chaque image, donc elle la touche à chaque fenêtre
-  de recharge : le Lancier est monté à **0,42 coup/s** contre 0,181 relevé, et
+  de recharge : Tempest est monté à **0,42 coup/s** contre 0,181 relevé, et
   gagnait ses 30 duels en 19 s. Chaque arme braquée doit porter **son propre
   garde-fou** — une dispersion pour le canon, « la lance ne blesse qu'en
   charge » pour la lance. Le garde-fou n'est pas un ornement : c'est ce qui rend
   la précision relevée.
-- **Une visée réécrite à chaque image touche toujours.** Sans dispersion le
-  Hors-la-loi gagnait 27 duels sur 27. `ability.spread` est **raide** : 0,72 →
+- **Une visée réécrite à chaque image touche toujours.** Sans dispersion Calamity gagnait 27 duels sur 27. `ability.spread` est **raide** : 0,72 →
   10 victoires, 0,75 → 15, 0,80 → 9. Elle se règle au banc, jamais à l'estime.
 - **Caler une cadence par le temps mort donne un personnage planté.** Ramener
-  la cadence du Lancier en allongeant la pause entre charges marchait — à 2,5 s
+  la cadence de Tempest en allongeant la pause entre charges marchait — à 2,5 s
   de temps mort, quand la vidéo montre *beaucoup* de charges dont *peu*
   portent. Quand une cadence est trop haute, se demander d'abord si c'est la
   **fréquence** de l'action ou son **taux de réussite** qui est faux.
@@ -576,11 +588,11 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   (0,15 → 0,157 coup/s ; 0,60 → 0,120), parce qu'un cône large laisse partir
   des charges mal alignées qui manquent.
 - **Un banc qui plafonne dit que le levier n'est pas le bon.** Pousser la
-  dispersion du Hors-la-loi de 0,75 à 1,35 rad ne faisait tomber le banc que de
+  dispersion de Calamity de 0,75 à 1,35 rad ne faisait tomber le banc que de
   1,11 à 0,86 coup/s : une part croissante de ses touches venait des **éclats de
   givre**, que la dispersion n'affecte pas. Quand un levier connu cesse de
   répondre, chercher ce qui a changé de *source*.
-  **Deuxième instance, sur le Mage, et l'ablation a tranché en une minute.**
+  **Deuxième instance, sur Briar, et l'ablation a tranché en une minute.**
   Son guidage semblait être son levier évident : balayé de 3,4 à 0,4 rad/s, il
   ne l'a fait passer que de 22 à 16 victoires sur 24 — plat. Compter les dégâts
   **par source** (`opts.kind` dans `game.damage`) a montré que 73 % venaient
@@ -590,33 +602,31 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   et ça dit *lequel* balayer.
 
 - **Deux leviers qui marchent chacun ne s'additionnent pas.** Orbe à 2 **et**
-  mêlée à 1 faisaient tomber le Mage de 20 à 8 victoires sur 24, alors que
+  mêlée à 1 faisaient tomber Briar de 20 à 8 victoires sur 24, alors que
   chacun seul le posait autour de 15. Près du seuil, un point de dégât bascule
   des courses déjà serrées. Régler **un** levier, remesurer, et seulement
   ensuite en toucher un autre.
 
 - **La matrice ne joue chaque paire qu'une fois, donc elle exagère les écarts.**
   Chacun y est toujours du même côté, et le camp A pèse lourd (invariant 3).
-  Avant de remonter un « dernier », le remesurer sur **les deux camps** : le
-  Hors-la-loi et le Bretteur étaient à 3/12 et 3/12 à la matrice, mais à 10/24
+  Avant de remonter un « dernier », le remesurer sur **les deux camps** : Calamity et Cinder étaient à 3/12 et 3/12 à la matrice, mais à 10/24
   et 9/24 sur les deux camps — presque la moyenne. L'outillage doit servir la
   question posée : la matrice est un garde-fou de **non-régression** (elle doit
   rester identique), pas une mesure de force.
 
-- **Chercher le levier là où l'ablation trouve la source ne suffit pas.** Le
-  Hors-la-loi tire 62 % de ses dégâts de ses balles, et pourtant grossir la
+- **Chercher le levier là où l'ablation trouve la source ne suffit pas.** Calamity tire 62 % de ses dégâts de ses balles, et pourtant grossir la
   balle (`radius` 8 → 14) ne bouge rien : 10 / 9 / 10 / 9 victoires. La source
   dit *quoi* regarder, pas *quelle poignée tourner* — ici c'est la dispersion
   qui décide si la balle part sur la ligne, pas sa taille une fois partie.
 
 - **Le levier d'un combattant faible est parfois chez un autre.** Les leviers
-  propres du Hors-la-loi et du Bretteur étaient morts ou coûtaient une mesure ;
+  propres de Calamity et de Cinder étaient morts ou coûtaient une mesure ;
   c'est **baisser les dégâts du Shinobi** qui les a remontés tous les deux,
   sans toucher à leur fiche, et qui a le plus resserré le roster. Quand un
   combattant plafonne, regarder aussi ce qui le bat.
 
 - **Un paramètre qui ne fait rien doit être documenté comme tel.** Le verrou de
-  mêlée du Mage, balayé à 1,4 / 1,7 / 2,2 s, rend 15 / 12 / 14 victoires :
+  mêlée de Briar, balayé à 1,4 / 1,7 / 2,2 s, rend 15 / 12 / 14 victoires :
   **non monotone, donc du bruit**. Il est resté à 1,7 s — c'est la
   configuration sur laquelle la matrice a été relevée — mais son commentaire
   dit qu'il n'équilibre pas. Un commentaire qui attribue un résultat au mauvais
@@ -636,8 +646,8 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
 ### Déterminisme et ordre d'exécution
 
 - **Une décoration qui tire dans `game.rng` transforme un levier en bruit.** Un
-  balayage de recharge rendait des chiffres impossibles (un Blizzard *plus rare*
-  rendait le Hors-la-loi *plus fort*) : la neige et la poussière du dôme
+  balayage de recharge rendait des chiffres impossibles (un Vent de tombe *plus rare*
+  rendait Calamity *plus fort*) : la neige et la poussière du dôme
   tiraient dans le flux de **simulation**, donc chaque valeur rebattait le
   tirage de tous les duels. Passées à `viewRng`, la recharge redevient monotone.
   Ça ne se manifeste pas par un plantage mais par **un balayage qui ment**.
@@ -661,13 +671,12 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   code : **ça se compte.**
 - **Les minuteurs sont *figés* pendant `offstage`, pas seulement suspendus.**
   `Fighter.step` sort avant de décompter `meleeCd`, qui garde donc pour toute la
-  durée du Bond la valeur qu'il avait au décollage. Quand le Bond partait en
-  pleine charge, cette valeur était zéro, et le Lancier touchait **gratuitement**
+  durée de la Foudre tombante la valeur qu'il avait au décollage. Quand la Foudre tombante partait en
+  pleine charge, cette valeur était zéro, et Tempest touchait **gratuitement**
   à l'atterrissage : une touche garantie tous les ~8 s, invisible au relevé, qui
-  portait à elle seule **dix victoires sur trente**. Toute chute du Bond doit
+  portait à elle seule **dix victoires sur trente**. Toute chute de la Foudre tombante doit
   poser le verrou comme le ferait `resolveMelee`.
-- **`offstage` ne doit pas expirer avant le module.** À l'égalité stricte le
-  Lancier réapparaît une image **à son ancienne position** avant que `land()` ne
+- **`offstage` ne doit pas expirer avant le module.** À l'égalité stricte Tempest réapparaît une image **à son ancienne position** avant que `land()` ne
   le téléporte. D'où la marge de 0,1 s posée au décollage.
 - **`Match` appelle `Fighter.step()` avant `mod.update()`.** Le module lit donc
   un cap déjà intégré et déjà réfléchi par les rebonds du pas courant : l'arme
@@ -676,8 +685,8 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
 ### Éditer les données
 
 - **Un `re.sub` de calage qui déborde sur une autre fiche. Deux fois.** Une
-  expression ancrée sur `hitbox: { from: …` a réécrit celle du Hors-la-loi au
-  lieu du Lancier ; un `s.index('damage: (f) => Math.max(')` a pris la première
+  expression ancrée sur `hitbox: { from: …` a réécrit celle de Calamity au
+  lieu de Tempest ; un `s.index('damage: (f) => Math.max(')` a pris la première
   fiche du fichier au lieu de la bonne — **tout un balayage de mesures était
   faux sans que rien ne plante**. Règle : un setter de balayage doit `assert`
   que son ancre est **unique**, et il faut relire le `git diff` avant de croire
@@ -691,7 +700,7 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   revanche, déplacerait la pointe.
 - **`handle.length` + largeur dessinée doit toujours valoir la portée.**
   `drawSpriteLeft` blitte à partir de `handle.length` : une valeur **négative**
-  démarre en arrière de la bille (talon du Lancier à −44 ; sprite centré du
+  démarre en arrière de la bille (talon de Tempest à −44 ; sprite centré du
   Shinobi à −75). Si la somme ne retombe pas sur `reach`, la pointe ment sur la
   hitbox.
 - **Générer un sprite par une formule au lieu de transcrire la maquette.** La
@@ -712,8 +721,7 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   et le titre d'arène ; les écrans DOM étaient français en dur. On lisait
   « CHOISIS TES COMBATTANTS » au-dessus d'un duel « DARK vs ICE ». Tout
   l'affichage passe désormais par `src/ui/lang.js`, un seul interrupteur.
-  **Il en restait une ligne, trouvée trois mois plus tard en ajoutant le
-  Mage** : la ligne « Projectile » de la fiche de sélection lisait `labelRef`
+  **Il en restait une ligne, trouvée trois mois plus tard en ajoutant Briar** : la ligne « Projectile » de la fiche de sélection lisait `labelRef`
   sans regarder la langue, donc restait **en anglais pour tout le roster**. Elle a échappé à l'aide `label()` parce que c'est le seul
   endroit du dépôt où le couple des deux langues s'appelle `label`/`labelRef`
   et non `name`/`nameRef` — et à `lang-check`, qui vérifie que les champs
@@ -734,22 +742,22 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   pourquoi l'accent du Shinobi est un gris, pas un noir.
 - **Assombrir un corps rend illisible tout ce qui était déjà sombre.** Le
   Shinobi passé au noir aurait gardé un contour `#0a0a0a` et un chiffre de PV
-  `#0a0a0a` : noir sur noir. Piège payé une fois sur le Bretteur, évité d'entrée
+  `#0a0a0a` : noir sur noir. Piège payé une fois sur Cinder, évité d'entrée
   ici. Vérifier à l'écran (`tools/shot.mjs`) après tout changement de `look.body`.
 - **Une passe de couleur incomplète n'est pas une passe de couleur.** « Aura et
   traînée en noir » n'avait touché que `look.aura` et `look.trail`, en laissant
   le bloc `flair` — or c'est lui qui porte ce qu'on voit vraiment traîner
   (ruban, motes, gerbe d'impact, éclair d'incantation). Faire le tour du bloc
   `look` en entier.
-- **La ruée du Bretteur a un seul point de sortie**, `endRush()`. Vitesse,
+- **La ruée de Cinder a un seul point de sortie**, `endRush()`. Vitesse,
   pilotage et ouverture de l'éventail y sont remis **ensemble** : dispersés, une
   fin de duel en pleine ruée laissait l'éventail large accroché derrière la
-  lame. Même patron pour `endDash()` du Lancier.
+  lame. Même patron pour `endDash()` de Tempest.
 - **L'éventail vert est borné en angle, jamais en nombre d'images.** À 3 tours/s
   un compteur d'images donne trois tours complets de vert. Déjà fait, déjà
   corrigé — dans les deux moteurs.
 - **Un pouvoir s'ajoute sur un troisième créneau, il ne remplace pas l'ultime.**
-  Blizzard, Rage infernale, Lien d'essence et Clone d'ombre passent par un bloc
+  Vent de tombe, Rage infernale, Lien d'essence et Clone d'ombre passent par un bloc
   `special` et un compteur `f.state.spec` de la forme des compteurs génériques —
   rien ne passe par `f.ult`. Le HUD porte **deux rangées** par le **même tracé**
   (`drawGauge` dans `render/hud.js`) : la première version en avait deux copies,
@@ -767,7 +775,7 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
 - **Un pouvoir dessiné dans `drawOver` peut recouvrir le chiffre de PV de sa
   cible**, et rien dans le pipeline ne le rattrapait : `f.draw()` (qui trace ce
   chiffre) tourne avant la boucle `drawOver` de `Match.draw()`, donc une nuée
-  opaque — la Tempête de sève du Mage — passait dessus sans recours, comme
+  opaque — la Ronceraie de Briar — passait dessus sans recours, comme
   `weaponLateral` couvrait déjà le manche avant `look.hpOverWeapon`. Le chiffre
   est maintenant **repassé** après `drawOver`, pour tout le monde plutôt que
   pour la seule cible touchée (`Fighter.drawHpNumber()`, appelée deux fois :
@@ -794,8 +802,8 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   répétition mais le **monolithe** : ouvrir 2 995 lignes pour en toucher 130.
 - **Supprimer un combattant, ce n'est pas effacer ses fichiers.** Les sept
   éléments gelés partaient avec des morceaux d'eux-mêmes greffés ailleurs : le
-  module du Mage **déléguait** sa tempête à `plant.js`, sa corolle *partageait*
-  le tableau `rows` de celle de la Plante, et le Hors-la-loi tirait l'éclat de
+  module de Briar **déléguait** sa tempête à `plant.js`, sa corolle *partageait*
+  le tableau `rows` de celle de la Plante, et Calamity tirait l'éclat de
   givre dessiné dans `pixelart/ice.js`. La méthode qui a marché : **rapatrier
   d'abord, vérifier la matrice inchangée, supprimer ensuite** — deux étapes,
   deux preuves, au lieu d'un `rm` suivi d'une chasse aux imports cassés.
