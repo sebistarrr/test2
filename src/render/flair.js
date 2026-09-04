@@ -981,8 +981,12 @@ export class Flair {
   /** État critique : au-dessus des combattants, sous les nombres. */
   drawDanger(ctx, fighters, now) {
     for (const f of fighters) {
-      if (!f.onStage || f.hp > 25) continue;
-      const urgency = 1 - f.hp / 25;
+      // **Un quart de ses points de vie**, pas 25 en absolu : avec des PV
+      // réglables, un seuil fixe s'allumerait d'entrée à 20 PV et jamais à 500.
+      // À 100 PV — le défaut — le seuil vaut toujours 25.
+      const seuil = f.maxHp * 0.25;
+      if (!f.onStage || f.hp > seuil) continue;
+      const urgency = 1 - f.hp / seuil;
       const beat = 0.5 + 0.5 * Math.sin(now * (7 + urgency * 9));
       ctx.save();
       ctx.globalAlpha = (0.28 + 0.42 * urgency) * beat;

@@ -34,6 +34,18 @@ Au-delà de deux combattants, chacun vise l'**ennemi vivant le plus proche** et
 peut changer de cible d'un pas à l'autre ; le HUD passe à une plaque compacte
 par combattant, et l'écran de fin affiche un classement.
 
+### Points de vie réglables
+
+Chaque emplacement porte un champ **PV**, à 100 par défaut — la valeur du cahier
+des charges — et réglable de 1 à 999. C'est le moyen le plus direct de corriger
+un déséquilibre ou de poser un handicap sans toucher à une fiche : le Bretteur à
+150 PV contre le Lancier à 100, par exemple. Tout ce qui affiche une proportion
+de vie (barre du HUD, cerclage rouge sous un quart de vie) suit la valeur du
+combattant, pas une constante.
+
+La matrice d'équilibrage, elle, joue toujours à 100 : c'est ce qui en fait un
+garde-fou stable.
+
 Chacun porte en plus un **pouvoir spécial**, sur horloge propre, avec sa jauge
 juste sous celle de l'ultime. Il s'ajoute à l'ultime, il ne le remplace pas —
 voir [`docs/FICHES.md`](docs/FICHES.md).
@@ -82,6 +94,7 @@ empêche Jekyll d'ignorer les dossiers.
 | `?a=&b=`     | lance directement un duel sans écran de sélection — `outlaw`, `bladesman`, `lancer`, `wind` (le Shinobi), `mage` |
 | `?f=`        | une liste de combattants, pour une partie à plusieurs : `?f=outlaw,mage,lancer,wind` |
 | `?teams=`    | les camps, dans le même ordre que `?f=` : `0,0,1,1` fait un 2 contre 2. Omis, chacun pour soi |
+| `?hp=`       | les points de vie de chacun, dans le même ordre : `?hp=250,100`. Omis ou invalide, 100 (bornes 1–999) |
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
 | `?lang=fr`   | **toute l'interface** en français — HUD, titre d'arène et écrans DOM (par défaut : l'anglais de la vidéo) |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |

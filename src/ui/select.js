@@ -9,6 +9,7 @@
  */
 
 import { ELEMENTS, ROSTER } from '../data/elements.js';
+import { MATCH } from '../data/tuning.js';
 import { UI, label } from './lang.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { compilePixelMap } from '../render/pixelart.js';
@@ -47,6 +48,12 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
    * @type {string[]}
    */
   const picks = Array.from({ length: 5 }, (_, i) => ROSTER[i % ROSTER.length]);
+  /**
+   * Points de vie de chaque emplacement. 100 pour tous par défaut — la valeur
+   * du cahier des charges — et gardés d'un format à l'autre, comme les choix de
+   * combattants.
+   */
+  const vies = Array.from({ length: 5 }, () => MATCH.maxHp);
   let active = 0;
 
   /** Les emplacements du DOM, reconstruits à chaque changement de format. */
@@ -173,8 +180,39 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
 
       btn.append(tag, orb, name);
       btn.addEventListener('click', () => { active = i; refresh(); });
-      groupe.append(btn);
-      slotBtns.push({ btn, orb, name });
+
+      /**
+       * Le champ de points de vie est **à côté** du bouton, pas dedans : un
+       * `<input>` à l'intérieur d'un `<button>` est invalide, et le clic dans le
+       * champ déclencherait la sélection de l'emplacement.
+       */
+      const boite = document.createElement('div');
+      boite.className = 'slot-wrap';
+      const champ = document.createElement('label');
+      champ.className = 'slot-hp';
+      const tagHp = document.createElement('span');
+      tagHp.textContent = t.hpLabel;
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = String(MATCH.hpRange.min);
+      input.max = String(MATCH.hpRange.max);
+      input.step = '10';
+      input.value = String(vies[i]);
+      input.addEventListener('input', () => {
+        const v = Math.round(Number(input.value));
+        // On ne réécrit pas le champ pendant la frappe : borner à chaque touche
+        // empêcherait de taper « 250 » (le « 2 » deviendrait le minimum).
+        if (Number.isFinite(v) && v >= MATCH.hpRange.min && v <= MATCH.hpRange.max) vies[i] = v;
+      });
+      input.addEventListener('blur', () => {
+        vies[i] = Math.max(MATCH.hpRange.min, Math.min(MATCH.hpRange.max, Math.round(Number(input.value)) || MATCH.maxHp));
+        input.value = String(vies[i]);
+      });
+      champ.append(tagHp, input);
+
+      boite.append(btn, champ);
+      groupe.append(boite);
+      slotBtns.push({ btn, orb, name, input });
     }
     sizeEl.hidden = mode !== 'royale';
     sizeLabel.textContent = String(taille);
@@ -186,7 +224,7 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
   startBtn.addEventListener('click', () => {
     const ids = picks.slice(0, taille);
     if (ids.some((id) => !id)) return;
-    onStart(ids, FORMATS[mode].camps(taille));
+    onStart(ids, FORMATS[mode].camps(taille), vies.slice(0, taille));
   });
 
   function showSheet(id) {
@@ -226,7 +264,8 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
     for (const card of rosterEl.children) {
       card.setAttribute('aria-pressed', String(retenus.includes(card.dataset.id)));
     }
-    slotBtns.forEach(({ btn, orb, name }, i) => {
+    slotBtns.forEach(({ btn, orb, name, input }, i) => {
+      if (input) input.value = String(vies[i]);
       const el = picks[i] ? ELEMENTS[picks[i]] : null;
       btn.setAttribute('aria-current', String(active === i));
       btn.style.setProperty('--accent', el ? el.look.body : '#000');

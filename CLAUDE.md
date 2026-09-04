@@ -133,6 +133,18 @@ peut blesser qui.
 | 2 contre 2 | 4 identifiants | `[0, 0, 1, 1]` |
 | Bataille royale | 3 à 5 identifiants | omis → chacun le sien |
 
+**Les points de vie se règlent par combattant** (`hp`, un tableau dans le même
+ordre ; 100 par défaut, bornés 1–999). C'est le levier le moins cher pour
+compenser un déséquilibre sans toucher à une fiche — et le seul qui ne demande
+pas de repasser la matrice, puisqu'elle joue toujours à 100.
+
+`Fighter.maxHp` porte la valeur ; **rien ne doit plus diviser par une
+constante**. Le cerclage rouge de danger le faisait (`hp > 25`) : à 500 PV il ne
+se serait jamais allumé, à 20 PV il l'aurait été d'entrée. C'est passé à un
+quart de `maxHp` — soit toujours 25 au défaut. La leçon vaut au-delà : **un
+seuil écrit en valeur absolue devient faux le jour où la grandeur qu'il compare
+devient réglable**, et il ne crie pas en devenant faux.
+
 `ui/select.js` porte la table des formats et fabrique les camps ; `main.js` les
 lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format (3 contre 3,
 deux équipes de trois, un contre tous) ne demande **qu'une entrée dans cette

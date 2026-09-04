@@ -136,6 +136,15 @@ export const PHYSICS = deepFreeze({
 
 export const MATCH = deepFreeze({
   maxHp: 100,
+
+  /**
+   * Bornes des points de vie réglables. 100 reste le défaut et la valeur du
+   * cahier des charges ; les bornes ne sont là que pour qu'une saisie libre —
+   * champ de l'écran de sélection, `?hp=` dans l'URL — ne puisse pas produire
+   * un duel absurde. Le plancher est à 1 : à 0 le combattant serait mort avant
+   * la première image.
+   */
+  hpRange: { min: 1, max: 999 },
   /** Petit temps mort avant l'engagement, le décor est déjà en place. */
   introDuration: 0.9,
   /** Ralenti + explosion au K.O. */

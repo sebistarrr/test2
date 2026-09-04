@@ -11,7 +11,7 @@
  * @module render/hud
  */
 
-import { HUD, MATCH, STAGE } from '../data/tuning.js';
+import { HUD, STAGE } from '../data/tuning.js';
 import { clamp } from '../core/math.js';
 import { drawFittedText } from './text.js';
 import { label } from '../ui/lang.js';
@@ -148,7 +148,7 @@ export function drawRosterHud(ctx, fighters, lang) {
     const { f, col, row } = places[i];
     const x = col === 0 ? g.leftX : g.rightX;
     const y = g.y + row * rowH;
-    const v = clamp(f.hp / MATCH.maxHp, 0, 1);
+    const v = clamp(f.hp / f.maxHp, 0, 1);
 
     // plaque crème, comme les jauges du duel
     ctx.fillStyle = STAGE.plate;

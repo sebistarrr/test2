@@ -24,8 +24,11 @@ export class Fighter {
    *   vidéo**. Au-delà de deux combattants ces deux points ne suffisent plus et
    *   c'est `Match` qui répartit l'anneau, mais le duel repasse exactement par
    *   la valeur d'origine.
+   * @param {number} [maxHp] points de vie de départ. 100 par défaut, la valeur
+   *   du cahier des charges ; réglable par combattant depuis l'écran de
+   *   sélection ou l'URL.
    */
-  constructor(element, slot, rng, spawn = MATCH.spawn[slot]) {
+  constructor(element, slot, rng, spawn = MATCH.spawn[slot], maxHp = MATCH.maxHp) {
     this.el = element;
     this.slot = slot;
     this.rng = rng;
@@ -47,7 +50,16 @@ export class Fighter {
     this.impulseX = 0;
     this.impulseY = 0;
 
-    this.hp = MATCH.maxHp;
+    /**
+     * Points de vie de départ, **et plafond des soins**. Portés par le
+     * combattant et non par `MATCH` : chacun peut avoir les siens, ce qui
+     * permet de compenser un combattant faible sans toucher à sa fiche, ou de
+     * poser un handicap. Tout ce qui affiche une proportion de vie (barre du
+     * HUD, cerclage rouge de danger) doit donc diviser par **celui-ci**, pas
+     * par une constante.
+     */
+    this.maxHp = maxHp;
+    this.hp = maxHp;
     this.flash = 0;
     this.invulnerable = 0;
 
