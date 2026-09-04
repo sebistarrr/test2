@@ -84,6 +84,8 @@ export const UI = {
     // --- résultat
     /** @param {string} name */
     winner: (name) => `${name} WINS`,
+    /** Deux vainqueurs ou plus : l'accord change, donc une entrée à part. */
+    winners: (names) => `${names} WIN`,
     /** @param {number} hp @param {string} dur @param {number} hits @param {number} seed */
     resultDetail: (hp, dur, hits, seed) =>
       `${hp} HP left · ${dur} s duel · ${hits} hits · seed ${seed}`,
@@ -146,6 +148,8 @@ export const UI = {
     projectileNone: 'aucun — tout passe par l’arme et les zones',
     projectileLine: (label, dmg, speed) => `${label} — ${dmg}, ${speed} px/s`,
     winner: (name) => `${name} L’EMPORTE`,
+    /** Deux vainqueurs ou plus : l'accord change, donc une entrée à part. */
+    winners: (names) => `${names} L’EMPORTENT`,
     resultDetail: (hp, dur, hits, seed) =>
       `${hp} PV restants · duel de ${dur} s · ${hits} touches · seed ${seed}`,
     exportDone: 'Vidéo téléchargée — prête pour YouTube Shorts.',

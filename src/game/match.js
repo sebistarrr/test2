@@ -16,9 +16,13 @@
  *
  * Phases : intro → fight → ko → **victory** → over
  *
- * `victory` est la seconde de gloire : le perdant a disparu de l'arène, le
- * vainqueur y reste seul et se met en scène avant que l'écran de résultat ne
- * se pose (voir `MATCH.victoryDuration`).
+ * `victory` est le temps de gloire : les perdants ont disparu de l'arène, **le
+ * ou les vainqueurs** y restent, glissent au centre, grandissent, et un bandeau
+ * les nomme avant que l'écran de résultat ne se pose. Deux durées le règlent,
+ * et il ne faut pas les confondre : `MATCH.victory.settle` est le temps de
+ * **mise en place** (glissement, ressort, nappe) et `MATCH.victoryDuration` le
+ * temps **total**. Allonger la seconde ne fait que tenir l'image plus
+ * longtemps ; sans cette séparation, elle ralentissait toute l'animation.
  *
  * @module game/match
  */
@@ -36,6 +40,7 @@ import { Flair } from '../render/flair.js';
 import { createRng } from '../core/rng.js';
 import { buildBackdrop, drawBackdrop } from '../render/scene.js';
 import { drawFighterHud, drawRosterHp, drawRosterPowers } from '../render/hud.js';
+import { UI, label } from '../ui/lang.js';
 
 /**
  * Point de départ du combattant de rang `i` sur `n`.
@@ -137,9 +142,16 @@ export class Match {
     this.phaseTime = 0;
     this.shakeMag = 0;
     this.shakeTime = 0;
-    /** @type {{x:number,y:number}|null} */
+    /**
+     * Départs et arrivées de la parade, **un par vainqueur** : un 2 contre 2
+     * se gagne à deux, et les deux paradent.
+     * @type {Array<{x:number,y:number}>|null}
+     */
     this.victoryFrom = null;
-    this.victoryTo = { x: 0, y: 0 };
+    /** @type {Array<{x:number,y:number}>} */
+    this.victoryTo = [];
+    /** @type {Fighter[]|null} Le camp vainqueur, survivants seulement. */
+    this.winners = null;
     this.victoryRing = 0;
     this.victorySpark = 0;
     this.stats = {
@@ -525,7 +537,14 @@ export class Match {
   /* Parade du vainqueur                                                 */
   /* ------------------------------------------------------------------ */
 
-  /** Le perdant s'efface, le vainqueur reste seul et s'illumine. */
+  /**
+   * Les perdants s'effacent, **le ou les vainqueurs** restent et s'illuminent.
+   *
+   * Au pluriel parce qu'un 2 contre 2 se gagne à deux : ne mettre en scène que
+   * `this.winner` laissait son coéquipier figé là où il se trouvait, ce qui se
+   * lisait comme un bug. Ils glissent donc tous vers le centre, écartés de
+   * `pairGap`, et un bandeau les nomme.
+   */
   startVictory() {
     this.setPhase('victory');
     this.victoryRing = 0;
@@ -534,56 +553,90 @@ export class Match {
     this.projectiles.list.length = 0;
     const w = this.winner;
     if (!w) return;
-    // il glisse vers le centre : bien cadré, il tient tout seul dans l'image
-    // exportée en Short
+
+    /**
+     * Le camp vainqueur au complet, survivants seulement. En duel c'est
+     * `[this.winner]` — l'expression d'origine, un seul paradant au centre.
+     */
+    this.winners =
+      this.fighters.length === 2
+        ? [w]
+        : this.fighters.filter((f) => f.alive && f.team === w.team);
+    if (!this.winners.length) this.winners = [w];
+
     const i = ARENA.inner;
-    this.victoryFrom = { x: w.x, y: w.y };
-    this.victoryTo = { x: (i.left + i.right) / 2, y: (i.top + i.bottom) / 2 };
-    w.impulseX = 0;
-    w.impulseY = 0;
-    // il se présente dans ses propres couleurs : plus de brûlure, plus de givre
-    w.dots.length = 0;
-    w.slows.length = 0;
-    w.offstage = 0; // un vainqueur en plein bond redescend pour la parade
-    w.tint = null;
-    w.flash = 0;
-    this.fx.ring(w.x, w.y, w.radius, MATCH.victory.ringTo, 0.55, w.el.look.accent, 14, true);
-    this.fx.burst(w.x, w.y, 40, {
-      color: [w.el.look.body, w.el.look.accent, '#ffffff'],
-      speed: 340,
-      size: 6,
-      life: 0.8,
-    });
+    const cx = (i.left + i.right) / 2;
+    const cy = (i.top + i.bottom) / 2;
+    const n = this.winners.length;
+    const gap = MATCH.victory.pairGap;
+
+    this.victoryFrom = this.winners.map((f) => ({ x: f.x, y: f.y }));
+    this.victoryTo = this.winners.map((_, k) => ({
+      x: cx + (k - (n - 1) / 2) * gap,
+      y: cy,
+    }));
+
+    for (const f of this.winners) {
+      f.impulseX = 0;
+      f.impulseY = 0;
+      // il se présente dans ses propres couleurs : plus de brûlure, plus de givre
+      f.dots.length = 0;
+      f.slows.length = 0;
+      f.offstage = 0; // un vainqueur en plein bond redescend pour la parade
+      f.tint = null;
+      f.flash = 0;
+      this.fx.ring(f.x, f.y, f.radius, MATCH.victory.ringTo, 0.55, f.el.look.accent, 14, true);
+      this.fx.burst(f.x, f.y, 40, {
+        color: [f.el.look.body, f.el.look.accent, '#ffffff'],
+        speed: 340,
+        size: 6,
+        life: 0.8,
+      });
+    }
     this.shake(5, 0.3);
   }
 
-  /** Anneaux et étincelles pendant la seconde de gloire. */
+  /** Anneaux et étincelles pendant les secondes de gloire. */
   tickVictory(dt) {
-    const w = this.winner;
-    if (!w) return;
+    const gagnants = this.winners ?? (this.winner ? [this.winner] : []);
+    if (!gagnants.length) return;
     const v = MATCH.victory;
 
-    // il rejoint le centre de l'arène, en douceur (ease-out cubique)
+    // ils rejoignent le centre de l'arène, en douceur (ease-out cubique)
     if (this.victoryFrom) {
-      const t = Math.min(1, this.phaseTime / (MATCH.victoryDuration * 0.7));
+      const t = Math.min(1, this.phaseTime / (v.settle * 0.7));
       const k = 1 - (1 - t) ** 3;
-      w.x = this.victoryFrom.x + (this.victoryTo.x - this.victoryFrom.x) * k;
-      w.y = this.victoryFrom.y + (this.victoryTo.y - this.victoryFrom.y) * k;
+      gagnants.forEach((f, i) => {
+        const de = this.victoryFrom[i];
+        const vers = this.victoryTo[i];
+        if (!de || !vers) return;
+        f.x = de.x + (vers.x - de.x) * k;
+        f.y = de.y + (vers.y - de.y) * k;
+      });
     }
 
-    // l'arme s'emballe (le reste du combattant est figé)
-    w.weaponAngle = wrapAngle(w.weaponAngle + w.el.weapon.spin * w.spinDir * v.spin * dt);
-    w.flash = Math.max(0, w.flash - dt);
+    for (const f of gagnants) {
+      // l'arme s'emballe (le reste du combattant est figé)
+      f.weaponAngle = wrapAngle(f.weaponAngle + f.el.weapon.spin * f.spinDir * v.spin * dt);
+      f.flash = Math.max(0, f.flash - dt);
+    }
 
+    // Un seul minuteur d'anneau pour tout le monde : à deux vainqueurs, deux
+    // horloges indépendantes battraient en désordre.
     this.victoryRing -= dt;
     if (this.victoryRing <= 0) {
       this.victoryRing = v.ringEvery;
-      this.fx.ring(w.x, w.y, w.radius * 0.9, v.ringTo, 0.6, w.el.look.accent, 12, true);
+      for (const f of gagnants) {
+        this.fx.ring(f.x, f.y, f.radius * 0.9, v.ringTo, 0.6, f.el.look.accent, 12, true);
+      }
     }
 
     this.victorySpark += dt * v.sparks;
     while (this.victorySpark >= 1) {
       this.victorySpark -= 1;
+      // Les étincelles se répartissent entre les vainqueurs plutôt que de
+      // doubler : le débit à l'écran reste celui du duel.
+      const w = gagnants[(this.victorySpark * gagnants.length | 0) % gagnants.length];
       const a = this.viewRng.range(0, TAU);
       const r = w.radius * this.viewRng.range(0.8, 1.5);
       this.fx.spawn({
@@ -606,7 +659,7 @@ export class Match {
    * que la dernière image du duel soit une vraie pose de vainqueur.
    */
   victoryScale() {
-    const t = Math.min(1, this.phaseTime / MATCH.victoryDuration);
+    const t = Math.min(1, this.phaseTime / MATCH.victory.settle);
     const pop = MATCH.victory.pop;
     const grow = 1 - (1 - t) ** 3; // ease-out cubique
     const wobble = 0.09 * Math.sin(t * 17) * Math.exp(-t * 3.4);
@@ -712,7 +765,7 @@ export class Match {
       }
       // en l'air : il a quitté l'arène, on ne dessine que son marqueur au sol
       if (f.offstage > 0) continue;
-      if (f === this.winner && this.phase === 'victory') this.drawWinner(ctx);
+      if (this.phase === 'victory' && (this.winners ?? []).includes(f)) this.drawWinner(ctx, f);
       else f.draw(ctx, this.time);
     }
     if (this.phase !== 'victory') {
@@ -767,36 +820,81 @@ export class Match {
     }
 
     if (this.phase === 'intro') this.drawIntro(ctx);
+    if (this.phase === 'victory') this.drawWinnerBanner(ctx);
     if (this.debug) this.drawDebugOverlay(ctx);
   }
 
-  /** Nappe de lumière à la couleur du vainqueur, sous lui. */
+  /** Nappe de lumière à la couleur de chaque vainqueur, sous lui. */
   drawVictoryGlow(ctx) {
-    const w = this.winner;
-    if (!w) return;
-    const t = Math.min(1, this.phaseTime / MATCH.victoryDuration);
-    const r = w.radius * (2.4 + 1.6 * t);
-    const g = ctx.createRadialGradient(w.x, w.y, w.radius * 0.5, w.x, w.y, r);
-    g.addColorStop(0, w.el.look.aura.color);
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.save();
-    ctx.globalAlpha = 0.9 * (1 - t * 0.35);
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(w.x, w.y, r, 0, TAU);
-    ctx.fill();
-    ctx.restore();
+    const gagnants = this.winners ?? (this.winner ? [this.winner] : []);
+    const t = Math.min(1, this.phaseTime / MATCH.victory.settle);
+    for (const w of gagnants) {
+      const r = w.radius * (2.4 + 1.6 * t);
+      const g = ctx.createRadialGradient(w.x, w.y, w.radius * 0.5, w.x, w.y, r);
+      g.addColorStop(0, w.el.look.aura.color);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.save();
+      ctx.globalAlpha = 0.9 * (1 - t * 0.35);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(w.x, w.y, r, 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    }
   }
 
-  /** Le vainqueur, agrandi par le ressort de la parade. */
-  drawWinner(ctx) {
-    const w = this.winner;
+  /** Un vainqueur, agrandi par le ressort de la parade. */
+  drawWinner(ctx, w) {
     const s = this.victoryScale();
     ctx.save();
     ctx.translate(w.x, w.y);
     ctx.scale(s, s);
     ctx.translate(-w.x, -w.y);
     w.draw(ctx, this.time);
+    ctx.restore();
+  }
+
+  /**
+   * **Bandeau des vainqueurs**, pendant la parade.
+   *
+   * C'est la dernière image du duel et de la vidéo exportée, et jusqu'ici rien
+   * n'y nommait le gagnant : le nom n'apparaissait qu'à l'écran de résultat,
+   * qui n'est pas filmé. Il est donc écrit dans l'arène, au-dessus des
+   * vainqueurs, dans la couleur du premier d'entre eux.
+   *
+   * Il entre par un fondu court plutôt que d'apparaître d'un coup : sur deux
+   * secondes, une apparition sèche se lit comme un défaut d'affichage.
+   */
+  drawWinnerBanner(ctx) {
+    const gagnants = this.winners ?? (this.winner ? [this.winner] : []);
+    if (!gagnants.length) return;
+    const v = MATCH.victory;
+    const T = UI[this.lang] ?? UI.ref;
+    const noms = gagnants.map((f) => label(f.el, this.lang));
+    const texte = noms.length > 1 ? T.winners(noms.join(' + ')) : T.winner(noms[0]);
+
+    const i = ARENA.inner;
+    const x = (i.left + i.right) / 2;
+    const y = i.top + (i.bottom - i.top) * v.bannerY;
+    const entree = Math.min(1, this.phaseTime / 0.35);
+
+    ctx.save();
+    ctx.globalAlpha = entree;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.lineJoin = 'round';
+    // la casse se réduit si les deux noms ne tiennent pas dans l'arène
+    let taille = v.bannerSize;
+    for (let k = 0; k < 8; k++) {
+      ctx.font = `400 ${taille}px "Archivo Black", "Arial Black", sans-serif`;
+      if (ctx.measureText(texte).width <= i.right - i.left - 24) break;
+      taille *= (i.right - i.left - 24) / ctx.measureText(texte).width;
+    }
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = '#0a0a0a';
+    ctx.strokeText(texte, x, y);
+    ctx.fillStyle = gagnants[0].el.look.body;
+    ctx.fillText(texte, x, y);
     ctx.restore();
   }
 

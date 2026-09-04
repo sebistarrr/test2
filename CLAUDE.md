@@ -177,7 +177,22 @@ table** — pas une ligne de moteur.
   duel ; à trois et plus, un anneau centré, chacun tourné vers le centre — seule
   disposition qui ne donne à personne deux voisins immédiats quand les autres
   n'en ont qu'un ;
-- **l'écran de fin** gagne un classement, du vainqueur au premier tombé.
+- **l'écran de fin** gagne un classement, du vainqueur au premier tombé ;
+- **la parade se joue à plusieurs**. Un 2 contre 2 se gagne à deux : les deux
+  survivants glissent au centre, écartés de `victory.pairGap`, et grandissent
+  ensemble. Ne mettre en scène que `this.winner` laissait son coéquipier figé
+  là où il se trouvait, ce qui se lisait comme un bug.
+
+**Deux durées règlent la fin, à ne pas confondre.** `MATCH.victory.settle` est
+le temps de **mise en place** — glissement, ressort d'échelle, nappe de
+lumière ; `MATCH.victoryDuration` est le temps **total**. Allonger la seconde ne
+fait que tenir l'image plus longtemps. Sans cette séparation, ajouter une
+seconde d'affichage **ralentissait toute l'animation** au lieu de laisser le
+temps de lire — l'inverse de ce qu'on voulait.
+
+**Un bandeau nomme le ou les vainqueurs pendant la parade**, dans l'arène. Le
+nom n'apparaissait qu'à l'écran de résultat, qui **n'est pas filmé** : la vidéo
+exportée se terminait donc sans jamais dire qui avait gagné.
 
 **La matrice reste un outil de duel**, et c'est délibéré : elle est le garde-fou
 de non-régression du 1v1, la seule configuration dont l'équilibrage soit relevé.

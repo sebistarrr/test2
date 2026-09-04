@@ -71,7 +71,7 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 
 ![Lancier contre Bretteur](docs/capture-duel.png)
 
-<sup>Les nouveaux formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [une bataille royale à cinq](docs/capture-royale.png).</sup>
+<sup>Les nouveaux formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [une bataille royale à cinq](docs/capture-royale.png) · [la parade à deux vainqueurs](docs/capture-fin-2v2.png).</sup>
 
 <sup>Le Lancier (charge, Lien d'essence) contre le Bretteur (surchauffe, Rage infernale). Voir aussi [l'écran de sélection](docs/capture-selection.png), [le Hors-la-loi sous HIGH NOON](docs/capture-horsloi.png), [la ruée du Bretteur](docs/capture-bretteur.png), [le Bond du Lancier](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
 
@@ -135,9 +135,15 @@ et les combattants**. Ce qui remplit le cadre est au fond, sur les bords, ou
 derrière la boule. Tout vit dans `src/render/flair.js`, avec son propre aléa :
 la mise en scène ne peut pas déplacer une virgule de l'équilibrage.
 
-Le duel se termine par **une seconde de parade** : le perdant quitte l'arène, le
-vainqueur glisse au centre, grandit, son arme s'emballe et il pousse des anneaux
-à sa couleur. C'est aussi la dernière image de la vidéo exportée.
+La partie se termine par **deux secondes de parade** : les perdants quittent
+l'arène, le ou les vainqueurs glissent au centre, grandissent, leur arme
+s'emballe et ils poussent des anneaux à leur couleur — et **un bandeau les
+nomme**. Un 2 contre 2 se gagne à deux, donc les deux paradent côte à côte.
+
+C'est la dernière image de la vidéo exportée, et c'est pour elle que le bandeau
+existe : le nom du gagnant n'apparaissait qu'à l'écran de résultat, qui n'est
+pas filmé. La mise en place (glissement, agrandissement) garde sa seconde
+d'origine ; la seconde ajoutée ne sert qu'à laisser le temps de lire.
 
 ---
 

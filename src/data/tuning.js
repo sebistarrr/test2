@@ -197,13 +197,39 @@ export const MATCH = deepFreeze({
    * dans l'arène — il grossit d'un ressort, son arme s'emballe et il pousse des
    * anneaux à sa couleur — avant que l'écran de résultat ne se pose.
    */
-  victoryDuration: 1,
+  /**
+   * Parade du vainqueur, et **temps d'affichage du ou des gagnants**. Une
+   * seconde de plus qu'à l'origine : c'est la dernière image du duel et de la
+   * vidéo exportée, et une seconde ne suffisait pas à lire un bandeau de noms —
+   * surtout à deux vainqueurs.
+   */
+  victoryDuration: 2,
   victory: {
+    /**
+     * **Temps de mise en place**, distinct de `victoryDuration`.
+     *
+     * Glissement vers le centre, ressort d'échelle et nappe de lumière se
+     * jouent sur cette seconde-là ; la durée totale ne fait que **tenir**
+     * l'image plus longtemps. Sans cette séparation, allonger la parade
+     * ralentissait toute l'animation au lieu de laisser le temps de lire le
+     * bandeau — ce qui est l'inverse de ce qu'on veut.
+     */
+    settle: 1,
     spin: 2.6, // × la vitesse de rotation d'arme nominale
     pop: 0.22, // amplitude du ressort d'échelle
     ringEvery: 0.26, // s entre deux anneaux
     ringTo: 300, // rayon final d'un anneau
     sparks: 34, // étincelles par seconde
+    /**
+     * Écart entre deux vainqueurs paradant ensemble (2 contre 2). 78 les
+     * faisait se chevaucher : une bille fait 82 px de diamètre et le ressort de
+     * parade l'agrandit encore d'un quart. 150 les sépare franchement tout en
+     * les gardant dans le cadre.
+     */
+    pairGap: 150,
+    /** Bandeau de noms : ordonnée dans l'arène, et hauteur de casse. */
+    bannerY: 0.24,
+    bannerSize: 62,
   },
   /**
    * Mort subite : au-delà de `after`, tous les dégâts sont amplifiés
