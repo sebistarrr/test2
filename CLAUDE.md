@@ -101,15 +101,20 @@ Mage, l'éclat de givre dans `pixelart/outlaw.js`. Un commentaire qui cite un
 élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Lancier 9, Mage 7, Shinobi 6, Hors-la-loi 4, Bretteur 4.
+miroir chacun : Lancier 11, Bretteur 6, Mage 5, Hors-la-loi 4, Shinobi 4.
 
-Écart **4 à 9**, le plus resserré depuis la réduction du roster.
+Écart **4 à 11**, et il s'est **creusé** au dernier relevé : il était de 4 à 9.
 
-**Le dernier resserrement est venu du Shinobi, pas des deux derniers.** Le
-Hors-la-loi et le Bretteur étaient à 3/12 chacun ; leurs leviers propres sont
-morts (rayon de balle, palier de surchauffe : voir la fiche du Shinobi, qui
-porte le relevé) ou coûtent une mesure. Baisser `melee.damage` du Shinobi de 3
-à 2 les remonte **tous les deux** à 4/12 sans toucher à leur fiche.
+**La cause n'est pas un réglage, c'est le gel de l'attente d'avant-combat.**
+Les combattants se déplaçaient pendant la seconde d'ouverture — ce n'était donc
+pas une attente mais un début de course, et aucun duel ne partait vraiment des
+deux points de départ mesurés. Les figer était demandé, et c'est aussi plus
+juste au regard du relevé ; mais partir des vrais points de départ **profite au
+Lancier** (9 → 11), dont la charge en ligne droite aime les longues lignes de
+vue, et coûte au Shinobi (6 → 4).
+
+C'est un déséquilibre connu et non corrigé : le corriger demanderait un
+rééquilibrage complet, qui est un autre chantier que celui qui l'a produit.
 
 **Attention à la convention de la matrice quand on juge un écart.** Elle ne
 joue chaque paire qu'**une fois**, donc chacun est toujours du même côté, et le
@@ -152,12 +157,19 @@ table** — pas une ligne de moteur.
 
 **Ce qui change à l'écran au-delà de deux :**
 
-- **le HUD**. Les deux grandes jauges d'ultime sont mesurées à gauche et à
-  droite, et il n'y a pas de troisième bord : au-delà de deux on passe à des
-  plaques compactes, une par combattant, sur la même grille. Y disparaissent la
-  jauge d'ultime, celle du pouvoir spécial et la ligne de stat — à cinq plaques
-  il n'y a plus la place, et le chiffre de points de vie reste **sur la bille**,
-  qui est là où on le regarde ;
+- **le HUD se sépare en deux bandeaux**. Les points de vie montent **en haut de
+  l'écran** — une plaque par combattant dans la bande vide au-dessus du titre —
+  et le bas garde ce que le duel y met : jauge d'ultime, jauge de pouvoir
+  spécial et ligne de stat, pour **chaque** combattant. Les deux bandeaux
+  partagent le même ordre de placement (`placer()` dans `render/hud.js`), donc
+  un combattant est à la même colonne et à la même rangée dans les deux — sinon
+  l'œil cherche deux fois. En duel, rien ne change : les deux grandes jauges
+  mesurées restent, et les points de vie restent sur la bille ;
+- **un mort quitte le terrain tout de suite**. En duel, la première mort finit
+  le combat et le perdant reste en place pendant le K.O. au ralenti, qui est la
+  belle image du duel. À plusieurs, le laisser gisant encombrerait l'arène pour
+  tout le reste de la partie : il disparaît, et seul le dernier tombé reste le
+  temps du K.O. final ;
 - **le titre d'arène**. À deux, le bandeau relevé sur la vidéo. Au-delà, les
   noms se suivent, groupés par camp, et les icônes tombent : cinq icônes de
   28 px et quatre « VS » ne tiennent pas dans la largeur de l'arène ;

@@ -245,7 +245,15 @@ export class Fighter {
    * @param {number} dt pas fixe
    * @param {number} now temps de duel
    */
-  step(dt, now) {
+  /**
+   * @param {number} dt
+   * @param {number} now
+   * @param {boolean} [hold] si vrai, le combattant **ne se déplace pas** : ni
+   *   pilotage, ni intégration, ni rebond. Tout le reste continue (minuteurs,
+   *   rotation d'arme), pour que l'attente d'avant-combat reste vivante à
+   *   l'écran plutôt que d'être une image figée.
+   */
+  step(dt, now, hold = false) {
     // hors du plateau : plus de déplacement, plus de rebond, plus de rotation
     // d'arme — le combattant est en l'air, il n'existe plus pour l'arène
     if (this.offstage > 0) {
@@ -268,13 +276,13 @@ export class Fighter {
 
     // --- pilotage : on tourne doucement vers l'adversaire (mesuré ~1,9 rad/s)
     const mv = this.el.movement;
-    if (this.opponent && mv.seek > 0) {
+    if (!hold && this.opponent && mv.seek > 0) {
       const want = Math.atan2(this.opponent.y - this.y, this.opponent.x - this.x);
       this.heading = rotateToward(this.heading, want, mv.turnRate * mv.seek * dt);
     }
 
     // --- intégration
-    const sp = this.currentSpeed(now);
+    const sp = hold ? 0 : this.currentSpeed(now);
     let vx = Math.cos(this.heading) * sp + this.impulseX;
     let vy = Math.sin(this.heading) * sp + this.impulseY;
     this.x += vx * dt;

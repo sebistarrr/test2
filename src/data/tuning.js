@@ -65,6 +65,41 @@ export const TITLE = deepFreeze({
 });
 
 export const HUD = deepFreeze({
+  /**
+   * **Bandeau de points de vie, en haut de l'écran** — à plusieurs seulement.
+   *
+   * La bande y = 0 → 240 est vide : l'arène commence à 320 et le titre a sa
+   * hauteur de casse entre 247 et 310. Les plaques s'y accrochent par le haut,
+   * sur les mêmes abscisses et la même largeur que les jauges du bas, pour que
+   * les deux bandeaux se lisent comme un seul système.
+   *
+   * En duel, rien ici : le chiffre de PV sur la bille est la lecture relevée
+   * sur la vidéo, et deux plaques en haut la doubleraient sans rien apprendre.
+   */
+  hpTop: { y: 100, rowHeight: 40, height: 34, leftX: 39, rightX: 412, width: 268, border: 2, labelPad: 8 },
+
+  /**
+   * **Bloc de pouvoirs par combattant, en bas** — à plusieurs seulement.
+   *
+   * Un bloc = jauge d'ultime, jauge de pouvoir spécial dessous, puis la ligne
+   * de stat. C'est ce que le duel affiche déjà, en plus petit et répété : à
+   * cinq combattants il faut trois rangées de deux, soit 970 → 1210, ce qui
+   * tient sous les 1280 de la scène.
+   */
+  powers: {
+    y: 970,
+    rowHeight: 80,
+    barHeight: 23,
+    gap: 3,
+    statSize: 17,
+    leftX: 39,
+    rightX: 412,
+    width: 268,
+    border: 2,
+    labelSize: 16,
+    labelPad: 7,
+  },
+
   // Deux jauges d'ultime, mesurées : x 39→307 et 412→680, y 965→1000
   bar: {
     y: 965,
@@ -146,7 +181,14 @@ export const MATCH = deepFreeze({
    */
   hpRange: { min: 1, max: 999 },
   /** Petit temps mort avant l'engagement, le décor est déjà en place. */
-  introDuration: 0.9,
+  /**
+   * Temps d'attente avant que le combat ne commence. **Les combattants y sont
+   * immobiles** : ils bougeaient pendant cette seconde, ce qui n'était pas une
+   * attente mais un début de course, et faisait qu'aucun duel ne partait
+   * vraiment des points de départ mesurés. Ils tournent leur arme, l'arène
+   * s'éclaircit, mais personne n'avance.
+   */
+  introDuration: 1,
   /** Ralenti + explosion au K.O. */
   koDuration: 1.8,
   koSlowmo: 0.25,

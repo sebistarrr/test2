@@ -35,7 +35,7 @@ import { Effects } from '../render/effects.js';
 import { Flair } from '../render/flair.js';
 import { createRng } from '../core/rng.js';
 import { buildBackdrop, drawBackdrop } from '../render/scene.js';
-import { drawFighterHud, drawRosterHud } from '../render/hud.js';
+import { drawFighterHud, drawRosterHp, drawRosterPowers } from '../render/hud.js';
 
 /**
  * Point de départ du combattant de rang `i` sur `n`.
@@ -195,11 +195,13 @@ export class Match {
         break;
     }
 
-    // combattants — pendant la parade du vainqueur, plus personne ne se déplace
+    // combattants — pendant la parade du vainqueur, plus personne ne se déplace,
+    // et pendant l'attente d'avant-combat personne n'avance encore
     if (this.phase !== 'victory') {
+      const attente = this.phase === 'intro';
       for (const f of this.fighters) {
         if (this.phase === 'ko' && !f.alive) continue;
-        f.step(dt, this.time);
+        f.step(dt, this.time, attente);
       }
     }
 
@@ -686,11 +688,28 @@ export class Match {
     this.flair.drawUnder(ctx, this.fighters, this.time);
     this.fx.draw(ctx, true);
     this.projectiles.draw(ctx);
-    // dès la parade, le perdant a quitté l'arène
+    /**
+     * **Qui reste visible une fois mort.**
+     *
+     * En duel, le comportement d'origine : le perdant reste en place pendant le
+     * K.O. au ralenti, qui est la belle image du duel, et disparaît à la parade.
+     *
+     * À plusieurs, un mort **quitte le terrain immédiatement** : le duel
+     * continue sans lui, et le laisser gisant encombrait l'arène pour tout le
+     * reste de la partie. Seul le dernier tombé reste, le temps du K.O. final,
+     * pour que la fin garde la même image que le duel.
+     */
     const showDead = this.phase === 'fight' || this.phase === 'ko';
+    const dernierTombe = this.fallen[this.fallen.length - 1];
     if (this.phase === 'victory') this.drawVictoryGlow(ctx);
     for (const f of this.fighters) {
-      if (!f.alive && !showDead) continue;
+      if (!f.alive) {
+        if (this.fighters.length === 2) {
+          if (!showDead) continue;
+        } else if (this.phase !== 'ko' || f !== dernierTombe) {
+          continue;
+        }
+      }
       // en l'air : il a quitté l'arène, on ne dessine que son marqueur au sol
       if (f.offstage > 0) continue;
       if (f === this.winner && this.phase === 'victory') this.drawWinner(ctx);
@@ -740,7 +759,11 @@ export class Match {
       drawFighterHud(ctx, this.a, 'left', modA.barValue(this.a), this.lang, modA.specialBar?.(this.a));
       drawFighterHud(ctx, this.b, 'right', modB.barValue(this.b), this.lang, modB.specialBar?.(this.b));
     } else {
-      drawRosterHud(ctx, this.fighters, this.lang);
+      // Points de vie en haut, pouvoirs et stat en bas : les deux bandeaux
+      // partagent le même ordre de placement, donc un combattant est à la même
+      // colonne et à la même rangée dans les deux.
+      drawRosterHp(ctx, this.fighters, this.lang);
+      drawRosterPowers(ctx, this.fighters, this.modules, this.lang);
     }
 
     if (this.phase === 'intro') this.drawIntro(ctx);

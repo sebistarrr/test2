@@ -1788,13 +1788,21 @@ est figée dans `tools/matrix-reference.txt`.
 
 | | victoires |
 | --- | --- |
-| Lancier | 9/12 |
-| Mage | 7/12 |
-| Shinobi | 6/12 |
+| Lancier | 11/12 |
+| Bretteur | 6/12 |
+| Mage | 5/12 |
 | Hors-la-loi | 4/12 |
-| Bretteur | 4/12 |
+| Shinobi | 4/12 |
 
-Écart **4 à 9**, le plus resserré depuis la réduction du roster.
+Écart **4 à 11**, et il s'est **creusé** : il était de 4 à 9 au relevé
+précédent.
+
+**Ce n'est pas un réglage qui l'a déplacé, c'est le gel de l'attente
+d'avant-combat.** Les combattants se déplaçaient pendant la seconde
+d'ouverture ; les figer était demandé, et c'est aussi plus juste au regard du
+relevé — mais partir vraiment des deux points de départ mesurés profite au
+Lancier, dont la charge aime les longues lignes de vue, et coûte au Shinobi.
+Déséquilibre connu et non corrigé : le corriger est un autre chantier.
 
 - **mort subite** : au-delà de 55 s, tous les dégâts sont multipliés par
   `1 + (t − 55) / 18` (plafond ×4). Aucun duel ne peut s'éterniser ;
@@ -1879,7 +1887,7 @@ Vent 12, Plante 11, Foudre 10, Eau 10, Bretteur 9 — sept hors de la bande
 | Collision arme/corps      | segment tranchant contre cercle + recharge d'arme          |
 | Murs                      | rebond parfait, l'arme change de sens de rotation          |
 | Flash d'encaissement      | 0,2 s en blanc                                             |
-| Intro / K.O.              | 0,9 s d'ouverture ; K.O. au ralenti (×0,25) pendant 1,8 s  |
+| Intro / K.O.              | **1 s d'attente, combattants immobiles** ; K.O. au ralenti (×0,25) pendant 1,8 s |
 | Mort subite               | dégâts ×`1 + (t − 55)/18`, plafonné à ×4                   |
 | Dégâts sur la durée       | un DoT par source, rafraîchi à chaque nouvelle application |
 | Absorption                | le module de la cible peut absorber avant les PV (bouclier) |

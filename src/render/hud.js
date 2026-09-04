@@ -98,94 +98,138 @@ function drawGauge(ctx, g, side, value, style) {
 }
 
 /**
- * **HUD à plusieurs combattants.** Les deux grandes jauges d'ultime n'ont de
- * sens qu'en duel : elles sont mesurées à gauche et à droite, et il n'y a pas
- * de troisième bord. Au-delà de deux, on passe donc à des **plaques compactes**
- * — une par combattant, nom dans sa couleur et barre de points de vie — sur la
- * même grille que les jauges du duel (deux colonnes, les mêmes abscisses et la
- * même hauteur de rangée), pour que les deux HUD se ressemblent.
+ * **Ordre des plaques, commun aux deux bandeaux.**
  *
- * Ce qui disparaît, et c'est assumé : la jauge d'ultime, celle du pouvoir
- * spécial et la ligne de stat. À six plaques il n'y a plus la place, et le
- * chiffre de points de vie reste lisible **sur la bille** — c'est lui qu'on
- * regarde. Une barre par combattant dit l'essentiel : qui est en train de
- * perdre.
+ * À deux camps, une colonne par camp : c'est la lecture qu'on attend d'un
+ * 2 contre 2, et remplir par paires entrelaçait les équipes (gauche = un de
+ * chaque). Au-delà de deux camps il n'y a plus de groupement à montrer, on
+ * remplit donc colonne par colonne.
  *
- * Le camp se lit au liseré : un trait de la couleur du camp le long du bord
- * gauche de la plaque. En chacun-pour-soi chaque combattant est son propre
- * camp, donc chaque liseré est unique et l'information est simplement neutre.
- *
- * @param {CanvasRenderingContext2D} ctx
- * @param {Array} fighters
- * @param {string} lang
+ * Les deux bandeaux — points de vie en haut, pouvoirs en bas — partagent cet
+ * ordre : un combattant est à la même place dans les deux, sinon l'œil doit
+ * chercher deux fois.
  */
-export function drawRosterHud(ctx, fighters, lang) {
-  const g = HUD.bar;
-  const n = fighters.length;
-  const rows = Math.ceil(n / 2);
-  const rowH = HUD.special.y - g.y; // 40 : le pas des deux rangées du duel
-  const barH = Math.min(g.height, rowH - 5);
-
-  /**
-   * **Ordre des plaques.** À deux camps, une colonne par camp : c'est la
-   * lecture qu'on attend d'un 2 contre 2, et remplir par paires entrelaçait les
-   * équipes (gauche = un de chaque). Au-delà de deux camps il n'y a plus de
-   * groupement à montrer, on remplit donc colonne par colonne.
-   */
+function placer(fighters) {
   const camps = [...new Set(fighters.map((f) => f.team))];
-  const places = camps.length === 2
-    ? fighters
-        .map((f, i) => ({ f, col: camps.indexOf(f.team) }))
-        .map((p, _, tous) => ({
-          ...p,
-          row: tous.filter((q) => q.col === p.col).indexOf(p),
-        }))
-    : fighters.map((f, i) => ({ f, col: i % 2, row: (i / 2) | 0 }));
+  if (camps.length !== 2) {
+    return fighters.map((f, i) => ({ f, col: i % 2, row: (i / 2) | 0 }));
+  }
+  const compte = [0, 0];
+  return fighters.map((f) => {
+    const col = camps.indexOf(f.team);
+    return { f, col, row: compte[col]++ };
+  });
+}
 
+/**
+ * **Bandeau de points de vie, en haut de l'écran** — à plusieurs seulement.
+ *
+ * Une plaque par combattant : nom, barre de vie dans sa couleur, chiffre. Le
+ * camp se lit au liseré de gauche ; en chacun-pour-soi chacun est son propre
+ * camp, donc chaque liseré est unique et l'information est simplement neutre.
+ * Un mort voit sa plaque barrée de noir : on voit d'un coup qui reste.
+ *
+ * En haut et non en bas parce que c'est ce qu'on surveille en continu, et que
+ * le bas est pris par les pouvoirs.
+ */
+export function drawRosterHp(ctx, fighters, lang) {
+  const g = HUD.hpTop;
   ctx.save();
   ctx.lineJoin = 'miter';
-  for (let i = 0; i < n; i++) {
-    const { f, col, row } = places[i];
+  for (const { f, col, row } of placer(fighters)) {
     const x = col === 0 ? g.leftX : g.rightX;
-    const y = g.y + row * rowH;
+    const y = g.y + row * g.rowHeight;
     const v = clamp(f.hp / f.maxHp, 0, 1);
 
-    // plaque crème, comme les jauges du duel
     ctx.fillStyle = STAGE.plate;
-    ctx.fillRect(x, y, g.width, barH);
-    // points de vie, dans la couleur du combattant
+    ctx.fillRect(x, y, g.width, g.height);
     ctx.fillStyle = f.el.look.body;
-    ctx.fillRect(x, y, g.width * v, barH);
-    // mort : la plaque se barre, pour qu'on voie d'un coup qui reste
+    ctx.fillRect(x, y, g.width * v, g.height);
     if (!f.alive) {
       ctx.globalAlpha = 0.55;
       ctx.fillStyle = '#000000';
-      ctx.fillRect(x, y, g.width, barH);
+      ctx.fillRect(x, y, g.width, g.height);
       ctx.globalAlpha = 1;
     }
-    // cadre
     ctx.lineWidth = g.border;
     ctx.strokeStyle = '#000000';
-    ctx.strokeRect(x + g.border / 2, y + g.border / 2, g.width - g.border, barH - g.border);
-    // liseré de camp
+    ctx.strokeRect(x + g.border / 2, y + g.border / 2, g.width - g.border, g.height - g.border);
     ctx.fillStyle = TEAM_COLORS[f.team % TEAM_COLORS.length];
-    ctx.fillRect(x, y, 6, barH);
+    ctx.fillRect(x, y, 6, g.height);
 
     ctx.font = BAR_FONT;
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
-    drawFittedText(ctx, label(f.el, lang), x + g.labelPad + 6, y + barH / 2 + 1, g.width - g.labelPad * 2 - 44, {
-      fill: STAGE.plate,
-      stroke: '#000000',
-      strokeWidth: 3,
+    drawFittedText(ctx, label(f.el, lang), x + g.labelPad + 6, y + g.height / 2 + 1, g.width - g.labelPad * 2 - 52, {
+      fill: STAGE.plate, stroke: '#000000', strokeWidth: 3,
     });
     ctx.textAlign = 'right';
-    drawFittedText(ctx, String(Math.max(0, Math.ceil(f.hp))), x + g.width - g.labelPad, y + barH / 2 + 1, 40, {
-      fill: STAGE.plate,
-      stroke: '#000000',
-      strokeWidth: 3,
+    drawFittedText(ctx, String(Math.max(0, Math.ceil(f.hp))), x + g.width - g.labelPad, y + g.height / 2 + 1, 48, {
+      fill: STAGE.plate, stroke: '#000000', strokeWidth: 3,
     });
   }
+  ctx.restore();
+}
+
+/**
+ * **Bandeau de pouvoirs, en bas de l'écran** — à plusieurs seulement.
+ *
+ * Un bloc par combattant : jauge d'ultime, jauge de pouvoir spécial dessous
+ * quand il en porte un, puis sa ligne de stat. C'est exactement ce que montre
+ * le duel, en plus petit et répété — pas une autre lecture à apprendre.
+ *
+ * La jauge passe par le **même tracé** que celles du duel (`drawGauge`), avec
+ * une géométrie plus serrée : c'est ce qui garantit qu'une retouche de style
+ * les touche toutes.
+ */
+export function drawRosterPowers(ctx, fighters, modules, lang) {
+  const g = HUD.powers;
+  ctx.save();
+  for (const { f, col, row } of placer(fighters)) {
+    const x = col === 0 ? g.leftX : g.rightX;
+    const y = g.y + row * g.rowHeight;
+    const mod = modules.get(f);
+    // Un mort ne charge plus rien : son bloc s'estompe plutôt que de mentir.
+    ctx.globalAlpha = f.alive ? 1 : 0.4;
+
+    const geo = (yy) => ({
+      y: yy, height: g.barHeight, width: g.width, leftX: x, rightX: x,
+      border: g.border, labelSize: g.labelSize, labelPad: g.labelPad,
+    });
+
+    ctx.font = `700 ${g.labelSize}px "Oswald", "Arial Narrow", sans-serif`;
+    drawGauge(ctx, geo(y), 'left', mod.barValue(f), {
+      fill: f.el.ultimate.barFill,
+      text: f.el.ultimate.barText,
+      label: (lang === 'fr' && f.el.ultimate.barLabelFr) || f.el.ultimate.barLabel,
+      anchorRight: (f.el.ultimate.barAnchor ?? 'left') === 'right',
+    });
+
+    const spec = mod.specialBar?.(f);
+    if (spec) {
+      ctx.font = `700 ${g.labelSize}px "Oswald", "Arial Narrow", sans-serif`;
+      drawGauge(ctx, geo(y + g.barHeight + g.gap), 'left', spec.value, {
+        fill: f.el.special.barFill,
+        text: f.el.special.barText,
+        label: (lang === 'fr' && f.el.special.barLabelFr) || f.el.special.barLabel,
+      });
+    }
+
+    // ligne de stat : la même que celle du duel, lue dans la fiche
+    const hud = f.el.hud;
+    const fns = lang === 'fr' ? hud.statsFr ?? hud.stats : hud.stats;
+    const lignes = fns ? fns.map((fn) => fn(f)) : [lang === 'fr' ? hud.statFr(f) : hud.stat(f)];
+    ctx.font = `700 ${g.statSize}px "Oswald", "Arial Narrow", sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    const ys = y + (spec ? 2 * (g.barHeight + g.gap) : g.barHeight + g.gap) + g.statSize;
+    drawFittedText(ctx, lignes.join(' · '), x + 2, ys, g.width - 4, {
+      fill: hud.color,
+      stroke: hud.stroke,
+      strokeWidth: 4,
+    });
+  }
+  ctx.globalAlpha = 1;
   ctx.restore();
 }
 

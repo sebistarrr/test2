@@ -31,8 +31,17 @@ sont deux façons de remplir la même liste de camps. Ajouter un format ne deman
 donc pas une ligne de moteur.
 
 Au-delà de deux combattants, chacun vise l'**ennemi vivant le plus proche** et
-peut changer de cible d'un pas à l'autre ; le HUD passe à une plaque compacte
-par combattant, et l'écran de fin affiche un classement.
+peut changer de cible d'un pas à l'autre, un **mort quitte le terrain
+immédiatement**, et l'écran de fin affiche un classement.
+
+Le HUD se sépare alors en deux bandeaux : les **points de vie en haut** de
+l'écran, une plaque par combattant, et en bas ce que le duel y met déjà — jauge
+d'ultime, jauge de pouvoir spécial et ligne de stat, pour chacun. Les deux
+bandeaux gardent le même ordre, donc un combattant est à la même place dans les
+deux.
+
+Chaque combat s'ouvre par **une seconde d'attente, combattants immobiles** :
+l'arène s'éclaircit, les armes tournent, mais personne n'avance.
 
 ### Points de vie réglables
 
