@@ -630,6 +630,107 @@ fiche à lui — ou de plafonner l'héritage, ce qui contredirait la demande. Le
 deux sont un autre chantier que celui qui a produit l'écart. Écart de matrice :
 **2 à 11**, contre 4 à 11 avant.
 
+### Le clone devient un combattant à part entière — le duel passe en 2 contre 1
+
+**Demandé, en trois points :** que les clones aient **les mêmes pouvoirs que le
+principal, avec le même cooldown** ; qu'une invocation fasse **passer le duel en
+2 contre 1**, le clone étant **considéré comme un Shinobi à part** ; et que
+leurs **PV descendent à 25**.
+
+Le clone n'est plus une entité du module : c'est un **`Fighter` inscrit dans
+`game.fighters`**, dans le camp du Shinobi.
+
+| | Avant | Après |
+| --- | --- | --- |
+| Nature | objet du module coiffé de `Fighter.prototype` | **`Fighter` du tableau**, construit par le même constructeur |
+| Pouvoirs | aucun | **tous** — Tornade et Salve de shurikens comprises |
+| Recharge | — | celle **courante** de l'original, pas celle de la fiche (voir plus bas) |
+| PV | ceux restants du Shinobi | **25**, valeur de fiche |
+| HUD | rien | **sa plaque de PV, sa jauge d'ultime, sa ligne de stat** |
+| Fin de partie | invisible | il compte : la partie continue si le vrai Shinobi tombe pendant qu'un clone tient |
+| Classement | absent | il y figure |
+
+#### Ce que ça retire du module, et ce que ça a coûté au moteur
+
+Le module perd, d'un coup : le pas de déplacement recopié, les collisions
+corporelles, la frappe, le verrou de touche subie (`cloneWeaponHit` et la
+famine de `meleeCd` qu'il contournait), l'encaisse des projectiles adverses, la
+disparition à zéro PV, et le tracé dans `drawOver`. **Sept mécanismes** que le
+moteur servait déjà.
+
+Le moteur, lui, gagne `Match.join()` — et **rien d'autre que la tenue à jour
+des six choses indexées par rang** (`fighters`, `teams`, `hp`, `modules`, les
+deux tableaux de statistiques) plus `flair.attach()`. Collisions, mêlée,
+ciblage, HUD, condition de victoire et classement travaillaient déjà sur
+`this.fighters`.
+
+**L'entrée est différée d'un pas, et c'est le seul piège.** L'appelant est un
+module, or `Match.update()` itère `this.modules` quand il appelle `join()` : une
+`Map` de JavaScript **visite les entrées ajoutées pendant l'itération**. Le
+nouveau venu verrait donc son `update()` tourner dans l'image de sa naissance,
+avant son premier pas et après les boucles de corps et de mêlée du pas courant.
+D'où la file d'attente, vidée par `flushArrivals()` en fin de pas.
+
+Deux conséquences de bord, assumées :
+
+- **`drawOver` devient facultatif** dans `Match.draw()` (comme `drawUnbounded`
+  et `specialBar`) : le Shinobi n'a plus rien à poser par-dessus, et un module
+  ne doit pas déclarer une méthode vide pour ça ;
+- **l'incantation consomme le flux de simulation.** `new Fighter(...)` écarte
+  le cap de départ de `rng.spread(0.35)`. C'était précisément ce qu'évitait la
+  version d'avant — mais elle n'inscrivait rien dans le tableau. Un combattant
+  qui entre en jeu est un événement de simulation, pas une décoration.
+
+#### « Le même cooldown » : celui de l'instant, pas celui de la fiche
+
+La recharge de la Tornade du Shinobi **se raccourcit à l'usage** (4 s → 0,5 s),
+et ses dégâts de Tornade montent avec. Un clone parti des chiffres de la fiche
+aurait donc été plus lent et plus faible que celui qui l'invoque, et « le même
+cooldown » aurait été faux. Le clone reprend `ability.cooldown` et `stacks`
+**tels qu'ils sont à l'instant de l'incantation**.
+
+La jauge d'ultime, elle, part de **zéro** : c'est une charge, pas une recharge,
+et la recopier laisserait un clone lâcher sa Salve à la seconde où il apparaît.
+
+**Un clone n'invoque pas de clone.** Seule limite posée, et délibérée : le
+pouvoir se déclencherait chez lui comme chez l'original, donc le nombre de
+doubles doublerait toutes les `cooldown` secondes — un duel de 25 s finirait à
+huit corps. Le marqueur `estClone` est lu à un seul endroit ; l'enlever
+suffirait à ouvrir la récursion.
+
+#### Équilibrage : de 40/48 à 23/48 par la seule recharge
+
+Trois Shinobis complets contre un adversaire, c'est **40/48** sur les deux
+camps — contre 23/48 de référence. Balayage de `special.cooldown`, deux camps :
+
+| recharge | 9 s | 14 s | 20 s | **22 s** | 24 s | 26 s | 28 s |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Shinobi /48 | 40 | 28 | 29 | **23** | 20 | 19 | 19 |
+
+**Retenu : 22 s**, pile sur la référence. Et le chiffre a un sens au-delà du
+banc : avec `first: 5` et des duels de 20 à 30 s, il pose **un** clone, deux
+dans un duel qui s'éternise. C'est ce qui garde le **2 contre 1** demandé au
+lieu d'un 4 contre 1 — à 9 s l'arène portait trois Shinobis, trois jauges
+d'ultime et trois lignes de stat, ce qui ne se lit plus.
+
+#### Le roster se resserre, et le Pistolero remonte
+
+Contrepartie inattendue, dans le bon sens : les 25 PV fixes retirent l'héritage
+qui avait fait décrocher le Pistolero, et le camp à deux mord l'Hoplite.
+
+| Matrice, 12 duels hors miroir | Avant | Après |
+| --- | --- | --- |
+| Hoplite | 11 | **9** |
+| Ronin | 6 | 6 |
+| Druide | 6 | 6 |
+| Pistolero | **2** | **5** |
+| Shinobi | 6 | **4** |
+
+**Écart 2–11 → 4–9**, le plus resserré depuis longtemps. Le Shinobi paraît
+dernier à la matrice alors que le banc des deux camps le donne à 23/48, soit la
+médiane : c'est l'exagération connue de la matrice, qui ne joue chaque paire
+qu'une fois. Seules les cinq lignes du Shinobi bougent.
+
 ---
 
 ## 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO »)

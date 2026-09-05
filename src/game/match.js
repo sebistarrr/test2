@@ -163,6 +163,61 @@ export class Match {
     this.winner = null;
     /** Ordre des chutes, pour le classement d'une partie à plusieurs. */
     this.fallen = [];
+    /**
+     * Combattants qui entrent au **prochain** pas — voir `join()`.
+     * @type {Fighter[]}
+     */
+    this.arrivants = [];
+  }
+
+  /**
+   * **Un combattant entre en cours de partie.**
+   *
+   * Le moteur savait déjà jouer *n* combattants répartis en camps (invariant
+   * 13) ; il ne savait pas que ce *n* puisse changer une fois le duel commencé.
+   * Il ne manquait que ceci : tenir à jour les six choses indexées par
+   * combattant, et rien d'autre. Le reste — collisions, mêlée, ciblage, HUD,
+   * condition de victoire, classement — travaille déjà sur `this.fighters` et
+   * suit sans une ligne.
+   *
+   * **L'entrée est différée d'un pas, et c'est le point délicat.** L'appelant
+   * est un module, or `update()` est en train d'itérer `this.modules` quand il
+   * l'appelle : une `Map` de JavaScript **visite les entrées ajoutées pendant
+   * l'itération**, donc le nouveau venu verrait son `update()` tourner dans
+   * l'image même de sa naissance, avant d'avoir fait son premier pas. Les
+   * boucles de corps et de mêlée de ce pas-là sont passées elles aussi. Il est
+   * donc mis en file, et `flushArrivals()` l'inscrit à la fin du pas.
+   *
+   * Le moteur ne sait pas *ce* qui entre ni *pourquoi* — c'est le Clone d'ombre
+   * du Shinobi aujourd'hui, ça pourrait être un renfort ou une invocation
+   * demain. Même forme que les compteurs génériques du `Fighter`.
+   *
+   * @param {Fighter} fighter déjà construit, camp et teinte posés par le module
+   */
+  join(fighter) {
+    this.arrivants.push(fighter);
+    return fighter;
+  }
+
+  /** Inscrit les arrivants du pas. Voir `join()` pour le pourquoi du différé. */
+  flushArrivals() {
+    if (!this.arrivants.length) return;
+    for (const f of this.arrivants) {
+      this.fighters.push(f);
+      this.teams.push(f.team);
+      this.hp.push(f.maxHp);
+      // les deux tableaux de statistiques sont indexés par rang dans
+      // `fighters` : un rang de plus, une case de plus dans chacun
+      this.stats.hits.push(0);
+      this.stats.damage.push(0);
+      const mod = abilitiesFor(f.el.id);
+      this.modules.set(f, mod);
+      mod.init(f, this);
+      this.flair.attach([f]);
+    }
+    this.arrivants.length = 0;
+    // il y a désormais plus de deux combattants : chacun vise le plus proche
+    this.retarget();
   }
 
   /** Le sort du duel est scellé : plus aucun dégât ni soin ne compte. */
@@ -284,6 +339,9 @@ export class Match {
       f.wasUlting = on;
     }
     this.flair.update(dtRaw, this.fighters, this.phase === 'fight');
+
+    // les arrivants du pas entrent ici, une fois toutes les boucles passées
+    this.flushArrivals();
 
     if (this.phase === 'fight') this.stats.duration = this.time;
   }
@@ -769,7 +827,11 @@ export class Match {
       else f.draw(ctx, this.time);
     }
     if (this.phase !== 'victory') {
-      for (const [f, mod] of this.modules) mod.drawOver(ctx, f, this, this.time);
+      // `drawOver` est **facultatif**, comme `drawUnbounded` et `specialBar` :
+      // un module qui n'a rien à poser par-dessus les combattants ne déclare
+      // pas une méthode vide. Le Shinobi y dessinait ses clones ; ce sont des
+      // combattants du tableau désormais, donc la boucle de rendu s'en charge.
+      for (const [f, mod] of this.modules) mod.drawOver?.(ctx, f, this, this.time);
       /**
        * Un pouvoir dessiné dans `drawOver` peut recouvrir sa cible — la
        * Tempête de sève du Mage, entre autres, qui masquait le chiffre de PV

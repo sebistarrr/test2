@@ -61,7 +61,7 @@ de navigation, pas un besoin.
 | `outlaw` Pistolero | Tireur de **glace** | **revolver de givre**, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`weaponTwirl`). Porte en plus le **Champ de givre**, greffé |
 | `bladesman` Ronin | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus l’**Aura de braise**, greffée |
 | `lancer` Hoplite | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et la **Foudre tombante** qui le sort de l'arène. Porte en plus le **Dôme de drain**, greffé |
-| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des doubles permanents qui **héritent de ses PV restants** et qui **se déplacent, bousculent et frappent avec son arme** — mais sans aucun pouvoir, et d'un ton plus clair que lui |
+| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des doubles de 25 PV qui sont de **vrais combattants du tableau**, dans son camp, avec **tous ses pouvoirs et sa recharge courante** — le duel devient un **2 contre 1**. Un ton plus clair que lui, et ils n'invoquent pas à leur tour |
 | `mage` Druide | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte l’**Orage de ronces** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
 
 **Les identifiants internes ne sont pas les noms affichés**, et l'écart est
@@ -124,18 +124,20 @@ du Shinobi.
 Ils ne sont pas masqués, ils ne sont plus là : ni fiche, ni module, ni sprite,
 ni liste `DISABLED`. Ce qu'il en reste est **greffé sur un survivant** et
 documenté comme tel — le Champ de givre chez le Pistolero, l’Aura de braise chez
-Ronin, le Dôme de drain chez l’Hoplite, l’Orage de ronces chez le Druide, l'éclat de givre dans `pixelart/outlaw.js`. Un commentaire qui cite un
+le Ronin, le Dôme de drain chez l’Hoplite, l’Orage de ronces chez le Druide, l'éclat de givre dans `pixelart/outlaw.js`. Un commentaire qui cite un
 élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Hoplite 11, Ronin 6, Shinobi 6, Druide 5, Pistolero 2.
+miroir chacun : Hoplite 9, Ronin 6, Druide 6, Pistolero 5, Shinobi 4.
 
-Écart **2 à 11**, et il s'est **creusé** au dernier relevé (il était de 4 à 11)
-— non pas parce qu'un combattant est monté, mais parce que **Pistolero est
-descendu**. Voir « Le pouvoir d'un combattant peut peser sur un troisième »
-plus bas : ce n'est pas sa fiche qui a bougé, c'est le Clone d'ombre du Shinobi
-qui hérite désormais des PV restants de son invocateur, et un clone à 100 PV
-absorbe un barillet entier là où un clone à 15 PV tombait en quatre balles.
+Écart **4 à 9** — le plus resserré depuis longtemps, et il s'est **refermé** au
+dernier relevé (il était de 2 à 11). Encore une fois sans qu'aucune fiche
+d'adversaire ne bouge : le Clone d'ombre du Shinobi a cessé d'hériter des PV de
+son invocateur (il naît à 25) et est devenu un combattant à part entière. Le
+Pistolero, que l'héritage avait fait tomber, remonte de 2 à 5 ; l'Hoplite, qui
+dominait, descend de 11 à 9 parce qu'il perd désormais un duel sur trois face à
+un camp à deux. **Le pouvoir d'un combattant continue de décider du classement
+des autres** — voir le piège du même nom plus bas.
 
 **D'où vient l'écart : du gel de l'attente d'avant-combat, pas d'un réglage.**
 Les combattants se déplaçaient pendant la seconde d'ouverture — ce n'était donc
@@ -432,21 +434,33 @@ sans que ça se voie.
     n'était même pas. Preuve exigée à chaque étape : **matrice identique au
     caractère près**.
 
-    Ce qui n'a pas changé : une entité qui n'est pas un combattant du tableau
-    (les clones du Shinobi) reste **confinée à son module**, coiffée du prototype
-    `Fighter` (`Object.setPrototypeOf`) pour hériter du rendu sans le dupliquer.
+    **Et le nombre de combattants peut changer EN COURS DE PARTIE.** C'est la
+    dernière contrainte tombée, et elle est tombée pour trois lignes de moteur.
+    `Match.join()` inscrit un combattant après le départ ; il ne fait que tenir
+    à jour les six choses indexées par rang — `fighters`, `teams`, `hp`,
+    `modules`, les deux tableaux de statistiques — plus `flair.attach()`. Tout
+    le reste (collisions, mêlée, ciblage, HUD, condition de victoire,
+    classement) travaille déjà sur `this.fighters` et suit sans une ligne.
 
-    **Et la contrepartie est tombée avec le reste.** Elle disait « elle ne se
-    déplace pas » — c'était vrai tant que le moteur ne connaissait que deux
-    combattants. Les clones marchent désormais, et là encore ça a coûté moins
-    que prévu : `Fighter.step()`, `resolveBodies()` et `weaponHit()` ne
-    demandent qu'un objet portant les bons champs, pas un combattant inscrit
-    au tableau. Le clone les appelle **telles quelles**, donc son déplacement,
-    ses rebonds, ses collisions et sa frappe ne *peuvent pas* diverger de ceux
-    d'un vrai combattant. Ce qui reste écrit à la main dans le module, c'est
-    uniquement ce que le moteur ne peut pas servir : le sens *inverse* de la
-    touche (voir `cloneWeaponHit` et sa famine) et les projectiles adverses,
-    que `Projectiles.update()` ne teste que contre `game.fighters`.
+    C'est le Clone d'ombre du Shinobi qui s'en sert : ses doubles sont des
+    `Fighter` du tableau, dans son camp, avec leurs pouvoirs, leurs jauges et
+    leur place au classement. Le moteur ne sait toujours pas ce qu'est un
+    clone — il sait qu'un combattant est entré.
+
+    **L'entrée est différée d'un pas, et c'est le seul piège.** L'appelant est
+    un module, or `update()` itère `this.modules` quand il appelle `join()` :
+    une `Map` de JavaScript **visite les entrées ajoutées pendant l'itération**,
+    donc le nouveau venu verrait son `update()` tourner dans l'image de sa
+    naissance, avant son premier pas, et après les boucles de corps et de mêlée
+    du pas courant. D'où la file d'attente et `flushArrivals()` en fin de pas.
+
+    Trois versions du même pouvoir ont précédé celle-ci, et **chacune a rendu du
+    code au moteur** : un double confiné au module et coiffé du prototype
+    `Fighter` (`Object.setPrototypeOf`) pour hériter du rendu, puis le même
+    appelant `Fighter.step()`, `resolveBodies()` et `weaponHit()` telles
+    quelles, puis celui-ci qui n'a plus rien de propre du tout. À chaque étape
+    la question utile a été « qu'est-ce que le moteur sait déjà faire ? », et à
+    chaque fois la réponse était « plus que je ne croyais ».
 
 ---
 
@@ -669,12 +683,18 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   le même** (22/48 → 23/48 sur les deux camps, réglage de recharge compris) —
   de quoi croire l'affaire neutre. Elle ne l'était pas : le total masquait une
   **redistribution**, il gagne contre le Pistolero (5/12 → 10/12) et perd contre
-  Druide (12/12 → 8/12). Et le perdant net est Pistolero, qui n'a rien demandé :
-  **15/48 → 10/48**, dernier et décroché. Le mécanisme est connu et documenté
-  à l'envers dans `docs/FICHES.md` — un clone fragile meurt vite et gêne peu le
-  canon asservi ; un clone à 100 PV absorbe le barillet entier. **Lire le banc
-  ligne par ligne, pas seulement en total** : un total stable peut cacher un
-  roster qui s'est creusé.
+  le Druide (12/12 → 8/12). Et le perdant net est le Pistolero, qui n'a rien
+  demandé : **15/48 → 10/48**, dernier et décroché. Le mécanisme est connu et
+  documenté à l'envers dans `docs/FICHES.md` — un clone fragile meurt vite et
+  gêne peu le canon asservi ; un clone à 100 PV absorbe le barillet entier.
+  **Lire le banc ligne par ligne, pas seulement en total** : un total stable
+  peut cacher un roster qui s'est creusé.
+
+  **Suite, et confirmation par l'autre bout.** L'héritage des PV a été retiré
+  (le clone naît à 25) en même temps que le clone devenait un combattant
+  complet : le Pistolero remonte **2 → 5** à la matrice sans qu'on ait touché à
+  sa fiche, et l'écart du roster se referme de **2–11 à 4–9**. Le levier du
+  dernier était bien chez un autre — et il l'était dans les deux sens.
 
 - **Un paramètre qui ne fait rien doit être documenté comme tel.** Le verrou de
   mêlée du Druide, balayé à 1,4 / 1,7 / 2,2 s, rend 15 / 12 / 14 victoires :

@@ -1,7 +1,8 @@
 /**
  * Registre des modules de pouvoirs.
  *
- * Un module implémente : init / update / drawUnder / drawOver / barValue,
+ * Un module implémente : init / update / drawUnder / barValue, et facultativement
+ * drawOver,
  * plus trois crochets optionnels :
  *   • `onLand(f, target, hit, game)` → réaction à sa propre touche d'arme
  *     (la brûlure du Bretteur, la pile du Lancier) ;

@@ -64,7 +64,7 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 | **Pistolero** | **Champ de givre** — il le suit partout, ralentit et grignote ce qui entre dedans |
 | **Ronin** | **Aura de braise** — il sème des braises, et tout ce qui l’approche brûle |
 | **Hoplite** | **Dôme de drain** — l’adversaire est figé sous un dôme, un rayon le vide |
-| **Shinobi** | **Clone d'ombre** — des doubles permanents qui héritent de ses PV restants, se déplacent, bousculent et frappent avec son arme, sans aucun de ses pouvoirs, d'un ton plus clair que lui |
+| **Shinobi** | **Clone d'ombre** — des doubles de 25 PV qui entrent dans la partie comme de **vrais combattants**, dans son camp et avec **tous ses pouvoirs** : le duel devient un 2 contre 1. Un ton plus clair que lui, et ils n'invoquent pas à leur tour |
 | **Druide** | **Tir enraciné** — des racines le clouent au sol une seconde, il cesse de bouger *et* de tirer, puis lâche une **orbe majeure** à trois fois les dégâts |
 
 <sup>[Le Champ de givre du Pistolero](docs/capture-blizzard.png) · [le Dôme de drain de l’Hoplite](docs/capture-lien.png) · [le Clone d'ombre du Shinobi](docs/capture-clone.png) · [les orbes guidées du Druide](docs/capture-mage.png) · [son Orage de ronces](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
