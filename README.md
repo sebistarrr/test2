@@ -64,10 +64,10 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 | **Calamity** | **Vent de tombe** — champ de givre qui le suit, ralentit et grignote |
 | **Cinder** | **Rage infernale** — braises, aura brûlante |
 | **Tempest** | **Lien d'essence** — dôme figé + rayon qui draine |
-| **Shinobi** | **Clone d'ombre** — des clones de 15 PV, permanents, solides, qui ripostent |
+| **Shinobi** | **Clone d'ombre** — des doubles de 15 PV, permanents, qui se déplacent, bousculent et frappent avec son arme, sans aucun de ses pouvoirs, d'un ton plus clair que lui |
 | **Briar** | **Tir enraciné** — des racines le clouent au sol une seconde, il cesse de bouger *et* de tirer, puis lâche une **orbe majeure** à trois fois les dégâts |
 
-<sup>[Le Vent de tombe de Calamity](docs/capture-blizzard.png) · [le Lien d'essence de Tempest](docs/capture-lien.png) · [les orbes guidées de Briar](docs/capture-mage.png) · [sa Ronceraie](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
+<sup>[Le Vent de tombe de Calamity](docs/capture-blizzard.png) · [le Lien d'essence de Tempest](docs/capture-lien.png) · [le Clone d'ombre du Shinobi](docs/capture-clone.png) · [les orbes guidées de Briar](docs/capture-mage.png) · [sa Ronceraie](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
 
 ![Tempest contre Cinder](docs/capture-duel.png)
 

@@ -235,7 +235,14 @@ créneau greffé (même patron que le Vent de tombe/la Rage infernale/le Lien
 d'essence), mais **conçu** pour le Shinobi plutôt que repris d'un autre
 combattant — voir `CLAUDE.md` pour le détail technique (pourquoi il est
 stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
-`weaponHit()`). En résumé :
+`weaponHit()`).
+
+> **Ce qui suit est l'état d'origine du pouvoir, gardé pour l'historique.** Le
+> clone se déplace, porte l'arme du Shinobi et ne lance plus de shurikens
+> depuis « Le clone marche, porte l'arme, et ne jette plus rien », plus bas
+> dans cette section.
+
+En résumé :
 
 | Trait | Valeur |
 | --- | --- |
@@ -479,6 +486,84 @@ dégâts, eux, ne sont écrits nulle part sur le sprite.
 9/24, soit presque la moyenne. La matrice ne joue chaque paire qu'une fois,
 donc chacun y reste du même côté et le camp A pèse lourd : elle exagère les
 écarts. Elle reste le garde-fou de non-régression, pas la mesure de force.
+
+### Le clone marche, porte l'arme, et ne jette plus rien
+
+**Demandé, en trois points :** supprimer les shurikens que le clone lançait ;
+le rendre **mobile**, avec le même dessin et la même arme que l'original,
+**sans ses pouvoirs** ; et poser **une légère différence de ton** pour dire
+lequel est le vrai.
+
+| Trait | Avant | Après |
+| --- | --- | --- |
+| Déplacement | **aucun** — planté là où il apparaît | `Fighter.step()`, celle des vrais combattants : pilotage vers l'ennemi, vitesse de la fiche, amortissement du recul, rebonds sur les quatre murs |
+| Attaque | shuriken lancé toutes les 1,1 s | **l'arme de l'original**, `weaponHit()` du moteur : même disque de 75 px, même cadence, mêmes dégâts |
+| Arme portée | aucune (`customWeapon` no-op) | **le shuriken**, dessiné par `drawWeapon()` comme celui du vrai |
+| Corps | solide **à sens unique** — il ne bougeait pas, l'autre encaissait tout l'écartement | `resolveBodies()` du moteur, des deux côtés |
+| Pouvoirs | aucun | aucun — inchangé, et c'est demandé |
+| Ton | 88 % d'opacité | corps **mélangé** à `#6b6b76` (α 0,55) + 82 % d'opacité |
+| Apparition | toutes les 12 s | **toutes les 5 s** — voir l'équilibrage ci-dessous |
+
+**Ce qui disparaît du module :** `throwFromClone`, `special.attack`,
+`resolveCloneBody` et `c.attackTimer`. Le clone appelle désormais
+`Fighter.step()`, `resolveBodies()` et `weaponHit()` **telles quelles** : c'est
+ce qui garantit qu'il ne peut pas diverger de l'original. Ne restent écrits à
+la main que les deux choses que le moteur ne peut pas servir — le sens
+*inverse* de la touche (`cloneWeaponHit`, à cause de la famine de `meleeCd`,
+voir plus haut) et les projectiles adverses, que `Projectiles.update()` ne
+teste que contre `game.fighters`.
+
+**La différence de ton est faite pour rester légère** — un double repeint ne
+serait plus un double. `tint`/`tintAlpha` **mélangent** un gris de la gamme
+ninja au corps au lieu de le remplacer : le noir plein `#141414` de l'original
+ressort en `#444`-ish sur le clone. Un troisième écart existe sans avoir été
+réglé : le clone ne traîne **ni ruban ni sillage**, parce que `render/flair.js`
+ne boucle que sur les combattants du tableau. C'est le plus lisible des trois
+en mouvement — c'est le vrai qui laisse une traîne derrière lui.
+
+#### La matrice a caché l'écart au lieu de l'exagérer
+
+Premier relevé après le changement, à recharge inchangée : **la matrice ne
+bouge que d'un duel** (`wind vs mage` passe de 2/3 à 1/3). De quoi conclure que
+le changement était neutre. Il ne l'était pas :
+
+| Banc | Avant | Après |
+| --- | --- | --- |
+| Matrice (12 duels, un seul camp) | 4/12 | 3/12 |
+| **Deux camps** (48 duels, 6 seeds × 8 affrontements) | **23/48** | **4/48** |
+
+Le Shinobi était déjà du mauvais côté de presque toutes ses lignes de matrice :
+elle n'avait plus rien à mesurer. C'est le pendant du piège déjà documenté —
+la matrice exagère les écarts d'un combattant fort, elle **aveugle** sur un
+combattant bas. Repasser les deux camps, toujours.
+
+**La cause :** un clone qui marche va au contact, donc il meurt vite. Ses
+15 PV tenaient longtemps quand il restait planté à jeter des shurikens de loin.
+
+**Deux leviers, balayés séparément** (ils ne s'additionnent pas — leçon déjà
+payée sur Briar), sur les deux camps :
+
+| Levier | Balayage | Victoires /48 |
+| --- | --- | --- |
+| `special.hp` | 15 / 25 / 40 / 60 | 4 / 13 / 15 / 17 — monotone mais **saturant**, et n'atteint jamais le niveau d'avant, même à quatre fois la valeur demandée |
+| `special.cooldown` | 12 / 8 / 6 / 5 / 4 s | 4 / 15 / 19 / **22** / 25 — monotone sur tout le balayage, et **traverse** le niveau d'avant |
+
+**Retenu : `cooldown` 12 → 5 s**, un seul levier tourné. 22/48 contre 23/48
+avant, soit un duel d'écart ; les PV restent à la valeur demandée. À l'écran,
+deux clones vivants au plus en fin de duel — ils meurent trop vite pour
+s'accumuler.
+
+**Matrice régénérée.** Seules les cinq lignes du Shinobi bougent (invariant 3),
+et l'écart du roster reste **4 à 11** ; c'est le milieu du classement qui se
+réordonne : Tempest 11, **Shinobi 6**, Cinder 5, Calamity 4, Briar 4.
+
+| Duel | Avant | Après |
+| --- | --- | --- |
+| `outlaw vs wind` | outlaw 2, wind 1 | inchangé |
+| `bladesman vs wind` | bladesman 2, wind 1 | **wind 2, bladesman 1** |
+| `lancer vs wind` | lancer 3 | inchangé |
+| `wind vs mage` | wind 2, mage 1 | **wind 3** |
+| `wind vs wind` | wind 3 (miroir) | inchangé |
 
 ---
 

@@ -290,16 +290,24 @@ export const WIND = fiche({
    * toucher ni l'une ni l'autre.
    *
    * **Différence avec les trois autres greffes : celle-ci n'est pas reprise
-   * d'un autre combattant, elle est conçue pour le Shinobi.** Un double de
-   * 20 PV apparaît près de lui — vraiment hittable (arme adverse et
-   * projectiles adverses le blessent, voir `abilities/wind.js`), vraiment
-   * offensif (il jette lui aussi des shurikens), mais **stationnaire** et
-   * **incorporel** (il ne bouscule personne) : donner au clone le pilotage,
-   * la rotation d'arme et les collisions corporelles complètes d'un vrai
-   * combattant aurait voulu toucher `match.js`/`physics.js`, qui ne
-   * connaissent que deux combattants (`this.a`/`this.b`) dans tout le
-   * moteur — voir l'invariant du moteur qui ne connaît aucun combattant.
-   * Ce compromis garde l'ajout confiné au module du Shinobi.
+   * d'un autre combattant, elle est conçue pour le Shinobi.** Un double
+   * apparaît près de lui, et c'est **un vrai double** : il se déplace, il
+   * bouscule, il porte le shuriken de l'original et frappe avec — même disque
+   * de 75 px, même cadence, mêmes dégâts. Il est aussi vraiment mortel : arme
+   * adverse et projectiles adverses le blessent.
+   *
+   * **Ce qu'il n'a pas, c'est les pouvoirs.** Ni Tornade, ni Salve de
+   * shurikens, ni clone à son tour, et pas d'aura : seuls le corps et l'arme
+   * sont copiés.
+   *
+   * **Il ne jetait pas de shurikens, il en portait un — c'est l'inverse
+   * maintenant, et c'est demandé.** La première version était stationnaire et
+   * incorporelle, et se battait à distance faute de pouvoir s'approcher ; ce
+   * compromis-là venait d'un moteur qui ne connaissait alors que deux
+   * combattants. Il n'a plus lieu d'être : le clone emprunte désormais
+   * `Fighter.step()`, `resolveBodies()` et `weaponHit()` **telles quelles**,
+   * donc son déplacement, ses collisions et sa frappe ne *peuvent pas*
+   * diverger de ceux d'un vrai combattant.
    */
   special: {
     id: 'shadowClone',
@@ -314,14 +322,60 @@ export const WIND = fiche({
     barFill: '#71717a',
     barText: '#e0e0e5',
     hp: 15, // demandé — abaissé de 20, gameplay assumé, voir matrice dans CLAUDE.md
-    /** Calé sur le même ordre de grandeur que le Blizzard (11 s) : les duels
-     *  du roster réduit durent 10 à 30 s, une seule incantation par duel
-     *  serait invisible, une en continu saturerait l'arène de deux corps. */
-    cooldown: 12,
+    /**
+     * **12 s → 5 s, et c'est la contrepartie du clone mobile.**
+     *
+     * Un clone qui marche va au contact, donc il meurt vite : ses 15 PV
+     * tenaient longtemps quand il restait planté à jeter des shurikens de
+     * loin, ils fondent en quelques secondes maintenant qu'il charge. Le banc
+     * des deux camps (6 seeds × 8 affrontements) l'a chiffré sans détour :
+     * **23/48 avant le changement, 4/48 après**, à recharge inchangée.
+     *
+     * La matrice ne le voyait pas — elle ne joue chaque paire qu'une fois, et
+     * le Shinobi y était déjà du mauvais côté : elle n'a bougé que d'un duel.
+     * C'est exactement le piège documenté dans `CLAUDE.md`, à ceci près qu'ici
+     * elle a **caché** l'écart au lieu de l'exagérer. Toujours remesurer sur
+     * les deux camps.
+     *
+     * Deux leviers étaient possibles, chacun balayé seul (jamais les deux à la
+     * fois — ils ne s'additionnent pas) :
+     *  • les **PV du clone** : 15 → 4, 25 → 13, 40 → 15, 60 → 17. Monotone
+     *    mais **saturant**, et il n'atteint jamais le niveau d'avant, même à
+     *    60 PV — quatre fois la valeur demandée ;
+     *  • la **recharge** : 12 s → 4, 8 s → 15, 6 s → 19, 5 s → **22**,
+     *    4 s → 25. Monotone sur tout le balayage, et elle traverse la valeur
+     *    d'avant.
+     *
+     * D'où 5 s, un seul levier tourné : 22/48 contre 23/48 avant, soit un
+     * duel d'écart. Les PV restent à la valeur demandée.
+     */
+    cooldown: 5,
     first: 5, // calé : laisse le duel s'installer avant la première invocation
     // Permanent : demandé. Rien ne le fait expirer, seuls ses PV le peuvent.
     offset: 130, // calé : apparaît derrière le Shinobi, hors de son propre corps
-    attack: { interval: 1.1, projectile: 'crescent' }, // riposte à la même cadence, à peu près, que la Tornade
+    /**
+     * **La légère différence de ton qui dit lequel est le vrai — demandé.**
+     *
+     * Deux valeurs, et deux seulement, parce que le clone doit rester *le même
+     * personnage* : un double repeint ne serait plus un double.
+     *
+     *  • `tint` / `tintAlpha` **se mélangent** au corps au lieu de le
+     *    remplacer (`Fighter.draw` lit déjà ce couple pour le givre du
+     *    Hors-la-loi) : le noir plein `#141414` de l'original ressort en
+     *    `#444`-ish sur le clone. Un gris de la gamme ninja, pas une couleur
+     *    étrangère ;
+     *  • `alpha` est le voile de transparence du dessin entier. 0,88 suffisait
+     *    quand le clone restait planté et désarmé ; il marche maintenant avec
+     *    la même arme, donc l'écart doit se lire **en mouvement**, d'un coup
+     *    d'œil, sans compter les PV.
+     *
+     * Un troisième écart existe sans être réglé ici : le clone ne traîne ni
+     * ruban ni sillage, parce que `render/flair.js` ne boucle que sur les
+     * combattants du tableau. C'est le plus lisible des trois en mouvement.
+     */
+    tint: '#6b6b76',
+    tintAlpha: 0.55,
+    alpha: 0.82,
   },
 
   /** **Écart assumé au relevé, demandé.** « Remplacer les projectiles par

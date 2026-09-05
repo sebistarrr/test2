@@ -19,9 +19,10 @@
  * @module game/abilities/wind
  */
 
-import { TAU, clamp, dist, segmentPointDistance, wrapAngle } from '../../core/math.js';
+import { TAU, clamp, dist, segmentPointDistance } from '../../core/math.js';
 import { ARENA, PHYSICS } from '../../data/tuning.js';
 import { Fighter } from '../fighter.js';
+import { resolveBodies, weaponHit } from '../physics.js';
 
 export const windAbilities = {
   id: 'wind',
@@ -159,58 +160,80 @@ export const windAbilities = {
   /* ------------------------------------------------------------------ */
 
   /**
-   * Horloge, entretien et combat du clone, en un seul point — même forme que
+   * Horloge, entretien et combat des clones, en un seul point — même forme que
    * `tickBlizzard` du Hors-la-loi (invariant 7).
    *
-   * Le clone n'est **pas** un `Fighter` inscrit dans `game.fighters` : le
-   * moteur (`match.js`, `physics.js`, `projectiles.js`) n'en connaît que deux,
-   * `this.a`/`this.b`, et c'est vrai de bout en bout (HUD, stats, victoire).
-   * L'y ajouter aurait fait déborder l'ajout hors du module. Le clone est
-   * donc un objet ordinaire, coiffé du **prototype `Fighter`**
-   * (`Object.setPrototypeOf`) : il hérite `draw()`, `radius`, `onStage`,
-   * `weaponPivot()`… gratuitement, et reste identique au vrai Shinobi sans
-   * dupliquer son rendu. Le corps à corps adverse le touche en **réutilisant
-   * `weaponHit()`** telle quelle (elle ne demande que position, rayon et
-   * statut — un plain object coiffé du prototype les fournit tous) ; les
-   * projectiles adverses, eux, ne passent jamais par `Projectiles.update()`
-   * (qui ne teste que `game.fighters`) — `tickCloneProjectiles` referme la
-   * boucle ici, sur `game.projectiles.list` directement, déjà manipulé sans
-   * détour ailleurs (`Match.startVictory` le vide de la même façon).
+   * Le clone n'est **pas** un `Fighter` inscrit dans `game.fighters` : l'y
+   * ajouter le ferait compter dans le HUD, les statistiques, le classement de
+   * fin et la condition de victoire, donc l'ajout déborderait hors du module.
+   * Le clone est donc un objet ordinaire, coiffé du **prototype `Fighter`**
+   * (`Object.setPrototypeOf`) — et c'est de là que vient tout ce qui suit :
    *
-   * **Plusieurs clones peuvent coexister**, à la demande : la minuterie de
-   * réapparition (`f.state.cloneCd`) tourne **indépendamment** de la vie des
-   * clones déjà posés — elle ne se réarme plus à la mort de l'un d'eux, mais
-   * à chaque incantation. Chaque clone reste un objet **distinct** dans
-   * `f.state.clones`, donc chacun porte ses propres PV et n'en perd que sur
-   * ses propres touches — pas de pile ni d'état partagé entre eux.
+   *  • il **se déplace par `Fighter.step()`**, la méthode des vrais
+   *    combattants, appelée telle quelle. Pilotage vers l'ennemi, vitesse de
+   *    la fiche, amortissement du recul, rebonds sur les quatre murs,
+   *    inversion du sens de rotation au rebond, rotation d'arme : rien de tout
+   *    ça n'est réécrit ici, donc rien ne peut diverger du vrai Shinobi ;
+   *  • il **bouscule et se fait bousculer par `resolveBodies()`**, celle du
+   *    moteur. La version maison qui vivait ici était unilatérale — le clone
+   *    étant immobile, tout l'écartement retombait sur l'autre corps. Un clone
+   *    qui marche n'a plus besoin de ce compromis : il encaisse sa moitié ;
+   *  • il **frappe par `weaponHit()`**, celle du moteur elle aussi, avec le
+   *    verrou de cadence des vrais combattants (`meleeCd`, décompté par
+   *    `step()`). C'est ce qui garantit qu'il porte *exactement* l'arme de
+   *    l'original : même disque de 75 px, même cadence, mêmes dégâts.
+   *
+   * **Il n'a en revanche aucun pouvoir** — ni Tornade, ni Salve de tempête, ni
+   * clone à son tour : `tickClone` n'est appelé que sur `f`, et la fiche du
+   * clone n'est lue que pour son corps et son arme. Son minuteur de pouvoir
+   * reste bloqué en haut, ce qui garde son aura éteinte.
+   *
+   * Ce qui **reste** écrit ici, et pourquoi : les deux sens de la touche ne
+   * sont pas symétriques. Le clone frappant, `weaponHit()` suffit ; le clone
+   * frappé, non — voir `cloneWeaponHit` pour la famine que ça produirait. Et
+   * les projectiles adverses ne passent jamais par `Projectiles.update()` (qui
+   * ne teste que `game.fighters`), donc `tickCloneProjectiles` referme la
+   * boucle sur `game.projectiles.list` directement.
+   *
+   * **Plusieurs clones peuvent coexister** : la minuterie de réapparition
+   * (`f.state.cloneCd`) tourne **indépendamment** de la vie des clones déjà
+   * posés. Chacun reste un objet **distinct**, donc chacun porte ses propres
+   * PV, sa propre position et son propre verrou de cadence — pas de pile ni
+   * d'état partagé entre eux.
    */
   tickClone(f, dt, now, game) {
     const sp = f.el.special;
-    const target = f.opponent;
+    const clones = f.state.clones;
 
-    for (let i = f.state.clones.length - 1; i >= 0; i--) {
-      const c = f.state.clones[i];
-      c.flash = Math.max(0, c.flash - dt);
+    // --- déplacement : le pas d'un vrai combattant, sans une ligne à nous
+    for (const c of clones) {
       c.hitCd = Math.max(0, c.hitCd - dt);
+      // il court après le même ennemi que l'original : le module ne choisit
+      // pas de cible, il lit celle que le moteur a déjà désignée (en duel elle
+      // est posée une fois pour toutes, à plusieurs `Match.retarget()` la
+      // recalcule à chaque pas)
+      c.opponent = f.opponent;
+      c.step(dt, now);
+    }
 
-      // corps solide : personne ne le traverse, ni l'adversaire ni le vrai
-      // Shinobi — le clone est immobile, donc tout l'écartement retombe sur
-      // le corps qui le percute (voir `resolveCloneBody`)
-      this.resolveCloneBody(c, f);
-      this.resolveCloneBody(c, target);
+    // --- corps solides : entre clones, et contre tout le monde en scène,
+    // alliés compris — même règle que les vrais combattants (`Match.update`)
+    for (let i = 0; i < clones.length; i++) {
+      for (let j = i + 1; j < clones.length; j++) resolveBodies(clones[i], clones[j]);
+      for (const other of game.fighters) resolveBodies(clones[i], other);
+    }
 
-      // riposte : le clone jette lui aussi des shurikens
-      c.attackTimer -= dt;
-      if (c.attackTimer <= 0 && target && target.onStage) {
-        c.attackTimer = sp.attack.interval;
-        this.throwFromClone(f, c, target, game);
-      }
-
-      // touché par l'arme adverse — verrou **propre au clone**, voir
-      // `cloneWeaponHit` pour pourquoi il ne peut pas être celui du moteur
-      if (target && target.onStage) {
-        const hit = this.cloneWeaponHit(target, c);
-        if (hit) this.hitClone(c, target, game, hit);
+    // --- armes : le clone frappe le camp adverse, et l'encaisse
+    for (let i = clones.length - 1; i >= 0; i--) {
+      const c = clones[i];
+      for (const other of game.fighters) {
+        if (other.team === f.team) continue;
+        const out = weaponHit(c, other);
+        if (out) this.cloneStrike(f, c, other, game, out);
+        // verrou **propre au clone** dans ce sens-là seulement, voir
+        // `cloneWeaponHit` pour pourquoi il ne peut pas être celui du moteur
+        const back = this.cloneWeaponHit(other, c);
+        if (back) this.hitClone(c, other, game, back);
       }
 
       // touché par un projectile adverse — chaque clone teste la même liste,
@@ -231,30 +254,24 @@ export const windAbilities = {
   },
 
   /**
-   * **Corps solide, à la demande.** Même géométrie que `resolveBodies()` de
-   * `physics.js` (séparation + rebond), mais à sens unique : le clone ne
-   * bouge jamais, donc c'est toujours l'autre corps qui encaisse tout
-   * l'écartement et tout le recul. Écrite ici plutôt que dans `physics.js` —
-   * qui ne connaît que `this.a`/`this.b` — pour la même raison que le reste
-   * du pouvoir : le rester confiné au module du Shinobi.
+   * Incantation : un double apparaît derrière le Shinobi, dans l'arène.
+   *
+   * Il naît avec **l'état d'exécution complet d'un combattant** parce qu'il va
+   * passer par `Fighter.step()` : cap, impulsions, ralentissements, verrous et
+   * angle d'arme. Aucun n'est décoratif — un seul manquant et `step()` rendrait
+   * `NaN` sur la position dès le premier pas.
+   *
+   * Deux valeurs sont reprises de l'original plutôt qu'inventées : le
+   * **cap**, braqué sur l'ennemi (il apparaît dans le dos du Shinobi, donc
+   * repartir sur son cap à lui l'enverrait vers le mur), et l'**angle d'arme**,
+   * copié tel quel pour que les deux shurikens tournent en phase à la
+   * naissance. Ils divergent ensuite d'eux-mêmes, aux rebonds.
+   *
+   * **Aucun tirage aléatoire ici** : le vrai `Fighter` écarte son cap de départ
+   * par `rng.spread(0.35)`, ce qu'un clone ne peut pas se permettre — `game.rng`
+   * est le flux de *simulation*, et y puiser une fois par incantation décalerait
+   * tout ce qui suit (invariant 2).
    */
-  resolveCloneBody(clone, other) {
-    if (!other || !other.onStage) return;
-    const dx = other.x - clone.x;
-    const dy = other.y - clone.y;
-    const d = Math.hypot(dx, dy);
-    const min = clone.radius + other.radius;
-    if (d === 0 || d >= min) return;
-
-    const nx = dx / d;
-    const ny = dy / d;
-    other.x += nx * (min - d);
-    other.y += ny * (min - d);
-    other.heading = wrapAngle(Math.atan2(ny, nx));
-    other.push(nx, ny, 130 * PHYSICS.bodyRestitution);
-  },
-
-  /** Incantation : un double apparaît derrière le Shinobi, dans l'arène. */
   castClone(f, game) {
     const sp = f.el.special;
     const behind = f.heading + Math.PI;
@@ -262,16 +279,34 @@ export const windAbilities = {
     const r = f.el.look.radius;
     const x = clamp(f.x + Math.cos(behind) * sp.offset, inner.left + r, inner.right - r);
     const y = clamp(f.y + Math.sin(behind) * sp.offset, inner.top + r, inner.bottom - r);
+    const target = f.opponent;
 
     const clone = {
       el: f.el,
       x,
       y,
+      heading: target ? Math.atan2(target.y - y, target.x - x) : f.heading,
+      impulseX: 0,
+      impulseY: 0,
       hp: sp.hp,
       maxHp: sp.hp,
       flash: 0,
-      tint: null,
-      tintAlpha: 1,
+      /**
+       * **La teinte qui le distingue de l'original.** Le corps du Shinobi est
+       * un noir plein (`#141414`) : un simple voile de transparence ne suffit
+       * plus à dire lequel est lequel maintenant que le clone marche et porte
+       * la même arme. `tint`/`tintAlpha` sont les compteurs génériques que
+       * `Fighter.draw()` lit déjà pour le givre du Hors-la-loi — ils
+       * **mélangent** une couleur au corps au lieu de la remplacer, donc le
+       * clone reste le même personnage, un ton plus clair.
+       *
+       * `tintUntil` à l'infini : `step()` efface la teinte dès que le temps de
+       * duel la dépasse, et celle-ci ne doit jamais s'effacer.
+       */
+      tint: sp.tint,
+      tintUntil: Infinity,
+      tintAlpha: sp.tintAlpha,
+      slows: [],
       dots: [],
       offstage: 0,
       invulnerable: 0,
@@ -279,13 +314,20 @@ export const windAbilities = {
       // toujours haut la maintient éteinte (`auraVisible()` la lit telle quelle)
       ability: { timer: 999 },
       ult: { ready: false, active: 0 },
-      // pas d'arme rattachée au corps — demandé : le clone riposte par ses
-      // propres shurikens (`throwFromClone`), sans en porter un sur lui.
-      // `paintWeapon()` appelle `customWeapon` s'il est défini au lieu de
-      // `drawWeapon()`, donc un no-op suffit à ne rien dessiner.
-      customWeapon: () => {},
-      attackTimer: sp.attack.interval * 0.5, // première riposte plus rapide qu'un cycle complet
-      hitCd: 0, // verrou de touche propre au clone — voir `cloneWeaponHit`
+      // arme : **celle de l'original, dessinée par le tracé de l'original**.
+      // Aucun `customWeapon` n'est posé, donc `paintWeapon()` retombe sur
+      // `drawWeapon()` — le clone porte le shuriken, il n'en jette plus.
+      weaponAngle: f.weaponAngle,
+      spinDir: f.el.weapon.spinDir,
+      weaponLateral: 0,
+      weaponTwirl: 0,
+      meleeCd: 0, // sa propre cadence de frappe, décomptée par `step()`
+      boost: 0,
+      boostFactor: 1,
+      trailTimer: 0,
+      wall: null,
+      opponent: null,
+      hitCd: 0, // verrou de touche **subie**, propre au clone — voir `cloneWeaponHit`
     };
     Object.setPrototypeOf(clone, Fighter.prototype);
     f.state.clones.push(clone);
@@ -294,31 +336,45 @@ export const windAbilities = {
     game.fx.burst(x, y, 16, { color: ['#141414', '#e8621b', '#3a3a3a'], speed: 220, size: 5, life: 0.4 });
   },
 
-  /** Le clone jette un shuriken vers l'adversaire — même projectile que le vrai. */
-  throwFromClone(f, clone, target, game) {
-    const def = f.el.projectiles[f.el.special.attack.projectile];
-    const angle = Math.atan2(target.y - clone.y, target.x - clone.x);
-    /**
-     * Émission manuelle plutôt que `Projectiles.spawn(owner, key, angle)` :
-     * celle-ci part toujours de la position de `owner`, or le tir doit partir
-     * du **clone**, tout en restant attribué à `f` — c'est ce qui fait que le
-     * coup au but charge l'ultime du vrai Shinobi et compte dans ses
-     * statistiques (`Match.damage()` lit `source.ult`/`source.el`, absents
-     * d'un simple point d'origine).
-     */
-    game.projectiles.list.push({
-      def,
-      owner: f,
-      x: clone.x + Math.cos(angle) * (clone.radius + 6),
-      y: clone.y + Math.sin(angle) * (clone.radius + 6),
-      vx: Math.cos(angle) * def.speed,
-      vy: Math.sin(angle) * def.speed,
-      angle,
-      life: def.life,
-      bounces: def.bounces,
-      trailTimer: 0,
-      trailSeed: 0,
+  /**
+   * **Le clone frappe — même arme, même géométrie, même cadence.**
+   *
+   * C'est `Match.resolveMelee` recopiée sur l'essentiel, à une différence
+   * près et une seule : la touche est **attribuée au vrai Shinobi** (`f`) et
+   * non au clone. C'est ce qui fait qu'elle charge son ultime et compte dans
+   * ses statistiques — `Match.damage()` lit `source.ult`, `source.el` et
+   * cherche `source` dans `game.fighters`, trois choses qu'un clone n'a pas
+   * (le commentaire d'index de `damage()` prévoit d'ailleurs déjà le cas).
+   *
+   * Le verrou de cadence, lui, est bien posé **sur le clone** : deux doubles
+   * doivent pouvoir frapper indépendamment, et le poser sur `f` rendrait
+   * l'original muet à chaque coup porté par l'un d'eux.
+   *
+   * La formule de dégâts reçoit `f` et pas `c` : quand elle dépend d'une stat
+   * évolutive, c'est celle de l'original qui compte — un clone n'a pas de
+   * progression propre, il n'a pas de pouvoir pour en gagner.
+   */
+  cloneStrike(f, clone, target, game, hit) {
+    const melee = f.el.weapon.melee;
+    const dmg = typeof melee.damage === 'function' ? melee.damage(f) : melee.damage;
+    const kb = typeof melee.knockback === 'function' ? melee.knockback(f) : melee.knockback;
+
+    clone.meleeCd = melee.cooldown;
+    game.damage(target, dmg, f, {
+      kind: 'melee',
+      x: hit.x,
+      y: hit.y,
+      nx: hit.nx,
+      ny: hit.ny,
+      knockback: kb,
     });
+    clone.push(-hit.nx, -hit.ny, melee.selfRecoil);
+
+    // effets d'arme à la touche : ils appartiennent à l'arme, donc le clone
+    // les porte aussi. Le Shinobi n'en déclare qu'un (`slow`) ; les piles, qui
+    // sont de la progression et non de l'arme, restent à l'original.
+    const onHit = melee.onHit;
+    if (onHit?.slow) target.applySlow(onHit.slow, onHit.slowDuration ?? 1.5, game.time);
   },
 
   /**
@@ -471,16 +527,31 @@ export const windAbilities = {
     }
   },
 
-  /** Les clones, dessinés par-dessus tout le reste — même rendu que le vrai
-   *  Shinobi (`Object.setPrototypeOf` lui a donné `Fighter.prototype.draw`),
-   *  à une légère transparence près : c'est ce qui dit lequel porte les PV
-   *  du duel. Masqués dès que le Shinobi meurt, pour ne pas les laisser
-   *  figés à l'écran pendant le ralenti du K.O. */
+  /**
+   * Les clones, dessinés par-dessus tout le reste — **le rendu du vrai
+   * Shinobi**, arme comprise (`Object.setPrototypeOf` lui a donné
+   * `Fighter.prototype.draw`, et aucun `customWeapon` ne le détourne).
+   *
+   * **Trois écarts de ton seulement séparent le vrai du double**, et c'est
+   * volontaire : plus, et ce ne serait plus le même personnage.
+   *
+   *  1. le corps est **mélangé** à `special.tint` (posé à l'incantation) : le
+   *     noir plein de l'original passe à un gris ardoise sur le clone ;
+   *  2. un **voile de transparence** (`special.alpha`) : le blanc de l'arène
+   *     transparaît un peu à travers lui ;
+   *  3. et il ne traîne **ni ruban ni sillage** — `render/flair.js` ne boucle
+   *     que sur `game.fighters`, dont le clone ne fait pas partie. Ce
+   *     troisième écart n'a rien coûté, mais c'est le plus lisible en
+   *     mouvement : c'est celui qui laisse une traîne qui mène.
+   *
+   * Masqués dès que le Shinobi meurt, pour ne pas les laisser figés à l'écran
+   * pendant le ralenti du K.O.
+   */
   drawOver(ctx, f, game, now) {
     if (!f.alive) return;
     for (const c of f.state.clones) {
       ctx.save();
-      ctx.globalAlpha = 0.88;
+      ctx.globalAlpha = f.el.special.alpha;
       c.draw(ctx, now);
       ctx.restore();
     }

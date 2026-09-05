@@ -61,7 +61,7 @@ de navigation, pas un besoin.
 | `outlaw` Calamity | Pistolero de **glace** | **revolver de givre**, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`weaponTwirl`). Porte en plus le **Vent de tombe**, greffé |
 | `bladesman` Cinder | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale**, greffée |
 | `lancer` Tempest | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et la **Foudre tombante** qui le sort de l'arène. Porte en plus le **Lien d'essence**, greffé |
-| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des clones de 15 PV, permanents, solides, qui ripostent |
+| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des doubles de 15 PV, permanents, qui **se déplacent, bousculent et frappent avec son arme** — mais sans aucun pouvoir, et d'un ton plus clair que lui |
 | `mage` Briar | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte la **Ronceraie** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
 
 **Les identifiants internes ne sont pas les noms affichés**, et l'écart est
@@ -115,17 +115,18 @@ Cinder, le Lien d'essence chez Tempest, la Ronceraie chez Briar, l'éclat de giv
 élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Tempest 11, Cinder 6, Briar 5, Calamity 4, Shinobi 4.
+miroir chacun : Tempest 11, Shinobi 6, Cinder 5, Calamity 4, Briar 4.
 
-Écart **4 à 11**, et il s'est **creusé** au dernier relevé : il était de 4 à 9.
+Écart **4 à 11**, inchangé au dernier relevé — seul le milieu du classement
+s'est réordonné, en passant les clones du Shinobi au corps à corps.
 
-**La cause n'est pas un réglage, c'est le gel de l'attente d'avant-combat.**
+**D'où vient l'écart : du gel de l'attente d'avant-combat, pas d'un réglage.**
 Les combattants se déplaçaient pendant la seconde d'ouverture — ce n'était donc
 pas une attente mais un début de course, et aucun duel ne partait vraiment des
 deux points de départ mesurés. Les figer était demandé, et c'est aussi plus
 juste au regard du relevé ; mais partir des vrais points de départ **profite à
 Tempest** (9 → 11), dont la charge en ligne droite aime les longues lignes de
-vue, et coûte au Shinobi (6 → 4).
+vue, et a coûté au Shinobi (6 → 4, remonté à 6 depuis).
 
 C'est un déséquilibre connu et non corrigé : le corriger demanderait un
 rééquilibrage complet, qui est un autre chantier que celui qui l'a produit.
@@ -137,6 +138,15 @@ sensiblement plus plate : avant ce réglage, Calamity 10/24 et Cinder 9/24
 là où la matrice officielle disait 3/12 et 3/12. Un combattant « dernier » à la
 matrice ne l'est pas forcément au jeu — vérifier sur les deux camps avant de
 conclure qu'il faut le remonter.
+
+**Et elle peut aussi *cacher* un écart, pas seulement l'exagérer.** Nouveau
+cas, symétrique du précédent et plus dangereux : en passant les clones du
+Shinobi au corps à corps, la matrice n'a bougé que d'**un duel** — le Shinobi
+y était déjà du mauvais côté de presque toutes ses lignes, donc elle n'avait
+plus grand-chose à perdre. Le banc des deux camps disait **23/48 → 4/48**, un
+combattant rayé de la carte. Quand un changement touche un combattant que la
+matrice montre déjà bas, elle ne peut plus le mesurer : ne pas conclure sans
+repasser les deux camps.
 
 ---
 
@@ -408,7 +418,18 @@ sans que ça se voie.
     Ce qui n'a pas changé : une entité qui n'est pas un combattant du tableau
     (les clones du Shinobi) reste **confinée à son module**, coiffée du prototype
     `Fighter` (`Object.setPrototypeOf`) pour hériter du rendu sans le dupliquer.
-    Contrepartie assumée : elle ne se déplace pas.
+
+    **Et la contrepartie est tombée avec le reste.** Elle disait « elle ne se
+    déplace pas » — c'était vrai tant que le moteur ne connaissait que deux
+    combattants. Les clones marchent désormais, et là encore ça a coûté moins
+    que prévu : `Fighter.step()`, `resolveBodies()` et `weaponHit()` ne
+    demandent qu'un objet portant les bons champs, pas un combattant inscrit
+    au tableau. Le clone les appelle **telles quelles**, donc son déplacement,
+    ses rebonds, ses collisions et sa frappe ne *peuvent pas* diverger de ceux
+    d'un vrai combattant. Ce qui reste écrit à la main dans le module, c'est
+    uniquement ce que le moteur ne peut pas servir : le sens *inverse* de la
+    touche (voir `cloneWeaponHit` et sa famine) et les projectiles adverses,
+    que `Projectiles.update()` ne teste que contre `game.fighters`.
 
 ---
 
