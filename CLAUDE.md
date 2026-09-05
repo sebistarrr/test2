@@ -61,7 +61,7 @@ de navigation, pas un besoin.
 | `outlaw` Pistolero | Tireur de **glace** | **revolver de givre**, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`weaponTwirl`). Porte en plus le **Champ de givre**, greffé |
 | `bladesman` Ronin | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus l’**Aura de braise**, greffée |
 | `lancer` Hoplite | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et la **Foudre tombante** qui le sort de l'arène. Porte en plus le **Dôme de drain**, greffé |
-| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des doubles de 25 PV qui sont de **vrais combattants du tableau**, dans son camp, avec **tous ses pouvoirs et sa recharge courante** — Clone d'ombre compris, donc **un clone invoque des clones**. Le duel devient un 2 contre 1, parfois un 4 contre 1 ; c'est leur mortalité qui borne la chaîne, pas une limite. Un ton plus clair que lui |
+| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des doubles de 25 PV qui sont de **vrais combattants du tableau**, dans son camp, avec **tous ses pouvoirs et sa recharge courante** — Clone d'ombre compris, donc **un clone invoque des clones**. Le duel devient un 2 contre 1. **Le groupe ne fait qu'un au HUD** — une plaque, des PV cumulés, une seule paire de jauges — et **ses pouvoirs battent à une horloge unique, partagée par référence** : ils partent tous en même temps. Un ton plus clair que lui |
 | `mage` Druide | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte l’**Orage de ronces** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
 
 **Les identifiants internes ne sont pas les noms affichés**, et l'écart est
@@ -203,7 +203,9 @@ table** — pas une ligne de moteur.
 **Ce qui change à l'écran au-delà de deux :**
 
 - **le HUD se sépare en deux bandeaux**. Les points de vie montent **en haut de
-  l'écran** — une plaque par combattant dans la bande vide au-dessus du titre —
+  l'écran** — une plaque par **groupe (camp, fiche)** dans la bande vide
+  au-dessus du titre ; plusieurs corps d'un même combattant dans un même camp
+  (les clones du Shinobi) tiennent **une seule plaque, points de vie cumulés** —
   et le bas garde ce que le duel y met : jauge d'ultime, jauge de pouvoir
   spécial et ligne de stat, pour **chaque** combattant. Les deux bandeaux
   partagent le même ordre de placement (`placer()` dans `render/hud.js`), donc

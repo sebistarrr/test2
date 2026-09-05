@@ -807,6 +807,110 @@ sans que sa fiche ne bouge.
 Non corrigé : le remonter demanderait de toucher **sa** fiche, ou de réduire le
 nombre de clones — donc de reprendre d'une main ce que la demande donne.
 
+### Un groupe, une plaque, une horloge
+
+**Demandé, en deux points :** que les points de vie des Shinobi **se cumulent**
+dans le bandeau du haut ; et que **le Shinobi et ses clones partagent la même
+jauge de pouvoirs, qui s'activent en même temps**.
+
+#### Le HUD lit le groupe, pas les corps
+
+Les clones sont de vrais combattants du tableau, donc le bandeau en montrait un
+par corps : trois plaques SHINOBI, trois jauges d'ultime, trois lignes de stat,
+pour ce que le joueur lit comme **un** adversaire.
+
+`grouper()` réunit les combattants par **(camp, fiche)** :
+
+| | Avant | Après |
+| --- | --- | --- |
+| Plaque de PV | une par corps | **une par groupe**, `hp` cumulés |
+| Barre | `hp / maxHp` du corps | somme des `hp` / somme des `maxHp`, **morts compris au dénominateur** |
+| Bloc de pouvoirs | un par corps | un par groupe, lu chez son **chef** |
+
+Le dénominateur compte les morts, et c'est délibéré : invoquer fait **monter**
+la barre (40/100 → 65/125), perdre un double la fait **descendre** (65/125 →
+40/125). C'est bien ce que le camp vaut à cet instant.
+
+La règle ne change rien à qui n'a pas de double : dans un duel, un 2 contre 2 ou
+une royale à cinq, chaque couple (camp, fiche) est unique et le regroupement
+rend exactement la liste d'entrée.
+
+#### Les horloges sont partagées PAR RÉFÉRENCE, pas synchronisées
+
+C'est le point qui simplifie tout. Plutôt que de recopier des valeurs d'un corps
+à l'autre à chaque pas — et de devoir se demander laquelle fait foi — le clone
+reçoit **les objets eux-mêmes** :
+
+```js
+clone.ability = chef.ability;   // recharge de Tornade
+clone.ult = chef.ult;           // charge d'ultime
+f.state.horloge = deja.state.horloge;  // recharge de Clone d'ombre
+```
+
+Elles ne *peuvent* plus diverger, et le HUD n'a qu'une valeur à lire. C'est plus
+fort que la version d'avant, qui donnait au clone la recharge courante de
+l'original **à sa naissance** puis les laissait vivre séparément.
+
+**Un seul membre avance les compteurs.** `update()` sort tout de suite si `f`
+n'est pas le premier du groupe dans `game.fighters` : les décompter chez chacun
+les ferait tourner N fois plus vite. Le chef avance, puis déclenche l'effet
+**sur tout le monde à la fois** — c'est l'activation simultanée demandée.
+
+Le chef n'est stocké nulle part : il se déduit à chaque pas (`groupe()[0]`),
+donc l'original tant qu'il vit, puis le clone le plus ancien. Ça supprime tout
+un état à tenir à jour — promotion à la mort du chef, nettoyage en fin de duel,
+cas du chef hors du plateau.
+
+Deux choses restent **propres à chaque corps**, et il fallait les repérer :
+
+- **les rafales de Tornade** (`state.gusts`), qui sont du rendu : chacun porte
+  et dessine les siennes. Les laisser au seul chef les figerait à l'écran chez
+  les autres — d'où leur décompte **avant** le garde ;
+- **`boost`**, le bonus de vitesse de l'ultime, que `Fighter.step` décompte par
+  corps. Il est posé et éteint membre par membre.
+
+#### Le nombre de corps baisse, la puissance monte
+
+Contre-intuitif, et c'est le vrai enseignement du réglage. Avec une horloge
+commune, le groupe invoque **en bloc** : la population double d'un coup au lieu
+de croître en escalier, et comme le second doublement tombe après la fin du duel
+(18 + 17 = 35 s), elle plafonne à **deux Shinobis** — moins qu'avec les horloges
+séparées, qui en donnaient jusqu'à quatre.
+
+Et pourtant le pouvoir est **plus fort** : 29/48 contre 21 avant, à réglage
+inchangé. La cause n'est pas le nombre de corps, c'est la **jauge commune** —
+`chargeOnHit` monte à chaque touche de *chaque* membre, donc l'ultime part
+environ deux fois plus souvent, et il part sur tous les corps à la fois.
+
+Balayage de `first`, deux camps, `cooldown` figé à 17 s (référence : 23/48) :
+
+| `first` | 12 s | 14 s | 16 s | **18 s** | 19 s | 20 s | 22 s |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Shinobi /48 | 29 | 31 | 29 | **25** | 16 | 17 | 13 |
+
+**Falaise entre 18 et 19 s** (25 → 16) : c'est là que la seconde entrée tombe
+trop tard pour peser sur des duels de 20 à 30 s. **18 s est le dernier point du
+plateau**, donc le réglage robuste ; se poser à 19 s serait se poser sur
+l'arête. `cooldown` n'a pas rebougé : il ne décide plus que d'un doublement qui
+n'arrive presque jamais.
+
+#### Le roster, et encore le Pistolero
+
+| | Matrice (12 duels) | | Deux camps (48) | |
+| --- | --- | --- | --- | --- |
+| | avant | après | avant | après |
+| Hoplite | 11 | 11 | 34 | 35 |
+| Shinobi | 4 | **8** | 21 | **25** |
+| Ronin | 5 | 5 | 24 | **26** |
+| Druide | 7 | **4** | 27 | **22** |
+| Pistolero | 3 | **2** | 14 | **12** |
+
+Écart de matrice 3–11 → **2–11**, deux camps 14–34 → **12–35**. Le Pistolero
+paie une quatrième fois, par le même mécanisme : son canon asservi vide son
+barillet sur des leurres, et deux Shinobis qui lâchent leur ultime ensemble le
+saturent. Non corrigé — le remonter demanderait de toucher **sa** fiche, ou de
+défaire ce que la demande donne.
+
 ---
 
 ## 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO »)

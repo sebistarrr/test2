@@ -140,15 +140,54 @@ function rangs(places) {
   return places.reduce((m, p) => Math.max(m, p.row + 1), 0);
 }
 
+/**
+ * **Un même combattant, plusieurs corps : une seule entrée — demandé.**
+ *
+ * Les clones du Shinobi sont de vrais combattants du tableau, donc le bandeau
+ * en montrait un par corps : trois plaques SHINOBI, trois jauges d'ultime,
+ * trois lignes de stat, pour ce que le joueur lit comme **un** adversaire.
+ * Ils sont regroupés par **(camp, fiche)** : le Shinobi et ses doubles tiennent
+ * une plaque, dont les points de vie se cumulent.
+ *
+ * La règle est la même que celle du module (`windAbilities.groupe`), et c'est
+ * voulu : le HUD doit dire ce que fait la simulation, où les pouvoirs du groupe
+ * battent aussi à une seule horloge.
+ *
+ * Elle ne change rien à qui n'a pas de double — dans un duel, un 2 contre 2 ou
+ * une royale à cinq, chaque couple (camp, fiche) est unique et le regroupement
+ * rend exactement la liste d'entrée. Deux fois le même combattant dans un même
+ * camp les fusionnerait, ce qui est la lecture qu'on veut là aussi.
+ *
+ * Le représentant est le **premier du tableau** — l'original tant qu'il vit —
+ * et c'est lui dont on lit les jauges et la stat.
+ */
+function grouper(fighters) {
+  const par = new Map();
+  for (const f of fighters) {
+    const cle = `${f.team}\u0000${f.el.id}`;
+    const g = par.get(cle);
+    if (g) {
+      g.membres.push(f);
+      g.hp += Math.max(0, f.hp);
+      g.maxHp += f.maxHp;
+      if (f.alive && !g.chef.alive) g.chef = f;
+    } else {
+      par.set(cle, { chef: f, membres: [f], team: f.team, el: f.el, hp: Math.max(0, f.hp), maxHp: f.maxHp });
+    }
+  }
+  return [...par.values()].map((g) => ({ ...g, alive: g.membres.some((m) => m.alive) }));
+}
+
 function placer(fighters) {
-  const camps = [...new Set(fighters.map((f) => f.team))];
+  const groupes = grouper(fighters);
+  const camps = [...new Set(groupes.map((g) => g.team))];
   if (camps.length !== 2) {
-    return fighters.map((f, i) => ({ f, col: i % 2, row: (i / 2) | 0 }));
+    return groupes.map((g, i) => ({ g, col: i % 2, row: (i / 2) | 0 }));
   }
   const compte = [0, 0];
-  return fighters.map((f) => {
-    const col = camps.indexOf(f.team);
-    return { f, col, row: compte[col]++ };
+  return groupes.map((g) => {
+    const col = camps.indexOf(g.team);
+    return { g, col, row: compte[col]++ };
   });
 }
 
@@ -170,16 +209,21 @@ export function drawRosterHp(ctx, fighters, lang) {
   const pas = pasDeRangee(g.rowHeight, g.y, g.bottom, g.height, rangs(places));
   ctx.save();
   ctx.lineJoin = 'miter';
-  for (const { f, col, row } of places) {
+  for (const { g: grp, col, row } of places) {
     const x = col === 0 ? g.leftX : g.rightX;
     const y = g.y + row * pas;
-    const v = clamp(f.hp / f.maxHp, 0, 1);
+    // **les points de vie du groupe se cumulent** : un Shinobi et ses trois
+    // doubles tiennent une seule plaque, et la barre dit ce qu'il reste au
+    // total. Le dénominateur compte aussi les morts, donc invoquer fait
+    // monter la barre et perdre un double la fait descendre — ce qui est
+    // bien ce que le camp vaut.
+    const v = clamp(grp.hp / grp.maxHp, 0, 1);
 
     ctx.fillStyle = STAGE.plate;
     ctx.fillRect(x, y, g.width, g.height);
-    ctx.fillStyle = f.el.look.body;
+    ctx.fillStyle = grp.el.look.body;
     ctx.fillRect(x, y, g.width * v, g.height);
-    if (!f.alive) {
+    if (!grp.alive) {
       ctx.globalAlpha = 0.55;
       ctx.fillStyle = '#000000';
       ctx.fillRect(x, y, g.width, g.height);
@@ -188,17 +232,17 @@ export function drawRosterHp(ctx, fighters, lang) {
     ctx.lineWidth = g.border;
     ctx.strokeStyle = '#000000';
     ctx.strokeRect(x + g.border / 2, y + g.border / 2, g.width - g.border, g.height - g.border);
-    ctx.fillStyle = TEAM_COLORS[f.team % TEAM_COLORS.length];
+    ctx.fillStyle = TEAM_COLORS[grp.team % TEAM_COLORS.length];
     ctx.fillRect(x, y, 6, g.height);
 
     ctx.font = BAR_FONT;
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
-    drawFittedText(ctx, label(f.el, lang), x + g.labelPad + 6, y + g.height / 2 + 1, g.width - g.labelPad * 2 - 52, {
+    drawFittedText(ctx, label(grp.el, lang), x + g.labelPad + 6, y + g.height / 2 + 1, g.width - g.labelPad * 2 - 52, {
       fill: STAGE.plate, stroke: '#000000', strokeWidth: 3,
     });
     ctx.textAlign = 'right';
-    drawFittedText(ctx, String(Math.max(0, Math.ceil(f.hp))), x + g.width - g.labelPad, y + g.height / 2 + 1, 48, {
+    drawFittedText(ctx, String(Math.max(0, Math.ceil(grp.hp))), x + g.width - g.labelPad, y + g.height / 2 + 1, 48, {
       fill: STAGE.plate, stroke: '#000000', strokeWidth: 3,
     });
   }
@@ -223,12 +267,18 @@ export function drawRosterPowers(ctx, fighters, modules, lang) {
   const bloc = 2 * (g.barHeight + g.gap) + g.statSize + 4;
   const pas = pasDeRangee(g.rowHeight, g.y, STAGE.height, bloc, rangs(places));
   ctx.save();
-  for (const { f, col, row } of places) {
+  for (const { g: grp, col, row } of places) {
     const x = col === 0 ? g.leftX : g.rightX;
     const y = g.y + row * pas;
+    // **un bloc par groupe, lu chez son chef.** Les pouvoirs d'un Shinobi et de
+    // ses doubles battent à la même horloge (objets `ability`/`ult` partagés),
+    // donc n'importe lequel donnerait la même jauge — mais le chef est le seul
+    // dont la stat évolue, et c'est celle-là qu'on affiche.
+    const f = grp.chef;
     const mod = modules.get(f);
-    // Un mort ne charge plus rien : son bloc s'estompe plutôt que de mentir.
-    ctx.globalAlpha = f.alive ? 1 : 0.4;
+    // Un groupe entièrement tombé ne charge plus rien : son bloc s'estompe
+    // plutôt que de mentir.
+    ctx.globalAlpha = grp.alive ? 1 : 0.4;
 
     const geo = (yy) => ({
       y: yy, height: g.barHeight, width: g.width, leftX: x, rightX: x,

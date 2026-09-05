@@ -36,7 +36,9 @@ immédiatement**, et l'écran de fin affiche un classement.
 
 Le HUD se sépare alors en deux bandeaux : les **points de vie en haut** de
 l'écran, une plaque par combattant, et en bas ce que le duel y met déjà — jauge
-d'ultime, jauge de pouvoir spécial et ligne de stat, pour chacun. Les deux
+d'ultime, jauge de pouvoir spécial et ligne de stat, pour chacun. Plusieurs
+corps d'un même combattant dans un même camp — les clones du Shinobi — tiennent
+**une seule plaque, points de vie cumulés**, et un seul bloc de pouvoirs. Les deux
 bandeaux gardent le même ordre, donc un combattant est à la même place dans les
 deux.
 
@@ -64,7 +66,7 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 | **Pistolero** | **Champ de givre** — il le suit partout, ralentit et grignote ce qui entre dedans |
 | **Ronin** | **Aura de braise** — il sème des braises, et tout ce qui l’approche brûle |
 | **Hoplite** | **Dôme de drain** — l’adversaire est figé sous un dôme, un rayon le vide |
-| **Shinobi** | **Clone d'ombre** — des doubles de 25 PV qui entrent dans la partie comme de **vrais combattants**, dans son camp et avec **tous ses pouvoirs**, Clone d'ombre compris : un clone invoque des clones, et le duel passe en 2 contre 1, parfois plus. Un ton plus clair que lui |
+| **Shinobi** | **Clone d'ombre** — des doubles de 25 PV qui entrent dans la partie comme de **vrais combattants**, dans son camp et avec **tous ses pouvoirs**, Clone d'ombre compris : un clone invoque des clones, et le duel passe en 2 contre 1. Au HUD le groupe ne fait qu'un — **une plaque, points de vie cumulés**, une seule paire de jauges — et **ses pouvoirs partent tous en même temps**. Un ton plus clair que lui |
 | **Druide** | **Tir enraciné** — des racines le clouent au sol une seconde, il cesse de bouger *et* de tirer, puis lâche une **orbe majeure** à trois fois les dégâts |
 
 <sup>[Le Champ de givre du Pistolero](docs/capture-blizzard.png) · [le Dôme de drain de l’Hoplite](docs/capture-lien.png) · [le Clone d'ombre du Shinobi](docs/capture-clone.png) · [les orbes guidées du Druide](docs/capture-mage.png) · [son Orage de ronces](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>

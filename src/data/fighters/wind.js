@@ -286,7 +286,7 @@ export const WIND = fiche({
    *
    * Même patron que le Blizzard/l’Aura de braise/le Dôme de drain
    * (invariant 7) : greffé à côté d'`ability` (Tornade) et d'`ultimate`
-   * (Salve de tempête), sur sa propre horloge (`f.state.cloneCd`), sans
+   * (Salve de tempête), sur sa propre horloge (`f.state.horloge`, partagée par le groupe), sans
    * toucher ni l'une ni l'autre.
    *
    * **Différence avec les trois autres greffes : celle-ci n'est pas reprise
@@ -341,42 +341,46 @@ export const WIND = fiche({
      */
     hp: 25,
     /**
-     * **Deux minuteries, et ce n'est plus la même qui commande.**
+     * **Une seule horloge pour tout le groupe — demandé.**
      *
-     * `first` est le délai avant la **première** invocation d'un combattant.
-     * Tant qu'un clone ne pouvait pas invoquer, il ne concernait que
-     * l'original et ne servait qu'à laisser le duel s'installer. Depuis que la
-     * récursion est ouverte, **il décide de la pente de la chaîne** : chaque
-     * nouveau-né attend `first` avant de poser le suivant, donc c'est lui, et
-     * non `cooldown`, qui fixe la vitesse à laquelle l'arène se remplit.
-     * `cooldown` ne règle plus que l'entretien.
+     * Le Shinobi et ses doubles partagent `ability`, `ult` et cette
+     * minuterie-ci **par référence** : une seule jauge à l'écran, un seul
+     * déclenchement, tout le monde invoque en même temps. La population double
+     * donc à chaque tour d'horloge au lieu de croître en escalier, et deux
+     * conséquences suivent :
      *
-     * Balayés dans cet ordre, sur les deux camps (référence : **23/48**) :
+     *  • `first` décide de **quand** le groupe passe de un à deux corps, donc
+     *    de la durée du 2 contre 1 dans un duel de 20 à 30 s ;
+     *  • `cooldown` ne décide plus que du doublement suivant, qui tombe le plus
+     *    souvent **après** la fin du duel (18 + 17 = 35 s). Il ne pèse presque
+     *    plus rien, et c'est pour ça qu'il n'a pas rebougé.
      *
-     * | `first` | 5 s | 8 s | 10 s | 11 s | **12 s** | 16 s |
-     * | --- | --- | --- | --- | --- | --- | --- |
-     * | Shinobi /48 | 39 | 33 | 34 | 29 | **20** | 18 |
-     * | corps vivants au pire | 5 | 5 | 4 | 4 | **4** | 3 |
+     * Balayage de `first`, deux camps, `cooldown` figé à 17 s
+     * (référence : **23/48**) :
      *
-     * Puis `cooldown`, `first` figé à 12 s : 12 s → 31, 16 → 26, **17 → 21**,
-     * 19 → 20, 22 → 20. Les trois derniers sont plats à un duel près, donc du
-     * bruit ; 17 s est le premier qui remonte franchement.
+     * | `first` | 12 s | 14 s | 16 s | **18 s** | 19 s | 20 s | 22 s |
+     * | --- | --- | --- | --- | --- | --- | --- | --- |
+     * | Shinobi /48 | 29 | 31 | 29 | **25** | 16 | 17 | 13 |
      *
-     * D'où **12 s / 17 s** : 21/48 contre 23 de référence, et **au plus quatre
-     * corps vivants** dans l'arène, cinq créés dans le pire duel du banc.
+     * **Falaise entre 18 et 19 s** (25 → 16) : c'est là que la seconde entrée
+     * tombe trop tard pour peser sur des duels de cette longueur. 18 s est le
+     * dernier point du plateau, donc le réglage robuste ; se poser à 19 s
+     * serait se poser sur l'arête.
      *
-     * **Le seuil entre 11 et 12 s est une falaise** (29 → 20), et c'est
-     * attendu : c'est là que la chaîne bascule entre « les clones naissent plus
-     * vite qu'ils ne meurent » et l'inverse. Un réglage posé juste à côté d'une
-     * falaise n'est pas robuste — celui-ci est du bon côté, sur le plateau.
+     * **Ce qui a amplifié le pouvoir, ce n'est pas le nombre de corps** — il
+     * plafonne à deux Shinobis, moins qu'avant — **c'est la jauge commune** :
+     * `chargeOnHit` monte à chaque touche de **chaque** membre, donc l'ultime
+     * part environ deux fois plus souvent, et il part sur tous les corps à la
+     * fois.
      *
      * Historique des paliers, chacun répondant à une demande qui a changé ce
-     * que vaut un clone : 12 s (stationnaire et désarmé) → 5 s (mobile et armé,
+     * que vaut un clone : 12 s (stationnaire, désarmé) → 5 s (mobile et armé,
      * donc fragile) → 9 s (PV hérités) → 22 s (combattant complet) → 17 s
-     * (récursion). Le détail des balayages est dans `docs/FICHES.md`.
+     * (récursion) → 17 s / `first` 18 s (horloge commune). Les balayages sont
+     * détaillés dans `docs/FICHES.md`.
      */
     cooldown: 17,
-    first: 12, // calé : c'est LUI qui borne la chaîne, voir ci-dessus
+    first: 18, // calé : c'est LUI qui décide de la durée du 2 contre 1
     // Permanent : demandé. Rien ne le fait expirer, seuls ses PV le peuvent.
     offset: 130, // calé : apparaît derrière le Shinobi, hors de son propre corps
     /**

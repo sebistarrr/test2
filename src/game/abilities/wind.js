@@ -26,34 +26,72 @@ import { Fighter } from '../fighter.js';
 export const windAbilities = {
   id: 'wind',
 
-  init(f) {
+  /**
+   * **Le groupe : le Shinobi et ses clones, lus comme une seule entité.**
+   *
+   * Même fiche, même camp, encore debout. C'est exactement la règle que
+   * `render/hud.js` applique pour n'afficher qu'une plaque de points de vie et
+   * qu'un bloc de pouvoirs — les deux doivent dire la même chose, sinon
+   * l'écran ment sur ce que fait la simulation.
+   *
+   * **Le premier du tableau mène.** `game.fighters` garde l'ordre d'entrée,
+   * donc c'est l'original tant qu'il vit, puis le clone le plus ancien. Aucun
+   * chef n'est stocké nulle part : le déduire à chaque pas coûte un `filter`
+   * et supprime tout un état à tenir à jour (promotion à la mort du chef,
+   * nettoyage à la fin du duel, cas du chef parti hors du plateau…).
+   */
+  groupe(f, game) {
+    return game.fighters.filter((g) => g.el === f.el && g.team === f.team && g.alive);
+  },
+
+  init(f, game) {
     /** @type {Array<{x:number,y:number,r:number,life:number,max:number,angle:number}>} */
     f.state.gusts = [];
     f.state.volleyTimer = 0;
 
-    // Clone d'ombre : minuterie propre, sans rapport avec la Tornade ni
-    // l'ultime — même forme que `f.state.spec` du Pistolero.
-    //
-    // `init` tourne aussi sur les clones eux-mêmes : `Match.flushArrivals` leur
-    // attache le module comme à n'importe quel combattant. La minuterie est
-    // donc posée chez eux aussi, mais `tickClone` sort avant de la lire — un
-    // clone est un Shinobi, il porte l'état d'un Shinobi, il n'en utilise
-    // simplement pas cette part.
+    /**
+     * **Horloge du Clone d'ombre, partagée par tout le groupe — demandé.**
+     *
+     * Un objet, pas deux nombres : c'est ce qui permet de le **partager par
+     * référence**. Un clone qui entre adopte celle des siens au lieu d'en
+     * ouvrir une ; le groupe n'a donc qu'une jauge, et elle avance une seule
+     * fois par pas (voir le garde de `update`).
+     *
+     * `init` tourne sur les clones parce que `Match.flushArrivals` leur attache
+     * le module comme à n'importe quel combattant — et il tourne **après**
+     * leur inscription dans `game.fighters`, donc `groupe()` les voit déjà.
+     */
     const sp = f.el.special;
-    f.state.cloneCd = sp.first;
-    f.state.cloneSpan = sp.first;
+    const deja = game ? this.groupe(f, game).find((g) => g !== f && g.state.horloge) : null;
+    f.state.horloge = deja ? deja.state.horloge : { cd: sp.first, span: sp.first };
   },
 
   update(f, dt, now, game) {
     const el = f.el;
 
-    // les rafales ne vivent qu'une fraction de seconde
+    /**
+     * Les rafales se décomptent **chez chacun**, avant le garde ci-dessous :
+     * c'est de la mise en scène, chaque membre porte les siennes et les dessine
+     * lui-même. Les laisser au seul chef les figerait à l'écran chez les autres.
+     */
     for (let i = f.state.gusts.length - 1; i >= 0; i--) {
       const g = f.state.gusts[i];
       g.life -= dt;
       g.angle += 14 * dt;
       if (g.life <= 0) f.state.gusts.splice(i, 1);
     }
+
+    /**
+     * **Une seule horloge pour le groupe, donc un seul membre l'avance.**
+     *
+     * `ability` et `ult` sont des objets **partagés par référence** entre
+     * l'original et ses clones (voir `castClone`) : les décompter chez chacun
+     * les ferait tourner N fois plus vite. Le chef les avance, puis déclenche
+     * l'effet **sur tout le monde à la fois** — c'est la demande : même jauge,
+     * activation simultanée.
+     */
+    const groupe = this.groupe(f, game);
+    if (groupe.length && groupe[0] !== f) return;
 
     /* ---------- ultime ---------- */
     const ult = el.ultimate;
@@ -62,32 +100,67 @@ export const windAbilities = {
       f.state.volleyTimer -= dt;
       if (f.state.volleyTimer <= 0) {
         f.state.volleyTimer = ult.volley.interval;
-        this.fireVolley(f, game);
+        for (const m of groupe) this.fireVolley(m, game);
       }
       if (f.ult.active <= 0) {
         f.ult.active = 0;
         f.ult.charge = 0;
         f.ult.ready = false;
-        f.boost = 0;
+        // `boost` est propre à chaque corps (c'est `Fighter.step` qui le
+        // décompte), donc il s'éteint membre par membre
+        for (const m of groupe) m.boost = 0;
       }
     } else if (game.phase === 'fight') {
       f.ult.charge = clamp(f.ult.charge + ult.chargeRate * dt, 0, 100);
       f.ult.ready = f.ult.charge >= 100;
-      if (f.ult.ready) this.castVolley(f, game);
+      if (f.ult.ready) {
+        for (const m of groupe) this.castVolley(m, game);
+      }
     }
 
     /* ---------- tornade ---------- */
     if (game.phase !== 'fight') return;
     f.ability.timer -= dt;
-    if (f.ability.timer <= 0) this.castTornado(f, now, game);
+    if (f.ability.timer <= 0) this.castTornado(f, groupe, now, game);
 
     /* ---------- clone d'ombre ---------- */
-    this.tickClone(f, dt, now, game);
+    this.tickClone(f, groupe, dt, now, game);
   },
 
-  castTornado(f, now, game) {
-    const a = f.el.ability;
+  /**
+   * **Une rafale par membre, une seule avance d'horloge.**
+   *
+   * L'effet est joué pour chacun ; le couple recharge/dégâts, lui, appartient
+   * au groupe et n'avance qu'une fois — sinon N clones feraient descendre la
+   * recharge N fois plus vite, ce qui n'est ni « la même jauge » ni tenable.
+   *
+   * Les dégâts sont calculés **sur le chef** pour tous : la stat affichée est
+   * la sienne, et une seule ligne de stat est montrée pour le groupe.
+   */
+  castTornado(chef, groupe, now, game) {
+    const a = chef.el.ability;
     const t = a.tornado;
+    const degats = t.damage(chef);
+
+    let landed = false;
+    for (const f of groupe) {
+      if (this.blastTornado(f, chef, degats, game)) landed = true;
+    }
+
+    // la cadence s'accélère à chaque rafale…
+    let cd = chef.ability.cooldown - a.cooldownStepOnCast;
+    // …et une rafale qui touche fait avancer le couple affiché d'un cran
+    if (landed) {
+      chef.stacks = Math.min(t.damageMax, chef.stacks + t.damageGain);
+      cd -= a.cooldownStep;
+    }
+    chef.ability.cooldown = Math.max(a.cooldownFloor, cd);
+    chef.ability.timer = chef.ability.cooldown;
+  },
+
+  /** La rafale d'**un** membre : gerbe, anneau, et la touche si l'ennemi y est. */
+  blastTornado(f, chef, degats, game) {
+    const t = f.el.ability.tornado;
     const target = f.opponent;
 
     f.state.gusts.push({ x: f.x, y: f.y, r: t.radius, life: t.duration, max: t.duration, angle: 0 });
@@ -108,33 +181,20 @@ export const windAbilities = {
     }
 
     // la rafale ne blesse que si l'adversaire est pris dedans
-    let landed = false;
-    if (target && target.alive) {
-      const dx = target.x - f.x;
-      const dy = target.y - f.y;
-      const d = Math.hypot(dx, dy);
-      if (d <= t.radius + target.radius) {
-        landed = true;
-        game.damage(target, t.damage(f), f, {
-          kind: 'tornado',
-          x: target.x,
-          y: target.y,
-          nx: dx / (d || 1),
-          ny: dy / (d || 1),
-          knockback: t.knockback,
-        });
-      }
-    }
-
-    // la cadence s'accélère à chaque rafale…
-    let cd = f.ability.cooldown - a.cooldownStepOnCast;
-    // …et une rafale qui touche fait avancer le couple affiché d'un cran
-    if (landed) {
-      f.stacks = Math.min(t.damageMax, f.stacks + t.damageGain);
-      cd -= a.cooldownStep;
-    }
-    f.ability.cooldown = Math.max(a.cooldownFloor, cd);
-    f.ability.timer = f.ability.cooldown;
+    if (!target || !target.alive) return false;
+    const dx = target.x - f.x;
+    const dy = target.y - f.y;
+    const d = Math.hypot(dx, dy);
+    if (d > t.radius + target.radius) return false;
+    game.damage(target, degats, f, {
+      kind: 'tornado',
+      x: target.x,
+      y: target.y,
+      nx: dx / (d || 1),
+      ny: dy / (d || 1),
+      knockback: t.knockback,
+    });
+    return true;
   },
 
   castVolley(f, game) {
@@ -198,13 +258,18 @@ export const windAbilities = {
    * qui vient de naître — qui décide de la pente ; `cooldown` ne règle que
    * l'entretien. Voir la fiche, les deux ont été balayés dans cet ordre.
    */
-  tickClone(f, dt, now, game) {
-    const sp = f.el.special;
-    f.state.cloneCd -= dt;
-    if (f.state.cloneCd <= 0) {
-      f.state.cloneCd = sp.cooldown;
-      f.state.cloneSpan = sp.cooldown;
-      this.castClone(f, game);
+  tickClone(chef, groupe, dt, now, game) {
+    const sp = chef.el.special;
+    const h = chef.state.horloge;
+    h.cd -= dt;
+    if (h.cd <= 0) {
+      h.cd = sp.cooldown;
+      h.span = sp.cooldown;
+      // **tout le groupe invoque en même temps** : c'est la même jauge, donc
+      // le même déclenchement. Copie de la liste — `castClone` met le nouveau
+      // venu en file dans `game.fighters`, pas dans `groupe`, mais autant ne
+      // pas dépendre de ce détail.
+      for (const m of [...groupe]) this.castClone(m, chef, game);
     }
   },
 
@@ -245,7 +310,7 @@ export const windAbilities = {
    * un événement de simulation, pas une décoration : il tire dans `game.rng`
    * comme les autres, et le duel reste rejouable à seed égale.
    */
-  castClone(f, game) {
+  castClone(f, chef, game) {
     const sp = f.el.special;
     const behind = f.heading + Math.PI;
     const inner = ARENA.inner;
@@ -269,10 +334,26 @@ export const windAbilities = {
     );
 
     clone.team = f.team;
-    clone.ability.cooldown = f.ability.cooldown;
-    clone.ability.timer = f.ability.cooldown;
-    clone.stacks = f.stacks;
-    clone.stacks2 = f.stacks2;
+    /**
+     * **Les horloges de pouvoir sont PARTAGÉES, pas recopiées — demandé.**
+     *
+     * `ability` et `ult` deviennent le *même objet* que ceux du chef de
+     * groupe. Une seule jauge d'ultime, une seule recharge de Tornade, pour
+     * l'original et tous ses doubles : n'importe quel membre qui touche charge
+     * la jauge commune (`Match.damage` écrit dans `source.ult`), et le HUD n'a
+     * qu'une valeur à montrer.
+     *
+     * C'est plus fort que la recopie de la version d'avant, qui donnait au
+     * clone la recharge courante de l'original **à l'instant de sa naissance**
+     * puis les laissait diverger. Ici elles ne peuvent plus diverger.
+     *
+     * `stacks` reste propre à chaque corps mais n'est plus lu que chez le chef
+     * (voir `castTornado`) : une seule stat affichée pour une seule ligne.
+     */
+    clone.ability = chef.ability;
+    clone.ult = chef.ult;
+    clone.stacks = chef.stacks;
+    clone.stacks2 = chef.stacks2;
     clone.weaponAngle = f.weaponAngle;
 
     /**
@@ -375,6 +456,7 @@ export const windAbilities = {
    * a sa propre plaque dans le bandeau du haut et son propre bloc en bas.
    */
   specialBar(f) {
-    return { value: 1 - clamp(f.state.cloneCd / f.state.cloneSpan, 0, 1) };
+    const h = f.state.horloge;
+    return { value: 1 - clamp(h.cd / h.span, 0, 1) };
   },
 };
