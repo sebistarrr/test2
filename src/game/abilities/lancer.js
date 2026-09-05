@@ -107,7 +107,7 @@ export const lancerAbilities = {
     f.state.jumpTimer = 0;
     /** Position du marqueur (suit l'adversaire) + son rayon courant. */
     f.state.mark = null;
-    // Lien d'essence : minuterie propre, sans rapport avec la jauge du Bond
+    // Dôme de drain : minuterie propre, sans rapport avec la jauge du Bond
     f.state.spec = 0; // secondes restantes de lien actif
     f.state.specCd = f.el.special.first;
     /** Longueur de la fenêtre d'attente en cours : `first` pour la première,
@@ -129,7 +129,7 @@ export const lancerAbilities = {
     const ult = f.el.ultimate;
 
     /**
-     * **Le Lien d'essence tourne avant le Bond, et volontairement.** Placé
+     * **Le Dôme de drain tourne avant le Bond, et volontairement.** Placé
      * après le `return` de l'ultime, son horloge se figerait pendant les deux
      * secondes du vol — c'est exactement le piège des minuteurs gelés par
      * `offstage`, déjà payé une fois sur le verrou de touche. Le drain et le
@@ -660,7 +660,7 @@ export const lancerAbilities = {
   /* ---------- rendu ---------- */
 
   /**
-   * Dôme du Lien d'essence : dessiné **hors du cadre de l'arène**, il la
+   * Dôme du Dôme de drain : dessiné **hors du cadre de l'arène**, il la
    * déborde — c'est ce que fait celui de l'Ombre, et le rogner en ferait un
    * disque au sol au lieu d'un volume.
    */

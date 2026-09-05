@@ -17,8 +17,8 @@ import { formatHalf } from '../format.js';
  * ========================================================================== */
 export const OUTLAW = fiche({
   id: 'outlaw',
-  name: 'CALAMITY',
-  nameRef: 'CALAMITY',
+  name: 'PISTOLERO',
+  nameRef: 'PISTOLERO',
   tagline: 'Gâchette de givre — vise, tire, et gèle sa cible balle après balle',
   taglineRef: 'Frost trigger — aims, fires, and freezes its mark with every bullet',
   icon: 'iconRevolver',
@@ -250,10 +250,10 @@ export const OUTLAW = fiche({
 
   ultimate: {
     id: 'highNoon',
-    name: 'Grêle de plomb',
-    nameRef: 'HAILFIRE',
-    barLabel: 'HAILFIRE',
-    barLabelFr: 'GRÊLE DE PLOMB',
+    name: 'Pluie de plomb',
+    nameRef: 'LEAD HAIL',
+    barLabel: 'LEAD HAIL',
+    barLabelFr: 'PLUIE DE PLOMB',
     /** **Écart assumé, demandé.** Reprend exactement la couleur de la jauge
      *  de Blizzard juste en dessous (`special.barFill`/`barText`) : les deux
      *  jauges d'un même combattant doivent se lire comme une paire — taille,
@@ -297,13 +297,13 @@ export const OUTLAW = fiche({
    */
   special: {
     id: 'blizzard',
-    name: 'Vent de tombe',
-    nameRef: 'Boneyard Wind',
+    name: 'Champ de givre',
+    nameRef: 'Frost Field',
     /** Jauge propre, sous celle de l'ultime — voir `HUD.special`. Le pouvoir
      *  greffé n'en avait pas au départ ; c'est ce qui manquait pour qu'on voie
      *  venir son déclenchement au lieu de le subir. */
-    barLabel: 'BONEYARD WIND',
-    barLabelFr: 'VENT DE TOMBE',
+    barLabel: 'FROST FIELD',
+    barLabelFr: 'CHAMP DE GIVRE',
     /** Même traitement de libellé que les jauges d'ultime — texte clair cerné
      *  de noir — donc le fond doit être assez tenu pour le porter : `#67d6ec`
      *  était trop pâle une fois le libellé passé à la taille de l'ultime. */

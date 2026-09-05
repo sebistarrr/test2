@@ -30,8 +30,8 @@
  *    zéro étaient dispersées, une fin de partie en pleine ruée laissait
  *    l'éventail large accroché derrière la lame.
  *
- *  • Rage infernale — pouvoir **greffé**, demandé, sur le même patron que le
- *    Blizzard du Hors-la-loi et le Lien d'essence du Lancier : une horloge
+ *  • Aura de braise — pouvoir **greffé**, demandé, sur le même patron que le
+ *    Blizzard du Hors-la-loi et le Dôme de drain du Lancier : une horloge
  *    propre (`f.state.spec`), sans rapport avec la jauge de BLADE RUSH, qui
  *    reste intacte. Nova, ailes de flammes et aura brûlante sont repris de
  *    `abilities/fire.js`, dont c'est l'ultime d'origine.
@@ -53,8 +53,8 @@ export const bladesmanAbilities = {
     f.state.overheat = false; // true = la lame s'effondre vers le plancher
     f.state.rush = false;
     f.state.rushWheel = 0; // secondes restantes de la roue de flamme (rendu seul)
-    // Rage infernale : minuterie propre, sans rapport avec la jauge d'ultime
-    f.state.spec = 0; // secondes restantes de Rage infernale active
+    // Aura de braise : minuterie propre, sans rapport avec la jauge d'ultime
+    f.state.spec = 0; // secondes restantes de Aura de braise active
     f.state.specCd = f.el.special.first;
     /** Longueur de la fenêtre d'attente en cours — voir `outlaw.js`, même
      *  champ pour la même raison : la **première** vaut `first`, pas
@@ -224,11 +224,11 @@ export const bladesmanAbilities = {
   },
 
   /* ------------------------------------------------------------------ */
-  /*  RAGE INFERNALE — pouvoir greffé, sur horloge propre                */
+  /*  AURA DE BRAISE — pouvoir greffé, sur horloge propre                */
   /* ------------------------------------------------------------------ */
 
   /**
-   * Horloge, incantation et entretien de la Rage infernale — même charpente
+   * Horloge, incantation et entretien de l’Aura de braise — même charpente
    * que `tickBlizzard` dans `outlaw.js`. Ne touche ni `f.boost` ni
    * `f.boostFactor` : BLADE RUSH les utilise déjà pour son propre sprint, et
    * les deux pouvoirs peuvent être actifs en même temps (l'un sur `f.ult`,
@@ -362,7 +362,7 @@ export const bladesmanAbilities = {
   },
 
   /**
-   * Cercle brûlant au sol pendant la Rage infernale — repris de `fire.js`
+   * Cercle brûlant au sol pendant l’Aura de braise — repris de `fire.js`
    * (`drawUnder`), dessiné **avant** l'éventail de BLADE RUSH : les deux
    * peuvent être actifs ensemble, et l'éventail vert doit rester lisible
    * par-dessus la nappe orange, jamais l'inverse.
@@ -422,7 +422,7 @@ export const bladesmanAbilities = {
   },
 
   /**
-   * Jauge de la Rage infernale : se **remplit** vers la prochaine incantation,
+   * Jauge de l’Aura de braise : se **remplit** vers la prochaine incantation,
    * puis se **vide** sur la durée d'activité — même convention que `barValue`
    * et que `specialBar` dans `outlaw.js`.
    */

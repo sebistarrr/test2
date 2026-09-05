@@ -12,8 +12,8 @@ import { formatHalf } from '../format.js';
  * ========================================================================== */
 export const LANCER = fiche({
   id: 'lancer',
-  name: 'TEMPEST',
-  nameRef: 'TEMPEST',
+  name: 'HOPLITE',
+  nameRef: 'HOPLITE',
   tagline: 'Chargeur — pointe en avant, il frappe de plus en plus fort',
   taglineRef: 'Charger — spear first, and every hit lands harder',
   icon: 'iconLance',
@@ -224,8 +224,8 @@ export const LANCER = fiche({
   movement: { speed: 430, turnRate: 1.85, seek: 0 },
 
   weapon: {
-    name: 'Croc d’orage',
-    nameRef: 'Stormfang',
+    name: 'Lance d’orage',
+    nameRef: 'Storm Spear',
     /** Mesuré : centre → pointe = 131 px sur la vidéo 576 → ×1,25 = 164.
      *  **La plus longue portée du roster.** Elle découle du sprite :
      *  −52 (talon) + 54 cellules × 4 = 164, pour que hitbox et dessin ne
@@ -422,8 +422,8 @@ export const LANCER = fiche({
    */
   ability: {
     id: 'lancersFury',
-    name: 'Fer de lance',
-    nameRef: 'Spearhead',
+    name: 'Charge de lance',
+    nameRef: 'Spear Charge',
     cooldown: Infinity,
     cooldownStep: 0,
     cooldownFloor: Infinity,
@@ -437,7 +437,7 @@ export const LANCER = fiche({
     barLabelFr: 'FOUDRE TOMBANTE',
     /** **Écart assumé, demandé.** La jauge suivait la teinte du corps
      *  (`#5d3d8e`, le violet sombre de la hampe). Reprend maintenant
-     *  exactement la couleur de la jauge du Lien d'essence juste en dessous :
+     *  exactement la couleur de la jauge du Dôme de drain juste en dessous :
      *  les deux jauges d'un combattant doivent se lire comme une paire —
      *  taille, police (déjà partagées via `HUD.bar`/`HUD.special`) et
      *  désormais couleur aussi. */
@@ -534,10 +534,10 @@ export const LANCER = fiche({
    */
   special: {
     id: 'essenceTether',
-    name: 'Lien d’essence',
-    nameRef: 'Essence Tether',
-    barLabel: 'ESSENCE TETHER',
-    barLabelFr: 'LIEN D’ESSENCE',
+    name: 'Dôme de drain',
+    nameRef: 'Drain Dome',
+    barLabel: 'DRAIN DOME',
+    barLabelFr: 'DÔME DE DRAIN',
     barFill: '#7c3aed',
     barText: '#f3e8ff',
     /** Calé, comme le Blizzard, sur la durée des duels du roster réduit. */

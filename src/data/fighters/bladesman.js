@@ -8,8 +8,8 @@ import { formatHalf } from '../format.js';
  * ========================================================================== */
 export const BLADESMAN = fiche({
   id: 'bladesman',
-  name: 'CINDER',
-  nameRef: 'CINDER',
+  name: 'RONIN',
+  nameRef: 'RONIN',
   tagline: 'Duelliste — sa lame accélère jusqu’à la surchauffe, puis fond sur sa cible',
   taglineRef: 'Duellist — his blade winds up to overheat, then rushes his target',
   icon: 'iconSabre',
@@ -44,7 +44,7 @@ export const BLADESMAN = fiche({
        *  mesuré (frame 643 : (211,219,109) sur l'arène crème, `#B1C404` posé
        *  à 55 %) ; il reprend désormais la palette flamme du Feu (`#f97316`,
        *  `#fbbf24`, `#ffffff` — voir `abilities/fire.js`), cohérente avec
-       *  l'aura, le sillage et la Rage infernale greffée plus bas. */
+       *  l'aura, le sillage et l’Aura de braise greffée plus bas. */
       ribbon: { color: '#f97316', width: 26, alpha: 0.55 },
       motes: { rate: 7, size: 8, drift: 34, rise: -10, colors: ['#f97316', '#fbbf24', '#ffffff'] },
       impact: ['#fbbf24', '#ffffff', '#f97316'],
@@ -221,13 +221,13 @@ export const BLADESMAN = fiche({
 
   ultimate: {
     id: 'bladeRush',
-    name: 'Fauche ardente',
-    nameRef: 'EMBER SWEEP',
-    barLabel: 'EMBER SWEEP',
-    barLabelFr: 'FAUCHE ARDENTE',
+    name: 'Ruée de lame',
+    nameRef: 'BLADE RUSH',
+    barLabel: 'BLADE RUSH',
+    barLabelFr: 'RUÉE DE LAME',
     /** **Écart assumé, demandé — deux passages.** D'abord passée à l'orange
      *  de l'aura (`#f97316`, texte assombri) pour suivre le reskin flamme.
-     *  Reprend maintenant exactement la couleur de la jauge de Rage infernale
+     *  Reprend maintenant exactement la couleur de la jauge de Aura de braise
      *  juste en dessous : les deux jauges d'un combattant doivent se lire
      *  comme une paire — taille, police (déjà partagées via `HUD.bar`/
      *  `HUD.special`) et désormais couleur aussi. */
@@ -257,8 +257,8 @@ export const BLADESMAN = fiche({
   },
 
   /**
-   * **Rage infernale — pouvoir greffé, demandé.** Troisième créneau, sur le
-   * même patron que le Blizzard du Hors-la-loi et le Lien d'essence du
+   * **Aura de braise — pouvoir greffé, demandé.** Troisième créneau, sur le
+   * même patron que le Blizzard du Hors-la-loi et le Dôme de drain du
    * Lancier (invariant 7 du `CLAUDE.md`) : une horloge propre
    * (`f.state.spec`), sans rapport avec la jauge de BLADE RUSH, qui reste
    * intacte. Nova, ailes de flammes et aura brûlante sont repris de
@@ -271,10 +271,10 @@ export const BLADESMAN = fiche({
    */
   special: {
     id: 'infernalRage',
-    name: 'Rage infernale',
-    nameRef: 'Infernal Rage',
-    barLabel: 'INFERNAL RAGE',
-    barLabelFr: 'RAGE INFERNALE',
+    name: 'Aura de braise',
+    nameRef: 'Ember Aura',
+    barLabel: 'EMBER AURA',
+    barLabelFr: 'AURA DE BRAISE',
     /** **Écart assumé, demandé.** Rouge pur à l'origine, pour se distinguer de
      *  la jauge BLADE RUSH au-dessus ; passe à un orange plus sombre pour
      *  suivre le reskin flamme du bas d'écran tout en restant deux teintes
@@ -283,9 +283,9 @@ export const BLADESMAN = fiche({
     barText: '#fff1f0',
     cooldown: 11,
     first: 5,
-    duration: 5.2, // repris du Blizzard/Lien d'essence, mesuré sur la Glace/l'Ombre
+    duration: 5.2, // repris du Blizzard/Dôme de drain, mesuré sur la Glace/l'Ombre
     /** Nova de cubes orange à l'incantation — reprise du Feu, effectifs réduits
-     *  de moitié : la Rage infernale s'ajoute ici à BLADE RUSH plutôt que
+     *  de moitié : l’Aura de braise s'ajoute ici à BLADE RUSH plutôt que
      *  d'être l'unique pouvoir du combattant. */
     nova: { count: 45, speed: 420, size: 11, life: 0.9, colors: ['#f97316', '#ea580c', '#fbbf24', '#dc2626'] },
     /** Ailes de flammes autour du corps pendant toute la durée — reprises du Feu. */

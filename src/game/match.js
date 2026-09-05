@@ -728,7 +728,7 @@ export class Match {
     ctx.restore();
 
     // passe **hors arène** : certains effets débordent volontairement du cadre
-    // (le dôme du Lien d'essence recouvre jusqu'au HUD dans la vidéo)
+    // (le dôme du Dôme de drain recouvre jusqu'au HUD dans la vidéo)
     if (this.phase !== 'victory') {
       for (const [f, mod] of this.modules) mod.drawUnbounded?.(ctx, f, this, this.time);
     }

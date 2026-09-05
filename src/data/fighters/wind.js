@@ -284,7 +284,7 @@ export const WIND = fiche({
   /**
    * **CLONE D'OMBRE — pouvoir demandé, troisième créneau.**
    *
-   * Même patron que le Blizzard/la Rage infernale/le Lien d'essence
+   * Même patron que le Blizzard/l’Aura de braise/le Dôme de drain
    * (invariant 7) : greffé à côté d'`ability` (Tornade) et d'`ultimate`
    * (Salve de tempête), sur sa propre horloge (`f.state.cloneCd`), sans
    * toucher ni l'une ni l'autre.

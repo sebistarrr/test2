@@ -27,8 +27,8 @@ import { formatHalf } from '../format.js';
  * ========================================================================== */
 export const MAGE = fiche({
   id: 'mage',
-  name: 'BRIAR',
-  nameRef: 'BRIAR',
+  name: 'DRUIDE',
+  nameRef: 'DRUID',
   tagline: 'Distance — des orbes guidées, et une cadence qui monte sans fin',
   taglineRef: 'Ranged — homing orbs, and a fire rate that never stops climbing',
   icon: 'iconStaff',
@@ -78,7 +78,7 @@ export const MAGE = fiche({
 
   weapon: {
     name: 'Bâton de ronce',
-    nameRef: 'Briarstaff',
+    nameRef: 'Thorn Staff',
     /**
      * **Arme braquée** (`spin: 0`) : le sceptre pointe l'adversaire à chaque
      * image, c'est `abilities/mage.js` qui recopie l'angle. Troisième du
@@ -196,10 +196,10 @@ export const MAGE = fiche({
    */
   ultimate: {
     id: 'flowerStorm',
-    name: 'Ronceraie',
-    nameRef: 'BRIARSTORM',
-    barLabel: 'BRIARSTORM',
-    barLabelFr: 'RONCERAIE',
+    name: 'Orage de ronces',
+    nameRef: 'THORN STORM',
+    barLabel: 'THORN STORM',
+    barLabelFr: 'ORAGE DE RONCES',
     barFill: '#1f7a3d',
     barText: '#dcfce7',
     chargeRate: 3.6,
@@ -233,7 +233,7 @@ export const MAGE = fiche({
   /**
    * **Tir enraciné** — le seul pouvoir du Mage qui ne vienne de nulle part
    * ailleurs. Les quatre autres invités portent un pouvoir **emprunté** à un
-   * élément gelé (Blizzard de la Glace, Rage infernale du Feu, Lien d'essence
+   * élément gelé (Blizzard de la Glace, Aura de braise du Feu, Dôme de drain
    * de l'Ombre) ; celui-ci est original, comme le Clone d'ombre du Shinobi.
    *
    * **Le marché : il s'immobilise pour frapper fort.** Des racines le clouent
@@ -328,7 +328,7 @@ export const MAGE = fiche({
      */
     orb: {
       label: 'Orbe de ronce',
-      labelRef: 'Briar Orb',
+      labelRef: 'Thorn Orb',
       sprite: 'mageOrb',
       scale: 2.2, // carte de 11 px -> orbe de 24 px, la taille du cristal
       speed: 470,
