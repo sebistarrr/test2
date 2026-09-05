@@ -341,32 +341,42 @@ export const WIND = fiche({
      */
     hp: 25,
     /**
-     * **12 → 5 → 9 → 22 s.** Le va-et-vient n'est pas de l'indécision : chaque
-     * palier répond à une demande qui a changé ce que vaut un clone, et le
-     * banc des deux camps (6 seeds × 8 affrontements) a tranché à chaque fois.
-     * La **référence** est 23/48, le niveau du Shinobi avant tout ce chantier.
+     * **Deux minuteries, et ce n'est plus la même qui commande.**
      *
-     *  1. **clone stationnaire, désarmé, qui jette des shurikens** — 12 s,
-     *     23/48 ;
-     *  2. **clone mobile et armé, sans pouvoir** : il va au contact, donc il
-     *     meurt vite. 4/48 à recharge inchangée. Balayage : 12 s → 4, 8 → 15,
-     *     6 → 19, **5 → 22**, 4 → 25. Les PV du clone, eux, saturaient sans
-     *     jamais y arriver (15 → 4, 25 → 13, 40 → 15, 60 → 17) ;
-     *  3. **clone héritant des PV restants** : la fragilité que 5 s compensait
-     *     disparaît. 5 s → 26, 7 → 22, **9 → 23**, 12 → 17 ;
-     *  4. **clone = combattant à part entière, tous pouvoirs** (l'état
-     *     actuel) : trois Shinobis complets contre un adversaire, **40/48** à
-     *     9 s. Balayage : 9 → 40, 14 → 28, 20 → 29, **22 → 23**, 24 → 20,
-     *     26 → 19, 28 → 19.
+     * `first` est le délai avant la **première** invocation d'un combattant.
+     * Tant qu'un clone ne pouvait pas invoquer, il ne concernait que
+     * l'original et ne servait qu'à laisser le duel s'installer. Depuis que la
+     * récursion est ouverte, **il décide de la pente de la chaîne** : chaque
+     * nouveau-né attend `first` avant de poser le suivant, donc c'est lui, et
+     * non `cooldown`, qui fixe la vitesse à laquelle l'arène se remplit.
+     * `cooldown` ne règle plus que l'entretien.
      *
-     * D'où **22 s**, pile sur la référence. Et le chiffre a un sens au-delà du
-     * banc : avec `first: 5` et des duels de 20 à 30 s, il pose **un** clone,
-     * deux dans un duel qui s'éternise. C'est ce qui garde le 2 contre 1
-     * demandé au lieu d'un 4 contre 1 — à 9 s l'arène portait trois Shinobis
-     * et trois jauges d'ultime, ce qui ne se lit plus.
+     * Balayés dans cet ordre, sur les deux camps (référence : **23/48**) :
+     *
+     * | `first` | 5 s | 8 s | 10 s | 11 s | **12 s** | 16 s |
+     * | --- | --- | --- | --- | --- | --- | --- |
+     * | Shinobi /48 | 39 | 33 | 34 | 29 | **20** | 18 |
+     * | corps vivants au pire | 5 | 5 | 4 | 4 | **4** | 3 |
+     *
+     * Puis `cooldown`, `first` figé à 12 s : 12 s → 31, 16 → 26, **17 → 21**,
+     * 19 → 20, 22 → 20. Les trois derniers sont plats à un duel près, donc du
+     * bruit ; 17 s est le premier qui remonte franchement.
+     *
+     * D'où **12 s / 17 s** : 21/48 contre 23 de référence, et **au plus quatre
+     * corps vivants** dans l'arène, cinq créés dans le pire duel du banc.
+     *
+     * **Le seuil entre 11 et 12 s est une falaise** (29 → 20), et c'est
+     * attendu : c'est là que la chaîne bascule entre « les clones naissent plus
+     * vite qu'ils ne meurent » et l'inverse. Un réglage posé juste à côté d'une
+     * falaise n'est pas robuste — celui-ci est du bon côté, sur le plateau.
+     *
+     * Historique des paliers, chacun répondant à une demande qui a changé ce
+     * que vaut un clone : 12 s (stationnaire et désarmé) → 5 s (mobile et armé,
+     * donc fragile) → 9 s (PV hérités) → 22 s (combattant complet) → 17 s
+     * (récursion). Le détail des balayages est dans `docs/FICHES.md`.
      */
-    cooldown: 22,
-    first: 5, // calé : laisse le duel s'installer avant la première invocation
+    cooldown: 17,
+    first: 12, // calé : c'est LUI qui borne la chaîne, voir ci-dessus
     // Permanent : demandé. Rien ne le fait expirer, seuls ses PV le peuvent.
     offset: 130, // calé : apparaît derrière le Shinobi, hors de son propre corps
     /**

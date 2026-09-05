@@ -61,7 +61,7 @@ de navigation, pas un besoin.
 | `outlaw` Pistolero | Tireur de **glace** | **revolver de givre**, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`weaponTwirl`). Porte en plus le **Champ de givre**, greffé |
 | `bladesman` Ronin | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus l’**Aura de braise**, greffée |
 | `lancer` Hoplite | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et la **Foudre tombante** qui le sort de l'arène. Porte en plus le **Dôme de drain**, greffé |
-| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des doubles de 25 PV qui sont de **vrais combattants du tableau**, dans son camp, avec **tous ses pouvoirs et sa recharge courante** — le duel devient un **2 contre 1**. Un ton plus clair que lui, et ils n'invoquent pas à leur tour |
+| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des doubles de 25 PV qui sont de **vrais combattants du tableau**, dans son camp, avec **tous ses pouvoirs et sa recharge courante** — Clone d'ombre compris, donc **un clone invoque des clones**. Le duel devient un 2 contre 1, parfois un 4 contre 1 ; c'est leur mortalité qui borne la chaîne, pas une limite. Un ton plus clair que lui |
 | `mage` Druide | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte l’**Orage de ronces** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
 
 **Les identifiants internes ne sont pas les noms affichés**, et l'écart est
@@ -128,16 +128,18 @@ le Ronin, le Dôme de drain chez l’Hoplite, l’Orage de ronces chez le Druide
 élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Hoplite 9, Ronin 6, Druide 6, Pistolero 5, Shinobi 4.
+miroir chacun : Hoplite 11, Druide 7, Ronin 5, Shinobi 4, Pistolero 3.
 
-Écart **4 à 9** — le plus resserré depuis longtemps, et il s'est **refermé** au
-dernier relevé (il était de 2 à 11). Encore une fois sans qu'aucune fiche
-d'adversaire ne bouge : le Clone d'ombre du Shinobi a cessé d'hériter des PV de
-son invocateur (il naît à 25) et est devenu un combattant à part entière. Le
-Pistolero, que l'héritage avait fait tomber, remonte de 2 à 5 ; l'Hoplite, qui
-dominait, descend de 11 à 9 parce qu'il perd désormais un duel sur trois face à
-un camp à deux. **Le pouvoir d'un combattant continue de décider du classement
-des autres** — voir le piège du même nom plus bas.
+Écart **3 à 11**, et il s'est **rouvert** au dernier relevé (il était de 4 à 9).
+Toujours sans qu'aucune fiche d'adversaire ne bouge : le Clone d'ombre du
+Shinobi peut maintenant s'invoquer lui-même, donc l'arène porte jusqu'à quatre
+corps, et **c'est encore le Pistolero qui paie** — son barillet se vide sur des
+leurres. Sur les **deux camps**, qui est la mesure moins caricaturale, l'écart
+va de 14/48 (Pistolero) à 34/48 (Hoplite), contre 17–35 au relevé précédent.
+
+**Le pouvoir d'un combattant décide du classement des autres**, et c'est la
+troisième fois de suite que le Clone d'ombre le démontre — voir le piège du
+même nom plus bas.
 
 **D'où vient l'écart : du gel de l'attente d'avant-combat, pas d'un réglage.**
 Les combattants se déplaçaient pendant la seconde d'ouverture — ce n'était donc

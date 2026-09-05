@@ -731,6 +731,82 @@ dernier à la matrice alors que le banc des deux camps le donne à 23/48, soit l
 médiane : c'est l'exagération connue de la matrice, qui ne joue chaque paire
 qu'une fois. Seules les cinq lignes du Shinobi bougent.
 
+### Un clone invoque des clones
+
+**Demandé** : « un clone étant un personnage à part, peut invoquer un clone ».
+Le garde-fou de la section précédente saute, et avec lui la dernière ligne de
+traitement à part — `tickClone` tourne désormais sur tout ce que le module
+pilote, sans savoir qui est l'original. Le marqueur `estClone` a disparu, il
+n'avait plus de lecteur.
+
+#### Ce qui borne la population, c'est la mortalité, pas une limite
+
+Je m'attendais à devoir poser un plafond. **Mesure d'abord** : au réglage
+retenu, les 48 duels du banc ne portent jamais plus de **quatre corps vivants**
+en même temps, cinq créés dans le pire duel. Un clone naît à 25 PV contre 100
+pour un vrai combattant : la chaîne s'arrête d'elle-même dès que les doubles
+meurent plus vite qu'ils n'invoquent. Aucun plafond n'a été ajouté.
+
+#### `first` prend la main sur `cooldown`
+
+`first` est le délai avant la **première** invocation d'un combattant. Tant
+qu'un clone ne pouvait pas invoquer, il ne concernait que l'original. Depuis la
+récursion, **chaque nouveau-né attend `first` avant de poser le suivant** :
+c'est donc lui, et non `cooldown`, qui fixe la pente de la chaîne. Balayés dans
+cet ordre (référence : 23/48 sur les deux camps) :
+
+| `first` | 5 s | 8 s | 10 s | 11 s | **12 s** | 16 s |
+| --- | --- | --- | --- | --- | --- | --- |
+| Shinobi /48 | 39 | 33 | 34 | 29 | **20** | 18 |
+| corps vivants au pire | 5 | 5 | 4 | 4 | **4** | 3 |
+
+Puis `cooldown`, `first` figé à 12 s : 12 s → 31, 16 → 26, **17 → 21**,
+19 → 20, 22 → 20. Les trois derniers sont plats à un duel près — du bruit ;
+17 s est le premier qui remonte franchement.
+
+**Retenu : `first` 12 s, `cooldown` 17 s.** 21/48 contre 23 de référence.
+
+**Le seuil entre 11 et 12 s est une falaise** (29 → 20), et c'est attendu :
+c'est là que la chaîne bascule entre « les clones naissent plus vite qu'ils ne
+meurent » et l'inverse. Un réglage posé juste à côté d'une falaise n'est pas
+robuste ; celui-ci est du bon côté, sur le plateau.
+
+#### Le HUD était calé sur un maximum qui n'existe plus
+
+Les deux bandeaux étaient dimensionnés pour le pire cas connu à leur écriture :
+cinq combattants en bataille royale, donc trois rangées de deux. La récursion
+fait sauter cette borne — une colonne de camp peut porter quatre plaques, et
+personne ne sait combien à l'avance. À quatre rangées, la ligne de stat du
+dernier bloc tombait à l'ordonnée 1279 pour une scène qui en fait 1280, et le
+bandeau de PV mordait sur le haut de casse du titre.
+
+`pasDeRangee()` remplace le pas fixe par `Math.min(pas nominal, place
+disponible / rangées)` : les dispositions déjà réglées — duel, 2 contre 2,
+royale à cinq — retombent sur le pas d'origine **au pixel près**, et seules les
+colonnes plus chargées se resserrent. C'est le `Math.min` qui le garantit, pas
+une exception écrite à la main. Vérifié à l'écran en poussant volontairement le
+pouvoir à onze doubles : illisible, mais rien ne déborde.
+
+#### Le roster se rouvre, et c'est encore le Pistolero qui paie
+
+| | Matrice (12 duels) | | Deux camps (48 duels) | |
+| --- | --- | --- | --- | --- |
+| | avant | après | avant | après |
+| Hoplite | 9 | **11** | 35 | 34 |
+| Druide | 6 | **7** | 21 | **27** |
+| Ronin | 6 | **5** | 24 | 24 |
+| Shinobi | 4 | 4 | 23 | **21** |
+| Pistolero | 5 | **3** | 17 | **14** |
+
+Écart de matrice **4–9 → 3–11**, deux camps **17–35 → 14–34**. Le mécanisme est
+le même que celui déjà documenté deux fois : le canon asservi du Pistolero vide
+son barillet sur des leurres, et il y en a plus qu'avant. C'est la **troisième
+fois de suite** que ce pouvoir décide du classement d'un troisième combattant
+sans que sa fiche ne bouge.
+
+Non corrigé : le remonter demanderait de toucher **sa** fiche, ou de réduire le
+nombre de clones — donc de reprendre d'une main ce que la demande donne.
+
 ---
 
 ## 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO »)

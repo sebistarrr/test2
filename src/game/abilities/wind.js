@@ -184,14 +184,21 @@ export const windAbilities = {
    * lorsque le dernier est mort. C'est le 2 contre 1 demandé, et il sort
    * entièrement de la notion de camp que le moteur avait déjà.
    *
-   * **Un clone n'invoque pas de clone.** C'est la seule limite posée, et elle
-   * est délibérée : le pouvoir se déclencherait chez lui comme chez l'original,
-   * donc le nombre de doubles doublerait toutes les `cooldown` secondes. Un
-   * duel de 25 s finirait à huit corps. Le marqueur `f.estClone` est posé par
-   * `castClone` et lu ici seulement ; l'enlever suffirait à ouvrir la récursion.
+   * **Un clone invoque des clones, comme n'importe quel Shinobi — demandé.**
+   * Il n'y a donc plus une seule ligne de traitement à part : `tickClone`
+   * tourne sur tout ce que le module pilote, sans savoir qui est l'original.
+   * Le marqueur qui coupait la récursion a disparu avec elle.
+   *
+   * **Ce qui borne la population, ce n'est pas une limite, c'est la mortalité.**
+   * Un clone naît à 25 PV contre 100 pour un vrai combattant : la chaîne
+   * s'arrête d'elle-même quand les doubles meurent plus vite qu'ils n'invoquent.
+   * Mesuré sur les 48 duels du banc au réglage retenu : **au plus quatre corps
+   * vivants à la fois**, cinq créés dans le pire duel. C'est `first` — le délai
+   * avant la première invocation d'un combattant, donc aussi celui d'un clone
+   * qui vient de naître — qui décide de la pente ; `cooldown` ne règle que
+   * l'entretien. Voir la fiche, les deux ont été balayés dans cet ordre.
    */
   tickClone(f, dt, now, game) {
-    if (f.estClone) return;
     const sp = f.el.special;
     f.state.cloneCd -= dt;
     if (f.state.cloneCd <= 0) {
@@ -262,7 +269,6 @@ export const windAbilities = {
     );
 
     clone.team = f.team;
-    clone.estClone = true; // marqueur du module, jamais lu par le moteur
     clone.ability.cooldown = f.ability.cooldown;
     clone.ability.timer = f.ability.cooldown;
     clone.stacks = f.stacks;
@@ -369,7 +375,6 @@ export const windAbilities = {
    * a sa propre plaque dans le bandeau du haut et son propre bloc en bas.
    */
   specialBar(f) {
-    if (f.estClone) return null;
     return { value: 1 - clamp(f.state.cloneCd / f.state.cloneSpan, 0, 1) };
   },
 };

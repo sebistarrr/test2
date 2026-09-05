@@ -76,7 +76,9 @@ export const HUD = deepFreeze({
    * En duel, rien ici : le chiffre de PV sur la bille est la lecture relevée
    * sur la vidéo, et deux plaques en haut la doubleraient sans rien apprendre.
    */
-  hpTop: { y: 100, rowHeight: 40, height: 34, leftX: 39, rightX: 412, width: 268, border: 2, labelPad: 8 },
+  // `bottom` : le haut de casse du titre d'arène (mesuré 247). Le bandeau ne
+  // doit pas le dépasser — au-delà de trois rangées, `pasDeRangee` resserre.
+  hpTop: { y: 100, rowHeight: 40, height: 34, bottom: 247, leftX: 39, rightX: 412, width: 268, border: 2, labelPad: 8 },
 
   /**
    * **Bloc de pouvoirs par combattant, en bas** — à plusieurs seulement.

@@ -109,6 +109,37 @@ function drawGauge(ctx, g, side, value, style) {
  * ordre : un combattant est à la même place dans les deux, sinon l'œil doit
  * chercher deux fois.
  */
+/**
+ * **Pas de rangée, comprimé quand il le faut.**
+ *
+ * Les deux bandeaux étaient calés sur le pire cas connu au moment de leur
+ * écriture : cinq combattants en bataille royale, donc trois rangées de deux.
+ * Le Clone d'ombre a fait sauter cette borne — un clone peut en invoquer un
+ * autre, donc **la colonne d'un camp peut porter quatre plaques ou plus**, et
+ * personne ne sait combien à l'avance.
+ *
+ * Plutôt que de deviner un nouveau maximum, le pas se calcule : il vaut celui
+ * de la fiche tant que la colonne tient, et se resserre juste assez au-delà.
+ * Les dispositions déjà réglées (duel, 2 contre 2, royale à cinq) retombent
+ * donc sur le pas d'origine **au pixel près** — c'est le `Math.min` qui le
+ * garantit, pas une exception écrite à la main.
+ *
+ * @param {number} pas      pas nominal, celui de la fiche
+ * @param {number} haut     ordonnée de la première rangée
+ * @param {number} plancher ordonnée à ne pas dépasser
+ * @param {number} bloc     hauteur occupée par une rangée
+ * @param {number} rangs    nombre de rangées de la colonne la plus chargée
+ */
+function pasDeRangee(pas, haut, plancher, bloc, rangs) {
+  if (rangs < 2) return pas;
+  return Math.min(pas, (plancher - haut - bloc) / (rangs - 1));
+}
+
+/** Rangées de la colonne la plus chargée. */
+function rangs(places) {
+  return places.reduce((m, p) => Math.max(m, p.row + 1), 0);
+}
+
 function placer(fighters) {
   const camps = [...new Set(fighters.map((f) => f.team))];
   if (camps.length !== 2) {
@@ -134,11 +165,14 @@ function placer(fighters) {
  */
 export function drawRosterHp(ctx, fighters, lang) {
   const g = HUD.hpTop;
+  const places = placer(fighters);
+  // le plancher est le haut de casse du titre d'arène, mesuré à 247
+  const pas = pasDeRangee(g.rowHeight, g.y, g.bottom, g.height, rangs(places));
   ctx.save();
   ctx.lineJoin = 'miter';
-  for (const { f, col, row } of placer(fighters)) {
+  for (const { f, col, row } of places) {
     const x = col === 0 ? g.leftX : g.rightX;
-    const y = g.y + row * g.rowHeight;
+    const y = g.y + row * pas;
     const v = clamp(f.hp / f.maxHp, 0, 1);
 
     ctx.fillStyle = STAGE.plate;
@@ -184,10 +218,14 @@ export function drawRosterHp(ctx, fighters, lang) {
  */
 export function drawRosterPowers(ctx, fighters, modules, lang) {
   const g = HUD.powers;
+  const places = placer(fighters);
+  // un bloc = deux jauges, leur écart, et la ligne de stat sous elles
+  const bloc = 2 * (g.barHeight + g.gap) + g.statSize + 4;
+  const pas = pasDeRangee(g.rowHeight, g.y, STAGE.height, bloc, rangs(places));
   ctx.save();
-  for (const { f, col, row } of placer(fighters)) {
+  for (const { f, col, row } of places) {
     const x = col === 0 ? g.leftX : g.rightX;
-    const y = g.y + row * g.rowHeight;
+    const y = g.y + row * pas;
     const mod = modules.get(f);
     // Un mort ne charge plus rien : son bloc s'estompe plutôt que de mentir.
     ctx.globalAlpha = f.alive ? 1 : 0.4;
