@@ -61,7 +61,7 @@ de navigation, pas un besoin.
 | `outlaw` Calamity | Pistolero de **glace** | **revolver de givre**, canon **asservi à la cible** (`weapon.spin = 0`), barillet de 6, balles qui **gèlent** (−30 % de vitesse, 1,6 s), et, au rechargement, **un tour complet du pistolet sur lui-même** (`weaponTwirl`). Porte en plus le **Vent de tombe**, greffé |
 | `bladesman` Cinder | Duelliste | rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte en plus la **Rage infernale**, greffée |
 | `lancer` Tempest | Chargeur | **la lance suit le cap** (`weapon.spin = 0`), **charge** en ligne droite avec la lance de **164 px, la plus longue portée du jeu**, dégâts +2 par touche, et la **Foudre tombante** qui le sort de l'arène. Porte en plus le **Lien d'essence**, greffé |
-| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des doubles de 15 PV, permanents, qui **se déplacent, bousculent et frappent avec son arme** — mais sans aucun pouvoir, et d'un ton plus clair que lui |
+| `wind` Shinobi | Ninja | la **bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px tout autour. Palette sombre. Porte le **Clone d'ombre**, conçu pour lui : des doubles permanents qui **héritent de ses PV restants** et qui **se déplacent, bousculent et frappent avec son arme** — mais sans aucun pouvoir, et d'un ton plus clair que lui |
 | `mage` Briar | Tireur | **sceptre braqué, posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), qui envoie des **orbes guidées** (`projectiles.orb.homing`). Sa stat est une **cadence de tir qui monte seule**, +0,05 par orbe tirée. Porte la **Ronceraie** et le **Tir enraciné** — des racines le clouent au sol 1 s pour une **orbe majeure** à 3 × les dégâts |
 
 **Les identifiants internes ne sont pas les noms affichés**, et l'écart est
@@ -115,10 +115,14 @@ Cinder, le Lien d'essence chez Tempest, la Ronceraie chez Briar, l'éclat de giv
 élément disparu parle donc d'une **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), sur 12 duels hors
-miroir chacun : Tempest 11, Shinobi 6, Cinder 5, Calamity 4, Briar 4.
+miroir chacun : Tempest 11, Cinder 6, Shinobi 6, Briar 5, Calamity 2.
 
-Écart **4 à 11**, inchangé au dernier relevé — seul le milieu du classement
-s'est réordonné, en passant les clones du Shinobi au corps à corps.
+Écart **2 à 11**, et il s'est **creusé** au dernier relevé (il était de 4 à 11)
+— non pas parce qu'un combattant est monté, mais parce que **Calamity est
+descendu**. Voir « Le pouvoir d'un combattant peut peser sur un troisième »
+plus bas : ce n'est pas sa fiche qui a bougé, c'est le Clone d'ombre du Shinobi
+qui hérite désormais des PV restants de son invocateur, et un clone à 100 PV
+absorbe un barillet entier là où un clone à 15 PV tombait en quatre balles.
 
 **D'où vient l'écart : du gel de l'attente d'avant-combat, pas d'un réglage.**
 Les combattants se déplaçaient pendant la seconde d'ouverture — ce n'était donc
@@ -645,6 +649,19 @@ couleurs par percentile plutôt que par moyenne, le JPEG bruite).
   c'est **baisser les dégâts du Shinobi** qui les a remontés tous les deux,
   sans toucher à leur fiche, et qui a le plus resserré le roster. Quand un
   combattant plafonne, regarder aussi ce qui le bat.
+
+- **Le pouvoir d'un combattant peut peser sur un troisième, et le total ne le
+  dit pas.** Suite du précédent, dans l'autre sens. En faisant hériter les
+  clones du Shinobi des PV restants de leur invocateur, son **total est resté
+  le même** (22/48 → 23/48 sur les deux camps, réglage de recharge compris) —
+  de quoi croire l'affaire neutre. Elle ne l'était pas : le total masquait une
+  **redistribution**, il gagne contre Calamity (5/12 → 10/12) et perd contre
+  Briar (12/12 → 8/12). Et le perdant net est Calamity, qui n'a rien demandé :
+  **15/48 → 10/48**, dernier et décroché. Le mécanisme est connu et documenté
+  à l'envers dans `docs/FICHES.md` — un clone fragile meurt vite et gêne peu le
+  canon asservi ; un clone à 100 PV absorbe le barillet entier. **Lire le banc
+  ligne par ligne, pas seulement en total** : un total stable peut cacher un
+  roster qui s'est creusé.
 
 - **Un paramètre qui ne fait rien doit être documenté comme tel.** Le verrou de
   mêlée de Briar, balayé à 1,4 / 1,7 / 2,2 s, rend 15 / 12 / 14 victoires :

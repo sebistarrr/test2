@@ -321,35 +321,50 @@ export const WIND = fiche({
      *  paire. Passées au gris avec les autres, demandé. */
     barFill: '#71717a',
     barText: '#e0e0e5',
-    hp: 15, // demandé — abaissé de 20, gameplay assumé, voir matrice dans CLAUDE.md
     /**
-     * **12 s → 5 s, et c'est la contrepartie du clone mobile.**
+     * **Les PV du clone ne sont plus une valeur de fiche — demandé.** Il naît
+     * avec `f.hp`, les points de vie **restants** du Shinobi à l'instant de
+     * l'incantation (copie, pas transfert : l'original ne perd rien). La clé
+     * `hp: 15` a donc été retirée plutôt que laissée à traîner — une valeur
+     * que plus personne ne lit est la panne silencieuse que `fiche-check`
+     * traque.
      *
-     * Un clone qui marche va au contact, donc il meurt vite : ses 15 PV
-     * tenaient longtemps quand il restait planté à jeter des shurikens de
-     * loin, ils fondent en quelques secondes maintenant qu'il charge. Le banc
-     * des deux camps (6 seeds × 8 affrontements) l'a chiffré sans détour :
-     * **23/48 avant le changement, 4/48 après**, à recharge inchangée.
-     *
-     * La matrice ne le voyait pas — elle ne joue chaque paire qu'une fois, et
-     * le Shinobi y était déjà du mauvais côté : elle n'a bougé que d'un duel.
-     * C'est exactement le piège documenté dans `CLAUDE.md`, à ceci près qu'ici
-     * elle a **caché** l'écart au lieu de l'exagérer. Toujours remesurer sur
-     * les deux camps.
-     *
-     * Deux leviers étaient possibles, chacun balayé seul (jamais les deux à la
-     * fois — ils ne s'additionnent pas) :
-     *  • les **PV du clone** : 15 → 4, 25 → 13, 40 → 15, 60 → 17. Monotone
-     *    mais **saturant**, et il n'atteint jamais le niveau d'avant, même à
-     *    60 PV — quatre fois la valeur demandée ;
-     *  • la **recharge** : 12 s → 4, 8 s → 15, 6 s → 19, 5 s → **22**,
-     *    4 s → 25. Monotone sur tout le balayage, et elle traverse la valeur
-     *    d'avant.
-     *
-     * D'où 5 s, un seul levier tourné : 22/48 contre 23/48 avant, soit un
-     * duel d'écart. Les PV restent à la valeur demandée.
+     * Conséquence : le pouvoir est **auto-décroissant**. Un clone posé tôt est
+     * aussi solide que l'original, un clone posé en fin de duel arrive aussi
+     * entamé que lui. Le Shinobi n'a plus besoin d'un plancher de PV pour être
+     * dangereux tôt, ni d'un plafond pour ne pas l'être tard.
      */
-    cooldown: 5,
+    /**
+     * **12 s → 5 s → 9 s : la contrepartie du clone mobile, puis sa moitié
+     * rendue.** Le va-et-vient est la conséquence directe de deux demandes qui
+     * se sont annulées, et il vaut d'être lu dans l'ordre.
+     *
+     * **1. Le clone devient mobile → 12 s ne suffit plus.** Un clone qui
+     * marche va au contact, donc il meurt vite : ses 15 PV tenaient longtemps
+     * quand il restait planté à jeter des shurikens de loin, ils fondaient en
+     * quelques secondes une fois qu'il chargeait. Le banc des deux camps
+     * (6 seeds × 8 affrontements) l'a chiffré sans détour : **23/48 avant le
+     * changement, 4/48 après**, à recharge inchangée. La matrice, elle, n'avait
+     * bougé que d'un duel — le Shinobi y était déjà du mauvais côté, elle
+     * n'avait plus rien à mesurer (voir `CLAUDE.md`, elle **cache** ici l'écart
+     * au lieu de l'exagérer). Deux leviers balayés séparément :
+     *  • les **PV du clone** : 15 → 4, 25 → 13, 40 → 15, 60 → 17. Monotone
+     *    mais **saturant**, sans jamais atteindre le niveau d'avant ;
+     *  • la **recharge** : 12 s → 4, 8 s → 15, 6 s → 19, 5 s → **22**,
+     *    4 s → 25. Monotone, et elle traverse ce niveau. D'où 5 s.
+     *
+     * **2. Le clone hérite des PV restants → 5 s devient trop.** La fragilité
+     * que 5 s compensait n'existe plus : à pleine vie, un clone est aussi
+     * solide que l'original. Nouveau balayage, PV hérités : 5 s → 26,
+     * 7 s → 22, **9 s → 23**, 12 s → 17.
+     *
+     * D'où **9 s** — le niveau d'avant tout ce chantier, au duel près, et la
+     * compensation d'urgence en grande partie rendue. Entre 7 et 9 l'écart est
+     * d'un duel, donc du bruit ; 9 s est retenu parce qu'il **laisse moins de
+     * corps dans l'arène** pour le même résultat, et qu'il reprend la valeur
+     * d'origine (12 s) d'aussi près que le banc l'autorise.
+     */
+    cooldown: 9,
     first: 5, // calé : laisse le duel s'installer avant la première invocation
     // Permanent : demandé. Rien ne le fait expirer, seuls ses PV le peuvent.
     offset: 130, // calé : apparaît derrière le Shinobi, hors de son propre corps

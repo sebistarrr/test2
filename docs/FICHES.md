@@ -565,6 +565,71 @@ réordonne : Tempest 11, **Shinobi 6**, Cinder 5, Calamity 4, Briar 4.
 | `wind vs mage` | wind 2, mage 1 | **wind 3** |
 | `wind vs wind` | wind 3 (miroir) | inchangé |
 
+### Le clone hérite des PV restants du Shinobi
+
+**Demandé :** le clone naît avec `f.hp`, les points de vie **restants** de son
+invocateur à l'instant de l'incantation, au lieu des 15 de la fiche.
+
+**Copie, pas transfert** — le Shinobi ne perd rien en invoquant. Les deux barres
+vivent ensuite séparément : le clone n'encaisse que ses propres touches, et rien
+ne les resynchronise. La clé `hp` du bloc spécial disparaît de la fiche, sans
+quoi elle y traînerait sans lecteur (`fiche-check` la voit, **y compris citée
+dans un commentaire** — d'où la formulation contournée dans `wind.js`).
+
+Le pouvoir devient **auto-décroissant** : un clone posé tôt est aussi solide que
+l'original, un clone posé en fin de duel arrive aussi entamé que lui. C'est ce
+qui rend un plafond inutile.
+
+#### La recharge rend la moitié de ce qu'elle avait pris
+
+Les 5 s de la section précédente compensaient la **fragilité** d'un clone
+mobile à 15 PV. Cette fragilité n'existe plus. Nouveau balayage, deux camps :
+
+| `special.cooldown` | 5 s | 7 s | **9 s** | 12 s |
+| --- | --- | --- | --- | --- |
+| Shinobi /48 | 26 | 22 | **23** | 17 |
+
+**Retenu : 9 s.** C'est le niveau d'avant tout ce chantier au duel près, et la
+compensation d'urgence en grande partie rendue. Entre 7 et 9 l'écart est d'un
+duel — du bruit ; 9 s l'emporte parce qu'il laisse **moins de corps dans
+l'arène** pour le même résultat, et qu'il se rapproche de la valeur d'origine
+(12 s) d'aussi près que le banc l'autorise.
+
+#### Le total est stable, le roster s'est creusé
+
+C'est le vrai enseignement de ce changement, et il a failli passer : **22/48 →
+23/48**, on aurait pu s'arrêter là. Le banc **ligne par ligne** dit autre chose.
+
+| Ligne (deux camps, 12 duels) | Avant | Après |
+| --- | --- | --- |
+| `outlaw vs wind` | wind 5 | **wind 10** |
+| `bladesman vs wind` | wind 4 | **wind 5** |
+| `lancer vs wind` | wind 1 | **wind 0** |
+| `wind vs mage` | wind 12 | **wind 8** |
+
+Le Shinobi ne monte pas, il **redistribue** — et le perdant net est un
+combattant qui n'a rien demandé :
+
+| Sur 48 duels, deux camps | Avant | Après |
+| --- | --- | --- |
+| Tempest | 38 | 39 |
+| Cinder | 26 | 25 |
+| Shinobi | 22 | **23** |
+| Briar | 19 | **23** |
+| **Calamity** | **15** | **10** |
+
+**Le mécanisme était déjà documenté, à l'envers.** La section « clone allégé à
+15 PV » notait que des clones plus fragiles meurent plus vite et gênent donc
+moins longtemps le canon asservi de Calamity. L'inverse est vrai et coûte plus
+cher : un clone à 100 PV **absorbe un barillet entier** là où un clone à 15 PV
+tombait en quatre balles. Calamity tire 62 % de ses dégâts de ses balles ; les
+lui faire dépenser sur un leurre le désarme.
+
+**Non corrigé, et c'est délibéré.** Le remonter demanderait de toucher **sa**
+fiche à lui — ou de plafonner l'héritage, ce qui contredirait la demande. Les
+deux sont un autre chantier que celui qui a produit l'écart. Écart de matrice :
+**2 à 11**, contre 4 à 11 avant.
+
 ---
 
 ## 🤠 CALAMITY — `outlaw` (affiché « CALAMITY »)

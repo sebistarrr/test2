@@ -288,8 +288,24 @@ export const windAbilities = {
       heading: target ? Math.atan2(target.y - y, target.x - x) : f.heading,
       impulseX: 0,
       impulseY: 0,
-      hp: sp.hp,
-      maxHp: sp.hp,
+      /**
+       * **Il naît avec les PV restants du Shinobi — demandé.** Ce n'est pas
+       * une valeur de fiche : c'est `f.hp` au moment de l'incantation, donc un
+       * clone posé à pleine vie est aussi solide que l'original, et un clone
+       * posé en fin de duel arrive aussi entamé que lui.
+       *
+       * **Copie, pas transfert** : le Shinobi ne perd rien en l'invoquant. Les
+       * deux barres vivent ensuite leur vie séparément — le clone n'encaisse
+       * que ses propres touches, et rien ne les resynchronise.
+       *
+       * L'ancienne clé `hp` du bloc spécial (15) disparaît de la fiche du même
+       * coup : une clé que plus personne ne lit est exactement la panne
+       * silencieuse que `tools/fiche-check.mjs` traque — et il la voit même
+       * citée dans un commentaire, d'où cette formulation qui contourne le
+       * motif qu'il cherche.
+       */
+      hp: f.hp,
+      maxHp: f.hp,
       flash: 0,
       /**
        * **La teinte qui le distingue de l'original.** Le corps du Shinobi est
