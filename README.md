@@ -45,17 +45,18 @@ deux.
 Chaque combat s'ouvre par **une seconde d'attente, combattants immobiles** :
 l'arène s'éclaircit, les armes tournent, mais personne n'avance.
 
-### Points de vie réglables
+### Un duel à moitié vitesse
 
-Chaque emplacement porte un champ **PV**, à 100 par défaut — la valeur du cahier
-des charges — et réglable de 1 à 999. C'est le moyen le plus direct de corriger
-un déséquilibre ou de poser un handicap sans toucher à une fiche : le Ronin à
-150 PV contre l’Hoplite à 100, par exemple. Tout ce qui affiche une proportion
-de vie (barre du HUD, cerclage rouge sous un quart de vie) suit la valeur du
-combattant, pas une constante.
+Le jeu se déroule **deux fois moins vite** qu'il n'était écrit. Le ralenti se
+pose sur le **temps réel consommé** par la boucle, pas sur le pas de
+simulation : la même suite de pas fixes est jouée, simplement étalée sur deux
+fois plus de secondes. Rien ne change dans le duel — mêmes trajectoires, mêmes
+touches, même vainqueur — il dure juste deux fois plus longtemps à regarder, et
+la vidéo exportée avec lui.
 
-La matrice d'équilibrage, elle, joue toujours à 100 : c'est ce qui en fait un
-garde-fou stable.
+Les points de vie, eux, ne se règlent pas : chacun part des 100 du cahier des
+charges. Seul un pouvoir peut faire entrer un combattant avec les siens — les
+clones du Shinobi naissent à 25.
 
 Chacun porte en plus un **pouvoir spécial**, sur horloge propre, avec sa jauge
 juste sous celle de l'ultime. Il s'ajoute à l'ultime, il ne le remplace pas —
@@ -105,7 +106,6 @@ empêche Jekyll d'ignorer les dossiers.
 | `?a=&b=`     | lance directement un duel sans écran de sélection — `outlaw`, `bladesman`, `lancer`, `wind` (le Shinobi), `mage` |
 | `?f=`        | une liste de combattants, pour une partie à plusieurs : `?f=outlaw,mage,lancer,wind` |
 | `?teams=`    | les camps, dans le même ordre que `?f=` : `0,0,1,1` fait un 2 contre 2. Omis, chacun pour soi |
-| `?hp=`       | les points de vie de chacun, dans le même ordre : `?hp=250,100`. Omis ou invalide, 100 (bornes 1–999) |
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
 | `?lang=fr`   | **toute l'interface** en français — HUD, titre d'arène et écrans DOM (par défaut : l'anglais de la vidéo) |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |

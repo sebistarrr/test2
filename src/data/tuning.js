@@ -173,6 +173,22 @@ export const PHYSICS = deepFreeze({
 
 export const MATCH = deepFreeze({
   maxHp: 100,
+  /**
+   * **Vitesse de déroulement du duel — demandé, moitié moins vite.**
+   *
+   * C'est un facteur de **temps réel consommé** par la boucle, pas un facteur
+   * de pas de simulation : à 0,5, `core/loop.js` joue exactement la même suite
+   * de pas fixes, étalée sur deux fois plus de secondes. Rien ne change dans le
+   * duel — mêmes trajectoires, mêmes touches, même vainqueur, matrice
+   * identique au caractère près — il dure simplement deux fois plus longtemps
+   * à regarder, et la vidéo exportée avec lui.
+   *
+   * Le mettre dans le pas (`update(SIM_DT * 0.5)`) aurait été l'erreur : ça
+   * change toutes les intégrations, donc les collisions limites, donc les
+   * vainqueurs. La leçon est la même que celle de `bladeSegment()` — un
+   * regroupement différent des mêmes produits ne rend pas les mêmes bits.
+   */
+  timeScale: 0.5,
 
   /**
    * Bornes des points de vie réglables. 100 reste le défaut et la valeur du
@@ -181,7 +197,6 @@ export const MATCH = deepFreeze({
    * un duel absurde. Le plancher est à 1 : à 0 le combattant serait mort avant
    * la première image.
    */
-  hpRange: { min: 1, max: 999 },
   /** Petit temps mort avant l'engagement, le décor est déjà en place. */
   /**
    * Temps d'attente avant que le combat ne commence. **Les combattants y sont
@@ -263,7 +278,11 @@ export const MATCH = deepFreeze({
 /**
  * Export vidéo du duel qu'on vient de regarder, au **format YouTube Shorts** :
  * vertical 9:16 en 1080 × 1920, ce que YouTube attend pour un Short. Un duel
- * dure 20 à 80 s, donc très en dessous des 3 minutes autorisées.
+ * dure 20 à 80 s de simulation, donc **40 à 160 s à l'écran** depuis que
+ * `MATCH.timeScale` le joue à moitié vitesse — l'enregistrement se fait en
+ * temps réel, la vidéo suit. Toujours en dessous des 3 minutes autorisées,
+ * mais la marge n'est plus la même : c'est la borne à surveiller si le
+ * ralenti devait descendre encore.
  *
  * L'enregistrement se fait pendant la partie, depuis un canvas dédié à cette
  * définition : le fichier ne dépend donc pas de la taille de la fenêtre ni du

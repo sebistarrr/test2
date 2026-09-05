@@ -23,6 +23,7 @@ import { createSelectScreen } from './ui/select.js';
 import { createResultScreen } from './ui/result.js';
 import { createRecorder, createNullRecorder } from './render/recorder.js';
 import { UI, applyStaticLabels } from './ui/lang.js';
+import { MATCH } from './data/tuning.js';
 
 const params = new URLSearchParams(location.search);
 const LANG = params.get('lang') === 'fr' ? 'fr' : 'ref';
@@ -40,6 +41,8 @@ const recorder = RECORD ? createRecorder(canvas) : createNullRecorder();
 let match = null;
 
 const loop = createLoop({
+  // le ralenti se pose ici, sur le temps consommé — voir `core/loop.js`
+  timeScale: MATCH.timeScale,
   update: (dt) => match?.update(dt),
   render: () => {
     stage.begin();
@@ -55,16 +58,16 @@ applyStaticLabels(document, LANG);
 
 const selectScreen = createSelectScreen({
   root: document.querySelector('#screen-select'),
-  onStart: (ids, teams, hp) => startMatch(ids, undefined, teams, hp),
+  onStart: (ids, teams) => startMatch(ids, undefined, teams),
   lang: LANG,
 });
 
 const resultScreen = createResultScreen({
   root: document.querySelector('#screen-result'),
   // revanche : même affiche, nouveau tirage
-  onRematch: () => startMatch(lastPair, undefined, lastTeams, lastHp),
+  onRematch: () => startMatch(lastPair, undefined, lastTeams),
   // revoir : même affiche ET même seed, donc exactement le même duel
-  onReplay: () => startMatch(lastPair, lastSeed, lastTeams, lastHp),
+  onReplay: () => startMatch(lastPair, lastSeed, lastTeams),
   onExport: () => recorder.download(`duel-${lastPair.join('-')}-seed${lastSeed}`),
   lang: LANG,
   onBack: () => {
@@ -83,7 +86,6 @@ let lastPair = [ROSTER[0], ROSTER[1] ?? ROSTER[0]];
 /** Camps de la dernière partie : la revanche et le replay doivent les garder. */
 let lastTeams;
 /** Points de vie de la dernière partie, gardés pour les mêmes raisons. */
-let lastHp;
 let lastSeed = 0;
 
 /**
@@ -91,12 +93,10 @@ let lastSeed = 0;
  * @param {number} [seed] fournie = duel rejoué à l'identique, sinon nouveau tirage
  * @param {number[]} [teams] camp de chacun. Omis, chacun le sien — ce qui donne
  *   le duel à deux et la bataille royale au-delà.
- * @param {number[]} [hp] points de vie de chacun. Omis, 100 pour tous.
  */
-function startMatch(pair, seed, teams, hp) {
+function startMatch(pair, seed, teams) {
   lastPair = pair;
   lastTeams = teams;
-  lastHp = hp;
   lastSeed = seed ?? seedFromLocation();
   selectScreen.hide();
   resultScreen.hide();
@@ -105,7 +105,6 @@ function startMatch(pair, seed, teams, hp) {
   match = new Match({
     elements: pair,
     teams: lastTeams,
-    hp: lastHp,
     rng: createRng(lastSeed),
     lang: LANG,
     debug: DEBUG,
@@ -151,20 +150,12 @@ async function boot() {
    */
   const liste = (params.get('f') ?? '').split(',').filter(Boolean);
   const camps = (params.get('teams') ?? '').split(',').filter((s) => s !== '').map(Number);
-  // `?hp=` : les points de vie, dans le même ordre. Une valeur invalide retombe
-  // sur 100 côté moteur, qui borne déjà chaque entrée.
-  const vies = (params.get('hp') ?? '').split(',').filter((s) => s !== '').map(Number);
   const a = params.get('a');
   const b = params.get('b');
   if (liste.length >= 2 && liste.every((id) => ELEMENTS[id])) {
-    startMatch(
-      liste,
-      undefined,
-      camps.length === liste.length ? camps : undefined,
-      vies.length ? vies : undefined,
-    );
+    startMatch(liste, undefined, camps.length === liste.length ? camps : undefined);
   } else if (a && b && ELEMENTS[a] && ELEMENTS[b]) {
-    startMatch([a, b], undefined, undefined, vies.length ? vies : undefined);
+    startMatch([a, b]);
   } else {
     selectScreen.show();
     // une frame « à vide » pour que le décor soit déjà là derrière l'overlay

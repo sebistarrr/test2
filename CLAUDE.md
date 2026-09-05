@@ -183,17 +183,28 @@ peut blesser qui.
 | 2 contre 2 | 4 identifiants | `[0, 0, 1, 1]` |
 | Bataille royale | 3 à 5 identifiants | omis → chacun le sien |
 
-**Les points de vie se règlent par combattant** (`hp`, un tableau dans le même
-ordre ; 100 par défaut, bornés 1–999). C'est le levier le moins cher pour
-compenser un déséquilibre sans toucher à une fiche — et le seul qui ne demande
-pas de repasser la matrice, puisqu'elle joue toujours à 100.
+**Les points de vie ne se règlent pas** — demandé. Chacun part des 100 du
+cahier des charges : ni champ dans l'écran de sélection, ni `?hp=`, ni option de
+`Match`. Le champ, son libellé, ses bornes et le paramètre du moteur ont été
+**retirés** plutôt que masqués, pour la raison habituelle : une entrée que plus
+personne ne remplit finit par diverger de ce que le moteur en fait.
 
-`Fighter.maxHp` porte la valeur ; **rien ne doit plus diviser par une
-constante**. Le cerclage rouge de danger le faisait (`hp > 25`) : à 500 PV il ne
-se serait jamais allumé, à 20 PV il l'aurait été d'entrée. C'est passé à un
-quart de `maxHp` — soit toujours 25 au défaut. La leçon vaut au-delà : **un
-seuil écrit en valeur absolue devient faux le jour où la grandeur qu'il compare
-devient réglable**, et il ne crie pas en devenant faux.
+**`Fighter.maxHp` reste par combattant**, et c'est nécessaire : un module peut
+faire entrer un combattant avec d'autres points de vie (le Clone d'ombre du
+Shinobi naît à 25). Donc **rien ne doit diviser par une constante**. Le cerclage
+rouge de danger le faisait (`hp > 25`) : sur un clone à 25 PV il aurait été
+allumé d'entrée. C'est un quart de `maxHp` — toujours 25 au défaut. La leçon
+vaut au-delà : **un seuil écrit en valeur absolue devient faux le jour où la
+grandeur qu'il compare cesse d'être constante**, et il ne crie pas en devenant
+faux.
+
+**Le duel se déroule à moitié vitesse** (`MATCH.timeScale`, demandé). C'est un
+facteur de **temps réel consommé** par `core/loop.js`, pas un facteur de pas :
+la même suite de pas fixes est jouée, étalée sur deux fois plus de secondes.
+Rien ne change dans le duel — matrice identique au caractère près — il dure
+simplement deux fois plus longtemps à regarder. Le mettre dans le pas
+(`update(SIM_DT * 0.5)`) aurait changé toutes les intégrations, donc les
+collisions limites, donc les vainqueurs.
 
 `ui/select.js` porte la table des formats et fabrique les camps ; `main.js` les
 lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format (3 contre 3,
@@ -553,6 +564,11 @@ node tools/probe.mjs outlaw              # durée, touches et coups/s d'un comba
 
 node tools/shot.mjs "?a=wind&b=outlaw&seed=5" /tmp/s 3,9,20
 FORCE=bladesman:ult node tools/shot.mjs "?a=bladesman&b=outlaw" /tmp/s 8
+                                         # les instants sont des secondes de
+                                         # DUEL : l'outil lit `MATCH.timeScale`
+                                         # et divise ses attentes par lui, donc
+                                         # une recette garde son sens malgré le
+                                         # ralenti (et attend deux fois plus)
 
 python3 tools/frames.py <video.mp4> <dossier> <pas_s> [t0] [t1]
 python3 tools/montage.py <dossier> <sortie.jpg> <cols> <lignes> <largeur> [début]

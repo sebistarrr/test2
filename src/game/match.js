@@ -65,17 +65,19 @@ function spawnFor(i, n) {
 
 export class Match {
   /**
-   * @param {{elements:string[], teams?:number[], hp?:number[], rng:object,
+   * @param {{elements:string[], teams?:number[], rng:object,
    *          lang:'ref'|'fr', debug?:boolean, onEnd:(result:object)=>void}} opts
    *
    * `teams` donne le camp de chaque combattant, dans l'ordre d'`elements`.
    * Omis, chacun a le sien — chacun pour soi, et le duel d'origine quand il y
    * en a deux. `[0, 0, 1, 1]` fait un 2 contre 2.
    *
-   * `hp` donne les points de vie de chacun, dans le même ordre. Omis ou
-   * incomplet, chacun prend les 100 du cahier des charges.
+   * **Les points de vie ne se règlent plus.** Chacun part des 100 du cahier
+   * des charges ; seul un module peut en poser d'autres à un combattant qu'il
+   * fait entrer (le Clone d'ombre du Shinobi naît à 25), et c'est le paramètre
+   * `maxHp` du `Fighter`, pas une option de partie.
    */
-  constructor({ elements, teams = null, hp = null, rng, lang = 'ref', debug = false, onEnd }) {
+  constructor({ elements, teams = null, rng, lang = 'ref', debug = false, onEnd }) {
     const els = elements.map((id) => getElement(id));
     if (els.length < 2) throw new Error('[match] il faut au moins deux combattants');
     for (const el of els) assertFrozen(el, el.id);
@@ -105,20 +107,7 @@ export class Match {
      */
     this.teams = teams ? teams.slice(0, n) : els.map((_, i) => i);
 
-    /**
-     * Points de vie de départ. Une valeur absente, nulle ou hors bornes retombe
-     * sur les 100 par défaut : l'écran de sélection et l'URL sont deux entrées
-     * libres, et un `?hp=abc` ne doit pas lancer un duel avec `NaN` PV — un
-     * combattant à `NaN` est mort d'entrée sans que rien ne le dise.
-     */
-    this.hp = els.map((_, i) => {
-      const v = Math.round(Number(hp?.[i]));
-      return Number.isFinite(v) && v >= MATCH.hpRange.min && v <= MATCH.hpRange.max
-        ? v
-        : MATCH.maxHp;
-    });
-
-    this.fighters = els.map((el, i) => new Fighter(el, i, rng, spawnFor(i, n), this.hp[i]));
+    this.fighters = els.map((el, i) => new Fighter(el, i, rng, spawnFor(i, n)));
     this.fighters.forEach((f, i) => { f.team = this.teams[i]; });
     // `a` et `b` restent les deux premiers : le HUD du duel, la mise au point et
     // l'écran de fin les lisent, et ils n'ont de sens qu'à deux.
@@ -175,7 +164,7 @@ export class Match {
    *
    * Le moteur savait déjà jouer *n* combattants répartis en camps (invariant
    * 13) ; il ne savait pas que ce *n* puisse changer une fois le duel commencé.
-   * Il ne manquait que ceci : tenir à jour les six choses indexées par
+   * Il ne manquait que ceci : tenir à jour les cinq choses indexées par
    * combattant, et rien d'autre. Le reste — collisions, mêlée, ciblage, HUD,
    * condition de victoire, classement — travaille déjà sur `this.fighters` et
    * suit sans une ligne.
@@ -205,7 +194,6 @@ export class Match {
     for (const f of this.arrivants) {
       this.fighters.push(f);
       this.teams.push(f.team);
-      this.hp.push(f.maxHp);
       // les deux tableaux de statistiques sont indexés par rang dans
       // `fighters` : un rang de plus, une case de plus dans chacun
       this.stats.hits.push(0);

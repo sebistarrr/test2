@@ -29,9 +29,24 @@ page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
 await page.goto(`${URL}/index.html${query}`, { waitUntil: 'networkidle' });
 
+/**
+ * **Les instants demandés sont des secondes de DUEL, pas de montre.**
+ *
+ * Depuis que `MATCH.timeScale` joue le duel à moitié vitesse, une attente en
+ * temps réel ne tombe plus au même endroit de la simulation : `shot.mjs … 8`
+ * aurait capturé la 4ᵉ seconde de duel. Le facteur est donc lu dans la page et
+ * les attentes sont divisées par lui — toutes les recettes de `CLAUDE.md`
+ * gardent leur sens, et une capture prise avant le ralenti reste comparable à
+ * la même prise après.
+ */
+const echelle = await page.evaluate(async () => {
+  const { MATCH } = await import('/src/data/tuning.js');
+  return MATCH.timeScale ?? 1;
+});
+
 let prev = 0;
 for (const t of times) {
-  await page.waitForTimeout(Math.max(0, t - prev) * 1000);
+  await page.waitForTimeout((Math.max(0, t - prev) * 1000) / echelle);
   prev = t;
   for (const spec of force) {
     const [id, what] = spec.split(':');
@@ -44,7 +59,7 @@ for (const t of times) {
       },
       [id, what],
     );
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(800 / echelle);
     prev += 0.8;
   }
   const name = `${outDir}/t${String(t).padStart(3, '0')}.png`;

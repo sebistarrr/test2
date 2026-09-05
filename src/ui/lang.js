@@ -38,7 +38,6 @@ export const UI = {
     teamB: 'TEAM B',
     slotN: (i) => `FIGHTER ${i}`,
     startRoyale: 'START THE BRAWL',
-    hpLabel: 'HP',
     standings: 'FINAL STANDINGS',
     // --- écran de fin (statique)
     ko: 'K.O.',
@@ -116,7 +115,6 @@ export const UI = {
     teamB: 'ÉQUIPE B',
     slotN: (i) => `COMBATTANT ${i}`,
     startRoyale: 'LANCER LA MÊLÉE',
-    hpLabel: 'PV',
     standings: 'CLASSEMENT',
     start: 'LANCER LE DUEL',
     ko: 'K.O.',
