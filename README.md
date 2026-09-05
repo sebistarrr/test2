@@ -45,16 +45,9 @@ deux.
 Chaque combat s'ouvre par **une seconde d'attente, combattants immobiles** :
 l'arène s'éclaircit, les armes tournent, mais personne n'avance.
 
-### Un duel à moitié vitesse
+### Points de vie
 
-Le jeu se déroule **deux fois moins vite** qu'il n'était écrit. Le ralenti se
-pose sur le **temps réel consommé** par la boucle, pas sur le pas de
-simulation : la même suite de pas fixes est jouée, simplement étalée sur deux
-fois plus de secondes. Rien ne change dans le duel — mêmes trajectoires, mêmes
-touches, même vainqueur — il dure juste deux fois plus longtemps à regarder, et
-la vidéo exportée avec lui.
-
-Les points de vie, eux, ne se règlent pas : chacun part des 100 du cahier des
+Les points de vie ne se règlent pas : chacun part des **100** du cahier des
 charges. Seul un pouvoir peut faire entrer un combattant avec les siens — les
 clones du Shinobi naissent à 25.
 

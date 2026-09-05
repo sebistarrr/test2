@@ -8,11 +8,14 @@
  *
  * **`timeScale` ralentit le duel sans toucher à la simulation.** Il divise le
  * temps réel **consommé**, pas le pas : la boucle appelle donc exactement la
- * même suite de `update(SIM_DT)`, dans le même ordre, simplement étalée sur
- * deux fois plus de secondes. C'est la seule façon de ralentir qui laisse le
- * duel **identique au caractère près** — mettre l'échelle dans le pas
- * (`update(SIM_DT * 0.5)`) changerait toutes les intégrations, donc les
- * collisions limites, donc les vainqueurs.
+ * même suite de `update(SIM_DT)`, dans le même ordre, simplement étalée. C'est
+ * la seule façon de ralentir qui laisse le duel **identique au caractère
+ * près** — mettre l'échelle dans le pas (`update(SIM_DT * 0.5)`) changerait
+ * toutes les intégrations, donc les collisions limites, donc les vainqueurs.
+ *
+ * Il vaut **1** aujourd'hui (`MATCH.timeScale`), donc la multiplication est
+ * neutre et la boucle repasse exactement par le chemin qu'elle avait avant que
+ * ce facteur n'existe.
  *
  * `tools/matrix.mjs` n'est pas concerné : il pilote `Match.update()` lui-même,
  * sans passer par la boucle.

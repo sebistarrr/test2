@@ -32,12 +32,13 @@ await page.goto(`${URL}/index.html${query}`, { waitUntil: 'networkidle' });
 /**
  * **Les instants demandés sont des secondes de DUEL, pas de montre.**
  *
- * Depuis que `MATCH.timeScale` joue le duel à moitié vitesse, une attente en
- * temps réel ne tombe plus au même endroit de la simulation : `shot.mjs … 8`
- * aurait capturé la 4ᵉ seconde de duel. Le facteur est donc lu dans la page et
- * les attentes sont divisées par lui — toutes les recettes de `CLAUDE.md`
- * gardent leur sens, et une capture prise avant le ralenti reste comparable à
- * la même prise après.
+ * `MATCH.timeScale` peut étaler le duel dans le temps réel (voir
+ * `core/loop.js`). Une attente en secondes de montre ne tomberait alors plus au
+ * même endroit de la simulation : à 0,5, `shot.mjs … 8` capturerait la 4ᵉ
+ * seconde de duel. Le facteur est donc lu dans la page et les attentes sont
+ * divisées par lui — les recettes de `CLAUDE.md` gardent leur sens quelle que
+ * soit sa valeur, et deux captures prises de part et d'autre d'un changement
+ * d'échelle restent comparables. À 1, la division est neutre.
  */
 const echelle = await page.evaluate(async () => {
   const { MATCH } = await import('/src/data/tuning.js');

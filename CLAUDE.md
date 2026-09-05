@@ -198,13 +198,15 @@ vaut au-delà : **un seuil écrit en valeur absolue devient faux le jour où la
 grandeur qu'il compare cesse d'être constante**, et il ne crie pas en devenant
 faux.
 
-**Le duel se déroule à moitié vitesse** (`MATCH.timeScale`, demandé). C'est un
-facteur de **temps réel consommé** par `core/loop.js`, pas un facteur de pas :
-la même suite de pas fixes est jouée, étalée sur deux fois plus de secondes.
-Rien ne change dans le duel — matrice identique au caractère près — il dure
-simplement deux fois plus longtemps à regarder. Le mettre dans le pas
-(`update(SIM_DT * 0.5)`) aurait changé toutes les intégrations, donc les
-collisions limites, donc les vainqueurs.
+**`MATCH.timeScale` règle la vitesse de déroulement, et vaut 1** — la vitesse
+d'origine. Il a été passé à 0,5 puis remis à 1, les deux sur demande ; le
+mécanisme est resté parce qu'il tient en une ligne et qu'il porte la **seule
+façon correcte de ralentir ce jeu** : c'est un facteur de **temps réel
+consommé** par `core/loop.js` (`acc += elapsed * timeScale`), pas un facteur de
+pas. La même suite de pas fixes est jouée, simplement étalée. Le mettre dans le
+pas (`update(SIM_DT * 0.5)`) changerait toutes les intégrations, donc les
+collisions limites, donc les vainqueurs. À 1 la multiplication est neutre et la
+boucle repasse par le chemin d'avant.
 
 `ui/select.js` porte la table des formats et fabrique les camps ; `main.js` les
 lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format (3 contre 3,
@@ -567,8 +569,8 @@ FORCE=bladesman:ult node tools/shot.mjs "?a=bladesman&b=outlaw" /tmp/s 8
                                          # les instants sont des secondes de
                                          # DUEL : l'outil lit `MATCH.timeScale`
                                          # et divise ses attentes par lui, donc
-                                         # une recette garde son sens malgré le
-                                         # ralenti (et attend deux fois plus)
+                                         # une recette garde son sens quelle que
+                                         # soit la vitesse de déroulement
 
 python3 tools/frames.py <video.mp4> <dossier> <pas_s> [t0] [t1]
 python3 tools/montage.py <dossier> <sortie.jpg> <cols> <lignes> <largeur> [début]

@@ -174,21 +174,25 @@ export const PHYSICS = deepFreeze({
 export const MATCH = deepFreeze({
   maxHp: 100,
   /**
-   * **Vitesse de déroulement du duel — demandé, moitié moins vite.**
+   * **Vitesse de déroulement du duel. À 1 : la vitesse d'origine.**
    *
    * C'est un facteur de **temps réel consommé** par la boucle, pas un facteur
-   * de pas de simulation : à 0,5, `core/loop.js` joue exactement la même suite
-   * de pas fixes, étalée sur deux fois plus de secondes. Rien ne change dans le
-   * duel — mêmes trajectoires, mêmes touches, même vainqueur, matrice
-   * identique au caractère près — il dure simplement deux fois plus longtemps
-   * à regarder, et la vidéo exportée avec lui.
+   * de pas de simulation : `core/loop.js` joue exactement la même suite de pas
+   * fixes, étalée sur `1 / timeScale` fois plus de secondes. Rien ne change
+   * dans le duel — mêmes trajectoires, mêmes touches, même vainqueur, matrice
+   * identique au caractère près — seul le temps passé à le regarder bouge.
    *
-   * Le mettre dans le pas (`update(SIM_DT * 0.5)`) aurait été l'erreur : ça
+   * **Passé à 0,5 sur demande, puis remis à 1 sur demande.** Le mécanisme est
+   * resté : c'est une ligne, et il porte la seule façon correcte de ralentir ce
+   * jeu. Le mettre dans le pas (`update(SIM_DT * 0.5)`) serait l'erreur — ça
    * change toutes les intégrations, donc les collisions limites, donc les
-   * vainqueurs. La leçon est la même que celle de `bladeSegment()` — un
-   * regroupement différent des mêmes produits ne rend pas les mêmes bits.
+   * vainqueurs. Même leçon que `bladeSegment()` : un regroupement différent des
+   * mêmes produits ne rend pas les mêmes bits.
+   *
+   * À 1, la multiplication de `core/loop.js` est neutre et la boucle repasse
+   * exactement par le chemin qu'elle avait avant l'ajout.
    */
-  timeScale: 0.5,
+  timeScale: 1,
 
   /**
    * Bornes des points de vie réglables. 100 reste le défaut et la valeur du
@@ -278,11 +282,10 @@ export const MATCH = deepFreeze({
 /**
  * Export vidéo du duel qu'on vient de regarder, au **format YouTube Shorts** :
  * vertical 9:16 en 1080 × 1920, ce que YouTube attend pour un Short. Un duel
- * dure 20 à 80 s de simulation, donc **40 à 160 s à l'écran** depuis que
- * `MATCH.timeScale` le joue à moitié vitesse — l'enregistrement se fait en
- * temps réel, la vidéo suit. Toujours en dessous des 3 minutes autorisées,
- * mais la marge n'est plus la même : c'est la borne à surveiller si le
- * ralenti devait descendre encore.
+ * dure 20 à 80 s, donc très en dessous des 3 minutes autorisées. L'export se
+ * fait en **temps réel** : c'est `MATCH.timeScale` qui décide de la durée du
+ * fichier, et c'est la borne à surveiller si le duel devait un jour être
+ * ralenti (à 0,5 la vidéo durerait 40 à 160 s).
  *
  * L'enregistrement se fait pendant la partie, depuis un canvas dédié à cette
  * définition : le fichier ne dépend donc pas de la taille de la fenêtre ni du
