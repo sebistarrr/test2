@@ -12,6 +12,24 @@ fiche gelée correspondante.
 Les huit éléments d'origine ont été supprimés ; ce qui en subsiste est
 rassemblé dans l'**archive** en tête de document, juste après ces règles.
 
+**Sommaire.** Ce fichier est long et ne se lit jamais en entier : ouvre-le sur
+la section qui te concerne (`offset` / `limit`), pas d'un bloc. Les numéros sont
+**indicatifs** — ils dérivent à chaque ajout ; `grep -n '^## ' docs/FICHES.md`
+les recale en une commande.
+
+| Section | Ligne |
+| --- | --- |
+| Comment lire une valeur | 33 |
+| 📦 Archive — les huit éléments supprimés | 70 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 144 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 934 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 961 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1218 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1783 |
+| Équilibrage du roster | 2216 |
+| Règles communes (moteur) | 2314 |
+| Comment les mesures ont été prises | 2338 |
+
 ## Comment lire une valeur
 
 - `mesuré` = relevé sur les vidéos de référence, par échantillonnage d'images
@@ -123,7 +141,7 @@ le bouclier.
 ---
 
 
-## 🌪 VENT — `wind` (affiché « WIND »)
+## 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné)
 
 > Harcèlement — le plus rapide, tornades et lames d'air.
 
@@ -1762,7 +1780,7 @@ nappe de sol ou une hitbox au dernier point connu.
 
 ---
 
-## 🌿 DRUID — `mage` (affiché « DRUID »)
+## 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais)
 
 Quatrième invité, **demandé** : un mage vert, armé du sceptre d'une maquette
 fournie, qui **attaque à distance** avec des **orbes guidées**, dont l'arme est
@@ -1995,7 +2013,7 @@ nette (2-1). C'est plus que ce que le retrait des bulbes explique à lui seul :
 retirer toute une mécanique retire aussi ses propres décorations (gerbes de
 plantation, de touche, anneau de soin), et celles-ci **consomment `game.rng`**
 comme le reste des particules du dépôt — un chantier connu et non résolu (voir
-« Déterminisme et ordre d'exécution » dans `CLAUDE.md`). Une part de ce
+« Déterminisme et ordre d'exécution » dans `docs/PIEGES.md`). Une part de ce
 basculement est donc probablement un remaniement du tirage plutôt qu'un effet
 mécanique direct du Semis sur ce duel précis ; sans ablation dédiée, impossible
 de trancher la part de chaque cause. Aucun levier n'a été retouché pour

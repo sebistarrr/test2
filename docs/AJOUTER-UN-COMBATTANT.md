@@ -1,7 +1,8 @@
 # Ajouter ou modifier un combattant
 
-Marche à suivre. Les *raisons* sont dans `CLAUDE.md` (invariants, pièges) et
-`docs/FICHES.md` (relevés, historique par personnage) — ne les lis que si tu en
+Marche à suivre. Les *raisons* sont dans `CLAUDE.md` (invariants, index des
+pièges), `docs/PIEGES.md` (le détail de chaque piège) et `docs/FICHES.md`
+(relevés, historique par personnage) — ne les lis que si tu en
 as besoin.
 
 ---

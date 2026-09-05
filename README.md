@@ -281,7 +281,7 @@ les huit éléments ont depuis été supprimés — les pouvoirs, eux, ont été
 
 Le roster vient de vidéos en **576 × 1024** : toute mesure prise dessus se
 convertit en **×1,25** vers ce repère 720 × 1280 — **sauf celle de Magia,
-×1,275**, son cadrage n'étant pas le même (voir `CLAUDE.md`).
+×1,275**, son cadrage n'étant pas le même (voir `docs/PIEGES.md`).
 
 | Élément mesuré                | Valeur relevée (convertie)        |
 | ----------------------------- | --------------------------------- |
@@ -347,7 +347,11 @@ pilotés par les données.
 
 - [`CLAUDE.md`](CLAUDE.md) — mémoire du projet : carte des fichiers,
   invariants (déterminisme, fiches gelées, matrice d'équilibrage), outils et
-  pièges déjà rencontrés. C'est le point d'entrée pour reprendre le travail.
+  index des pièges. C'est le point d'entrée pour reprendre le travail, et il
+  reste court pour cette raison.
+- [`docs/PIEGES.md`](docs/PIEGES.md) — le détail long : la mesure, le balayage
+  et l'histoire derrière chaque règle de `CLAUDE.md`, la méthode de relevé
+  vidéo et les écarts volontaires au relevé.
 - [`docs/FICHES.md`](docs/FICHES.md) — fiches complètes des combattants
   (apparence, vitesse, pouvoirs, projectiles) et méthode de mesure.
 - [`assets/sprites/README.md`](assets/sprites/README.md) — remplacer les
