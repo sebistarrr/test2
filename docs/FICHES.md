@@ -1,9 +1,10 @@
 # Fiches des combattants
 
-**Cinq combattants** repris de la chaîne « ballthingsim » — **Pistolero** et
-**Ronin** du duel *Outlaw vs Bladesman*, **Hoplite** de *Dragoon vs Outlaw*,
+**Six combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
+et **Ronin** du duel *Outlaw vs Bladesman*, **Hoplite** de *Dragoon vs Outlaw*,
 **Druide** construit sur la mécanique de Magia dans *Dragoon vs Magia*, et
-**Shinobi**, reskin du Vent des vidéos *Elemental Armory League*.
+**Shinobi**, reskin du Vent des vidéos *Elemental Armory League*. Le sixième,
+le **Golem**, est **inventé** : il n'a pas de vidéo, donc pas un seul `mesuré`.
 
 Ces fiches sont la **transcription lisible** de `src/data/fighters/`. Le code
 est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
@@ -19,16 +20,17 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 33 |
-| 📦 Archive — les huit éléments supprimés | 70 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 144 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 934 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 961 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1218 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1783 |
-| Équilibrage du roster | 2216 |
-| Règles communes (moteur) | 2314 |
-| Comment les mesures ont été prises | 2338 |
+| Comment lire une valeur | 34 |
+| 📦 Archive — les huit éléments supprimés | 71 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 145 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 935 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 962 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1219 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1784 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2217 |
+| Équilibrage du roster | 2341 |
+| Règles communes (moteur) | 2439 |
+| Comment les mesures ont été prises | 2463 |
 
 ## Comment lire une valeur
 
@@ -2212,6 +2214,130 @@ Le corriger demanderait un `hpColor` sombre, qui se lirait moins bien le reste
 du temps sur un corps de cette luminance.
 
 ---
+
+## 🗿 GOLEM — `golem` (affiché « GOLEM » dans les deux langues)
+
+**Le premier combattant inventé du dépôt.** Les cinq autres sont transcrits
+d'une vidéo ; celui-ci n'en a pas. Conséquence directe sur la lecture de sa
+fiche : **aucune de ses valeurs ne porte `mesuré`**, tout y est `calé` (posé
+puis vérifié au banc) ou `déduit` (calculé d'une autre). C'est le régime du Tir
+enraciné du Druide, étendu à un personnage entier.
+
+### Ce qu'il apporte, et pourquoi il fallait le penser autrement
+
+Les cinq existants tiennent sur deux axes : vite et fragile (Shinobi, Ronin), ou
+à distance et fuyant (Pistolero, Druide). **Personne n'encaisse.** Le Golem est
+l'inverse de tous sur les quatre chiffres qui comptent.
+
+| | Golem | le reste du roster |
+| --- | --- | --- |
+| Vitesse | **370 px/s** | 430 (Hoplite) à 655 (Pistolero) |
+| Portée d'arme | **100 px** | 70 (Druide) à 197,6 (Ronin) |
+| Rayon du corps | **50 px** | 41 pour les cinq |
+| Points de vie | **200** | 100 pour les cinq |
+
+**Sa défense, c'est sa barre de vie, et rien d'autre — demandé.** Pas de
+réduction de dégâts, pas d'armure qui absorbe, pas d'invulnérabilité cyclique :
+il encaisse chaque coup en entier, il en encaisse simplement deux fois plus. Un
+seul chiffre porte toute sa résistance, donc le banc n'a qu'un levier à tourner.
+Le corps plus large est le prix de ces PV : il est **plus facile à toucher**.
+
+### Le piège de conception, nommé avant d'être payé
+
+Un corps à corps de 370 px/s avec 100 px de portée **ne touche jamais** un
+tireur de 655 px/s : il perdrait 10 duels sur 10 sans qu'aucun chiffre ne soit
+« faux ». Ses deux pouvoirs existent pour cette raison précise, pas pour le
+décor :
+
+- **Onde sismique** (`ability`) — horloge de 6 s, aucune visée, tout ennemi dans
+  170 px prend 6 dégâts, un recul de 340 et un ralentissement de 0,35 pendant
+  1,4 s. C'est l'allonge que ses jambes ne lui donnent pas ;
+- **Éclats de roche** (`special`, troisième créneau) — trois éclats en éventail
+  toutes les 8 s, pour qu'on ne puisse pas se contenter de reculer indéfiniment.
+  Contrairement aux trois pouvoirs greffés du dépôt (Champ de givre, Aura de
+  braise, Dôme de drain), il n'est **repris de personne** ;
+- **Séisme** (`ultimate`) — horloge de 12 s. La secousse est **instantanée**
+  (10 dégâts, 600 de recul, 260 px de rayon) ; ce que dure `duration`, c'est le
+  **bonus de vitesse de +35 %** qui la suit. Sans lui, frapper fort une fois ne
+  changerait rien : il replongerait aussitôt dans son problème de fond.
+
+### Valeurs
+
+| Bloc | Valeur | Source |
+| --- | --- | --- |
+| Corps | rayon **50** (le seul du roster hors 41), granit `#6e6558`, contour `#1c1712`, chiffre de PV crème | calé |
+| Points de vie | **200**, portés par `maxHp` dans la fiche et lus par `Match` (`el.maxHp ?? MATCH.maxHp`) | demandé |
+| Déplacement | **370 px/s**, virage 1,3 rad/s, `seek` 0,34 | calé |
+| Arme | *Poing de pierre*, portée **100** = `handle.length` 36 + 64 px dessinés (12 cellules × 5,333333) | déduit du sprite |
+| Rotation d'arme | `SPIN × 0,45`, **la plus lente du roster** — une arme qui balaie vite touche souvent | calé |
+| Hitbox | de 0,5 à 1 de la portée (le tranchant démarre pile au bord de la bille), rayon **24** | déduit |
+| Corps à corps | **8** dégâts fixes, verrou 1,6 s, recul infligé **500** (le plus fort du roster), recul propre **60** | calé au banc |
+| Onde sismique | 6 s, rayon 170, 6 dégâts, recul 340, ralentissement 0,35 / 1,4 s | calé |
+| Éclats de roche | 8 s (première à 3 s), 3 éclats, ouverture 0,34 rad, projectile à 380 px/s et 4 dégâts | calé |
+| Séisme | jauge en 12 s (+6 % par touche), impact 260 px / 10 dégâts / recul 600, puis 3 s à +35 % de vitesse | calé au banc |
+| HUD | ses **deux horloges** (`Shockwave`, `Shards`) — il n'a aucune stat qui monte | déduit |
+
+**Dégâts fixes, et fixes est le point.** Trois combattants du roster montent en
+dégâts au fil du duel (Pistolero 3→8, Ronin 1,6→6, Hoplite 8→16) ; celui-ci
+frappe pareil à la première et à la dernière seconde. Un colosse ne
+« s'échauffe » pas — profil exactement inverse de l'Hoplite.
+
+**Le poids se dit par l'asymétrie du recul, pas par une masse.** Il inflige 500
+et n'encaisse que 60 quand il frappe. Le moteur n'a aucune notion de masse —
+`Fighter.push` applique la même impulsion à tout le monde, et `movement.mass`,
+déclaré dans `FICHE_DEFAULTS`, **n'est lu nulle part**. Aucune ligne de physique
+n'a eu à bouger.
+
+### Équilibrage : quatre leviers, dont deux qui ont menti
+
+Banc : **10 seeds × les deux camps × 5 adversaires = 100 duels**, plus une
+**ablation par source** (`opts.kind` dans `game.damage`) pour savoir d'où
+viennent ses dégâts avant de balayer quoi que ce soit.
+
+Première version : **89 victoires sur 100**. La suite, un levier à la fois.
+
+| Levier | Essai | Total /100 | Ce que ça a appris |
+| --- | --- | --- | --- |
+| Dégâts de mêlée | 14 → 9 | 89 → 72 | levier **raide**, ~11 duels par point |
+| Dégâts de l'onde | 6 → 3 | 72 → 66 | **presque plat** — l'ablation lui donne 4 à 10 % des dégâts seulement |
+| Verrou de mêlée | 1,6 → 2,2 s | 66 → 62 | **élargit l'écart** : Ronin 20/20 pendant que Shinobi tombe à 7/20 |
+| Impact du Séisme | 18 → 10 | — | 27 % des dégâts à l'ablation : la vraie deuxième source |
+| Dégâts de mêlée | 9 → 8 | 61 → **54** | le seul point de la bande (7 donne 43) |
+| Recul de mêlée | 500 → 300 | 54 → 42 | **porteur** : le Shinobi passe de 7/20 à 2/20 |
+
+**L'ablation a démenti l'intuition, et c'est tout son intérêt.** L'Onde sismique
+*paraît* être son levier n° 1 — elle ne rate jamais, elle ralentit, elle
+repousse. La mesure dit **9,7 %** de ses dégâts, contre 44 % au poing, 28 % aux
+éclats et 18 % au Séisme : la moitié de ses déclenchements tombe dans le vide,
+l'adversaire n'étant pas dans les 170 px quand l'horloge sonne. Elle avait été
+descendue à 3 sur cette intuition ; elle est remontée à 6.
+
+### L'écart qui reste, et pourquoi il ne se corrige pas chez lui
+
+Configuration retenue, 100 duels :
+
+| Adversaire | Golem gagne |
+| --- | --- |
+| Ronin | 18/20 |
+| Pistolero | 14/20 |
+| Hoplite | 10/20 |
+| Shinobi | 7/20 |
+| Druide | 5/20 |
+| **Total** | **54/100** |
+
+Le total est juste, la **forme** ne l'est pas : il écrase les faibles DPS
+(Ronin, Pistolero) et perd contre les gros (Shinobi, Druide). C'est la
+conséquence directe des 200 PV — contre un adversaire qui ne place que 2 ou
+3 dégâts par seconde, doubler la barre de vie double le temps qu'il faut pour le
+tuer, et ce temps-là, le Golem le passe à frapper.
+
+**Aucun levier de sa fiche ne corrige cette forme**, et c'est mesuré, pas
+supposé : chacun de ceux essayés remonte un camp *et* descend l'autre. Baisser
+sa mêlée pénalise le Ronin (trop fort) mais aussi le Shinobi (déjà trop
+faible) ; baisser son recul rend le Ronin jouable et effondre le Shinobi à
+2/20. Le corriger demanderait de toucher **les autres fiches** — c'est le
+rééquilibrage complet que le dépôt a déjà refusé une fois, pas un réglage de
+plus sur celle-ci.
 
 ## Équilibrage du roster
 

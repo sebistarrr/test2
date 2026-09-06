@@ -74,7 +74,19 @@ Trois règles qui coûtent cher à rattraper :
   dépôt en français ; `label()` a un repli silencieux qui évite le plantage
   mais pas un écran à moitié traduit. `lang-check` les vérifie.
 - **Chaque valeur porte `mesuré`, `calé` ou `déduit`** en commentaire. Une
-  valeur `mesuré` ne se change pas sans nouveau relevé.
+  valeur `mesuré` ne se change pas sans nouveau relevé. **Un combattant inventé
+  n'a droit à aucun `mesuré`** : sans vidéo, il n'y a rien à relever, tout y est
+  `calé` ou `déduit` (voir le Golem).
+
+Deux clés facultatives, qui ne servent qu'à qui y déroge :
+
+- **`maxHp`** — points de vie de départ, lus par `Match` (`el.maxHp ??
+  MATCH.maxHp`). Absente, le combattant part des 100 du cahier des charges ; le
+  Golem porte 200. Rien dans le rendu ne divise par une constante, tout divise
+  par `Fighter.maxHp`, donc il n'y a rien d'autre à toucher.
+- **`look.radius`** — rayon du corps, 41 par défaut, 50 chez le Golem. Un corps
+  plus large est **plus facile à toucher** : c'est un réglage d'équilibrage
+  autant qu'un choix de dessin.
 
 ### 3. `src/game/abilities/<id>.js` — les pouvoirs
 

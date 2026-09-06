@@ -42,6 +42,7 @@ import { OUTLAW } from './fighters/outlaw.js';
 import { BLADESMAN } from './fighters/bladesman.js';
 import { LANCER } from './fighters/lancer.js';
 import { MAGE } from './fighters/mage.js';
+import { GOLEM } from './fighters/golem.js';
 
 export const ELEMENTS = deepFreeze({
   wind: WIND,
@@ -49,6 +50,7 @@ export const ELEMENTS = deepFreeze({
   bladesman: BLADESMAN,
   lancer: LANCER,
   mage: MAGE,
+  golem: GOLEM,
 });
 
 /**
@@ -70,6 +72,9 @@ export const ROSTER = deepFreeze([
   'lancer',
   'wind',
   'mage',
+  // En queue, comme le veut la règle ci-dessus : le diff de la matrice ne doit
+  // contenir que des ajouts.
+  'golem',
 ]);
 
 /** @param {string} id */

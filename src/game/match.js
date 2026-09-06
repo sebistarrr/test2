@@ -107,7 +107,16 @@ export class Match {
      */
     this.teams = teams ? teams.slice(0, n) : els.map((_, i) => i);
 
-    this.fighters = els.map((el, i) => new Fighter(el, i, rng, spawnFor(i, n)));
+    /**
+     * `el.maxHp` est **une valeur de fiche**, pas une option de partie : elle
+     * est absente des cinq premières fiches, qui retombent donc sur les 100 du
+     * cahier des charges, et vaut 200 chez le Golem — dont c'est toute la
+     * défense. À ne pas confondre avec les PV réglables retirés du dépôt, qui
+     * étaient un curseur offert au joueur.
+     */
+    this.fighters = els.map(
+      (el, i) => new Fighter(el, i, rng, spawnFor(i, n), el.maxHp ?? MATCH.maxHp),
+    );
     this.fighters.forEach((f, i) => { f.team = this.teams[i]; });
     // `a` et `b` restent les deux premiers : le HUD du duel, la mise au point et
     // l'écran de fin les lisent, et ils n'ont de sens qu'à deux.

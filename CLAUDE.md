@@ -1,8 +1,9 @@
 # CLAUDE.md — mémoire du projet
 
-Duels **à deux, en 2 contre 2 ou en bataille royale**, avec cinq combattants
-repris de la chaîne « ballthingsim » — le Pistolero, le Ronin, l’Hoplite,
-le Shinobi et le Druide — sur un moteur écrit d'après les vidéos de référence.
+Duels **à deux, en 2 contre 2 ou en bataille royale**, avec six combattants :
+cinq repris de la chaîne « ballthingsim » — le Pistolero, le Ronin, l’Hoplite,
+le Shinobi et le Druide — et **un inventé**, le Golem, sur un moteur écrit
+d'après les vidéos de référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -64,9 +65,10 @@ de navigation, pas un besoin.
 
 ## Roster
 
-**Cinq combattants, tous jouables**, relevés sur trois vidéos « ballthingsim »
-en 576 × 1024, 30 fps (*Outlaw vs Bladesman*, *Dragoon vs Outlaw*, *Dragoon vs
-Magia*).
+**Six combattants, tous jouables.** Cinq sont relevés sur trois vidéos
+« ballthingsim » en 576 × 1024, 30 fps (*Outlaw vs Bladesman*, *Dragoon vs
+Outlaw*, *Dragoon vs Magia*) ; **le sixième, le Golem, est inventé** — aucune
+de ses valeurs ne peut donc porter `mesuré`, tout y est `calé` ou `déduit`.
 
 | Personnage | Signature |
 | --- | --- |
@@ -75,6 +77,7 @@ Magia*).
 | `lancer` **HOPLITE** | chargeur, **lance braquée sur le cap** (`weapon.spin = 0`), charge en ligne droite, **164 px, la plus longue portée du jeu**, +2 dégâts par touche, **Foudre tombante** qui le sort de l'arène. Porte le **Dôme de drain**, greffé |
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
+| `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** au lieu de 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 25 PV qui
 sont de **vrais combattants du tableau**, dans le camp du Shinobi, avec **tous
@@ -88,7 +91,7 @@ renomme pas : il n'est montré à personne et le changer toucherait `ROSTER`,
 `abilities/index.js`, les trois registres, les noms de fichiers et les URL
 d'archive. Seuls `name`/`nameRef` changent.
 
-Les cinq noms sont des **archétypes, pas des noms propres**, sur le patron de
+Les six noms sont des **archétypes, pas des noms propres**, sur le patron de
 SHINOBI. Trois conséquences :
 
 - **l'article revient** : « le Pistolero », « l'Hoplite », « le Druide » ;
@@ -105,15 +108,16 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 `pixelart/outlaw.js`). Un commentaire qui cite un élément disparu parle d'une
 **provenance**, pas d'un fichier à ouvrir.
 
-**Relevé de matrice courant** (`tools/matrix-reference.txt`), 12 duels hors
-miroir chacun : Druide 8, Hoplite 7, Shinobi 7, Pistolero 5, Ronin 3 — après
-le +20 % de vitesse du Pistolero et du Druide, et le passage du Hoplite à
-8 dégâts de départ (+1 par touche au lieu de +2), demandés et repris dans la
-matrice.
-Écart **3 à 8**, connu et non corrigé — le corriger demanderait un
-rééquilibrage complet. **La matrice ne joue chaque paire qu'une fois : elle
-exagère les écarts, et peut aussi en cacher un.** Avant de conclure qu'un
-« dernier » doit remonter, le remesurer **sur les deux camps**.
+**Relevé de matrice courant** (`tools/matrix-reference.txt`), 15 duels hors
+miroir chacun : Druide 11, Pistolero 8, Hoplite 8, Shinobi 8, Ronin 5,
+Golem 5.
+Écart **5 à 11**, connu et non corrigé — le corriger demanderait un
+rééquilibrage complet. **La matrice ne joue chaque paire qu'une fois, et
+toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
+un.** Le Golem le montre en grand — 5/15 ici, mais **54/100** sur un banc à
+10 seeds × les deux camps, parce qu'il est en queue de `ROSTER` donc toujours
+camp B. Avant de conclure qu'un « dernier » doit remonter, le remesurer **sur
+les deux camps**.
 D'où vient l'écart, et les deux fois où la matrice a menti dans un sens puis
 dans l'autre : `docs/PIEGES.md`.
 
@@ -129,19 +133,23 @@ peut blesser qui.
 | --- | --- | --- |
 | Duel | 2 identifiants | omis → `[0, 1]` |
 | 2 contre 2 | 4 identifiants | `[0, 0, 1, 1]` |
-| Bataille royale | 3 à 5 identifiants | omis → chacun le sien |
+| Bataille royale | 3 à 6 identifiants | omis → chacun le sien |
 
 `ui/select.js` porte la table des formats et fabrique les camps ; `main.js` les
 lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format ne demande
 **qu'une entrée dans cette table** — pas une ligne de moteur.
 
-- **Les points de vie ne se règlent pas** — demandé. Chacun part des 100 du
-  cahier des charges ; le champ, ses bornes et le paramètre du moteur ont été
-  **retirés** plutôt que masqués.
-- **`Fighter.maxHp` reste par combattant** (le Clone d'ombre naît à 25), donc
-  **rien ne doit diviser par une constante** : un seuil écrit en valeur absolue
-  devient faux le jour où la grandeur qu'il compare cesse d'être constante, et
-  il ne crie pas en devenant faux.
+- **Les points de vie ne se règlent pas** — demandé. Il n'y a plus d'option de
+  partie : le champ, ses bornes et le paramètre du moteur ont été **retirés**
+  plutôt que masqués.
+- **Mais `maxHp` est une valeur de fiche**, lue en une ligne par `Match`
+  (`el.maxHp ?? MATCH.maxHp`) : absente des cinq premières fiches, qui gardent
+  les 100 du cahier des charges, et à **200 chez le Golem**. À ne pas confondre
+  avec le curseur retiré ci-dessus.
+- **`Fighter.maxHp` est donc par combattant** (le Golem 200, le Clone d'ombre
+  25), donc **rien ne doit diviser par une constante** : un seuil écrit en
+  valeur absolue devient faux le jour où la grandeur qu'il compare cesse d'être
+  constante, et il ne crie pas en devenant faux.
 - **`MATCH.timeScale` règle la vitesse de déroulement, et vaut 1.** C'est un
   facteur de **temps réel consommé** (`acc += elapsed * timeScale` dans
   `core/loop.js`), pas un facteur de pas : la même suite de pas fixes est jouée,
@@ -376,12 +384,15 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   si c'est la **fréquence** de l'action ou son **taux de réussite** qui est faux
   (serrer `lunge.cone` *améliore* la cadence).
 - Un banc qui plafonne dit que le levier n'est pas le bon → **mesurer d'où vient
-  le dégât** (`opts.kind` dans `game.damage`) avant de balayer à l'aveugle.
+  le dégât** (`opts.kind` dans `game.damage`) avant de balayer à l'aveugle —
+  repayé sur le Golem, dont le pouvoir le plus voyant ne pèse que 9,7 %.
 - La source du dégât dit *quoi* regarder, pas *quelle poignée tourner*.
 - **Deux leviers qui marchent chacun ne s'additionnent pas** : en régler un,
   remesurer, et seulement ensuite en toucher un autre.
 - **Le levier d'un combattant faible est parfois chez un autre** — et le pouvoir
   d'un combattant peut peser sur un troisième.
+- **Une grosse barre de vie décide de la *forme* des affrontements** : le total
+  se règle sur la fiche, la forme ne s'y règle pas (Golem, 200 PV).
 - **Lire le banc ligne par ligne, pas seulement en total** : un total stable
   peut cacher une redistribution.
 - Un balayage **non monotone** est du bruit : le paramètre n'équilibre pas, et

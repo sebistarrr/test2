@@ -20,15 +20,15 @@ relevé, puis les pièges eux-mêmes.
 | **Pièges déjà rencontrés** | 124 |
 | &nbsp;&nbsp;· Mesurer | 126 |
 | &nbsp;&nbsp;· Équilibrer | 161 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 256 |
-| &nbsp;&nbsp;· Éditer les données | 295 |
-| &nbsp;&nbsp;· Interface et rendu | 328 |
-| &nbsp;&nbsp;· Refactoriser | 398 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 439 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 441 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 484 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 527 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 546 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 277 |
+| &nbsp;&nbsp;· Éditer les données | 316 |
+| &nbsp;&nbsp;· Interface et rendu | 349 |
+| &nbsp;&nbsp;· Refactoriser | 419 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 460 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 462 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 505 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 548 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 567 |
 
 ---
 
@@ -252,6 +252,27 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   même pas. Le garde-fou n'est pas la relecture mais la **matrice**.
 - **Rééquilibrer un combattant affaibli** : ne toucher que ses paramètres `calé`
   ou `déduit`, jamais les `mesuré`.
+- **Une grosse barre de vie décide de la *forme* des affrontements, et aucun
+  levier de la fiche ne la rattrape.** Le Golem naît avec 200 PV au lieu de 100
+  (demandé) et gagne d'abord 89 duels sur 100. Le total se règle sans peine —
+  8 dégâts de mêlée au lieu de 14 le ramènent à 54/100 — mais **la forme, non** :
+  il reste à 18/20 contre le Ronin et 5/20 contre le Druide. La raison est
+  arithmétique : contre un adversaire qui place 2 ou 3 dégâts par seconde,
+  doubler la barre de vie double le temps qu'il faut pour tuer le Golem, et ce
+  temps-là, le Golem le passe à frapper ; contre un gros DPS, les 200 PV ne
+  changent presque rien. Chaque levier essayé remonte un camp *et* descend
+  l'autre : baisser sa mêlée pénalise le Ronin (trop fort) comme le Shinobi
+  (déjà trop faible), baisser son recul de 500 à 300 rend le Ronin jouable
+  (18 → 14) et effondre le Shinobi (7 → 2). **Le levier d'un écart de forme est
+  chez les autres fiches, pas dans celle qu'on tient** — c'est le rééquilibrage
+  complet, pas un réglage de plus.
+- **L'ablation par source dit quel levier existe, l'intuition dit le contraire.**
+  Toujours sur le Golem : son Onde sismique *paraît* être son levier n° 1 (elle
+  ne rate jamais, elle ralentit, elle repousse), et elle a été descendue de 6 à 3
+  sur cette conviction. L'ablation (`opts.kind` dans `game.damage`, 100 duels)
+  lui donne **9,7 %** des dégâts — contre 44 % au poing, 28 % aux éclats et 18 %
+  au Séisme, dont personne ne se méfiait. Elle est remontée à 6. Mesurer d'où
+  vient le dégât **avant** de balayer, pas après trois balayages plats.
 
 ### Déterminisme et ordre d'exécution
 

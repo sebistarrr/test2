@@ -1,13 +1,14 @@
-# Elemental Duel — cinq combattants, trois formats
+# Elemental Duel — six combattants, trois formats
 
-Duels **à deux, en 2 contre 2 ou en bataille royale** (jusqu'à cinq, chacun pour
-soi), avec des combattants repris de la chaîne **« ballthingsim »**, en
-**HTML + CSS + JavaScript** avec un rendu **Canvas 2D**. Aucune dépendance,
-aucun build : le dépôt se publie tel quel sur GitHub Pages.
+Duels **à deux, en 2 contre 2 ou en bataille royale** (jusqu'à six, chacun pour
+soi), avec cinq combattants repris de la chaîne **« ballthingsim »** et un
+sixième inventé, en **HTML + CSS + JavaScript** avec un rendu **Canvas 2D**.
+Aucune dépendance, aucun build : le dépôt se publie tel quel sur GitHub Pages.
 
-Chaque combattant est relevé image par image sur sa vidéo — couleurs à la
+Les cinq premiers sont relevés image par image sur leur vidéo — couleurs à la
 pipette, portées au pixel, cadences chronométrées. Ce qui n'a pas pu être
-mesuré est calé au banc d'essai, et le dit.
+mesuré est calé au banc d'essai, et le dit. Le sixième, le Golem, n'a pas de
+vidéo : **tout chez lui est calé**, et sa fiche ne porte pas un seul `mesuré`.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
@@ -16,6 +17,7 @@ mesuré est calé au banc d'essai, et le dit.
 | **Hoplite** | Lance d'orage (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Foudre tombante / THUNDERFALL — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
 | **Druide** | Bâton de ronce (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Orage de ronces / THORN STORM |
+| **Golem** (inventé) | Poing de pierre — **la portée la plus courte du jeu** (100 px), et la rotation d'arme la plus lente | **le plus lent** (370 px/s), **le plus gros** (rayon 50 contre 41) et **200 PV** au lieu de 100 : il encaisse chaque coup en entier, il en encaisse simplement deux fois plus. Onde sismique sur horloge, éclats de roche pour qui reste au loin | Séisme / EARTHQUAKE (secousse sur 260 px, puis +35 % de vitesse) |
 
 ### Trois formats
 
@@ -23,7 +25,7 @@ mesuré est calé au banc d'essai, et le dit.
 | --- | --- |
 | **Duel** | un contre un, le format d'origine — c'est lui, et lui seul, dont l'équilibrage est relevé |
 | **2 contre 2** | deux équipes de deux. Les armes ne touchent que le camp adverse, mais les **corps se bousculent entre tous** : un coéquipier reste un obstacle |
-| **Bataille royale** | 3 à 5 combattants, chacun pour soi, dernier debout |
+| **Bataille royale** | 3 à 6 combattants, chacun pour soi, dernier debout |
 
 Le moteur ne connaît aucun de ces trois noms : il reçoit une liste de
 combattants et **un camp pour chacun**. « 2 contre 2 » et « chacun pour soi »
