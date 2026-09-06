@@ -73,8 +73,11 @@ export const MAGE = fiche({
    * intègre à la main et pilote au cap, il ne reporte pas les constantes de
    * Matter.js. 520 est la valeur qui rend la cadence relevée sans que le Mage
    * devienne injoignable — voir la matrice dans `CLAUDE.md`.
+   *
+   * **+20 % demandé par-dessus** : 520 → 624, écart assumé au calage
+   * ci-dessus.
    */
-  movement: { speed: 520, turnRate: 2, seek: 0.34 },
+  movement: { speed: 624, turnRate: 2, seek: 0.34 },
 
   weapon: {
     name: 'Bâton de ronce',

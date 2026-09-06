@@ -179,8 +179,10 @@ export const OUTLAW = fiche({
    *  Calé à 455 (à 604 px/s dans cette arène le pistolero traverse le cadre
    *  plus vite qu'il ne recharge, et la matrice le fait gagner partout), puis
    *  **écart assumé, demandé** : ×1,2 supplémentaire → 546, sous le 604
-   *  mesuré. Voir la matrice après ce changement dans les invariants. */
-  movement: { speed: 546, turnRate: 1.9, seek: 0.44 },
+   *  mesuré. **Un second ×1,2, demandé** : 546 → 655, cette fois au-dessus du
+   *  604 mesuré — écart assumé une deuxième fois. Voir la matrice après ce
+   *  changement dans les invariants. */
+  movement: { speed: 655, turnRate: 1.9, seek: 0.44 },
 
   weapon: {
     name: 'Pacificateur',

@@ -349,8 +349,10 @@ export const LANCER = fiche({
       /** Mesuré : la stat « Damage » part de 10,00 et monte de 2,00 par touche
        *  portée — 10 → 12 → 14 → 16 → 18 → 20 sur la vidéo, avec des chutes de
        *  PV de l'Outlaw exactement égales (100 → 90 → 78 → 64 → 48 → 30).
-       *  Six touches ont suffi. Aucun plafond n'est visible sur 33,6 s. */
-      damage: (f) => Math.max(10, Math.round(f.stacks)),
+       *  Six touches ont suffi. Aucun plafond n'est visible sur 33,6 s.
+       *  **Écart assumé, demandé** : départ à 8 au lieu de 10 — voir
+       *  `progression.stack` et `onHit` plus bas pour la même demande. */
+      damage: (f) => Math.max(8, Math.round(f.stacks)),
       /**
        * **Mesuré, et c'est la charge qui l'a rendu au relevé.** Sur la vidéo
        * les touches de lance tombent à 13,63 / 14,77 / 16,37 s : le verrou réel
@@ -391,25 +393,20 @@ export const LANCER = fiche({
        */
       selfRecoil: 460,
       /**
-       * Mesuré : **+2,00 par touche portée**, relevé au PV près. La stat passe
-       * 10 → 12 → 14 → 16 → 18 → 20 aux instants 12,53 / 13,63 / 14,77 /
-       * 16,37 / 21,00 s, et l'Outlaw descend de 100 à 30 PV : 10+12+14+16+18
-       * = 70, exactement les cinq touches placées.
+       * Mesuré à l'origine : **+2,00 par touche portée**, relevé au PV près. La
+       * stat passait 10 → 12 → 14 → 16 → 18 → 20 aux instants 12,53 / 13,63 /
+       * 14,77 / 16,37 / 21,00 s, et l'Outlaw descendait de 100 à 30 PV :
+       * 10+12+14+16+18 = 70, exactement les cinq touches placées.
        *
-       * Le plafond, lui, est **déduit** : la vidéo n'en montre aucun, mais elle
-       * s'arrête à 20 parce que le Lancier meurt, pas parce que la stat bute —
-       * et *tous* les combattants à stat croissante du roster en ont un
-       * (Araignée 14, Serpent 14, Hors-la-loi 8, Bretteur 3). Sans plafond la
-       * montée est quadratique en durée de duel.
-       *
-       * Il valait 16 du temps de la visée, où le mécanisme donnait peu de
-       * touches et où il fallait bien qu'elles pèsent. La charge sur cap en
-       * donne davantage : à 16 le Lancier monte à **19 victoires sur 30**,
-       * hors bande, et à 14 il tombe à 12. À **15**, il rend 2,43 PV/s et
-       * tient 13 — c'est la valeur qui satisfait la bande sans s'éloigner du
-       * budget relevé.
+       * **Écart assumé, demandé** : le gain passe à **+1,00 par touche**,
+       * départ à 8 (`progression.stack` et le plancher de `damage` ci-dessus).
+       * Le plafond reste 16, désormais **déduit** de la même règle que les
+       * autres combattants à stat croissante — sans plafond la montée est
+       * quadratique en durée de duel. À gain divisé par deux, il faut deux
+       * fois plus de touches pour l'atteindre : la matrice doit être
+       * regénérée et comparée après ce changement (invariant 3).
        */
-      onHit: { stackGain: 2, stackMax: 16 },
+      onHit: { stackGain: 1, stackMax: 16 },
     },
   },
 
@@ -570,8 +567,9 @@ export const LANCER = fiche({
   /** Le Lancier n'a aucun projectile : tout passe par la lance et le Bond. */
   projectiles: {},
 
-  /** Mesuré : « Damage: 10.00 » à la première image du duel. */
-  progression: { stack: 10, stack2: 0 },
+  /** Mesuré à l'origine : « Damage: 10.00 » à la première image du duel.
+   *  **Écart assumé, demandé** : départ à 8, voir `weapon.melee` ci-dessus. */
+  progression: { stack: 8, stack2: 0 },
 
   hud: {
     stats: [(f) => `Damage: ${formatHalf(f.stacks)}`],

@@ -106,8 +106,11 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 12 duels hors
-miroir chacun : Hoplite 11, Druide 7, Ronin 5, Shinobi 4, Pistolero 3.
-Écart **3 à 11**, connu et non corrigé — le corriger demanderait un
+miroir chacun : Druide 8, Hoplite 7, Shinobi 7, Pistolero 5, Ronin 3 — après
+le +20 % de vitesse du Pistolero et du Druide, et le passage du Hoplite à
+8 dégâts de départ (+1 par touche au lieu de +2), demandés et repris dans la
+matrice.
+Écart **3 à 8**, connu et non corrigé — le corriger demanderait un
 rééquilibrage complet. **La matrice ne joue chaque paire qu'une fois : elle
 exagère les écarts, et peut aussi en cacher un.** Avant de conclure qu'un
 « dernier » doit remonter, le remesurer **sur les deux camps**.
