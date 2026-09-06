@@ -543,6 +543,14 @@ export class Fighter {
   drawWeapon(ctx) {
     const w = this.el.weapon;
     const map = PIXEL_MAPS[w.head.sprite];
+    /**
+     * **Un combattant sans arme n'en dessine pas.** Le Mannequin ne déclare
+     * aucun `head.sprite` ; sans ce garde, la ligne suivante lisait
+     * `PIXEL_MAPS[undefined].h` et plantait au premier rendu. Générique et sans
+     * nom de combattant : le moteur constate qu'il n'y a rien à peindre, il ne
+     * sait pas de qui il s'agit (invariant 12).
+     */
+    if (!map) return;
     const headH = map.h * w.head.scale;
 
     ctx.save();

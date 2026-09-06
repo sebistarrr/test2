@@ -1,10 +1,12 @@
 # Fiches des combattants
 
-**Six combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
+**Sept combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
 et **Ronin** du duel *Outlaw vs Bladesman*, **Hoplite** de *Dragoon vs Outlaw*,
 **Druide** construit sur la mécanique de Magia dans *Dragoon vs Magia*, et
 **Shinobi**, reskin du Vent des vidéos *Elemental Armory League*. Le sixième,
 le **Golem**, est **inventé** : il n'a pas de vidéo, donc pas un seul `mesuré`.
+Le septième, le **Mannequin**, l'est aussi — c'est une **cible d'entraînement**
+sans arme ni dégâts, faite pour qu'on regarde les mécaniques des six autres.
 
 Ces fiches sont la **transcription lisible** de `src/data/fighters/`. Le code
 est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
@@ -20,17 +22,18 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 34 |
-| 📦 Archive — les huit éléments supprimés | 71 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 145 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 935 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 962 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1219 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1784 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2217 |
-| Équilibrage du roster | 2341 |
-| Règles communes (moteur) | 2439 |
-| Comment les mesures ont été prises | 2463 |
+| Comment lire une valeur | 37 |
+| 📦 Archive — les huit éléments supprimés | 74 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 148 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 938 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 965 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1222 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1787 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2220 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2344 |
+| Équilibrage du roster | 2430 |
+| Règles communes (moteur) | 2528 |
+| Comment les mesures ont été prises | 2552 |
 
 ## Comment lire une valeur
 
@@ -2338,6 +2341,92 @@ faible) ; baisser son recul rend le Ronin jouable et effondre le Shinobi à
 2/20. Le corriger demanderait de toucher **les autres fiches** — c'est le
 rééquilibrage complet que le dépôt a déjà refusé une fois, pas un réglage de
 plus sur celle-ci.
+
+## 🎯 MANNEQUIN — `dummy` (affiché « MANNEQUIN » en français, « DUMMY » en anglais)
+
+**Le seul combattant du dépôt dont l'utilité n'est pas d'être joué, mais d'être
+frappé.** Demandé comme tel : sans arme, sans dégâts, blanc, 200 PV, pour servir
+de partenaire de démonstration. On le met en face d'un combattant et on voit
+enfin *ce que ce combattant fait*, sans qu'un duel ne se joue par-dessus.
+
+Comme le Golem, il est **inventé** : pas de vidéo, donc pas un seul `mesuré`.
+
+### Valeurs
+
+| Bloc | Valeur | Source |
+| --- | --- | --- |
+| Corps | **blanc pur `#ffffff`**, contour noir de **6 px** (5 partout ailleurs), chiffre de PV **noir** | demandé + déduit |
+| Corps touché | **`#ff8a8a`, il rougit** — partout ailleurs le corps *blanchit*, ce qui sur un corps blanc serait un coup invisible | déduit |
+| Aura | grise, **permanente** (`showWhen` sans condition) — seul cas du roster | déduit |
+| Points de vie | **200** | demandé |
+| Déplacement | 430 px/s, virage 1,6, **`seek: 0`** — il dérive, il ne poursuit personne | calé |
+| Arme | **aucune** : pas de `head.sprite`, `reach: 0`, hitbox `from`/`to`/`radius` à 0, `melee.damage: 0` | demandé |
+| Pouvoir / ultime / spécial | aucun. `ability.cooldown: Infinity` (affiché « passif »), jauge d'ultime **plate** et libellée `NO ULTIMATE` | demandé |
+| HUD | **les dégâts qu'il a subis**, pas une stat à lui | déduit |
+
+### Pourquoi ces valeurs-là, et pas d'autres
+
+- **Blanc sur arène blanche.** C'est frontalement le piège que le dépôt
+  documente depuis les jaunes pâles du Lancier — *ce qui est clair n'existe pas
+  sur fond clair*. Trois compensations, toutes assumées : contour porté à 6 px,
+  chiffre de PV passé au noir (le crème `#f5f2ea` du reste du roster
+  disparaîtrait), et **aura permanente** pour poser un cerne gris autour du
+  disque. Le corps touché rougit au lieu de blanchir, pour la même raison.
+- **`seek: 0`, il ne poursuit pas.** Une cible *mobile* montre les mécaniques de
+  poursuite qu'une cible plantée ne montrerait pas (orbes guidées du Druide,
+  charge de l'Hoplite, canon asservi du Pistolero) ; une cible qui *chargerait*
+  fausserait la lecture en allant au-devant des coups. Il dérive en ligne
+  droite et rebondit, comme l'Hoplite.
+- **Un module vide, et c'est une garantie de déterminisme.** Le Mannequin ne
+  consomme **aucune valeur de `game.rng`** : le mettre en face d'un combattant
+  ne décale pas le flux de simulation de celui-ci. Ce qu'on voit l'adversaire
+  faire ici, il le ferait pareil ailleurs — sans quoi le banc d'observation
+  mentirait sur ce qu'il observe.
+- **La ligne de HUD mesure l'adversaire**, pas lui : `maxHp − hp`, donc la
+  production réelle de l'autre depuis le début du duel. C'est la donnée qu'on
+  vient chercher en le posant sur le terrain.
+
+### Les deux cas limites qu'il a ouverts dans le moteur
+
+Aucune des six fiches précédentes ne les exerçait.
+
+1. **Un combattant sans arme.** `ui/select.js` prévoyait déjà le repli d'icône
+   (`head.sprite ?? projectile ?? icon`) — il n'avait simplement jamais servi.
+   `fighter.js`, lui, lisait `PIXEL_MAPS[undefined].h` et **plantait au premier
+   rendu** : il a fallu un garde d'une ligne dans `drawWeapon` (`if (!map)
+   return;`), générique, sans nom de combattant.
+2. **Un duel qui ne finit pas.** Le moteur n'a **aucune limite de temps** : une
+   partie ne s'arrête que par un mort (`knockout`). Deux Mannequins ne se
+   départagent donc jamais — c'est la seule ligne de `matrix-reference.txt` qui
+   porte `timeout`, à 200 s de simulation. Ce n'est pas un bug à corriger chez
+   lui : ajouter une limite de temps changerait le déroulé de **tous** les
+   duels du roster.
+
+Il ne peut pas non plus toucher, et c'est **structurel plutôt qu'inoffensif** :
+avec `from`/`to` à 0 et `radius: 0`, le segment tranchant se réduit au pivot et
+la condition de `weaponHit` devient « le centre adverse est à moins de son
+propre rayon du centre du Mannequin » — or `resolveBodies` maintient les deux
+corps séparés d'au moins la somme des rayons. `melee.damage: 0` n'est là qu'en
+ceinture et bretelles.
+
+### Ce que sa ligne de matrice mesure vraiment
+
+Les six lignes `… vs dummy` ne relèvent aucun équilibrage — le résultat est
+connu d'avance. En revanche, **200 PV divisés par la durée donnent la production
+de chacun contre une cible qui ne riposte pas**, ce qu'aucun autre banc du dépôt
+ne montre aussi directement :
+
+| Combattant | Durée moyenne | Production |
+| --- | --- | --- |
+| Shinobi | 32,8 s | **6,09 PV/s** |
+| Ronin | 34,5 s | 5,79 PV/s |
+| Hoplite | 36,5 s | 5,48 PV/s |
+| Druide | 38,2 s | 5,23 PV/s |
+| Pistolero | 47,4 s | 4,22 PV/s |
+| Golem | 72,5 s | **2,76 PV/s** |
+
+Le Golem produit **2,2 fois moins** que le Shinobi — l'exact contrepoids de ses
+200 PV, et la confirmation chiffrée du compromis décrit dans sa propre section.
 
 ## Équilibrage du roster
 

@@ -88,6 +88,13 @@ Deux clés facultatives, qui ne servent qu'à qui y déroge :
   plus large est **plus facile à toucher** : c'est un réglage d'équilibrage
   autant qu'un choix de dessin.
 
+**Un combattant peut n'avoir aucune arme** (le Mannequin) : `head.sprite: null`,
+`reach: 0` et une hitbox `from`/`to`/`radius` à zéro suffisent — la condition de
+`weaponHit` devient alors structurellement impossible, `drawWeapon` ne peint
+rien et la carte de sélection retombe sur l'icône. Il lui faut malgré tout les
+blocs `weapon`, `ability` et `ultimate` : le moteur et le HUD les lisent sans
+les tester.
+
 ### 3. `src/game/abilities/<id>.js` — les pouvoirs
 
 Implémente `init / update / drawUnder / drawOver / barValue`, plus les crochets

@@ -1,9 +1,10 @@
 # CLAUDE.md — mémoire du projet
 
-Duels **à deux, en 2 contre 2 ou en bataille royale**, avec six combattants :
+Duels **à deux, en 2 contre 2 ou en bataille royale**, avec sept combattants :
 cinq repris de la chaîne « ballthingsim » — le Pistolero, le Ronin, l’Hoplite,
-le Shinobi et le Druide — et **un inventé**, le Golem, sur un moteur écrit
-d'après les vidéos de référence.
+le Shinobi et le Druide — et **deux inventés**, le Golem et le Mannequin (une
+cible d'entraînement qui ne frappe pas), sur un moteur écrit d'après les vidéos
+de référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -65,10 +66,11 @@ de navigation, pas un besoin.
 
 ## Roster
 
-**Six combattants, tous jouables.** Cinq sont relevés sur trois vidéos
+**Sept combattants, tous jouables.** Cinq sont relevés sur trois vidéos
 « ballthingsim » en 576 × 1024, 30 fps (*Outlaw vs Bladesman*, *Dragoon vs
-Outlaw*, *Dragoon vs Magia*) ; **le sixième, le Golem, est inventé** — aucune
-de ses valeurs ne peut donc porter `mesuré`, tout y est `calé` ou `déduit`.
+Outlaw*, *Dragoon vs Magia*) ; **les deux derniers, le Golem et le Mannequin,
+sont inventés** — aucune de leurs valeurs ne peut donc porter `mesuré`, tout y
+est `calé` ou `déduit`.
 
 | Personnage | Signature |
 | --- | --- |
@@ -78,6 +80,7 @@ de ses valeurs ne peut donc porter `mesuré`, tout y est `calé` ou `déduit`.
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** au lieu de 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
+| `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, 200 PV. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 25 PV qui
 sont de **vrais combattants du tableau**, dans le camp du Shinobi, avec **tous
@@ -91,7 +94,7 @@ renomme pas : il n'est montré à personne et le changer toucherait `ROSTER`,
 `abilities/index.js`, les trois registres, les noms de fichiers et les URL
 d'archive. Seuls `name`/`nameRef` changent.
 
-Les six noms sont des **archétypes, pas des noms propres**, sur le patron de
+Les sept noms sont des **archétypes, pas des noms propres**, sur le patron de
 SHINOBI. Trois conséquences :
 
 - **l'article revient** : « le Pistolero », « l'Hoplite », « le Druide » ;
@@ -108,10 +111,16 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 `pixelart/outlaw.js`). Un commentaire qui cite un élément disparu parle d'une
 **provenance**, pas d'un fichier à ouvrir.
 
-**Relevé de matrice courant** (`tools/matrix-reference.txt`), 15 duels hors
-miroir chacun : Druide 11, Pistolero 8, Hoplite 8, Shinobi 8, Ronin 5,
-Golem 5.
-Écart **5 à 11**, connu et non corrigé — le corriger demanderait un
+**Relevé de matrice courant** (`tools/matrix-reference.txt`), 18 duels hors
+miroir chacun : Druide 14, Pistolero 11, Hoplite 11, Shinobi 11, Ronin 8,
+Golem 8, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
+**Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
+d'équilibrage : 200 PV divisés par la durée donnent la production réelle de
+chacun contre une cible qui ne riposte pas — Shinobi 6,1, Ronin 5,8,
+Hoplite 5,5, Druide 5,2, Pistolero 4,2, Golem 2,8 PV/s. La ligne
+`dummy vs dummy` finit en **`timeout`** : deux combattants sans dégâts ne se
+départagent jamais, le moteur n'ayant aucune limite de temps.
+Écart **8 à 14** entre les six qui frappent, connu et non corrigé — le corriger demanderait un
 rééquilibrage complet. **La matrice ne joue chaque paire qu'une fois, et
 toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
 un.** Le Golem le montre en grand — 5/15 ici, mais **54/100** sur un banc à
@@ -133,7 +142,7 @@ peut blesser qui.
 | --- | --- | --- |
 | Duel | 2 identifiants | omis → `[0, 1]` |
 | 2 contre 2 | 4 identifiants | `[0, 0, 1, 1]` |
-| Bataille royale | 3 à 6 identifiants | omis → chacun le sien |
+| Bataille royale | 3 à 7 identifiants | omis → chacun le sien |
 
 `ui/select.js` porte la table des formats et fabrique les camps ; `main.js` les
 lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format ne demande
@@ -447,6 +456,9 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   en **ont** un — un remplissage noir s'y noie.
 - **Assombrir un corps rend illisible tout ce qui était déjà sombre** : vérifier
   à l'écran (`tools/shot.mjs`) après tout changement de `look.body`.
+- **Un corps blanc sur l'arène blanche demande quatre compensations** — contour,
+  chiffre de PV, aura permanente, et un `bodyHit` qui **rougit** au lieu de
+  blanchir (Mannequin).
 - **Une passe de couleur incomplète n'est pas une passe de couleur** : faire le
   tour du bloc `look` **en entier**, `flair` compris.
 - Une ruée a **un seul point de sortie** (`endRush()`, `endDash()`) : vitesse,
@@ -456,7 +468,10 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   `f.state.spec` + `specialBar(f)` optionnelle), il ne remplace pas l'ultime ;
   les deux rangées du HUD passent par le **même tracé** (`drawGauge`).
 - Un élément sans `head.sprite` doit avoir une chaîne de repli sprite →
-  projectile → icône à la sélection.
+  projectile → icône à la sélection — et un **garde dans `drawWeapon`**, qui
+  lisait `PIXEL_MAPS[undefined].h` (Mannequin).
+- **Un combattant sans dégâts ne finit jamais son duel** : le moteur n'a pas de
+  limite de temps, une partie ne s'arrête que par un mort.
 - `imageSmoothingQuality = 'high'` coûtait 72 % du fil principal à l'export :
   rester en `'low'`. Et `captureStream()` ne s'appelle **qu'une fois par
   session**.

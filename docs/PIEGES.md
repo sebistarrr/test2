@@ -20,15 +20,15 @@ relevé, puis les pièges eux-mêmes.
 | **Pièges déjà rencontrés** | 124 |
 | &nbsp;&nbsp;· Mesurer | 126 |
 | &nbsp;&nbsp;· Équilibrer | 161 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 277 |
-| &nbsp;&nbsp;· Éditer les données | 316 |
-| &nbsp;&nbsp;· Interface et rendu | 349 |
-| &nbsp;&nbsp;· Refactoriser | 419 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 460 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 462 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 505 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 548 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 567 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 302 |
+| &nbsp;&nbsp;· Éditer les données | 341 |
+| &nbsp;&nbsp;· Interface et rendu | 374 |
+| &nbsp;&nbsp;· Refactoriser | 444 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 485 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 487 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 530 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 573 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 592 |
 
 ---
 
@@ -273,6 +273,31 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   lui donne **9,7 %** des dégâts — contre 44 % au poing, 28 % aux éclats et 18 %
   au Séisme, dont personne ne se méfiait. Elle est remontée à 6. Mesurer d'où
   vient le dégât **avant** de balayer, pas après trois balayages plats.
+
+- **Un combattant blanc sur une arène blanche demande trois compensations, pas
+  une.** Le Mannequin est blanc pur (demandé) sur un fond blanc : le contour
+  passe de 5 à 6 px, le chiffre de PV du crème au noir, et l'aura devient
+  **permanente** pour poser un cerne gris autour du disque. La quatrième est la
+  moins évidente : partout ailleurs le corps touché **blanchit** (`#e4e4e6`), ce
+  qui sur un corps déjà blanc rendrait chaque coup invisible — le sien
+  **rougit**. C'est la leçon des jaunes pâles du Lancier, prise à l'extrême.
+- **Un combattant sans arme, et un combattant sans dégâts, sont deux cas limites
+  du moteur.** Le Mannequin les a ouverts tous les deux. Sans `head.sprite`,
+  `Fighter.drawWeapon` lisait `PIXEL_MAPS[undefined].h` et plantait au premier
+  rendu (`ui/select.js`, lui, prévoyait déjà le repli d'icône : il n'avait
+  jamais servi) — un garde d'une ligne suffit, et il doit rester **générique**,
+  sans nom de combattant. Sans dégâts, le duel **ne se termine jamais** : le
+  moteur n'a aucune limite de temps, une partie ne s'arrête que par un mort. La
+  ligne `dummy vs dummy` de la matrice finit donc en `timeout` à 200 s. Ce n'est
+  pas à corriger chez lui : ajouter une limite de temps changerait le déroulé de
+  **tous** les duels.
+- **Une cible qui ne riposte pas est un banc de DPS gratuit.** Les lignes
+  `… vs dummy` de la matrice ne relèvent aucun équilibrage (le résultat est
+  connu d'avance), mais 200 PV divisés par la durée donnent la production réelle
+  de chacun : Shinobi 6,09, Ronin 5,79, Hoplite 5,48, Druide 5,23, Pistolero
+  4,22, Golem 2,76 PV/s. C'est la mesure que `tools/probe.mjs` approchait par
+  les touches, obtenue ici directement — et elle confirme le compromis du
+  Golem, qui produit 2,2 fois moins que le Shinobi pour 2 fois plus de PV.
 
 ### Déterminisme et ordre d'exécution
 

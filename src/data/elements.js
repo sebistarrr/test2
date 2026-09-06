@@ -43,6 +43,7 @@ import { BLADESMAN } from './fighters/bladesman.js';
 import { LANCER } from './fighters/lancer.js';
 import { MAGE } from './fighters/mage.js';
 import { GOLEM } from './fighters/golem.js';
+import { DUMMY } from './fighters/dummy.js';
 
 export const ELEMENTS = deepFreeze({
   wind: WIND,
@@ -51,6 +52,7 @@ export const ELEMENTS = deepFreeze({
   lancer: LANCER,
   mage: MAGE,
   golem: GOLEM,
+  dummy: DUMMY,
 });
 
 /**
@@ -75,6 +77,12 @@ export const ROSTER = deepFreeze([
   // En queue, comme le veut la règle ci-dessus : le diff de la matrice ne doit
   // contenir que des ajouts.
   'golem',
+  // Le Mannequin est jouable comme les autres — c'est tout l'intérêt : on le
+  // choisit pour regarder un combattant à l'œuvre. Ses lignes de matrice sont
+  // structurellement constantes (il ne peut pas gagner), et sa ligne miroir est
+  // la seule du fichier à finir en `timeout` : deux combattants sans dégâts ne
+  // se départagent jamais.
+  'dummy',
 ]);
 
 /** @param {string} id */

@@ -33,6 +33,7 @@ import { BLADESMAN_FLAMEBLADE, BLADESMAN_FLAMEWHEEL, ICON_SABRE } from './pixela
 import { LANCER_SPEAR, ICON_LANCE } from './pixelart/lancer.js';
 import { MAGE_STAFF, MAGE_ORB, MAGE_FLOWER, ICON_STAFF } from './pixelart/mage.js';
 import { GOLEM_FIST, GOLEM_SHARD, ICON_GOLEM } from './pixelart/golem.js';
+import { ICON_DUMMY } from './pixelart/dummy.js';
 
 export const PIXEL_MAPS = deepFreeze({
   // Hors-la-loi
@@ -59,4 +60,6 @@ export const PIXEL_MAPS = deepFreeze({
   golemFist: GOLEM_FIST,
   golemShard: GOLEM_SHARD,
   iconGolem: ICON_GOLEM,
+  // Mannequin — une seule carte : il n'a ni arme ni projectile
+  iconDummy: ICON_DUMMY,
 });
