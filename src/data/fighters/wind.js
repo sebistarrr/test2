@@ -425,7 +425,11 @@ export const WIND = fiche({
       sprite: 'windShuriken',
       scale: 4.35,
       speed: 430,
-      damage: 4,
+      /** **4 → 3, demandé.** C'est le projectile de la Tornade de shurikens
+       *  (`ultimate.volley.projectile`), et rien d'autre ne le tire : le
+       *  changement ne touche donc que la décharge d'ultime, pas la Tornade
+       *  ordinaire, dont les dégâts sortent de `ability.tornado.damage`. */
+      damage: 3,
       radius: 15,
       life: 2.2,
       bounces: 1,

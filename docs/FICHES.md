@@ -29,11 +29,11 @@ les recale en une commande.
 | ⚔ RONIN — `bladesman` (affiché « RONIN ») | 965 |
 | 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1222 |
 | 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1787 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2260 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2464 |
-| Équilibrage du roster | 2550 |
-| Règles communes (moteur) | 2648 |
-| Comment les mesures ont été prises | 2672 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2279 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2492 |
+| Équilibrage du roster | 2578 |
+| Règles communes (moteur) | 2676 |
+| Comment les mesures ont été prises | 2700 |
 
 ## Comment lire une valeur
 
@@ -2256,6 +2256,25 @@ le ramène ensuite.
 Pistolero 11 → 16, vs Ronin 10 → 7, vs Shinobi 4 → 1, vs Golem 15 → 11. Se
 projeter en arrière l'éloigne des mêlées rapides qui le punissaient, et le sort
 de portée de ses propres orbes guidées contre ceux qui restent au loin.
+
+### Dégâts du shuriken d'ultime : 4 → 3
+
+**Demandé.** `projectiles.crescent.damage`, le projectile que tire la Tornade
+de shurikens (`ultimate.volley.projectile`) — et rien d'autre ne le tire, donc
+le changement ne touche **que** la décharge d'ultime. La Tornade ordinaire
+(`ability.tornado.damage`, la stat « Shuriken Damage » qui monte de 10 à 24)
+n'est pas concernée.
+
+Effet mesuré sur la matrice officielle (3 seeds) : le Shinobi passe de 11 à
+**7** victoires sur 18, et devient le dernier des six qui frappent. Sa
+production contre le Mannequin descend de 6,1 à **5,9 PV/s** — le Ronin (5,8)
+le rattrape presque, alors qu'il était seul en tête depuis la création du banc.
+
+Sur 10 parties par affrontement, le détail est plus parlant que le total : il
+tient encore le Druide (8/10) et le Golem (6/10), mais tombe à 2/10 contre le
+Pistolero et l'Hoplite. C'est cohérent avec ce que retire le changement — la
+décharge d'ultime est ce qui lui permettait de conclure sur les adversaires
+qu'il ne peut pas user au contact.
 
 ## 🗿 GOLEM — `golem` (affiché « GOLEM » dans les deux langues)
 
