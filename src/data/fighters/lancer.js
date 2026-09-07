@@ -335,10 +335,17 @@ export const LANCER = fiche({
      * autres combattants, dont l'arme passe dessous — d'où le drapeau, porté
      * par la fiche et non par le moteur.
      *
-     * `fighter.js` la pose alors après le contour et les anneaux d'état mais
-     * **avant le chiffre de PV** : dans un miroir Lancier contre Lancier, ce
-     * chiffre est le seul repère qui distingue les deux camps, et une lance de
-     * 164 px par-dessus le perdrait.
+     * `fighter.js` la pose alors **en dernier**, après le contour, les anneaux
+     * d'état *et* le chiffre de PV. Ce commentaire a longtemps décrit l'inverse
+     * (« avant le chiffre »), et c'était vrai d'une version antérieure du
+     * moteur : l'arme passait juste avant, pour garder le chiffre lisible, mais
+     * les digits traversaient la lance — ce qui se lit exactement comme une arme
+     * *derrière* la balle. Un demi-dessus se lit comme un dessous.
+     *
+     * Contrepartie assumée, et c'est l'écart avec le Ronin et le Golem : pendant
+     * une charge, la lance peut masquer une partie du chiffre. Les deux autres
+     * posent `look.hpOverWeapon` pour l'éviter, l'Hoplite non — sa lance ne
+     * recouvre le centre qu'en charge.
      */
     overBody: true,
     /** Seule la lame tranche : elle commence à 52 px du centre (fraction 0,32),

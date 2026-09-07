@@ -77,6 +77,22 @@ export const GOLEM = fiche({
     bodyHit: '#e8e4dc', // le bloc blanchit au coup, comme le reste du roster
     outline: '#1c1712',
     hpColor: '#f5f2ea',
+    /**
+     * **Le chiffre de PV repasse par-dessus l'arme — demandé.**
+     *
+     * `weapon.overBody` seul peint l'arme **en dernier**, donc au-dessus du
+     * chiffre (c'est le compromis assumé de l'Hoplite). Avec ce drapeau,
+     * l'ordre devient corps → arme → chiffre : « l'arme par-dessus la balle,
+     * dessous les PV », littéralement. Même combinaison que le Ronin.
+     *
+     * **Aujourd'hui l'effet n'est pas visible, et c'est normal** : le sprite
+     * est blitté de 36 à 100 px du centre, quand « 200 » tient dans un rayon
+     * d'environ 31 px — les deux ne se croisent pas. Le drapeau ne corrige donc
+     * pas un défaut, il **garantit la règle demandée** le jour où l'un des deux
+     * bouge : un `handle.length` plus court, un sprite plus haut, ou un chiffre
+     * à quatre digits suffiraient à créer le recouvrement.
+     */
+    hpOverWeapon: true,
     aura: {
       color: 'rgba(168,156,136,0.45)',
       radius: 1.5,
@@ -174,6 +190,16 @@ export const GOLEM = fiche({
      * caractère près.
      */
     head: { sprite: 'golemRock', scale: 5.670886 },
+    /**
+     * **L'amas passe par-dessus la bille — demandé.** Même drapeau que la lance
+     * de l'Hoplite et la lame du Ronin. Purement visuel : `bladeSegment()` et
+     * la hitbox ne lisent pas ce drapeau, seul `Fighter.draw()` le fait.
+     *
+     * Il ne suffit pas à lui seul pour ce qui est demandé ici : `overBody` peint
+     * l'arme **en dernier**, donc aussi par-dessus le chiffre de PV. C'est
+     * `look.hpOverWeapon` (voir son bloc) qui remet le chiffre au-dessus.
+     */
+    overBody: true,
     /**
      * Seul le bloc frappe, pas le bras : la fraction 0,5 place le début du
      * tranchant à 50 px du centre, soit **exactement au bord de la bille**.

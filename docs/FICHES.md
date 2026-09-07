@@ -2414,6 +2414,15 @@ inchangés, et la matrice est restée identique au caractère près. Une échell
 posée à l'estime aurait déplacé la pointe, donc la hitbox, donc l'équilibrage —
 sans qu'aucune valeur de dégâts n'ait bougé.
 
+**L'amas passe par-dessus la bille, et sous le chiffre de PV** (demandé) :
+`weapon.overBody` + `look.hpOverWeapon`, la combinaison du Ronin. Le premier
+drapeau seul ne suffit pas — il peint l'arme **en dernier**, donc aussi au-dessus
+du chiffre, ce qui est le compromis assumé de l'Hoplite. Le second remet le
+chiffre au-dessus. À noter : avec la géométrie actuelle l'effet du second n'est
+pas visible, le sprite étant blitté de 36 à 100 px du centre quand « 200 » tient
+dans ~31 px. Il ne corrige donc pas un défaut, il garantit la règle si l'un des
+deux bouge.
+
 Suivent le nom affiché (*Poing de pierre* → *Amas de roche*, `Stone Fist` →
 `Rock Cluster`) et la clé de sprite interne (`golemFist` → `golemRock`, montrée
 à personne). La carte de repli est redessinée en amas pointu : elle n'est pas
