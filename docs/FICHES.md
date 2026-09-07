@@ -30,10 +30,10 @@ les recale en une commande.
 | 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1222 |
 | 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1787 |
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2260 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2424 |
-| Équilibrage du roster | 2510 |
-| Règles communes (moteur) | 2608 |
-| Comment les mesures ont été prises | 2632 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2464 |
+| Équilibrage du roster | 2550 |
+| Règles communes (moteur) | 2648 |
+| Comment les mesures ont été prises | 2672 |
 
 ## Comment lire une valeur
 
@@ -2310,7 +2310,7 @@ décor :
 | Corps | rayon **50** (le seul du roster hors 41), granit `#6e6558`, contour `#1c1712`, chiffre de PV crème | calé |
 | Points de vie | **200**, portés par `maxHp` dans la fiche et lus par `Match` (`el.maxHp ?? MATCH.maxHp`) | demandé |
 | Déplacement | **370 px/s**, virage 1,3 rad/s, `seek` 0,34 | calé |
-| Arme | *Poing de pierre*, portée **100** = `handle.length` 36 + 64 px dessinés (12 cellules × 5,333333) | déduit du sprite |
+| Arme | *Amas de roche*, portée **100** = `handle.length` 36 + 64 px dessinés. Servie par un **vrai PNG** (`assets/sprites/golem-rock.png`) | maquette, encombrement déduit |
 | Rotation d'arme | `SPIN × 0,45`, **la plus lente du roster** — une arme qui balaie vite touche souvent | calé |
 | Hitbox | de 0,5 à 1 de la portée (le tranchant démarre pile au bord de la bille), rayon **24** | déduit |
 | Corps à corps | **8** dégâts fixes, verrou 1,6 s, recul infligé **500** (le plus fort du roster), recul propre **60** | calé au banc |
@@ -2380,6 +2380,46 @@ faible) ; baisser son recul rend le Ronin jouable et effondre le Shinobi à
 2/20. Le corriger demanderait de toucher **les autres fiches** — c'est le
 rééquilibrage complet que le dépôt a déjà refusé une fois, pas un réglage de
 plus sur celle-ci.
+
+### L'arme passe du poing à l'amas de roche
+
+**Demandé**, maquette fournie. Même montage que la lame du Ronin et le shuriken
+du Shinobi : un **vrai PNG** (`assets/sprites/golem-rock.png`) déclaré dans
+`manifest.json`, la carte texte restant en repli — c'est l'écart assumé à
+« aucun binaire dans le dépôt ».
+
+Deux gestes sur l'image, et un calcul.
+
+1. **Recadrage** sur les pixels non transparents (350 × 350 → 210 × 237) : la
+   maquette arrive centrée dans un grand carré vide, et ce vide compterait dans
+   l'encombrement dessiné.
+2. **Quart de tour.** L'amas pousse vers le haut dans l'image ; l'axe d'une arme
+   est l'**horizontale** dans ce moteur (`drawSpriteLeft` étale le sprite le
+   long de la direction de l'arme). Sans rotation, les pointes seraient couchées
+   au lieu de s'éloigner du corps. Après rotation : 237 × 210.
+3. **L'échelle ne se lit plus sur la carte texte** — c'est le piège déjà payé
+   sur la lance de l'Hoplite. `drawSpriteLeft` dimensionne par la **hauteur**
+   (`map.h × scale`, prise sur la carte) puis applique le **rapport d'aspect du
+   PNG** (1,128571). La largeur dessinée vaut donc `10 × scale × 1,128571`, et
+   non `map.w × scale`. D'où :
+
+   `scale = 64 × 210 / (10 × 237) = 5,670886`
+
+   qui rend exactement 64 px de large, donc une pointe à 36 + 64 = **100**, la
+   portée inchangée.
+
+**C'est ce calcul qui fait de ce changement d'arme un changement purement
+visuel** : `reach`, `hitbox` et tout ce que lit `bladeSegment()` sont
+inchangés, et la matrice est restée identique au caractère près. Une échelle
+posée à l'estime aurait déplacé la pointe, donc la hitbox, donc l'équilibrage —
+sans qu'aucune valeur de dégâts n'ait bougé.
+
+Suivent le nom affiché (*Poing de pierre* → *Amas de roche*, `Stone Fist` →
+`Rock Cluster`) et la clé de sprite interne (`golemFist` → `golemRock`, montrée
+à personne). La carte de repli est redessinée en amas pointu : elle n'est pas
+que décorative, `map.h` sert au calcul ci-dessus **même avec l'override**, et
+`ui/select.js` dessine toujours la carte texte, jamais le PNG — c'est elle
+qu'on voit sur l'écran de sélection.
 
 ### Les Éclats de roche passent en anneau complet
 

@@ -18,37 +18,41 @@
 import { deepFreeze } from '../freeze.js';
 
 /**
- * **Le poing de pierre** — un bloc taillé, pas une main.
+ * **L'amas de roche** — repli texte du vrai PNG.
  *
- * Facettes plates et arêtes franches : une face claire en haut à gauche
- * (`l`), le corps de la pierre au milieu (`s`), une face d'ombre en bas à
- * droite (`d`), le tout cerné de noir comme les armes du reste du roster.
+ * L'arme du Golem est servie par `assets/sprites/golem-rock.png`, une maquette
+ * fournie (voir `manifest.json` et l'écart assumé à « aucun binaire » décrit
+ * dans `pixelmaps.js`). Cette carte-ci ne se dessine donc **que** si le PNG ne
+ * charge pas — mais elle n'est pas décorative pour autant : **`map.h` sert au
+ * calcul de la taille dessinée même avec l'override**, `drawSpriteLeft`
+ * prenant la hauteur ici et le rapport d'aspect sur l'image. En changer la
+ * hauteur déplacerait la pointe de l'arme, donc `weapon.head.scale` avec.
  *
- * 12 × 10 cellules, dessinées à `scale: 5.333333` → **64 px de large**. Avec
- * `handle.length: 36`, la pointe retombe à 36 + 64 = **100**, la portée de la
- * fiche (invariant : `handle.length` + largeur dessinée = `reach`).
+ * Le dessin est volontairement grossier : c'est un repli, pas une
+ * transcription. Il dit la bonne chose (une masse minérale pointue, tournée
+ * vers l'extérieur) sans prétendre reproduire la maquette — la reproduire à la
+ * main serait exactement le geste que le dépôt s'interdit.
  */
-export const GOLEM_FIST = deepFreeze({
+export const GOLEM_ROCK = deepFreeze({
   w: 12,
   h: 10,
   palette: {
     K: '#1c1712', // contour, la même encre sombre que le reste du roster
-    l: '#a89c88', // facette éclairée (haut-gauche)
+    l: '#a89c88', // facette éclairée
     s: '#7d7264', // corps de la pierre
-    d: '#4e4639', // facette d'ombre (bas-droite)
-    v: '#5f5748', // veine, une fêlure qui traverse le bloc
+    d: '#4e4639', // facette d'ombre
   },
   rows: [
-    '..KKKKKKKK..',
-    '.KllllllssK.',
-    'KlllllvsssdK',
-    'KllllvsssddK',
-    'KlllvssssddK',
-    'KllvsssssddK',
-    'KlvssssssddK',
-    'KvsssssssddK',
-    '.KsssssdddK.',
-    '..KKKKKKKK..',
+    '......KKK...',
+    '....KKssllK.',
+    '..KKsssslllK',
+    'KKsssslllllK',
+    'KssslllllllK',
+    'KsssdllllllK',
+    'KKssdddllllK',
+    '..KKddddlllK',
+    '....KKddllK.',
+    '......KKK...',
   ],
 });
 

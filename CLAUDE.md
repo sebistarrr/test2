@@ -436,7 +436,9 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   rien qui plante : un setter de balayage doit `assert` que son ancre est
   **unique**, et il faut relire le `git diff` avant de croire un chiffre.
 - **La hauteur d'une carte d'arme ne coûte rien** (elle s'annule) ; la
-  **largeur**, elle, déplace la pointe.
+  **largeur**, elle, déplace la pointe. **Sauf sous override PNG** : la largeur
+  dessinée vient alors du *rapport d'aspect de l'image*, pas de `map.w` — c'est
+  `map.h × scale × (img.w / img.h)` qu'il faut faire retomber sur `reach`.
 - **`handle.length` + largeur dessinée doit toujours valoir la portée** — une
   valeur négative démarre en arrière de la bille (c'est voulu, Hoplite −44,
   Shinobi −75).

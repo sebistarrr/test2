@@ -32,7 +32,7 @@ import { OUTLAW_REVOLVER, OUTLAW_SHOT, ICON_REVOLVER, ICE_SHARD } from './pixela
 import { BLADESMAN_FLAMEBLADE, BLADESMAN_FLAMEWHEEL, ICON_SABRE } from './pixelart/bladesman.js';
 import { LANCER_SPEAR, ICON_LANCE } from './pixelart/lancer.js';
 import { MAGE_STAFF, MAGE_ORB, MAGE_FLOWER, ICON_STAFF } from './pixelart/mage.js';
-import { GOLEM_FIST, GOLEM_SHARD, ICON_GOLEM } from './pixelart/golem.js';
+import { GOLEM_ROCK, GOLEM_SHARD, ICON_GOLEM } from './pixelart/golem.js';
 import { ICON_DUMMY } from './pixelart/dummy.js';
 
 export const PIXEL_MAPS = deepFreeze({
@@ -57,7 +57,7 @@ export const PIXEL_MAPS = deepFreeze({
   mageFlower: MAGE_FLOWER,
   iconStaff: ICON_STAFF,
   // Golem
-  golemFist: GOLEM_FIST,
+  golemRock: GOLEM_ROCK,
   golemShard: GOLEM_SHARD,
   iconGolem: ICON_GOLEM,
   // Mannequin — une seule carte : il n'a ni arme ni projectile

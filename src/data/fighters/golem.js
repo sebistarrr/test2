@@ -120,16 +120,21 @@ export const GOLEM = fiche({
   movement: { speed: 370, turnRate: 1.3, seek: 0.34 },
 
   weapon: {
-    name: 'Poing de pierre',
-    nameRef: 'Stone Fist',
+    /** **Renommé avec le dessin** : ce n'est plus un poing, c'est un amas de
+     *  cristaux de roche. Le nom affiché suit la maquette — seule la clé de
+     *  sprite interne aurait pu rester, et elle a suivi aussi
+     *  (`golemFist` → `golemRock`), n'étant montrée à personne. */
+    name: 'Amas de roche',
+    nameRef: 'Rock Cluster',
     /**
      * **La portée la plus courte du roster : 100 px**, contre 197,6 (Ronin),
      * 164 (Hoplite), 122 (Pistolero), 75 (Shinobi, mais en disque tout autour)
      * et 70 (Druide, qui tire).
      *
      * Déduite du sprite, comme partout : `handle.length` 36 + largeur dessinée
-     * 64 (12 cellules × 5,333333) = 100. L'invariant tient au pixel près, donc
-     * la pointe ne ment pas sur la hitbox.
+     * 64 = 100. L'invariant tient au pixel près, donc la pointe ne ment pas sur
+     * la hitbox — voir `head.scale` pour le calcul de cette largeur, qui n'est
+     * plus celui d'une carte texte depuis le passage au PNG.
      *
      * Son corps faisant 50 px de rayon, le poing ne dépasse que de **50 px** du
      * bord : il doit vraiment coller son adversaire pour frapper.
@@ -143,13 +148,32 @@ export const GOLEM = fiche({
      */
     spin: SPIN * 0.45,
     spinDir: 1,
-    /** `width: 0` : tout le bloc est dans le sprite, il n'y a pas de manche à
-     *  tracer. `length` positif (36) — le poing part **devant** la bille,
+    /** `width: 0` : tout l'amas est dans le sprite, il n'y a pas de manche à
+     *  tracer. `length` positif (36) — la roche part **devant** la bille,
      *  contrairement au talon négatif de la lance ou au sprite centré du
      *  Shinobi. */
     handle: { length: 36, width: 0, color: '#4e4639', dark: '#2d2721', outline: '#1c1712', gem: null },
-    /** 12 cellules × 5,333333 = 64 px dessinés — voir `reach` ci-dessus. */
-    head: { sprite: 'golemFist', scale: 5.333333 },
+    /**
+     * **L'arme est un vrai PNG** (`assets/sprites/golem-rock.png`, déclaré dans
+     * `manifest.json`), maquette fournie recadrée sur son objet puis **tournée
+     * d'un quart de tour** : l'amas pousse vers le haut dans l'image, et l'axe
+     * d'une arme est l'horizontale dans ce moteur — sans cette rotation, les
+     * pointes seraient couchées au lieu de s'éloigner du corps.
+     *
+     * **L'échelle ne se lit plus sur la carte texte, et c'est le piège déjà
+     * payé sur la lance de l'Hoplite** : `drawSpriteLeft` dimensionne par la
+     * **hauteur** (`map.h × scale`, prise sur la carte) puis applique le
+     * **rapport d'aspect du PNG** (237 × 210, soit 1,128571). La largeur
+     * dessinée vaut donc `10 × scale × 1,128571`, et non `map.w × scale`.
+     *
+     * D'où `scale = 64 × 210 / (10 × 237) = 5,670886`, qui rend exactement les
+     * 64 px de large attendus — donc une pointe à 36 + 64 = 100, la portée
+     * inchangée. **C'est ce qui fait de ce changement d'arme un changement
+     * purement visuel** : ni `reach`, ni `hitbox`, ni la moindre valeur lue par
+     * `bladeSegment()` ne bouge, et la matrice doit rester identique au
+     * caractère près.
+     */
+    head: { sprite: 'golemRock', scale: 5.670886 },
     /**
      * Seul le bloc frappe, pas le bras : la fraction 0,5 place le début du
      * tranchant à 50 px du centre, soit **exactement au bord de la bille**.
