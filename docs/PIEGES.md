@@ -23,12 +23,12 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 302 |
 | &nbsp;&nbsp;· Éditer les données | 341 |
 | &nbsp;&nbsp;· Interface et rendu | 374 |
-| &nbsp;&nbsp;· Refactoriser | 444 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 485 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 487 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 530 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 573 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 592 |
+| &nbsp;&nbsp;· Refactoriser | 460 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 501 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 503 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 546 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 589 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 608 |
 
 ---
 
@@ -440,6 +440,22 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   combattants qu'aucun effet ne recouvre ne changent pas d'un pixel —
   `globalAlpha` est remis à 1 avant ce second passage, sinon un `drawOver` mal
   restauré aurait délavé le chiffre au lieu de le rendre net.
+
+- **Un combattant à plusieurs corps ne se nomme qu'une fois.** Le Shinobi qui
+  gagnait avec un clone debout affichait **« SHINOBI + SHINOBI WIN »** sur le
+  bandeau de parade, et se retrouvait deux fois dans le classement de fin. Le
+  HUD, lui, avait raison depuis toujours : il groupe les plaques de PV par
+  `${f.team}\u0000${f.el.id}`. C'est la même clé qu'il fallait au bandeau
+  (`match.js`, `drawWinnerBanner`) et au classement (`result()`).
+  **Ce sont les *noms* qu'on dédoublonne, pas les vainqueurs** : `this.winners`
+  reste complet, donc les deux billes paradent toujours au centre — il y a deux
+  corps à l'écran, il n'y a qu'un personnage à nommer. Le pluriel légitime doit
+  survivre, et c'est le cas à vérifier : un 2 contre 2 Shinobi + Golem avec un
+  clone debout fait bien parader **trois** corps et écrit « SHINOBI + GOLEM ».
+  Piège dans le piège : le test `this.fighters.length === 2` qui décide si le
+  classement a un sens est lu **à la fin du duel**, clones compris — un duel à
+  deux qui a vu naître un clone n'est donc plus « à deux » pour ce test, et
+  c'est ce qui rendait le doublon visible jusqu'en 1 contre 1.
 
 ### Refactoriser
 

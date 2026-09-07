@@ -740,11 +740,28 @@ export class Match {
       duration: this.stats.duration,
       hits: this.stats.hits,
       damage: this.stats.damage,
-      /** Classement du dernier au premier tombé, vainqueur en tête. Vide en duel. */
+      /**
+       * Classement du dernier au premier tombé, vainqueur en tête. Vide en duel.
+       *
+       * **Dédoublonné par `el.id`, pour la même raison que le bandeau** : un
+       * Shinobi qui gagne avec un clone debout, ou qui en a perdu un en route,
+       * y figurait deux fois. La première occurrence est gardée, donc le
+       * groupe prend le meilleur rang de ses membres.
+       *
+       * Attention au test juste au-dessus : `this.fighters.length` est lu **à
+       * la fin du duel**, clones compris. Un duel à deux qui a vu naître un
+       * clone n'est donc plus « à deux » ici, et rend un classement — c'est ce
+       * qui rendait ce doublon visible en 1 contre 1.
+       */
       standings:
         this.fighters.length === 2
           ? []
-          : [winner, ...this.fallen.slice().reverse().filter((f) => f !== winner)].map((f) => f.el),
+          : [
+            ...new Map(
+              [winner, ...this.fallen.slice().reverse().filter((f) => f !== winner)]
+                .map((f) => [f.el.id, f.el]),
+            ).values(),
+          ],
       teams: this.teams,
     };
   }
@@ -929,7 +946,22 @@ export class Match {
     if (!gagnants.length) return;
     const v = MATCH.victory;
     const T = UI[this.lang] ?? UI.ref;
-    const noms = gagnants.map((f) => label(f.el, this.lang));
+    /**
+     * **Un personnage n'est nommé qu'une fois, même s'il paradait à plusieurs
+     * corps.** Le Shinobi et ses clones sont des combattants distincts du
+     * tableau — c'est tout l'intérêt du Clone d'ombre — mais ils partagent une
+     * fiche, donc `gagnants.map(label)` écrivait « SHINOBI + SHINOBI WIN ».
+     *
+     * Le dédoublonnage se fait sur `el.id`, la même clé que celle qui groupe
+     * déjà les plaques de PV du HUD (`render/hud.js`) : deux corps d'un même
+     * combattant y font une seule plaque, ils doivent faire un seul nom.
+     *
+     * Ce sont bien les **noms** qu'on dédoublonne, pas les vainqueurs :
+     * `this.winners` reste complet, donc les deux billes paradent toujours au
+     * centre. Il y a deux corps à l'écran, il n'y a qu'un personnage à nommer.
+     */
+    const uniques = [...new Map(gagnants.map((f) => [f.el.id, f.el])).values()];
+    const noms = uniques.map((el) => label(el, this.lang));
     const texte = noms.length > 1 ? T.winners(noms.join(' + ')) : T.winner(noms[0]);
 
     const i = ARENA.inner;

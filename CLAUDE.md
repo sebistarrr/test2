@@ -86,8 +86,9 @@ est `calé` ou `déduit`.
 sont de **vrais combattants du tableau**, dans le camp du Shinobi, avec **tous
 ses pouvoirs** — Clone d'ombre compris, donc **un clone invoque des clones**.
 **Le groupe ne fait qu'un au HUD** (une plaque, PV cumulés, une paire de
-jauges) et **ses pouvoirs battent à une horloge unique, partagée par
-référence** : ils partent tous en même temps.
+jauges), **qu'un seul nom** au bandeau de victoire et au classement de fin, et
+**ses pouvoirs battent à une horloge unique, partagée par référence** : ils
+partent tous en même temps.
 
 **Les identifiants internes ne sont pas les noms affichés**, et un id ne se
 renomme pas : il n'est montré à personne et le changer toucherait `ROSTER`,
@@ -475,6 +476,8 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - `imageSmoothingQuality = 'high'` coûtait 72 % du fil principal à l'export :
   rester en `'low'`. Et `captureStream()` ne s'appelle **qu'une fois par
   session**.
+- **Un combattant à plusieurs corps ne se nomme qu'une fois** : dédoublonner par
+  `el.id`, comme le HUD le fait déjà (bandeau de victoire, classement).
 - Un pouvoir dessiné dans `drawOver` peut **recouvrir le chiffre de PV** : il
   est **repassé** après la boucle (`Fighter.drawHpNumber()`, appelée deux fois),
   `globalAlpha` remis à 1 avant.
