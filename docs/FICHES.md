@@ -30,10 +30,10 @@ les recale en une commande.
 | 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1222 |
 | 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1787 |
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2260 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2409 |
-| Équilibrage du roster | 2495 |
-| Règles communes (moteur) | 2593 |
-| Comment les mesures ont été prises | 2617 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2424 |
+| Équilibrage du roster | 2510 |
+| Règles communes (moteur) | 2608 |
+| Comment les mesures ont été prises | 2632 |
 
 ## Comment lire une valeur
 
@@ -2403,8 +2403,23 @@ adversaire qui le contourne.
 
 **Effet mesuré** (120 duels) : **74 → 82**, soit +8. Hors Mannequin (qu'il gagne
 toujours), 54/100 → 62/100. C'est un renforcement net, dont l'essentiel vient du
-duel contre le Druide (5 → 9). Le nombre d'éclats est le levier si on veut
-revenir au réglage précédent sans perdre l'anneau.
+duel contre le Druide (5 → 9).
+
+### Dégâts des éclats : 4 → 3
+
+**Demandé**, en contrepartie de l'anneau ci-dessus. Le résultat est bien plus
+fort que le gain qu'il compense : **82 → 65** sur 120 duels, soit **−17 points**
+là où le passage à huit éclats n'en avait rendu que 8. Hors Mannequin :
+62/100 → **45/100**, donc en dessous des 54/100 d'avant l'anneau.
+
+C'est la même raideur que celle déjà relevée sur ses dégâts de mêlée (~11 duels
+par point) : chez un combattant dont les touches sont rares et les duels longs,
+**un point de dégât par projectile pèse énormément** — huit éclats toutes les
+8 s sur des duels de 35 à 75 s, cela fait beaucoup d'occurrences où 3 remplace 4.
+
+Sa production contre le Mannequin tombe de 2,76 à **2,5 PV/s**. En revanche
+l'écart du roster se resserre : **9 à 12** victoires sur 18, le plus serré
+qu'ait connu le dépôt.
 
 ## 🎯 MANNEQUIN — `dummy` (affiché « MANNEQUIN » en français, « DUMMY » en anglais)
 

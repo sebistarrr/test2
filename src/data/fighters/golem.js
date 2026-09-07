@@ -375,7 +375,11 @@ export const GOLEM = fiche({
       sprite: 'golemShard',
       scale: 3.4, // carte de 7 px → éclat de ~24 px
       speed: 380,
-      damage: 4,
+      /** **4 → 3, demandé.** C'est la contrepartie du passage en anneau : huit
+       *  éclats au lieu de trois avaient rendu 8 points de victoire au Golem
+       *  (54/100 → 62/100 hors Mannequin), et ce point de dégât en reprend
+       *  l'essentiel sans toucher à la géométrie du pouvoir. */
+      damage: 3,
       radius: 12,
       life: 2.2,
       bounces: 1,

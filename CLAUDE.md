@@ -112,16 +112,16 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 18 duels hors
-miroir chacun : Golem 14, Pistolero 11, Hoplite 10, Shinobi 10, Druide 10,
-Ronin 8, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
+miroir chacun : Pistolero 12, Shinobi 11, Druide 11, Hoplite 10, Golem 10,
+Ronin 9, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
 **Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
 d'équilibrage : 200 PV divisés par la durée donnent la production réelle de
 chacun contre une cible qui ne riposte pas — Shinobi 6,1, Ronin 5,8, Hoplite
-5,5, Druide 5,3, Pistolero 4,2, Golem 2,6 PV/s. La ligne
+5,5, Druide 5,3, Pistolero 4,2, Golem 2,5 PV/s. La ligne
 `dummy vs dummy` finit en **`timeout`** : deux combattants sans dégâts ne se
 départagent jamais, le moteur n'ayant aucune limite de temps.
-Écart **8 à 14** entre les six qui frappent, connu et non corrigé — le corriger demanderait un
-rééquilibrage complet. **La matrice ne joue chaque paire qu'une fois, et
+Écart **9 à 12** entre les six qui frappent — le plus resserré qu'ait connu le
+dépôt, et obtenu sans campagne de rééquilibrage. **La matrice ne joue chaque paire qu'une fois, et
 toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
 un.** Le Golem le montre en grand — 5/15 ici, mais **54/100** sur un banc à
 10 seeds × les deux camps, parce qu'il est en queue de `ROSTER` donc toujours
