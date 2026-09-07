@@ -29,11 +29,11 @@ les recale en une commande.
 | ⚔ RONIN — `bladesman` (affiché « RONIN ») | 965 |
 | 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1222 |
 | 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1787 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2220 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2344 |
-| Équilibrage du roster | 2430 |
-| Règles communes (moteur) | 2528 |
-| Comment les mesures ont été prises | 2552 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2260 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2409 |
+| Équilibrage du roster | 2495 |
+| Règles communes (moteur) | 2593 |
+| Comment les mesures ont été prises | 2617 |
 
 ## Comment lire une valeur
 
@@ -2218,6 +2218,45 @@ du temps sur un corps de cette luminance.
 
 ---
 
+### Le recul du Tir enraciné — il part à l'opposé de sa cible
+
+**Demandé** : « au lieu de propulser vers l'adversaire après le tir, propulse
+dans le côté opposé ». Deux constats avant le correctif.
+
+1. **Rien ne le propulsait.** `releaseRootedShot` ne poussait pas du tout. Ce
+   qu'on voyait, c'était le Druide qui repartait *vers* sa cible à la
+   libération, parce que `movement.seek` avait passé toute la seconde
+   d'ancrage à tourner son cap dessus — pendant l'enracinement,
+   `boostFactor: 0` annule la **vitesse**, pas la rotation.
+2. **Une impulsion seule ne suffisait pas.** `Fighter.step` calcule
+   `v = cap × vitesse + impulsion` : le recul se **retranche** du pilotage au
+   lieu de s'y ajouter. Avec 420 d'impulsion contre 624 px/s de vitesse
+   nominale, le solde net restait de **+204 px/s vers l'adversaire**, et la
+   mesure donnait −100 px sur l'axe opposé en 0,3 s. Le pouvoir faisait
+   exactement l'inverse de la demande.
+
+Le correctif écrit donc **les deux** : le cap est retourné
+(`heading = weaponAngle + π`) *et* l'impulsion de 420 est appliquée. Vérifié au
+banc sur 9 duels — vitesse projetée sur l'axe opposé à l'instant du tir :
+
+| Adversaire | seed 1 | seed 2 | seed 3 |
+| --- | --- | --- | --- |
+| Mannequin | +1044 px/s | +1044 px/s | +1048 px/s |
+| Pistolero | +756 px/s | +728 px/s | +732 px/s |
+| Ronin | +1160 px/s | +1051 px/s | +1044 px/s |
+
+**9 sur 9.** Le déplacement net à 0,15 s est parfois plus faible que cette
+vitesse ne le laisse croire : lancé à ~1 000 px/s dans une arène de 640 px, il
+atteint souvent un mur dans la fenêtre et **rebondit** (`Fighter.wall` est armé
+dans les 9 cas). C'est le comportement voulu — un bond en arrière, dont `seek`
+le ramène ensuite.
+
+**Effet mesuré sur l'équilibrage** (10 seeds × les deux camps × 6 adversaires,
+120 duels) : total quasi inchangé, **64 → 61**, mais la *forme* bouge — vs
+Pistolero 11 → 16, vs Ronin 10 → 7, vs Shinobi 4 → 1, vs Golem 15 → 11. Se
+projeter en arrière l'éloigne des mêlées rapides qui le punissaient, et le sort
+de portée de ses propres orbes guidées contre ceux qui restent au loin.
+
 ## 🗿 GOLEM — `golem` (affiché « GOLEM » dans les deux langues)
 
 **Le premier combattant inventé du dépôt.** Les cinq autres sont transcrits
@@ -2341,6 +2380,31 @@ faible) ; baisser son recul rend le Ronin jouable et effondre le Shinobi à
 2/20. Le corriger demanderait de toucher **les autres fiches** — c'est le
 rééquilibrage complet que le dépôt a déjà refusé une fois, pas un réglage de
 plus sur celle-ci.
+
+### Les Éclats de roche passent en anneau complet
+
+**Demandé** : « envoyer des rocks tout autour du Golem ». Ils partaient en
+éventail de trois éclats vers l'adversaire (ouverture 0,34 rad) ; ils partent
+maintenant **tout autour**, régulièrement répartis sur le tour complet — même
+géométrie que les éclats de givre du Blizzard du Pistolero.
+
+Le nombre monte de **3 à 8** : trois éclats répartis sur 360° ne se lisent pas
+comme un anneau, ils se lisent comme trois éclats qui partent n'importe où.
+Huit, c'est un éclat tous les 45°. La clé `spread` disparaît — il n'y a plus
+d'ouverture d'éventail à régler, la géométrie est fixée par `count` — et
+l'angle de départ de l'anneau reste tiré dans `game.rng` (il décide où partent
+huit projectiles, donc qui prend des dégâts : c'est de la simulation), ce qui
+évite en plus que deux anneaux successifs suivent les mêmes huit rayons.
+
+Ce que ça change au jeu : **il ne vise plus**. Chaque éclat porte moins souvent,
+mais il en part presque trois fois plus, et surtout il en part **derrière lui** —
+ce qui, pour le combattant le plus lent du roster, est le seul recours contre un
+adversaire qui le contourne.
+
+**Effet mesuré** (120 duels) : **74 → 82**, soit +8. Hors Mannequin (qu'il gagne
+toujours), 54/100 → 62/100. C'est un renforcement net, dont l'essentiel vient du
+duel contre le Druide (5 → 9). Le nombre d'éclats est le levier si on veut
+revenir au réglage précédent sans perdre l'anneau.
 
 ## 🎯 MANNEQUIN — `dummy` (affiché « MANNEQUIN » en français, « DUMMY » en anglais)
 

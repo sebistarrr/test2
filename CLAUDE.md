@@ -112,12 +112,12 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 18 duels hors
-miroir chacun : Druide 14, Pistolero 11, Hoplite 11, Shinobi 11, Ronin 8,
-Golem 8, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
+miroir chacun : Golem 14, Pistolero 11, Hoplite 10, Shinobi 10, Druide 10,
+Ronin 8, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
 **Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
 d'équilibrage : 200 PV divisés par la durée donnent la production réelle de
-chacun contre une cible qui ne riposte pas — Shinobi 6,1, Ronin 5,8,
-Hoplite 5,5, Druide 5,2, Pistolero 4,2, Golem 2,8 PV/s. La ligne
+chacun contre une cible qui ne riposte pas — Shinobi 6,1, Ronin 5,8, Hoplite
+5,5, Druide 5,3, Pistolero 4,2, Golem 2,6 PV/s. La ligne
 `dummy vs dummy` finit en **`timeout`** : deux combattants sans dégâts ne se
 départagent jamais, le moteur n'ayant aucune limite de temps.
 Écart **8 à 14** entre les six qui frappent, connu et non corrigé — le corriger demanderait un

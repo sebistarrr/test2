@@ -37,7 +37,7 @@
  * @module game/abilities/mage
  */
 
-import { clamp, hash01, TAU } from '../../core/math.js';
+import { clamp, hash01, TAU, wrapAngle } from '../../core/math.js';
 import { drawSpriteCentered } from '../../render/sprites.js';
 
 /** Pas de la cadence, par orbe tirée. Mesuré : tous les paliers de la vidéo
@@ -144,8 +144,39 @@ export const mageAbilities = {
    * invisible.
    */
   releaseRootedShot(f, game) {
+    const sp = f.el.special;
     const tip = this.crystal(f);
-    this.spawnFromCrystal(f, f.el.special.projectile, game);
+    this.spawnFromCrystal(f, sp.projectile, game);
+
+    /**
+     * **Le recul, dirigé à l'opposé de l'adversaire — demandé.**
+     *
+     * `weaponAngle` vise la cible (le sceptre est braqué, c'est ce module qui
+     * le réécrit à chaque image) : partir selon **moins** ce vecteur renvoie
+     * donc le Druide dans le dos de sa propre visée, pendant que l'orbe part
+     * devant.
+     *
+     * **Deux écritures, et il faut les deux — mesuré.** Une impulsion seule ne
+     * suffit pas : `Fighter.step` calcule `v = cap × vitesse + impulsion`, donc
+     * le recul se **retranche** de son propre pilotage au lieu de s'y ajouter.
+     * Or `movement.seek` a passé toute la seconde d'ancrage à tourner son cap
+     * vers la cible (seule la *vitesse* est nulle pendant l'enracinement, pas
+     * la rotation), si bien qu'au tir il repart plein pot dessus. Au banc, avec
+     * les 420 d'impulsion seuls : solde net **+204 px/s vers l'adversaire**, et
+     * un déplacement mesuré de −100 px sur l'axe opposé en 0,3 s. Le pouvoir
+     * faisait exactement l'inverse de ce qu'on lui demandait.
+     *
+     * D'où le retournement du **cap** en plus de l'impulsion : les deux tirent
+     * alors dans le même sens, et `seek` le ramène de lui-même vers sa cible
+     * dans la seconde qui suit — c'est un bond en arrière, pas une fuite.
+     * Écrire `heading` sur un événement discret est le geste que le moteur fait
+     * déjà à chaque rebond de mur.
+     *
+     * Aucun tirage dans l'un ni dans l'autre : la direction sort de l'arme, pas
+     * d'un aléa. Le flux de simulation n'est pas touché (invariant 2).
+     */
+    f.heading = wrapAngle(f.weaponAngle + Math.PI);
+    f.push(-Math.cos(f.weaponAngle), -Math.sin(f.weaponAngle), sp.recoil);
     game.fx.burst(tip.x, tip.y, 14, {
       color: ['#38cd65', '#97e0a0', '#e8fff0'],
       speed: 220,

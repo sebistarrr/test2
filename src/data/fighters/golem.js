@@ -340,11 +340,26 @@ export const GOLEM = fiche({
     cooldown: 8,
     /** Première salve tôt, pour peser sur un duel qui peut se décider vite. */
     first: 3,
-    count: 3, // trois éclats en éventail
-    /** Ouverture de l'éventail, en radians de part et d'autre de la visée.
-     *  Assez large pour qu'un adversaire mobile en esquive une partie — même
-     *  garde-fou que la dispersion du Pistolero. */
-    spread: 0.34,
+    /**
+     * **Huit éclats, en anneau complet autour de lui — demandé.**
+     *
+     * Ils partaient en éventail vers l'adversaire (trois éclats, ouverture
+     * 0,34 rad) ; ils partent maintenant **tout autour**, régulièrement
+     * répartis sur le tour complet, comme les éclats de givre du Blizzard du
+     * Pistolero.
+     *
+     * Le nombre monte de 3 à 8 pour cette raison précise : trois éclats répartis
+     * sur 360° ne se lisent pas comme un anneau, ils se lisent comme trois
+     * éclats qui partent n'importe où. Huit, c'est un éclat tous les 45°.
+     *
+     * Ce que ça change au jeu, et c'est assumé : il ne **vise** plus. Chaque
+     * éclat porte moins souvent qu'un éclat pointé sur la cible, mais il en
+     * part presque trois fois plus, et surtout il en part **derrière lui** —
+     * ce qui, pour le combattant le plus lent du roster, est le seul moyen de
+     * menacer qui le contourne. Il n'y a plus d'ouverture d'éventail à régler :
+     * la géométrie est fixée par `count`.
+     */
+    count: 8,
     projectile: 'shard',
   },
 

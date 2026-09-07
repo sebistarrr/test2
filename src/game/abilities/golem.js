@@ -9,8 +9,8 @@
  *
  *  • **Éclats de roche** (`special`) — troisième créneau, sur sa propre
  *    minuterie (`f.state.spec*`), exactement comme le Champ de givre du
- *    Pistolero. Trois éclats en éventail vers l'adversaire, pour qu'on ne
- *    puisse pas se contenter de reculer.
+ *    Pistolero. **Huit éclats en anneau complet autour de lui**, pour qu'on ne
+ *    puisse ni se contenter de reculer, ni le contourner tranquillement.
  *
  *  • **Séisme** (`ultimate`) — la secousse est **instantanée** ; ce que dure
  *    `ultimate.duration`, c'est le **bonus de vitesse** qui la suit. Sans lui,
@@ -23,10 +23,10 @@
  *    sur les combattants, et un adversaire en plein Bond de l'Hoplite est
  *    vivant mais **absent du plateau**. Les toucher à leur dernier point connu
  *    serait le bug documenté.
- * 2. *Le flux de simulation* (invariant 2) : seul l'éventail des éclats tire
- *    dans `game.rng`, parce qu'il décide où partent trois projectiles — donc
- *    qui prend des dégâts. Tout le reste (anneaux, poussière) passe par
- *    `game.fx`, jamais par une décision de duel.
+ * 2. *Le flux de simulation* (invariant 2) : seul l'angle de départ de l'anneau
+ *    d'éclats tire dans `game.rng`, parce qu'il décide où partent huit
+ *    projectiles — donc qui prend des dégâts. Tout le reste (anneaux de
+ *    poussière, gerbes) passe par `game.fx`, jamais par une décision de duel.
  *
  * @module game/abilities/golem
  */
@@ -122,25 +122,27 @@ export const golemAbilities = {
   /* ------------------------------------------------------------------ */
 
   /**
-   * Trois éclats en éventail vers l'adversaire.
+   * **Un anneau complet d'éclats autour du Golem — demandé.**
    *
-   * **L'éventail est borné en angle**, pas en nombre d'images (piège
-   * documenté) : `spread` est l'ouverture totale de part et d'autre de la
-   * visée, et les éclats s'y répartissent régulièrement. Le tirage de la visée
-   * passe par `game.rng` — il décide qui est touché, c'est de la simulation.
+   * Ils partaient en éventail vers l'adversaire ; ils partent maintenant tout
+   * autour, un tous les `TAU / count` radians. Même géométrie que les éclats de
+   * givre du Blizzard du Pistolero, et pour la même raison : un pouvoir qui
+   * couvre les 360° n'a pas à viser, donc il **menace aussi qui le contourne** —
+   * ce qui, pour le combattant le plus lent du roster, est le seul recours
+   * contre un adversaire qui tourne autour de lui.
+   *
+   * L'angle de départ de l'anneau passe par `game.rng`, et **doit** y passer :
+   * il décide où partent huit projectiles, donc qui prend des dégâts. C'est de
+   * la simulation, pas de la décoration. Il fait aussi que deux anneaux
+   * successifs ne se superposent pas — sans lui, tous les éclats de tous les
+   * cycles suivraient exactement les mêmes huit rayons.
    */
   castShards(f, game) {
     const sp = f.el.special;
-    const target = f.opponent;
-    const aim = target && target.onStage
-      ? Math.atan2(target.y - f.y, target.x - f.x)
-      : f.weaponAngle;
+    const base = game.rng.range(0, TAU);
 
     for (let i = 0; i < sp.count; i++) {
-      // −spread … +spread, réparti régulièrement ; un seul éclat partirait droit
-      const part = sp.count > 1 ? (i / (sp.count - 1)) * 2 - 1 : 0;
-      const angle = aim + part * sp.spread + game.rng.spread(0.06);
-      game.projectiles.spawn(f, sp.projectile, angle, f.radius);
+      game.projectiles.spawn(f, sp.projectile, base + (TAU * i) / sp.count, f.radius);
     }
     game.fx.burst(f.x, f.y, 8, {
       color: ['#a89c88', '#7d7264', '#4e4639'],

@@ -284,6 +284,24 @@ export const MAGE = fiche({
     /** L'orbe lâchée à la fin — voir `projectiles.greatOrb`. */
     projectile: 'greatOrb',
     /**
+     * **Recul à la libération, dirigé à l'opposé de l'adversaire — demandé.**
+     *
+     * Avant, rien ne poussait le Druide au tir : les racines lâchaient, et il
+     * repartait *vers* sa cible, simplement parce que son cap la visait déjà
+     * (`movement.seek` oriente le corps pendant l'ancrage, où seule la vitesse
+     * est nulle). Un tireur qui marche sur sa cible juste après avoir lâché sa
+     * plus grosse frappe, c'est l'inverse de ce que le pouvoir raconte.
+     *
+     * Le recul le renvoie donc **dans le dos de sa propre visée** : l'orbe part
+     * d'un côté, lui de l'autre. Ça referme aussi la seule vraie faille du
+     * personnage — il était immobile une seconde entière, puis se retrouvait
+     * *plus près* de qui venait le punir.
+     *
+     * 420 : au-dessus du recul de tir du Pistolero (119) et sous celui de sa
+     * Pluie de plomb (988). Calé au banc — voir la matrice.
+     */
+    recoil: 420,
+    /**
      * Racines dessinées **sous** le Mage pendant la charge (rendu seul, tracé
      * par un hachage pur — aucun tirage, donc aucun effet sur l'équilibrage).
      * Elles poussent avec la charge et disparaissent au tir.
