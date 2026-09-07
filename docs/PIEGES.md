@@ -20,15 +20,15 @@ relevé, puis les pièges eux-mêmes.
 | **Pièges déjà rencontrés** | 124 |
 | &nbsp;&nbsp;· Mesurer | 126 |
 | &nbsp;&nbsp;· Équilibrer | 161 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 302 |
-| &nbsp;&nbsp;· Éditer les données | 341 |
-| &nbsp;&nbsp;· Interface et rendu | 374 |
-| &nbsp;&nbsp;· Refactoriser | 460 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 501 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 503 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 546 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 589 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 608 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 324 |
+| &nbsp;&nbsp;· Éditer les données | 363 |
+| &nbsp;&nbsp;· Interface et rendu | 396 |
+| &nbsp;&nbsp;· Refactoriser | 482 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 523 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 525 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 568 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 611 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 630 |
 
 ---
 
@@ -298,6 +298,28 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   4,22, Golem 2,76 PV/s. C'est la mesure que `tools/probe.mjs` approchait par
   les touches, obtenue ici directement — et elle confirme le compromis du
   Golem, qui produit 2,2 fois moins que le Shinobi pour 2 fois plus de PV.
+
+- **Un ultime qui déplace son porteur est aussi une esquive, et ça se paie deux
+  fois.** L'Éclipse totale de Neon Shadow le téléporte neuf fois en deux
+  secondes : c'est 28 % de ses dégâts, mais surtout deux secondes pendant
+  lesquelles un tireur ne peut plus l'atteindre. Conséquence au banc : baisser
+  les *dégâts* des frappes ne rend presque rien (4 → 2 : 133 → 124 sur 140),
+  espacer l'*horloge* rend tout (11 → 15 s : 98 → 84, et 17 s l'effondre à 56).
+  Le levier d'un ultime mobile est sa **fréquence**, pas sa puissance — et la
+  falaise est brutale parce qu'on retire les deux effets d'un coup.
+- **Une seconde arme n'a pas besoin du moteur.** `physics.js` ne connaît qu'une
+  hitbox d'arme par combattant. Plutôt que de lui en apprendre une deuxième pour
+  un seul personnage (ce qui aurait touché tout le roster), la dague libre de
+  Neon Shadow est un point que **son module intègre lui-même** et dont il
+  applique les dégâts par `game.damage` — exactement comme l'Onde sismique du
+  Golem. Un personnage entier a été ajouté sans une ligne de moteur.
+- **Un ressort qui vise son point d'attache s'y écrase.** Première version de
+  cette dague libre : rappel vers le pommeau. Au repos, la seule position
+  d'équilibre d'une chaîne tendue vers son propre pommeau est le pommeau
+  lui-même — on voyait une dague collée à la bille au lieu d'une lame flottant à
+  100 px. Le rappel doit viser un point **décalé** (ici, dans le dos du cap) :
+  c'est ce décalage qui crée la traîne, le déport en virage et la distance au
+  repos, tous les trois d'un coup et sans qu'aucun ne soit codé.
 
 ### Déterminisme et ordre d'exécution
 

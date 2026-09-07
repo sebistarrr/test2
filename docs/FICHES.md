@@ -1,11 +1,11 @@
 # Fiches des combattants
 
-**Sept combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
+**Huit combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
 et **Ronin** du duel *Outlaw vs Bladesman*, **Hoplite** de *Dragoon vs Outlaw*,
 **Druide** construit sur la mécanique de Magia dans *Dragoon vs Magia*, et
 **Shinobi**, reskin du Vent des vidéos *Elemental Armory League*. Le sixième,
 le **Golem**, est **inventé** : il n'a pas de vidéo, donc pas un seul `mesuré`.
-Le septième, le **Mannequin**, l'est aussi — c'est une **cible d'entraînement**
+Le **Mannequin** et **Neon Shadow** le sont aussi — le premier — c'est une **cible d'entraînement**
 sans arme ni dégâts, faite pour qu'on regarde les mécaniques des six autres.
 
 Ces fiches sont la **transcription lisible** de `src/data/fighters/`. Le code
@@ -30,10 +30,11 @@ les recale en une commande.
 | 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1222 |
 | 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1787 |
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2279 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2492 |
-| Équilibrage du roster | 2578 |
-| Règles communes (moteur) | 2676 |
-| Comment les mesures ont été prises | 2700 |
+| 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2492 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2588 |
+| Équilibrage du roster | 2674 |
+| Règles communes (moteur) | 2772 |
+| Comment les mesures ont été prises | 2796 |
 
 ## Comment lire une valeur
 
@@ -2488,6 +2489,102 @@ par point) : chez un combattant dont les touches sont rares et les duels longs,
 Sa production contre le Mannequin tombe de 2,76 à **2,5 PV/s**. En revanche
 l'écart du roster se resserre : **9 à 12** victoires sur 18, le plus serré
 qu'ait connu le dépôt.
+
+## 🌌 NEON SHADOW — `neon` (affiché « NEON SHADOW » dans les deux langues)
+
+**Le Maître des Illusions**, troisième combattant inventé du dépôt : pas de
+vidéo, donc **pas un seul `mesuré`**.
+
+### Ce qu'il apporte, et ce qu'il n'a pas coûté au moteur
+
+Le roster savait faire une arme braquée, une arme centrée sur la bille et une
+arme lourde. Il ne savait pas faire **deux armes à la fois**, dont une qui n'est
+pas accrochée au corps.
+
+| Pièce | Où elle vit | Ce qu'il a fallu ajouter au moteur |
+| --- | --- | --- |
+| Dague braquée | `weapon.spin: 0` + le module recopie l'angle | rien (patron du Pistolero) |
+| **Dague libre** | pendule intégré par le module, dégâts par `game.damage` | **rien** |
+| Images fantômes permanentes | `f.ghosting` réarmé à chaque pas | rien (compteur de l'Hoplite) |
+| Void Step | `f.offstage` + `f.invulnerable` | rien (Bond de l'Hoplite) |
+| Void Rift | `applySlow` + un orbe dessiné dans `drawUnder` | rien |
+| Éclipse totale | voile noir peint dans `drawOver` | rien |
+
+**Zéro ligne de moteur pour un personnage entier**, et c'est la vérification que
+les compteurs génériques de l'invariant 7 tenaient leur promesse.
+
+### La dague libre : un pendule, pas une orbite
+
+Ressort vers un point de rappel, amortissement, et une laisse qui borne la
+distance. Les trois comportements demandés en sortent **sans être écrits** : en
+ligne droite elle traîne derrière, en virage sec elle part sur le côté, au repos
+elle flotte à `length`.
+
+**Le premier essai les manquait tous les trois.** Le ressort visait le *point
+d'attache* : au repos, la seule position d'équilibre d'une chaîne tendue vers
+son propre pommeau est le pommeau lui-même, et la lame s'y écrasait — on voyait
+une dague collée à la bille. Le rappel vise donc un point à `length` **dans le
+dos du cap**.
+
+Elle est aussi **dessinée avec le même sprite** que la dague principale. Le
+premier jet traçait un losange à la main, plus court à écrire : à l'écran, la
+maquette montre deux dagues jumelles et on en voyait une belle et un caillou.
+
+### Valeurs
+
+| Bloc | Valeur | Source |
+| --- | --- | --- |
+| Corps | obsidienne `#0b0714`, **contour violet néon de 7 px** (5 ailleurs), chiffre de PV rose clair, halo permanent | demandé |
+| Corps touché | `#f0abfc` — il **rougeoie rose** au lieu de blanchir, et le module tire une gerbe de fragments à chaque perte de PV | demandé |
+| Déplacement | 545 px/s, virage **2,4 rad/s** (le plus manœuvrant du roster), `seek` 0,38 | calé |
+| Dague principale | portée **115** = `handle.length` 41 (le rayon exact du corps : le pommeau est collé au bord) + 74 px dessinés. PNG tourné de **145,2°**, angle donné par une **ACP** des pixels de lame | maquette |
+| Mêlée | 4 dégâts, verrou **1,15 s** (long pour une dague : c'est le garde-fou de l'arme braquée) | calé au banc |
+| Dague libre | flotte à **100 px**, rayon 26, 2 dégâts, verrou 0,9 s | demandé + calé |
+| Void Step | toutes les **6,5 s**, 0,35 s d'absence, réapparition à 96 px **dans le dos du cap de la cible** | calé |
+| Void Rift | orbe posé toutes les 9 s, armé jusqu'à ce qu'on le touche : 5 dégâts + ralentissement 0,75 pendant 0,5 s | calé |
+| Éclipse totale | jauge en **15 s**, 2 s, neuf frappes à 2 depuis des angles tirés dans `game.rng` | calé au banc |
+
+**Le « figé » du Void Rift est un ralentissement de 0,75, pas un arrêt** :
+`Fighter.slowFactor` **borne tous les ralentissements à 0,75** (`1 − clamp(worst,
+0, 0.75)`), pour tout le roster. On prend le maximum que la borne autorise
+plutôt que de la lever pour un seul combattant.
+
+### Équilibrage : le levier était l'ultime, et pour une raison inattendue
+
+Première version : **133 victoires sur 140** (10 seeds × les deux camps ×
+6 adversaires). Le balayage, un levier à la fois :
+
+| Levier | Essai | Total /140 | Ce que ça a appris |
+| --- | --- | --- | --- |
+| Frappes de l'éclipse | 4 → 2 | 133 → 124 | 36 % de ses dégâts, mais levier tiède |
+| Dégâts de mêlée | 6 → 4 | 124 → 105 | raide, ~9 duels par point |
+| Recharge du Void Step | 6,5 → 10 s | 105 → 102 | **plat**, et la forme empire |
+| Dégâts de la dague libre | 3 → 2 | 105 → 98 | moyen |
+| **Horloge de l'éclipse** | 11 → 15 s | 98 → **84** | **le levier**, et une falaise à 17 s (56) |
+
+**Pourquoi l'horloge de l'ultime et pas le reste.** L'éclipse n'est pas qu'une
+source de dégâts : pendant deux secondes il **se téléporte neuf fois**, donc il
+devient introuvable pour un tireur. L'espacer retire l'attaque *et* l'esquive.
+C'est ce qui explique que le Void Step, qu'on croyait être son outil anti-kiting,
+soit resté plat : ce n'est pas lui qui gagne ces duels.
+
+### Ce que le Mannequin a révélé de lui
+
+Sa production contre une cible qui ne riposte pas est de **4,0 PV/s** — la plus
+faible des sept combattants qui frappent, sous le Pistolero (4,2) et à moitié du
+Shinobi (5,9). Et il finit malgré tout **troisième** de la matrice.
+
+Il ne gagne donc pas en frappant fort : il gagne en **ne se faisant pas
+toucher**. C'est le premier combattant du roster dont la force est défensive
+sans qu'aucune valeur de sa fiche ne parle de défense.
+
+### L'écart qui reste
+
+Sur 120 duels hors Mannequin : **64/120 (53 %)**, mais la forme est franchement
+bimodale — Druide 20/20, Pistolero 16/20, Shinobi 15/20, Hoplite 12/20, contre
+Ronin 1/20 et Golem 0/20. Il balaie tout ce qui tire et perd contre tout ce qui
+cogne. Comme pour le Golem, **aucun levier de sa fiche ne corrige cette
+forme** : chacun de ceux essayés déplace les six affrontements ensemble.
 
 ## 🎯 MANNEQUIN — `dummy` (affiché « MANNEQUIN » en français, « DUMMY » en anglais)
 

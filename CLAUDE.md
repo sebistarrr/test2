@@ -1,10 +1,10 @@
 # CLAUDE.md — mémoire du projet
 
-Duels **à deux, en 2 contre 2 ou en bataille royale**, avec sept combattants :
+Duels **à deux, en 2 contre 2 ou en bataille royale**, avec huit combattants :
 cinq repris de la chaîne « ballthingsim » — le Pistolero, le Ronin, l’Hoplite,
-le Shinobi et le Druide — et **deux inventés**, le Golem et le Mannequin (une
-cible d'entraînement qui ne frappe pas), sur un moteur écrit d'après les vidéos
-de référence.
+le Shinobi et le Druide — et **trois inventés**, le Golem, le Mannequin (une
+cible d'entraînement qui ne frappe pas) et Neon Shadow, sur un moteur écrit
+d'après les vidéos de référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -66,11 +66,11 @@ de navigation, pas un besoin.
 
 ## Roster
 
-**Sept combattants, tous jouables.** Cinq sont relevés sur trois vidéos
+**Huit combattants, tous jouables.** Cinq sont relevés sur trois vidéos
 « ballthingsim » en 576 × 1024, 30 fps (*Outlaw vs Bladesman*, *Dragoon vs
-Outlaw*, *Dragoon vs Magia*) ; **les deux derniers, le Golem et le Mannequin,
-sont inventés** — aucune de leurs valeurs ne peut donc porter `mesuré`, tout y
-est `calé` ou `déduit`.
+Outlaw*, *Dragoon vs Magia*) ; **les trois derniers — le Golem, le Mannequin et
+Neon Shadow — sont inventés**, aucune de leurs valeurs ne peut donc porter
+`mesuré`, tout y est `calé` ou `déduit`.
 
 | Personnage | Signature |
 | --- | --- |
@@ -80,6 +80,7 @@ est `calé` ou `déduit`.
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** au lieu de 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
+| `neon` **NEON SHADOW** | **inventé, pas relevé.** **Deux armes** : une dague **braquée** sur la cible (`weapon.spin = 0`) et une **dague libre au bout d'une chaîne**, que le module intègre en pendule et dont il applique les dégâts lui-même — le moteur ne connaît toujours qu'une hitbox d'arme. Images fantômes **permanentes** (`ghosting` réarmé à chaque pas), Pas du vide (`offstage`), Faille du vide, et **ÉCLIPSE TOTALE** qui peint l'arène en noir dans `drawOver` |
 | `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, 200 PV. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 25 PV qui
@@ -95,7 +96,7 @@ renomme pas : il n'est montré à personne et le changer toucherait `ROSTER`,
 `abilities/index.js`, les trois registres, les noms de fichiers et les URL
 d'archive. Seuls `name`/`nameRef` changent.
 
-Les sept noms sont des **archétypes, pas des noms propres**, sur le patron de
+Les huit noms sont des **archétypes, pas des noms propres**, sur le patron de
 SHINOBI. Trois conséquences :
 
 - **l'article revient** : « le Pistolero », « l'Hoplite », « le Druide » ;
@@ -112,16 +113,20 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 `pixelart/outlaw.js`). Un commentaire qui cite un élément disparu parle d'une
 **provenance**, pas d'un fichier à ouvrir.
 
-**Relevé de matrice courant** (`tools/matrix-reference.txt`), 18 duels hors
-miroir chacun : Druide 13, Pistolero 12, Golem 11, Hoplite 10, Ronin 10,
-Shinobi 7, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
+**Relevé de matrice courant** (`tools/matrix-reference.txt`), 21 duels hors
+miroir chacun : Druide 14, Golem 14, Neon Shadow 13, Ronin 13, Pistolero 12,
+Hoplite 10, Shinobi 8, Mannequin 0 (il ne peut pas gagner, c'est sa
+définition).
 **Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
 d'équilibrage : 200 PV divisés par la durée donnent la production réelle de
 chacun contre une cible qui ne riposte pas — Shinobi 5,9, Ronin 5,8, Hoplite
-5,5, Druide 5,3, Pistolero 4,2, Golem 2,5 PV/s. La ligne
+5,5, Druide 5,3, Pistolero 4,2, Neon Shadow 4,0, Golem 2,5 PV/s. Neon Shadow y
+montre le cas le plus intéressant du banc : **la production la plus faible des
+sept, et pourtant 13 victoires** — il ne gagne pas en frappant fort, il gagne
+en ne se faisant pas toucher. La ligne
 `dummy vs dummy` finit en **`timeout`** : deux combattants sans dégâts ne se
 départagent jamais, le moteur n'ayant aucune limite de temps.
-Écart **7 à 13** entre les six qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
+Écart **8 à 14** entre les sept qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
 toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
 un.** Le Golem le montre en grand — 5/15 ici, mais **54/100** sur un banc à
 10 seeds × les deux camps, parce qu'il est en queue de `ROSTER` donc toujours
@@ -142,7 +147,7 @@ peut blesser qui.
 | --- | --- | --- |
 | Duel | 2 identifiants | omis → `[0, 1]` |
 | 2 contre 2 | 4 identifiants | `[0, 0, 1, 1]` |
-| Bataille royale | 3 à 7 identifiants | omis → chacun le sien |
+| Bataille royale | 3 à 8 identifiants | omis → chacun le sien |
 
 `ui/select.js` porte la table des formats et fabrique les camps ; `main.js` les
 lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format ne demande
@@ -477,6 +482,10 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - `imageSmoothingQuality = 'high'` coûtait 72 % du fil principal à l'export :
   rester en `'low'`. Et `captureStream()` ne s'appelle **qu'une fois par
   session**.
+- **Un ultime qui déplace son porteur est aussi une esquive** : l'espacer retire
+  les dégâts *et* la survie, d'où des falaises (Neon Shadow, 15 s → 17 s).
+- **Une seconde arme n'a pas besoin du moteur** : un module peut intégrer sa
+  position et appeler `game.damage` lui-même (la dague libre de Neon Shadow).
 - **Un combattant à plusieurs corps ne se nomme qu'une fois** : dédoublonner par
   `el.id`, comme le HUD le fait déjà (bandeau de victoire, classement).
 - Un pouvoir dessiné dans `drawOver` peut **recouvrir le chiffre de PV** : il
