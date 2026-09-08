@@ -43,10 +43,12 @@ export const GOLEM = fiche({
   icon: 'iconGolem',
 
   /**
-   * **400 PV quand tout le monde en a 200 — demandé, et c'est toute sa défense.**
+   * **200 PV quand tout le monde en a 100 — demandé, et c'est toute sa
+   * défense.** Le double de la norme, comme depuis toujours : 200 → 400 → 200
+   * en suivant les deux passages de la norme (100 → 200 → 100).
    *
    * Le moteur sait déjà donner des PV par combattant : `Fighter.maxHp` est un
-   * paramètre du constructeur (le Clone d'ombre du Shinobi naît à 50), et tout
+   * paramètre du constructeur (le Clone d'ombre du Shinobi naît à 25), et tout
    * ce qui affiche une proportion de vie divise par **lui**, jamais par une
    * constante — plaque du HUD, cerclage rouge de danger. Il ne manquait que la
    * lecture de la fiche, faite en une ligne dans `Match` (`el.maxHp ??
@@ -56,7 +58,7 @@ export const GOLEM = fiche({
    * étaient une option de partie offerte au joueur. Celui-ci est une valeur de
    * fiche, comme la vitesse ou la portée.
    */
-  maxHp: 400,
+  maxHp: 200,
 
   look: {
     /**

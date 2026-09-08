@@ -39,7 +39,7 @@
  *  bloc `sound` qui nomme ses recettes et sa transposition (`pitch`), de la
  *  même façon qu'il nomme ses sprites et ses couleurs : le moteur ne connaît
  *  toujours aucun combattant (invariant 12), il lit. Le Golem sonne une octave
- *  plus bas que Neon Shadow sans une ligne de code propre à lui.
+ *  plus bas que le Shinobi sans une ligne de code propre à lui.
  *
  * @module data/sound
  */
@@ -187,11 +187,6 @@ export const SOUNDS = deepFreeze({
     { wave: 'triangle', f0: 330, f1: 520, dur: 0.22, gain: 0.24, attack: 0.03 },
     { wave: 'sine', f0: 660, f1: 990, dur: 0.26, gain: 0.16, delay: 0.08, attack: 0.03 },
   ],
-  /** Pas du vide, téléportation : un balayage qui part vers le haut et disparaît. */
-  warp: [
-    { wave: 'sine', f0: 220, f1: 1900, dur: 0.22, gain: 0.24 },
-    { wave: 'noise', filter: 'bandpass', cut0: 600, cut1: 4000, q: 3, dur: 0.22, gain: 0.2 },
-  ],
   /** Invocation : deux quintes qui montent, franches, on doit entendre « quelqu'un arrive ». */
   summon: [
     { wave: 'square', f0: 180, f1: 270, dur: 0.16, gain: 0.2, attack: 0.02 },
@@ -210,11 +205,6 @@ export const SOUNDS = deepFreeze({
   riser: [
     { wave: 'sawtooth', f0: 90, f1: 880, dur: 0.6, gain: 0.24, attack: 0.05 },
     { wave: 'noise', filter: 'bandpass', cut0: 400, cut1: 5000, q: 2, dur: 0.6, gain: 0.26, attack: 0.05 },
-  ],
-  /** Éclipse : la même montée, mais **descendante** — la lumière s'en va. */
-  eclipse: [
-    { wave: 'sawtooth', f0: 700, f1: 70, dur: 0.9, gain: 0.26, attack: 0.04 },
-    { wave: 'noise', filter: 'lowpass', cut0: 4000, cut1: 220, q: 1.4, dur: 0.9, gain: 0.24 },
   ],
 
   /* ---------------------------------------------------------------- */

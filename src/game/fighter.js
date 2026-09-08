@@ -125,9 +125,9 @@ export class Fighter {
      *
      * Même forme que les compteurs ci-dessus : un module le pose, le rendu le
      * lit, et le rendu **ne sait pas pourquoi**. Il existe parce qu'un
-     * combattant peut n'avoir aucune arme au sens du moteur — Neon Shadow porte
-     * deux lames que son module intègre, donc `weapon.reach` vaut zéro chez lui
-     * et la pointe suivie serait le centre de sa bille.
+     * combattant peut n'avoir aucune arme au sens du moteur — un module peut
+     * intégrer lui-même une arme dont `weapon.reach` vaut zéro, et la pointe
+     * suivie serait alors le centre de sa bille.
      * @type {{x:number,y:number}|null}
      */
     this.ribbonAnchor = null;

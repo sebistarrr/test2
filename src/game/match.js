@@ -608,10 +608,10 @@ export class Match {
    *
    * **`opts.sound` passe outre**, et c'est nécessaire : le moteur ne reconnaît
    * une touche d'arme qu'à `kind: 'melee'`, or une arme peut très bien ne pas
-   * passer par lui — les deux dagues de Neon Shadow sont intégrées par son
-   * module, qui appelle `damage` lui-même. Sans ce mot-là, le coup principal du
-   * personnage sonnait comme un projectile perdu. Même forme que `opts.kind` :
-   * un module l'écrit, le moteur s'en sert, et il ne sait pas pourquoi.
+   * passer par lui — un module peut intégrer sa propre arme et appeler
+   * `damage` lui-même. Sans ce mot-là, le coup principal d'un tel combattant
+   * sonnerait comme un projectile perdu. Même forme que `opts.kind` : un
+   * module l'écrit, le moteur s'en sert, et il ne sait pas pourquoi.
    *
    * @param {Fighter} source
    * @param {{kind?:string, sound?:string}} opts les options de `damage()`

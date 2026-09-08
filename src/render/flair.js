@@ -345,9 +345,9 @@ export class Flair {
    * crochet générique de plus, sur le patron des compteurs du `Fighter` : un
    * module le pose, le rendu le lit, et le rendu **ne sait pas pourquoi**.
    * Il existe parce qu'un combattant peut n'avoir aucune arme au sens du moteur
-   * — Neon Shadow porte deux lames que son module intègre lui-même, donc
-   * `reach` vaut zéro chez lui et la pointe suivie serait le centre de sa
-   * bille : le ruban se décrocherait de ce qu'il est censé suivre.
+   * — un module peut intégrer lui-même une arme sans en déclarer une au sens du
+   * moteur, donc `reach` vaut zéro chez lui et la pointe suivie serait le
+   * centre de sa bille : le ruban se décrocherait de ce qu'il est censé suivre.
    */
   _trackRibbon(f) {
     const r = this.ribbons.get(f);

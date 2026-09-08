@@ -301,49 +301,6 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   les touches, obtenue ici directement — et elle confirme le compromis du
   Golem, qui produit 2,2 fois moins que le Shinobi pour 2 fois plus de PV.
 
-- **Un ultime qui déplace son porteur est aussi une esquive, et ça se paie deux
-  fois.** L'Éclipse totale de Neon Shadow le téléporte neuf fois en deux
-  secondes : c'est 28 % de ses dégâts, mais surtout deux secondes pendant
-  lesquelles un tireur ne peut plus l'atteindre. Conséquence au banc : baisser
-  les *dégâts* des frappes ne rend presque rien (4 → 2 : 133 → 124 sur 140),
-  espacer l'*horloge* rend tout (11 → 15 s : 98 → 84, et 17 s l'effondre à 56).
-  Le levier d'un ultime mobile est sa **fréquence**, pas sa puissance — et la
-  falaise est brutale parce qu'on retire les deux effets d'un coup.
-- **Une seconde arme n'a pas besoin du moteur.** `physics.js` ne connaît qu'une
-  hitbox d'arme par combattant. Plutôt que de lui en apprendre une deuxième pour
-  un seul personnage (ce qui aurait touché tout le roster), la dague libre de
-  Neon Shadow est un point que **son module intègre lui-même** et dont il
-  applique les dégâts par `game.damage` — exactement comme l'Onde sismique du
-  Golem. Un personnage entier a été ajouté sans une ligne de moteur.
-- **Un ressort qui vise son point d'attache s'y écrase.** Première version de
-  cette dague libre : rappel vers le pommeau. Au repos, la seule position
-  d'équilibre d'une chaîne tendue vers son propre pommeau est le pommeau
-  lui-même — on voyait une dague collée à la bille au lieu d'une lame flottant à
-  100 px. Le rappel doit viser un point **décalé** (ici, dans le dos du cap) :
-  c'est ce décalage qui crée la traîne, le déport en virage et la distance au
-  repos, tous les trois d'un coup et sans qu'aucun ne soit codé.
-
-- **Un pouvoir peut fonctionner parfaitement et ne rien peser : mesurer sa
-  fenêtre avant de le déclarer cassé.** Le Pas du vide de Neon Shadow avait été
-  jugé « plat » parce qu'en changer la recharge (6,5 → 10 s) ne déplaçait que
-  3 duels sur 140, et j'en avais conclu — à tort, et en le disant avec aplomb —
-  qu'il *désarmait* son porteur. La mesure dit l'inverse : dans les 1,2 s qui
-  suivent un pas, ses lames produisent **5,00 PV/s contre 2,43 le reste du
-  temps**. Le mécanisme double sa production. Ce qui est petit, c'est la
-  **fenêtre** : 1,2 s × 2,74 pas = 3,3 s sur un duel de 26,7 s, soit ~8,5 PV de
-  surplus sur ~100 infligés. D'où la règle : quand un levier de *fréquence* est
-  plat, mesurer la production **pendant** l'effet avant de toucher au mécanisme
-  — le vrai levier est souvent l'ampleur de la fenêtre, pas son retour.
-- **Un combattant peut infliger plus que tous les autres et perdre 20 fois sur
-  20.** Neon Shadow plaçait 124 PV par duel contre le Golem — son meilleur score
-  de tout le roster — et perdait 0/20, parce qu'il en faut 200 et que le Golem
-  lui en plaçait exactement 100, soit sa barre entière. Il n'était pas dominé,
-  il manquait de temps. **Un ratio de victoires ne dit pas si le problème est la
-  production ou le réservoir** : relever les deux (infligé *et* subi, par
-  adversaire) sépare les deux causes, et elles n'appellent pas le même
-  correctif. Ici la réponse a été une production **croissante** (`f.stacks`),
-  seule forme qui aide dans les duels longs sans rien changer aux courts.
-
 - **Un recul se règle en direction, pas en force — et sa force est un levier
   plat.** Le Pistolero « avait l'air de se propulser vers l'adversaire ». Trois
   mesures ont été nécessaires, dont deux lectures fausses de ma part, avant
@@ -590,18 +547,18 @@ entiers et compte les sons, et `tools/export-check.mjs`, qui filme un duel et
 
 Deux points de conception qui ont bien tenu, notés pour ne pas les défaire :
 
-- **Trois créneaux sur cinq n'ont demandé aucune ligne dans les huit modules**,
+- **Trois créneaux sur cinq n'ont demandé aucune ligne dans les sept modules**,
   parce que le moteur voyait déjà passer l'événement : le tir dans
   `Projectiles.spawn`, la touche dans `Match.damage`, l'ultime dans la bascule
   de `f.ult.active` que `flair.cast` détectait déjà. Le rebond de mur non plus :
   `f.wall` était posé pour les ondes de `flair.js`. **Chercher l'endroit où
   l'image lit déjà l'événement** avant d'ajouter un état.
 - **Une arme qui n'existe pas pour le moteur doit le dire.** `Match.hitSound`
-  ne reconnaît une touche d'arme qu'à `kind: 'melee'` ; les deux dagues de Neon
-  Shadow sont intégrées par son module, donc son coup principal sonnait comme
-  un projectile perdu. Un mot dans les options de `damage` (`sound: 'hit'`)
-  suffit — même forme que `opts.kind` : un module l'écrit, le moteur s'en sert,
-  et il ne sait pas pourquoi.
+  ne reconnaît une touche d'arme qu'à `kind: 'melee'` ; une arme intégrée
+  directement par son module (positions et dégâts gérés en dehors du bloc
+  `weapon` de la fiche) sonnerait sinon comme un projectile perdu. Un mot dans
+  les options de `damage` (`sound: 'hit'`) suffit — même forme que `opts.kind` :
+  un module l'écrit, le moteur s'en sert, et il ne sait pas pourquoi.
 
 ### Refactoriser
 

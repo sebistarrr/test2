@@ -3,7 +3,6 @@
   "sprites": {
     "bladesmanFlameBlade": "bladesman-flameblade.png",
     "windShuriken": "shinobi-shuriken-dark.png",
-    "golemRock": "golem-rock.png",
-    "neonDagger": "neon-dagger.png"
+    "golemRock": "golem-rock.png"
   }
 }

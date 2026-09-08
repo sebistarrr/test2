@@ -361,13 +361,13 @@ export const WIND = fiche({
      * **Un quart d'un vrai combattant** : il meurt vite, et c'est ce qui borne
      * un pouvoir qui donne désormais un **combattant complet** de plus.
      *
-     * 25 → 50 en suivant le doublement de la norme (100 → 200). Ce n'est pas un
-     * réglage à part : c'est le **rapport** qui porte le garde-fou, et le
-     * laisser à 25 aurait fait du clone un huitième de combattant, donc un
-     * pouvoir bien plus faible qu'il n'a jamais été voulu — sans qu'aucune
-     * valeur du Shinobi n'ait changé.
+     * 25 → 50 → 25 en suivant les deux passages de la norme (100 → 200 → 100).
+     * Ce n'est pas un réglage à part : c'est le **rapport** qui porte le
+     * garde-fou, et le laisser à 50 aurait fait du clone la moitié d'un
+     * combattant plutôt qu'un quart, donc un pouvoir plus fort qu'il n'a jamais
+     * été voulu — sans qu'aucune valeur du Shinobi n'ait changé.
      */
-    hp: 50,
+    hp: 25,
     /**
      * **Une seule horloge pour tout le groupe — demandé.**
      *

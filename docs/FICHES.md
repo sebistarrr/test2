@@ -1,12 +1,12 @@
 # Fiches des combattants
 
-**Huit combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
+**Sept combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
 et **Ronin** du duel *Outlaw vs Bladesman*, **Hoplite** de *Dragoon vs Outlaw*,
 **Druide** construit sur la mécanique de Magia dans *Dragoon vs Magia*, et
 **Shinobi**, reskin du Vent des vidéos *Elemental Armory League*. Le sixième,
 le **Golem**, est **inventé** : il n'a pas de vidéo, donc pas un seul `mesuré`.
-Le **Mannequin** et **Neon Shadow** le sont aussi — le premier — c'est une **cible d'entraînement**
-sans arme ni dégâts, faite pour qu'on regarde les mécaniques des six autres.
+Le **Mannequin** l'est aussi : une **cible d'entraînement** sans arme ni
+dégâts, faite pour qu'on regarde les mécaniques des six autres.
 
 Ces fiches sont la **transcription lisible** de `src/data/fighters/`. Le code
 est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
@@ -30,13 +30,13 @@ les recale en une commande.
 | 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1316 |
 | 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1881 |
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2372 |
-| 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2585 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2797 |
-| La norme passe à 200 PV, le Golem à 400 | 2884 |
-| Le son de chacun | 2939 |
-| Équilibrage du roster | 2987 |
-| Règles communes (moteur) | 3085 |
-| Comment les mesures ont été prises | 3109 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2588 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 2674 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 2729 |
+| Le son de chacun | 2797 |
+| Équilibrage du roster | 2850 |
+| Règles communes (moteur) | 2948 |
+| Comment les mesures ont été prises | 2972 |
 
 ## Comment lire une valeur
 
@@ -2584,217 +2584,6 @@ Sa production contre le Mannequin tombe de 2,76 à **2,5 PV/s**. En revanche
 l'écart du roster se resserre : **9 à 12** victoires sur 18, le plus serré
 qu'ait connu le dépôt.
 
-## 🌌 NEON SHADOW — `neon` (affiché « NEON SHADOW » dans les deux langues)
-
-**Le Maître des Illusions**, troisième combattant inventé du dépôt : pas de
-vidéo, donc **pas un seul `mesuré`**.
-
-### Ce qu'il apporte, et ce qu'il n'a pas coûté au moteur
-
-Le roster savait faire une arme braquée, une arme centrée sur la bille et une
-arme lourde. Il ne savait pas faire **deux armes à la fois**, dont une qui n'est
-pas accrochée au corps.
-
-| Pièce | Où elle vit | Ce qu'il a fallu ajouter au moteur |
-| --- | --- | --- |
-| Dague braquée | `weapon.spin: 0` + le module recopie l'angle | rien (patron du Pistolero) |
-| **Dague libre** | pendule intégré par le module, dégâts par `game.damage` | **rien** |
-| Images fantômes permanentes | `f.ghosting` réarmé à chaque pas | rien (compteur de l'Hoplite) |
-| Void Step | `f.offstage` + `f.invulnerable` | rien (Bond de l'Hoplite) |
-| Void Rift | `applySlow` + un orbe dessiné dans `drawUnder` | rien |
-| Éclipse totale | voile noir peint dans `drawOver` | rien |
-
-**Zéro ligne de moteur pour un personnage entier**, et c'est la vérification que
-les compteurs génériques de l'invariant 7 tenaient leur promesse.
-
-### Les quatre axes d'amélioration
-
-Passe d'affinage demandée après un audit du personnage — d'où viennent ses
-dégâts, et ce que chacun de ses outils rapporte réellement (120 duels) :
-
-| Source | Part de ses dégâts | Déclenchements / duel |
-| --- | --- | --- |
-| Les deux lames | 72,5 % | en continu |
-| Éclipse totale | 19,8 % | 1,20 |
-| Faille du vide | 7,6 % | 1,55 (sur 1,86 posées) |
-| Pas du vide | 0 % | 2,74 |
-
-**1. Le Pas du vide projette les lames.** Le pouvoir avait été jugé « plat »
-parce qu'en changer la recharge ne déplaçait que 3 duels sur 140, et j'en avais
-conclu qu'il *désarmait* son porteur. **La mesure dit l'inverse** : dans les
-1,2 s qui suivent un pas, ses lames produisent **5,00 PV/s contre 2,43 le reste
-du temps**. Le mécanisme double déjà sa production ; ce qui est petit, c'est la
-fenêtre — 3,3 s sur un duel de 26,7 s, soit ~8,5 PV de surplus. Le levier était
-donc l'ampleur, pas la fréquence. À l'atterrissage, les deux lames sont
-maintenant **projetées vers la cible** à 900 px/s, verrous remis à zéro.
-
-**2. La Faille du vide cloue une seconde au lieu d'une demie.** Le piège se
-déclenchait bien (83 % des orbes posés — les adversaires le poursuivent, donc
-ils passent là où il était), mais 0,5 s ne préparait rien. À 1 s, il devient une
-mise en place et le personnage obtient son **premier enchaînement** : la faille
-cloue, le pas amène les lames, les lames frappent une cible immobilisée.
-
-**3. La dette visuelle de la refonte, réparée.** Neutraliser `weapon` (portée 0)
-avait cassé deux choses qui lisaient sur `reach` :
-
-- `flair.js` trace le trait d'arme des fantômes de `handle.length` à `reach` —
-  deux valeurs nulles ici, donc **les fantômes avaient perdu leurs dagues** ;
-- le ruban suit la pointe d'arme, donc il partait **du centre de la bille**.
-
-Le module tient désormais sa propre file de fantômes de lames (même cadence que
-celle du moteur, pour que les deux traînées battent ensemble), et
-`Fighter.ribbonAnchor` — **crochet générique** ajouté pour l'occasion, sur le
-patron des compteurs de l'invariant 7 — laisse un module désigner le point que
-suit le ruban. Deux lignes de moteur, purement visuelles : la matrice n'a pas
-bougé d'un caractère sur les sept autres combattants.
-
-**4. Les lames montent en puissance.** Le relevé infligé/subi par adversaire
-avait montré l'essentiel :
-
-| Adversaire | Il inflige | Il subit | Résultat d'alors |
-| --- | --- | --- | --- |
-| Golem | **124** | 100 | **0/20** |
-| Ronin | 99 | 82 | 18/20 |
-| Druide | 88 | 89 | 5/20 |
-
-Contre le Golem il infligeait **plus que contre n'importe qui d'autre** et
-perdait vingt fois sur vingt : il en plaçait 124 sur les 200 à franchir pendant
-que le Golem lui plaçait exactement sa barre. Il n'était pas dominé, il manquait
-de temps. Les lames passent donc de 8 dégâts plats à une **pile croissante**
-(`f.stacks`, 6 → 13 par pas de 0,35 à chaque touche), le mécanisme du Pistolero
-et de l'Hoplite, affiché au HUD comme chez eux. C'est la seule forme qui aide
-dans les duels longs sans rien changer aux courts.
-
-**Résultat des quatre ensemble** : le total ne bouge quasiment pas (82 → 80 sur
-140), mais **la forme se resserre nettement**.
-
-| Adversaire | Avant | Après |
-| --- | --- | --- |
-| Hoplite | 15/20 | 18/20 |
-| Ronin | **18/20** | 11/20 |
-| Shinobi | 14/20 | 10/20 |
-| Pistolero | 10/20 | 9/20 |
-| Druide | 5/20 | 8/20 |
-| Golem | **0/20** | 4/20 |
-| **Écart** | **0 à 18** | **4 à 18** |
-
-Hors Mannequin, il passe de 62/120 à **60/120 — exactement 50 %**. Les deux
-affrontements qui l'humiliaient (Golem, Druide) remontent, celui qu'il
-dominait (Ronin) redescend : c'est le resserrement qu'on cherchait, obtenu sans
-toucher au total.
-
-### Les deux dagues deviennent mobiles
-
-**Demandé après coup** : « je veux que les deux dagues soient mobiles et
-rattachées par une chaîne ». La première version gardait une dague **braquée et
-accrochée au corps** (l'arme au sens du moteur) et une seule lame libre.
-
-Conséquence sur le moteur : **il n'a plus d'arme du tout**. Aucune des deux
-lames n'étant accrochée au corps, aucune ne peut être le segment rigide que
-`physics.js` sait faire partir du pivot. Le bloc `weapon` est donc **neutralisé
-exactement comme celui du Mannequin** — portée 0, hitbox de rayon 0, dégâts 0 —
-et `f.customWeapon = () => {}` empêche `Fighter.paintWeapon` de peindre quoi que
-ce soit (le crochet par lequel les clones du Shinobi n'en portent aucune). Tout
-passe par `weapon.blades` et le module.
-
-**La chaîne relie les deux lames l'une à l'autre**, plus une lame au corps :
-c'est ce que montre la maquette, et ça garde la bille nue au milieu.
-
-Deux réglages, dans cet ordre :
-
-1. **La géométrie d'abord.** Les points de repos étaient à ±0,85 rad du dos du
-   cap, donc franchement *derrière* : quand il fonçait sur sa cible, les deux
-   lames étaient du mauvais côté et ne touchaient presque jamais — **31/140**.
-   Portés à ±1,45 rad (~83°), ils le **flanquent**. Le gain seul est modeste
-   (31 → 36) mais il fallait le faire avant de toucher aux dégâts, sans quoi on
-   aurait compensé un défaut de placement par de la puissance.
-2. **Les dégâts ensuite**, et le levier est aussi raide que la mêlée qu'il
-   remplace (~9 duels par point) :
-
-   | dégâts par lame | 5 | **8** | 10 |
-   | --- | --- | --- | --- |
-   | victoires /140 | 36 | **82** | 103 |
-
-**Et le personnage a changé de nature.** Avant, il écrasait les tireurs et
-perdait contre les cogneurs (Druide 20/20, Ronin 1/20). Maintenant c'est
-l'inverse : **Ronin 18/20, Hoplite 15/20**, mais Druide 5/20 et Golem 0/20. Deux
-lames qui le flanquent en permanence sont une défense de contact ; la dague
-braquée était une arme d'approche. Le total est presque le même (52 % contre
-53 %), la forme est retournée — c'est exactement le piège que le dépôt
-documente : **lire le banc ligne par ligne, pas seulement en total.**
-
-### La dague libre : un pendule, pas une orbite
-
-Ressort vers un point de rappel, amortissement, et une laisse qui borne la
-distance. Les trois comportements demandés en sortent **sans être écrits** : en
-ligne droite elle traîne derrière, en virage sec elle part sur le côté, au repos
-elle flotte à `length`.
-
-**Le premier essai les manquait tous les trois.** Le ressort visait le *point
-d'attache* : au repos, la seule position d'équilibre d'une chaîne tendue vers
-son propre pommeau est le pommeau lui-même, et la lame s'y écrasait — on voyait
-une dague collée à la bille. Le rappel vise donc un point à `length` **dans le
-dos du cap**.
-
-Elle est aussi **dessinée avec le même sprite** que la dague principale. Le
-premier jet traçait un losange à la main, plus court à écrire : à l'écran, la
-maquette montre deux dagues jumelles et on en voyait une belle et un caillou.
-
-### Valeurs
-
-| Bloc | Valeur | Source |
-| --- | --- | --- |
-| Corps | obsidienne `#0b0714`, **contour violet néon de 7 px** (5 ailleurs), chiffre de PV rose clair, halo permanent | demandé |
-| Corps touché | `#f0abfc` — il **rougeoie rose** au lieu de blanchir, et le module tire une gerbe de fragments à chaque perte de PV | demandé |
-| Déplacement | 545 px/s, virage **2,4 rad/s** (le plus manœuvrant du roster), `seek` 0,38 | calé |
-| Dague principale | portée **115** = `handle.length` 41 (le rayon exact du corps : le pommeau est collé au bord) + 74 px dessinés. PNG tourné de **145,2°**, angle donné par une **ACP** des pixels de lame | maquette |
-| Mêlée | 4 dégâts, verrou **1,15 s** (long pour une dague : c'est le garde-fou de l'arme braquée) | calé au banc |
-| Dague libre | flotte à **100 px**, rayon 26, 2 dégâts, verrou 0,9 s | demandé + calé |
-| Void Step | toutes les **6,5 s**, 0,35 s d'absence, réapparition à 96 px **dans le dos du cap de la cible** | calé |
-| Void Rift | orbe posé toutes les 9 s, armé jusqu'à ce qu'on le touche : 5 dégâts + ralentissement 0,75 pendant 0,5 s | calé |
-| Éclipse totale | jauge en **15 s**, 2 s, neuf frappes à 2 depuis des angles tirés dans `game.rng` | calé au banc |
-
-**Le « figé » du Void Rift est un ralentissement de 0,75, pas un arrêt** :
-`Fighter.slowFactor` **borne tous les ralentissements à 0,75** (`1 − clamp(worst,
-0, 0.75)`), pour tout le roster. On prend le maximum que la borne autorise
-plutôt que de la lever pour un seul combattant.
-
-### Équilibrage : le levier était l'ultime, et pour une raison inattendue
-
-Première version : **133 victoires sur 140** (10 seeds × les deux camps ×
-6 adversaires). Le balayage, un levier à la fois :
-
-| Levier | Essai | Total /140 | Ce que ça a appris |
-| --- | --- | --- | --- |
-| Frappes de l'éclipse | 4 → 2 | 133 → 124 | 36 % de ses dégâts, mais levier tiède |
-| Dégâts de mêlée | 6 → 4 | 124 → 105 | raide, ~9 duels par point |
-| Recharge du Void Step | 6,5 → 10 s | 105 → 102 | **plat**, et la forme empire |
-| Dégâts de la dague libre | 3 → 2 | 105 → 98 | moyen |
-| **Horloge de l'éclipse** | 11 → 15 s | 98 → **84** | **le levier**, et une falaise à 17 s (56) |
-
-**Pourquoi l'horloge de l'ultime et pas le reste.** L'éclipse n'est pas qu'une
-source de dégâts : pendant deux secondes il **se téléporte neuf fois**, donc il
-devient introuvable pour un tireur. L'espacer retire l'attaque *et* l'esquive.
-C'est ce qui explique que le Void Step, qu'on croyait être son outil anti-kiting,
-soit resté plat : ce n'est pas lui qui gagne ces duels.
-
-### Ce que le Mannequin a révélé de lui
-
-Sa production contre une cible qui ne riposte pas est de **4,2 PV/s** — à
-égalité avec le Pistolero pour la plus faible du roster hors Golem, et à
-moitié de celle du Shinobi (5,9).
-
-Il ne gagne donc pas en frappant fort : il gagne en **ne se faisant pas
-toucher**. C'est le premier combattant du roster dont la force est défensive
-sans qu'aucune valeur de sa fiche ne parle de défense.
-
-### L'écart qui reste
-
-Sur 120 duels hors Mannequin : **64/120 (53 %)**, mais la forme est franchement
-bimodale — Druide 20/20, Pistolero 16/20, Shinobi 15/20, Hoplite 12/20, contre
-Ronin 1/20 et Golem 0/20. Il balaie tout ce qui tire et perd contre tout ce qui
-cogne. Comme pour le Golem, **aucun levier de sa fiche ne corrige cette
-forme** : chacun de ceux essayés déplace les six affrontements ensemble.
 
 ## 🎯 MANNEQUIN — `dummy` (affiché « MANNEQUIN » en français, « DUMMY » en anglais)
 
@@ -2882,9 +2671,10 @@ ne montre aussi directement :
 Le Golem produit **2,2 fois moins** que le Shinobi — l'exact contrepoids de ses
 200 PV, et la confirmation chiffrée du compromis décrit dans sa propre section.
 
-## La norme passe à 200 PV, le Golem à 400
+## La norme passe à 200 PV, le Golem à 400 (historique)
 
-**Demandé.** `MATCH.maxHp` : 100 → 200, et `GOLEM.maxHp` : 200 → 400. Une seule
+**Demandé, à l'époque — voir la section suivante pour l'état courant.**
+`MATCH.maxHp` : 100 → 200, et `GOLEM.maxHp` : 200 → 400. Une seule
 constante et une seule fiche — rien d'autre n'a eu à bouger, parce que le dépôt
 s'interdit depuis longtemps de diviser par une constante de PV : tout ce qui
 affiche une proportion de vie lit `Fighter.maxHp` (plaque du HUD, cerclage rouge
@@ -2915,7 +2705,6 @@ confiné à personne.
 | Shinobi | 8 | **17** |
 | Druide | 12 | 12 |
 | Golem | 14 | 12 |
-| Neon Shadow | 12 | 10 |
 | Hoplite | 10 | 9 |
 | Ronin | 12 | **5** |
 
@@ -2932,10 +2721,78 @@ confiné à personne.
   doublement de plus.
 
 Le banc de DPS contre le Mannequin, lui, ne bouge pas d'un dixième (Pistolero
-6,1, Shinobi 5,9, Ronin 5,8, Hoplite 5,5, Druide 5,3, Neon Shadow 4,6, Golem
-2,5 PV/s) : le Mannequin ne riposte pas, donc doubler les PV des deux camps n'y
-change rien. **C'est ce qui prouve que le bouleversement vient de la durée, pas
-de la production.**
+6,1, Shinobi 5,9, Ronin 5,8, Hoplite 5,5, Druide 5,3, Golem 2,5 PV/s) : le
+Mannequin ne riposte pas, donc doubler les PV des deux camps n'y change rien.
+**C'est ce qui prouve que le bouleversement vient de la durée, pas de la
+production.**
+
+## Neon Shadow supprimé, la norme redescend à 100 PV
+
+**Deux changements demandés au même relevé.** Neon Shadow (fiche, module,
+pixel-art, override PNG, recettes de son `warp`/`eclipse` devenues orphelines)
+a été **retiré du dépôt** — ni fiche, ni liste `DISABLED`, même traitement que
+les sept éléments de l'archive. Il était en **queue de `ROSTER`** : sa
+suppression ne déplace donc **aucune autre ligne** de la matrice, elle la
+raccourcit seulement (invariant 3).
+
+En même temps, `MATCH.maxHp` repasse à **100** et `GOLEM.maxHp` à **200** — la
+division inverse de la section précédente, chiffre pour chiffre : la norme
+double reste le double, le Clone d'ombre reste un quart d'un combattant
+(50 → 25).
+
+### L'effet, mesuré sur les six mêmes combattants
+
+Comparaison **à composition égale** : les six affrontements qui existaient déjà
+avant l'ajout de Neon Shadow, rejoués aux deux normes. Rien d'autre n'a changé
+entre les deux colonnes.
+
+| | 200 PV (avant) | 100 PV (après) |
+| --- | --- | --- |
+| Pistolero | 16 | 15 |
+| Druide | 10 | 11 |
+| Golem | 9 | 11 |
+| **Ronin** | **4** | **10** |
+| Hoplite | 9 | 9 |
+| **Shinobi** | **15** | **7** |
+
+Les duels durent **26,3 s en moyenne au lieu de ~41,9** — et les deux mêmes
+combattants rebasculent, dans l'**autre sens** que la section précédente :
+
+- **Le Ronin remonte (4 → 10).** Ses dégâts plafonnent (`2 × spin`, avec
+  surchauffe au sommet), donc il profite de tout raccourcissement : le duel se
+  termine avant que la barre adverse n'ait eu le temps de dépasser son débit.
+- **Le Shinobi s'effondre (15 → 7).** Ses clones s'invoquent entre eux à chaque
+  tour d'horloge partagée — un duel deux fois plus court n'a plus le temps de
+  laisser la population doubler autant de fois.
+
+C'est la **même mécanique que dans l'autre sens** (voir ci-dessus) : ce n'est
+pas la production de l'un ou de l'autre qui a changé, c'est la fenêtre de temps
+dont chacun dispose pour la faire valoir.
+
+**Le banc de DPS contre le Mannequin, lui, ne suit pas la division — et c'est
+instructif.** L'intuition dit que diviser les deux PV par deux ne change rien à
+un rapport production/durée ; la mesure dit le contraire pour qui n'a pas une
+production **constante** :
+
+| | 200 PV | 100 PV | Écart |
+| --- | --- | --- | --- |
+| **Ronin** | 5,79 | 5,61 | **−0,18** |
+| Golem | 2,55 | 2,25 | −0,30 |
+| Pistolero | 6,11 | 5,31 | −0,80 |
+| Druide | 5,27 | 4,19 | −1,08 |
+| Hoplite | 5,48 | 4,27 | −1,21 |
+| **Shinobi** | 5,87 | 3,96 | **−1,90** |
+
+Les deux extrêmes sont les deux combattants **à production non constante** de
+tout le roster, et pour des raisons opposées : le Ronin (dégâts plafonnés,
+`2 × spin` avec surchauffe) est celui qui bouge le **moins**, parce qu'un
+combat plus court le prend avant que son plafond ne pèse ; le Shinobi (clones
+qui s'invoquent entre eux) est celui qui bouge le **plus**, parce qu'un combat
+plus court lui laisse **moins de temps pour doubler sa population**. Golem et
+Pistolero, à production plus régulière, se rapprochent d'un rapport constant
+sans y être tout à fait. **Le banc de DPS n'est donc pas un invariant** : il
+mesure la production **dans la fenêtre de temps qu'un adversaire donné lui
+laisse**, pas une constante du combattant.
 
 ## Le son de chacun
 
@@ -2955,14 +2812,13 @@ synthèse, **aucun fichier audio** — et le mécanisme est décrit dans la sect
 | Shinobi | 1,20 | `whoosh` | `blade` | `whoosh` | `summon` | `riser` |
 | Druide | 1,05 | `orb` | `blade` | — (passif) | `bloom` | `riser` |
 | Golem | **0,72** | `pebble` | `crunch` | `thud` | `crunch` | `quake` |
-| Neon Shadow | 1,15 | — | `blade` | `warp` | `zap` | `eclipse` |
 | Mannequin | 0,85 | — | — | — | — | — |
 
 Quatre choix qui ne se devinent pas :
 
 - **Le `pitch` fait tout le travail d'identité.** Le Golem est à 0,72 — presque
   une demi-octave sous le roster, murs compris — et c'est le pendant sonore de
-  ce que sa fiche fait partout ailleurs : rayon 50 contre 41, 400 PV contre 200,
+  ce que sa fiche fait partout ailleurs : rayon 50 contre 41, 200 PV contre 100,
   370 px/s contre 430. Il est plus lourd, il s'entend plus lourd, et **aucune
   ligne de code ne le sait**.
 - **Un pouvoir passif n'a pas de son.** La Danse d'acier du Ronin et la Sève

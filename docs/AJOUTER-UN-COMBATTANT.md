@@ -87,8 +87,8 @@ Trois règles qui coûtent cher à rattraper :
 Deux clés facultatives, qui ne servent qu'à qui y déroge :
 
 - **`maxHp`** — points de vie de départ, lus par `Match` (`el.maxHp ??
-  MATCH.maxHp`). Absente, le combattant suit la norme de 200 ; le Golem porte
-  400. Rien dans le rendu ne divise par une constante, tout divise par
+  MATCH.maxHp`). Absente, le combattant suit la norme de 100 ; le Golem porte
+  200. Rien dans le rendu ne divise par une constante, tout divise par
   `Fighter.maxHp`, donc il n'y a rien d'autre à toucher.
 - **`look.radius`** — rayon du corps, 41 par défaut, 50 chez le Golem. Un corps
   plus large est **plus facile à toucher** : c'est un réglage d'équilibrage

@@ -1,15 +1,15 @@
-# Elemental Duel — huit combattants, trois formats
+# Elemental Duel — sept combattants, trois formats
 
-Duels **à deux, en 2 contre 2 ou en bataille royale** (jusqu'à huit, chacun pour
-soi), avec cinq combattants repris de la chaîne **« ballthingsim »** et trois
+Duels **à deux, en 2 contre 2 ou en bataille royale** (jusqu'à sept, chacun pour
+soi), avec cinq combattants repris de la chaîne **« ballthingsim »** et deux
 inventés, en **HTML + CSS + JavaScript** avec un rendu **Canvas 2D**.
 Aucune dépendance, aucun build : le dépôt se publie tel quel sur GitHub Pages.
 
 Les cinq premiers sont relevés image par image sur leur vidéo — couleurs à la
 pipette, portées au pixel, cadences chronométrées. Ce qui n'a pas pu être
-mesuré est calé au banc d'essai, et le dit. Les trois derniers — le **Golem**,
-le **Mannequin** et **Neon Shadow** — n'ont pas de vidéo : **tout chez eux est
-calé**, et leurs fiches ne portent pas un seul `mesuré`.
+mesuré est calé au banc d'essai, et le dit. Les deux derniers — le **Golem** et
+le **Mannequin** — n'ont pas de vidéo : **tout chez eux est calé**, et leurs
+fiches ne portent pas un seul `mesuré`.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
@@ -18,8 +18,7 @@ calé**, et leurs fiches ne portent pas un seul `mesuré`.
 | **Hoplite** | Lance d'orage (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Foudre tombante / THUNDERFALL — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
 | **Druide** | Bâton de ronce (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Orage de ronces / THORN STORM |
-| **Golem** (inventé) | Amas de roche (maquette servie par un vrai PNG, **par-dessus la bille**) — **la portée la plus courte du jeu** (100 px), et la rotation d'arme la plus lente | **le plus lent** (370 px/s), **le plus gros** (rayon 50 contre 41) et **400 PV** quand tout le monde en a 200 : il encaisse chaque coup en entier, il en encaisse simplement deux fois plus. Onde sismique sur horloge, éclats de roche pour qui reste au loin | Séisme / EARTHQUAKE (secousse sur 260 px, puis +35 % de vitesse) |
-| **Neon Shadow** (inventé) | Dagues du vide enchaînées — **deux lames mobiles reliées par une chaîne**, aucune accrochée au corps : elles le flanquent, traînent derrière lui et se déportent en virage | **il glisse** : images fantômes permanentes, il éclate en pixels d'ombre quand il encaisse, se téléporte dans le dos de sa cible (Pas du vide) et pose des pièges (Faille du vide) | Éclipse totale / TOTAL ECLIPSE — **l'arène passe au noir**, il ne reste que les contours néon, neuf frappes depuis des angles au hasard, puis un flash blanc |
+| **Golem** (inventé) | Amas de roche (maquette servie par un vrai PNG, **par-dessus la bille**) — **la portée la plus courte du jeu** (100 px), et la rotation d'arme la plus lente | **le plus lent** (370 px/s), **le plus gros** (rayon 50 contre 41) et **200 PV** quand tout le monde en a 100 : il encaisse chaque coup en entier, il en encaisse simplement deux fois plus. Onde sismique sur horloge, éclats de roche pour qui reste au loin | Séisme / EARTHQUAKE (secousse sur 260 px, puis +35 % de vitesse) |
 | **Mannequin** (inventé) | **aucune** — le seul du jeu | **cible d'entraînement** : il ne fait aucun dégât, n'a aucun pouvoir, et porte les PV de la norme, en blanc. On le choisit pour **regarder l'autre combattant** : sa ligne de HUD compte les dégâts qu'il a subis, donc ce que l'adversaire produit vraiment | aucun (jauge vide, « NO ULTIMATE ») |
 
 ### Trois formats
@@ -28,7 +27,7 @@ calé**, et leurs fiches ne portent pas un seul `mesuré`.
 | --- | --- |
 | **Duel** | un contre un, le format d'origine — c'est lui, et lui seul, dont l'équilibrage est relevé |
 | **2 contre 2** | deux équipes de deux. Les armes ne touchent que le camp adverse, mais les **corps se bousculent entre tous** : un coéquipier reste un obstacle |
-| **Bataille royale** | 3 à 8 combattants, chacun pour soi, dernier debout |
+| **Bataille royale** | 3 à 7 combattants, chacun pour soi, dernier debout |
 
 Le moteur ne connaît aucun de ces trois noms : il reçoit une liste de
 combattants et **un camp pour chacun**. « 2 contre 2 » et « chacun pour soi »
@@ -52,10 +51,11 @@ l'arène s'éclaircit, les armes tournent, mais personne n'avance.
 
 ### Points de vie
 
-Les points de vie ne se règlent pas : la norme est de **200**, demandée (c'était
-100, le chiffre du cahier des charges). Une fiche peut porter les siens — le
-Golem en a **400**, sa seule défense — et un pouvoir peut faire entrer un
-combattant avec les siens : les clones du Shinobi naissent à 50, **un quart d'un
+Les points de vie ne se règlent pas : la norme est de **100**, le chiffre du
+cahier des charges (elle est passée à 200 le temps d'une session, puis a été
+redivisée par deux sur demande). Une fiche peut porter les siens — le Golem en
+a **200**, sa seule défense — et un pouvoir peut faire entrer un combattant
+avec les siens : les clones du Shinobi naissent à 25, **un quart d'un
 combattant**, et c'est ce rapport qui borne le pouvoir.
 
 Chacun porte en plus un **pouvoir spécial**, sur horloge propre, avec sa jauge
@@ -151,7 +151,7 @@ deux couches d'oscillateur et de bruit blanc filtré, avec leur enveloppe — qu
   fanfare de victoire.
 - **C'est la fiche qui décide de la matière**, comme pour les sprites et les
   couleurs : elle nomme une recette par créneau et une transposition. Le Golem
-  sonne une demi-octave sous le roster (`pitch: 0.72`), Neon Shadow au-dessus —
+  sonne une demi-octave sous le roster (`pitch: 0.72`), le Shinobi au-dessus —
   sans une ligne de code qui les distingue.
 - **Un annonceur nomme les combattants** : « pistolero versus ronin » à
   l'ouverture, « pistolero wins » à la parade. Il passe par la synthèse vocale

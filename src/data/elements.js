@@ -44,7 +44,6 @@ import { LANCER } from './fighters/lancer.js';
 import { MAGE } from './fighters/mage.js';
 import { GOLEM } from './fighters/golem.js';
 import { DUMMY } from './fighters/dummy.js';
-import { NEON } from './fighters/neon.js';
 
 export const ELEMENTS = deepFreeze({
   wind: WIND,
@@ -54,7 +53,6 @@ export const ELEMENTS = deepFreeze({
   mage: MAGE,
   golem: GOLEM,
   dummy: DUMMY,
-  neon: NEON,
 });
 
 /**
@@ -85,7 +83,6 @@ export const ROSTER = deepFreeze([
   // la seule du fichier à finir en `timeout` : deux combattants sans dégâts ne
   // se départagent jamais.
   'dummy',
-  'neon',
 ]);
 
 /** @param {string} id */

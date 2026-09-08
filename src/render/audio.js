@@ -263,7 +263,7 @@ class Audio {
    * C'est par ici que passent les modules de pouvoirs et le moteur : ni l'un ni
    * l'autre ne nomme jamais une recette, ils nomment un **créneau**, et c'est
    * la fiche qui dit avec quelle matière ce combattant-là le remplit
-   * (invariant 12). Le Golem tonne et Neon Shadow siffle sans une ligne de code
+   * (invariant 12). Le Golem tonne et le Shinobi siffle sans une ligne de code
    * qui les distingue.
    *
    * @param {{el:object, x:number}} f combattant émetteur
