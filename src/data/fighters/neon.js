@@ -13,15 +13,16 @@ import { formatSeconds } from '../format.js';
  *  la fois**, dont une qui n'est pas accrochée au corps. C'est toute la
  *  nouveauté ici, et elle tient dans le module plutôt que dans le moteur :
  *
- *   • la **dague principale** est une arme ordinaire, braquée sur la cible —
- *     `weapon.spin = 0`, le module recopie l'angle, exactement comme le
- *     revolver du Pistolero ;
- *   • la **dague libre** n'existe pas pour le moteur. C'est un point que le
- *     module intègre lui-même (ressort + amortissement + contrainte de
- *     longueur) et dont il applique les dégâts par `game.damage`, comme l'Onde
- *     sismique du Golem applique les siens. Aucune ligne de `physics.js` n'a
- *     bougé : le moteur ne connaît toujours qu'une hitbox d'arme par
- *     combattant (invariant 12).
+ *   • **les deux dagues sont mobiles et reliées l'une à l'autre** — demandé.
+ *     Aucune n'est accrochée au corps, donc aucune ne peut être l'arme au sens
+ *     de `physics.js`, qui ne connaît qu'un segment rigide partant du pivot ;
+ *   • le bloc `weapon` est donc **neutralisé** comme celui du Mannequin
+ *     (portée 0, hitbox 0, dégâts 0), et `weapon.blades` porte tout. Les deux
+ *     lames sont deux pendules que le module intègre lui-même et dont il
+ *     applique les dégâts par `game.damage`, comme l'Onde sismique du Golem
+ *     applique les siens. **Aucune ligne de `physics.js` n'a bougé** — le
+ *     moteur ne connaît toujours qu'une hitbox d'arme par combattant, il n'en
+ *     a simplement aucune ici (invariant 12).
  *
  *  **Ce que le dépôt savait déjà faire et qu'il fallait juste brancher** :
  *  `Fighter.ghosting` (les images fantômes de la charge de l'Hoplite) devient
@@ -95,10 +96,13 @@ export const NEON = fiche({
       shape: 'streak',
       castFlash: 'rgba(168,85,247,0.55)',
       /**
-       * **La chaîne spectrale**, tracée par le module entre le pommeau de la
-       * dague principale et la dague libre. Elle est ici et non dans `weapon`
-       * parce qu'elle ne porte **que** des couleurs : la géométrie et les
-       * dégâts de la dague libre sont dans `weapon.chain`, qui décide du duel.
+       * **La chaîne spectrale**, tracée par le module **entre les deux lames** —
+       * pas entre une lame et le corps : c'est ce que montre la maquette, et
+       * c'est ce qui garde la bille nue au milieu.
+       *
+       * Elle est ici et non dans `weapon` parce qu'elle ne porte **que** des
+       * couleurs : la géométrie et les dégâts des lames sont dans
+       * `weapon.blades`, qui décide du duel.
        */
       chain: {
         color: '#a855f7',
@@ -134,94 +138,97 @@ export const NEON = fiche({
      * celle du Golem (100) et celle du Pistolero (122) : une dague ne prête
      * pas de l'allonge, elle en demande.
      */
-    reach: 115,
     /**
-     * **Zéro : la dague est braquée sur la cible**, comme le revolver du
-     * Pistolero et le sceptre du Druide. C'est `abilities/neon.js` qui écrit
-     * `weaponAngle` à chaque image — « elle tourne autour de la bille comme
-     * l'aiguille d'une boussole ».
+     * **Zéro : il n'a plus d'arme *pour le moteur* — demandé.**
      *
-     * Troisième arme braquée du roster, donc **troisième fois qu'il lui faut
-     * son propre garde-fou** : une arme toujours alignée touche en permanence.
-     * Ici c'est le verrou de mêlée (1,15 s) et une hitbox courte qui le
-     * portent — voir `melee.cooldown`.
+     * Les deux dagues sont mobiles et reliées entre elles ; aucune des deux
+     * n'est accrochée au corps, donc aucune ne peut être l'arme au sens de
+     * `physics.js`, qui ne connaît qu'un segment tranchant rigide partant du
+     * pivot. Le bloc `weapon` est donc **neutralisé** exactement comme celui du
+     * Mannequin — portée 0, hitbox de rayon 0, dégâts 0 — et c'est
+     * `weapon.blades` (plus bas) qui porte tout, appliqué par le module.
+     *
+     * Ce n'est pas un contournement : c'est la même sortie que le dépôt a déjà
+     * prise deux fois (l'Onde sismique du Golem, la première dague libre). Un
+     * module a le droit d'appeler `game.damage` ; le moteur n'a pas à
+     * apprendre une géométrie par personnage (invariant 12).
      */
+    reach: 0,
     spin: 0,
     spinDir: 1,
-    handle: { length: 41, width: 0, color: '#4c1d95', dark: '#2a1740', outline: '#0a0410', gem: null },
+    handle: { length: 0, width: 0, color: '#4c1d95', dark: '#2a1740', outline: '#0a0410', gem: null },
     /**
      * **Vrai PNG** (`assets/sprites/neon-dagger.png`) : la dague gauche de la
      * maquette, détourée du fond blanc par remplissage depuis les bords (un
      * seuil simple aurait percé ses hautes lumières néon) puis **tournée de
      * 145,2°** pour amener la pointe sur l'axe des armes. Cet angle n'est pas
      * choisi à l'œil : il vient d'une **ACP** des pixels sombres de la lame,
-     * l'extrémité fine désignant la pointe — mesurer une orientation par un
-     * barycentre est un piège que le dépôt a déjà payé.
+     * l'extrémité fine désignant la pointe.
      *
-     * `scale` se déduit du rapport d'aspect du PNG (779 × 616 = 1,2646) et non
-     * de la largeur de la carte texte : `74 × 616 / (8 × 779) = 7,314506`, ce
-     * qui rend 74 px de large, donc une pointe à 41 + 74 = 115.
+     * La clé reste renseignée bien que le moteur ne dessine plus rien (le module
+     * pose `f.customWeapon`) : c'est **le module** qui blitte ce sprite, deux
+     * fois, et `ui/select.js` en a besoin pour la carte.
      */
     head: { sprite: 'neonDagger', scale: 7.314506 },
-    /** Seule la lame coupe, pas la garde ni le pommeau : elle commence à 45 %
-     *  de la portée (52 px du centre, soit 11 px au-delà du bord de la bille). */
-    hitbox: { from: 0.45, radius: 12 },
-    melee: {
-      /**
-       * **Levier n° 2, et raide.** Une dague frappe vite et peu fort — mais
-       * braquée, elle ne rate jamais. Balayé au banc (10 seeds × les deux
-       * camps × 6 adversaires, 140 duels) : **6 → 124/140, 4 → 105/140**, soit
-       * ~9 duels par point de dégât.
-       */
-      damage: 4,
-      /**
-       * **Le garde-fou de l'arme braquée.** Le canon du Pistolero, toujours
-       * aligné, gagnait 27 duels sur 27 avant qu'on ne lui donne sa dispersion.
-       * Une dague braquée a le même défaut, sans projectile où loger une
-       * dispersion : c'est donc le verrou qui le porte, et il est long pour une
-       * dague (1,15 s, contre 1 s au Ronin et au Shinobi).
-       */
-      cooldown: 1.15,
-      knockback: 230,
-      selfRecoil: 90,
-    },
+    hitbox: { from: 0, to: 0, radius: 0 },
+    melee: { damage: 0, cooldown: 1, knockback: 0, selfRecoil: 0 },
     /**
-     * **LA DAGUE LIBRE — la moitié du personnage, et elle n'existe pas pour le
+     * **LES DEUX LAMES — tout le personnage, et rien de tout ça n'est dans le
      * moteur.**
      *
-     * `physics.js` ne connaît qu'une hitbox d'arme par combattant. Plutôt que
-     * de lui en apprendre une seconde (ce qui aurait touché tout le roster pour
-     * un seul combattant), le module intègre ce point lui-même et applique ses
-     * dégâts par `game.damage` — exactement comme l'Onde sismique du Golem
-     * applique les siens sans passer par `resolveMelee`.
+     * Chacune est un **pendule amorti** que le module intègre : rappel vers un
+     * point de repos, amortissement, et une laisse qui borne la distance au
+     * corps. Les trois comportements demandés en sortent sans être écrits — en
+     * ligne droite elles traînent derrière, en virage sec elles se déportent, au
+     * repos elles flottent à `length`.
      *
-     * La physique est un **pendule amorti**, et c'est ce qui produit les deux
-     * comportements demandés sans qu'aucun ne soit codé en dur : la lame est
-     * tirée vers le pommeau de la dague principale (`pull`), freinée (`damp`)
-     * et ne peut jamais s'éloigner de plus de `length`. Quand la bille file
-     * droit, la lame **traîne derrière** ; quand la bille tourne sec, elle
-     * **part sur le côté**. Aucun tirage : c'est de l'intégration pure.
+     * Les deux points de repos sont symétriques de part et d'autre du dos du
+     * cap (`spread`), sinon les deux lames se superposeraient : elles
+     * partageraient la même équation, donc la même trajectoire, et on ne verrait
+     * qu'une dague en double.
      */
-    chain: {
-      length: 100, // demandé : elle flotte à ~100 px
-      /** Rappel du ressort, en 1/s². Plus haut = la lame colle au porteur et
-       *  le pendule disparaît ; plus bas = elle reste au bout de sa laisse. */
+    blades: {
+      /** Distance de flottement au corps. */
+      length: 96,
+      /**
+       * Écart angulaire des deux points de repos, de part et d'autre du dos du
+       * cap. À 0 les deux lames se confondent ; à π/2 elles encadrent le
+       * porteur.
+       *
+       * **0,85 → 1,45 après mesure.** À 0,85 les deux lames se reposaient
+       * franchement *derrière* lui : quand il fonçait sur sa cible, elles
+       * étaient du mauvais côté et ne touchaient presque jamais (31/140). À
+       * 1,45 (~83°) elles le **flanquent**, donc elles balaient ce qu'il
+       * aborde. Le gain seul est modeste (31 → 36) mais la géométrie devait
+       * être juste avant de toucher aux dégâts, sans quoi on aurait compensé un
+       * défaut de placement par de la puissance.
+       */
+      spread: 1.45,
+      /** Rappel du ressort (1/s²) et amortissement (1/s). Le second décide si la
+       *  lame oscille (bas) ou suit sagement (haut). */
       pull: 26,
-      /** Amortissement, en 1/s. C'est lui qui décide si la lame oscille
-       *  (bas) ou suit sagement (haut). */
       damp: 2.6,
-      /** Rayon de la zone dangereuse autour de la lame libre. Large : c'est une
-       *  lame qui virevolte, pas une pointe qu'on vise. */
+      /** Rayon dangereux autour de chaque lame : elles virevoltent, on ne les
+       *  vise pas. */
       radius: 26,
-      /** Calé bas devant les 4 de la dague principale : la lame libre est une
-       *  **zone de danger passive**, pas la source de dégâts du personnage.
-       *  3 → 2 au banc a coûté 7 duels sur 140, pour 20 % de ses dégâts —
-       *  levier moyen, gardé bas pour ce qu'il dit du personnage plus que pour
-       *  ce qu'il rapporte. */
-      damage: 2,
-      /** Son propre verrou, indépendant de `melee.cooldown` : sans lui, une
-       *  lame qui frôle l'adversaire toucherait à chaque pas. */
-      cooldown: 0.9,
+      /**
+       * **Toute sa production passe par là maintenant**, et c'est un levier
+       * extrêmement raide. Les 4 dégâts de la dague braquée ont disparu avec
+       * elle — elle pesait 47 % de sa production — et ces lames doivent tout
+       * porter. Balayé au banc (140 duels) :
+       *
+       * | dégâts par lame | 5 | **8** | 10 |
+       * | --- | --- | --- | --- |
+       * | victoires /140 | 36 | **82** | 103 |
+       *
+       * ~9 duels par point, soit la même raideur que la mêlée qu'elles
+       * remplacent. 8 est le point qui le remet à 52 %.
+       */
+      damage: 8,
+      /** Verrou **par lame**, chacune le sien : sans lui, une lame qui frôle
+       *  l'adversaire toucherait à chaque pas. */
+      cooldown: 0.85,
+      knockback: 120,
     },
   },
 

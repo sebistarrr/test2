@@ -80,7 +80,7 @@ Neon Shadow — sont inventés**, aucune de leurs valeurs ne peut donc porter
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** au lieu de 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
-| `neon` **NEON SHADOW** | **inventé, pas relevé.** **Deux armes** : une dague **braquée** sur la cible (`weapon.spin = 0`) et une **dague libre au bout d'une chaîne**, que le module intègre en pendule et dont il applique les dégâts lui-même — le moteur ne connaît toujours qu'une hitbox d'arme. Images fantômes **permanentes** (`ghosting` réarmé à chaque pas), Pas du vide (`offstage`), Faille du vide, et **ÉCLIPSE TOTALE** qui peint l'arène en noir dans `drawOver` |
+| `neon` **NEON SHADOW** | **inventé, pas relevé.** **Deux dagues mobiles reliées par une chaîne**, aucune accrochée au corps : son bloc `weapon` est **neutralisé** comme celui du Mannequin (portée 0, dégâts 0) et le module intègre deux pendules dont il applique les dégâts lui-même. Images fantômes **permanentes** (`ghosting` réarmé à chaque pas), Pas du vide (`offstage`), Faille du vide, et **ÉCLIPSE TOTALE** qui peint l'arène en noir dans `drawOver` |
 | `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, 200 PV. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 25 PV qui
@@ -114,19 +114,16 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 21 duels hors
-miroir chacun : Druide 14, Golem 14, Neon Shadow 13, Ronin 13, Pistolero 12,
-Hoplite 10, Shinobi 8, Mannequin 0 (il ne peut pas gagner, c'est sa
+miroir chacun : Pistolero 15, Druide 14, Golem 14, Ronin 11, Neon Shadow 11,
+Hoplite 10, Shinobi 9, Mannequin 0 (il ne peut pas gagner, c'est sa
 définition).
 **Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
 d'équilibrage : 200 PV divisés par la durée donnent la production réelle de
 chacun contre une cible qui ne riposte pas — Shinobi 5,9, Ronin 5,8, Hoplite
-5,5, Druide 5,3, Pistolero 4,2, Neon Shadow 4,0, Golem 2,5 PV/s. Neon Shadow y
-montre le cas le plus intéressant du banc : **la production la plus faible des
-sept, et pourtant 13 victoires** — il ne gagne pas en frappant fort, il gagne
-en ne se faisant pas toucher. La ligne
+5,5, Druide 5,3, Pistolero 4,2, Neon Shadow 4,2, Golem 2,5 PV/s. La ligne
 `dummy vs dummy` finit en **`timeout`** : deux combattants sans dégâts ne se
 départagent jamais, le moteur n'ayant aucune limite de temps.
-Écart **8 à 14** entre les sept qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
+Écart **9 à 15** entre les sept qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
 toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
 un.** Le Golem le montre en grand — 5/15 ici, mais **54/100** sur un banc à
 10 seeds × les deux camps, parce qu'il est en queue de `ROSTER` donc toujours
@@ -484,8 +481,9 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   session**.
 - **Un ultime qui déplace son porteur est aussi une esquive** : l'espacer retire
   les dégâts *et* la survie, d'où des falaises (Neon Shadow, 15 s → 17 s).
-- **Une seconde arme n'a pas besoin du moteur** : un module peut intégrer sa
-  position et appeler `game.damage` lui-même (la dague libre de Neon Shadow).
+- **Une arme n'a pas besoin du moteur du tout** : un module peut intégrer ses
+  positions et appeler `game.damage` lui-même, `weapon` neutralisé et
+  `f.customWeapon` posé (les deux dagues de Neon Shadow).
 - **Un combattant à plusieurs corps ne se nomme qu'une fois** : dédoublonner par
   `el.id`, comme le HUD le fait déjà (bandeau de victoire, classement).
 - Un pouvoir dessiné dans `drawOver` peut **recouvrir le chiffre de PV** : il

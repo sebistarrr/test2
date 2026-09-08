@@ -31,10 +31,10 @@ les recale en une commande.
 | 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1787 |
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2279 |
 | 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2492 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2588 |
-| Équilibrage du roster | 2674 |
-| Règles communes (moteur) | 2772 |
-| Comment les mesures ont été prises | 2796 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2629 |
+| Équilibrage du roster | 2715 |
+| Règles communes (moteur) | 2813 |
+| Comment les mesures ont été prises | 2837 |
 
 ## Comment lire une valeur
 
@@ -2513,6 +2513,46 @@ pas accrochée au corps.
 **Zéro ligne de moteur pour un personnage entier**, et c'est la vérification que
 les compteurs génériques de l'invariant 7 tenaient leur promesse.
 
+### Les deux dagues deviennent mobiles
+
+**Demandé après coup** : « je veux que les deux dagues soient mobiles et
+rattachées par une chaîne ». La première version gardait une dague **braquée et
+accrochée au corps** (l'arme au sens du moteur) et une seule lame libre.
+
+Conséquence sur le moteur : **il n'a plus d'arme du tout**. Aucune des deux
+lames n'étant accrochée au corps, aucune ne peut être le segment rigide que
+`physics.js` sait faire partir du pivot. Le bloc `weapon` est donc **neutralisé
+exactement comme celui du Mannequin** — portée 0, hitbox de rayon 0, dégâts 0 —
+et `f.customWeapon = () => {}` empêche `Fighter.paintWeapon` de peindre quoi que
+ce soit (le crochet par lequel les clones du Shinobi n'en portent aucune). Tout
+passe par `weapon.blades` et le module.
+
+**La chaîne relie les deux lames l'une à l'autre**, plus une lame au corps :
+c'est ce que montre la maquette, et ça garde la bille nue au milieu.
+
+Deux réglages, dans cet ordre :
+
+1. **La géométrie d'abord.** Les points de repos étaient à ±0,85 rad du dos du
+   cap, donc franchement *derrière* : quand il fonçait sur sa cible, les deux
+   lames étaient du mauvais côté et ne touchaient presque jamais — **31/140**.
+   Portés à ±1,45 rad (~83°), ils le **flanquent**. Le gain seul est modeste
+   (31 → 36) mais il fallait le faire avant de toucher aux dégâts, sans quoi on
+   aurait compensé un défaut de placement par de la puissance.
+2. **Les dégâts ensuite**, et le levier est aussi raide que la mêlée qu'il
+   remplace (~9 duels par point) :
+
+   | dégâts par lame | 5 | **8** | 10 |
+   | --- | --- | --- | --- |
+   | victoires /140 | 36 | **82** | 103 |
+
+**Et le personnage a changé de nature.** Avant, il écrasait les tireurs et
+perdait contre les cogneurs (Druide 20/20, Ronin 1/20). Maintenant c'est
+l'inverse : **Ronin 18/20, Hoplite 15/20**, mais Druide 5/20 et Golem 0/20. Deux
+lames qui le flanquent en permanence sont une défense de contact ; la dague
+braquée était une arme d'approche. Le total est presque le même (52 % contre
+53 %), la forme est retournée — c'est exactement le piège que le dépôt
+documente : **lire le banc ligne par ligne, pas seulement en total.**
+
 ### La dague libre : un pendule, pas une orbite
 
 Ressort vers un point de rappel, amortissement, et une laisse qui borne la
@@ -2570,9 +2610,9 @@ soit resté plat : ce n'est pas lui qui gagne ces duels.
 
 ### Ce que le Mannequin a révélé de lui
 
-Sa production contre une cible qui ne riposte pas est de **4,0 PV/s** — la plus
-faible des sept combattants qui frappent, sous le Pistolero (4,2) et à moitié du
-Shinobi (5,9). Et il finit malgré tout **troisième** de la matrice.
+Sa production contre une cible qui ne riposte pas est de **4,2 PV/s** — à
+égalité avec le Pistolero pour la plus faible du roster hors Golem, et à
+moitié de celle du Shinobi (5,9).
 
 Il ne gagne donc pas en frappant fort : il gagne en **ne se faisant pas
 toucher**. C'est le premier combattant du roster dont la force est défensive

@@ -1,13 +1,12 @@
 /**
  * Pouvoirs de NEON SHADOW.
  *
- *  • **La dague braquée** — `weapon.spin = 0`, ce module recopie l'angle vers
- *    la cible à chaque image. Même mécanique que le revolver du Pistolero.
- *
- *  • **La dague libre** — un pendule amorti que ce module intègre lui-même, et
- *    dont il applique les dégâts par `game.damage`. Le moteur ne connaît qu'une
- *    hitbox d'arme par combattant ; plutôt que de lui en apprendre une seconde
- *    pour un seul personnage, tout tient ici (invariant 12).
+ *  • **Les deux lames** — deux pendules amortis que ce module intègre lui-même,
+ *    reliés par la chaîne et dont il applique les dégâts par `game.damage`.
+ *    Aucune n'est accrochée au corps : le bloc `weapon` de la fiche est
+ *    neutralisé (portée 0, dégâts 0) et `f.customWeapon` empêche le moteur de
+ *    peindre quoi que ce soit. Le moteur ne connaît qu'une hitbox d'arme par
+ *    combattant ; ici il n'en a aucune, et tout tient dans ce module.
  *
  *  • **Les images fantômes** — `Fighter.ghosting` est un compteur générique que
  *    l'Hoplite allume le temps d'une charge ; ici il est **réarmé à chaque
@@ -40,12 +39,24 @@ export const neonAbilities = {
   id: 'neon',
 
   init(f) {
-    // --- dague libre : position et vitesse propres, en coordonnées monde
-    f.state.bx = f.x;
-    f.state.by = f.y;
-    f.state.bvx = 0;
-    f.state.bvy = 0;
-    f.state.chainCd = 0;
+    /**
+     * **Les deux lames**, chacune avec sa position, sa vitesse et son verrou.
+     * Aucune n'est accrochée au corps : ce sont deux pendules indépendants,
+     * reliés visuellement par la chaîne.
+     */
+    f.state.blades = [
+      { x: f.x, y: f.y, vx: 0, vy: 0, cd: 0, side: +1 },
+      { x: f.x, y: f.y, vx: 0, vy: 0, cd: 0, side: -1 },
+    ];
+
+    /**
+     * **Le moteur ne peint plus d'arme.** `Fighter.paintWeapon` cède la main dès
+     * qu'un `customWeapon` est posé — c'est le crochet par lequel les clones du
+     * Shinobi n'en portent aucune. Ici les deux lames sont dessinées par le
+     * module, par-dessus les combattants, avec la chaîne : les laisser aussi au
+     * moteur en aurait dessiné une troisième, rigide, au centre.
+     */
+    f.customWeapon = () => {};
 
     // --- Void Step : phase du module, indépendante de `offstage`
     f.state.step = 0;
@@ -103,7 +114,7 @@ export const neonAbilities = {
     if (game.phase !== 'fight') return;
 
     /* ---------- la dague libre ------------------------------------------ */
-    this.tickBlade(f, dt, now, game);
+    this.tickBlades(f, dt, now, game);
 
     /* ---------- l'éclipse ------------------------------------------------ */
     const ult = el.ultimate;
@@ -138,82 +149,65 @@ export const neonAbilities = {
   /*  La dague libre — un pendule, pas une orbite                        */
   /* ------------------------------------------------------------------ */
 
-  /** Le pommeau de la dague principale : le point d'attache de la chaîne. */
-  anchor(f) {
-    const h = f.el.weapon.handle.length;
-    return {
-      x: f.x + Math.cos(f.weaponAngle) * h,
-      y: f.y + Math.sin(f.weaponAngle) * h,
-    };
-  },
-
   /**
-   * **Ressort + amortissement + laisse.** Trois lignes de physique, et les deux
-   * comportements demandés en sortent sans être codés : en ligne droite la lame
-   * traîne derrière, en virage sec elle part sur le côté. C'est le propre d'un
-   * pendule — le coder « en orbite » aurait donné un satellite, pas une lame au
-   * bout d'une chaîne.
+   * **Deux pendules, un par lame.** Ressort vers un point de repos,
+   * amortissement, et une laisse qui borne la distance au corps.
+   *
+   * **Le point de repos n'est pas le corps** : un ressort qui vise son propre
+   * point d'attache s'y écrase, et au repos les lames se colleraient à la
+   * bille. Il est donc posé à `length` **dans le dos du cap**, écarté de
+   * `±spread` — l'écart étant ce qui empêche les deux lames de partager la même
+   * trajectoire et de se superposer.
+   *
+   * Rien ici ne tire dans `game.rng` : c'est de l'intégration pure.
    */
-  tickBlade(f, dt, now, game) {
-    const ch = f.el.weapon.chain;
-    const s = f.state;
-    const anc = this.anchor(f);
+  tickBlades(f, dt, now, game) {
+    const b = f.el.weapon.blades;
+    const k = Math.exp(-b.damp * dt);
 
-    /**
-     * **Le ressort ne vise pas le pommeau, il vise un point *derrière* lui.**
-     *
-     * Premier essai : rappel vers le point d'attache. La lame s'y écrasait dès
-     * que le porteur ralentissait — au repos, une chaîne tendue vers son propre
-     * pommeau a pour seule position d'équilibre le pommeau lui-même. On ne
-     * voyait plus qu'une dague collée à la bille.
-     *
-     * La cible est donc à `length` **dans le dos du cap** : au repos la lame
-     * flotte là où on l'attend, en ligne droite elle traîne derrière, et en
-     * virage sec la cible pivote plus vite que la lame ne peut suivre — d'où
-     * le déport latéral demandé. Aucun de ces trois comportements n'est écrit :
-     * ils sortent tous du même pendule.
-     */
-    const cx = anc.x - Math.cos(f.heading) * ch.length;
-    const cy = anc.y - Math.sin(f.heading) * ch.length;
-    s.bvx += (cx - s.bx) * ch.pull * dt;
-    s.bvy += (cy - s.by) * ch.pull * dt;
-    const k = Math.exp(-ch.damp * dt);
-    s.bvx *= k;
-    s.bvy *= k;
-    s.bx += s.bvx * dt;
-    s.by += s.bvy * dt;
+    for (const lame of f.state.blades) {
+      const a = f.heading + Math.PI + lame.side * b.spread;
+      const cx = f.x + Math.cos(a) * b.length;
+      const cy = f.y + Math.sin(a) * b.length;
 
-    // la laisse : jamais plus loin que `length` du pommeau
-    let dx = s.bx - anc.x;
-    let dy = s.by - anc.y;
-    const d = Math.hypot(dx, dy);
-    if (d > ch.length) {
-      const r = ch.length / d;
-      s.bx = anc.x + dx * r;
-      s.by = anc.y + dy * r;
-      dx *= r;
-      dy *= r;
-    }
+      lame.vx += (cx - lame.x) * b.pull * dt;
+      lame.vy += (cy - lame.y) * b.pull * dt;
+      lame.vx *= k;
+      lame.vy *= k;
+      lame.x += lame.vx * dt;
+      lame.y += lame.vy * dt;
 
-    /* --- ce qu'elle blesse ------------------------------------------------
-     * `onStage` et pas `alive` : un adversaire hors arène (le Bond de
-     * l'Hoplite, le Pas du vide d'un autre Neon) ne doit pas être touché à son
-     * dernier point connu (invariant 8). */
-    s.chainCd = Math.max(0, s.chainCd - dt);
-    if (s.chainCd > 0) return;
-    for (const g of game.fighters) {
-      if (g === f || g.team === f.team || !g.onStage) continue;
-      if (Math.hypot(g.x - s.bx, g.y - s.by) > ch.radius + g.radius) continue;
-      s.chainCd = ch.cooldown;
-      game.damage(g, ch.damage, f, {
-        kind: 'chain',
-        x: s.bx,
-        y: s.by,
-        nx: g.x - s.bx,
-        ny: g.y - s.by,
-        knockback: 90,
-      });
-      break;
+      // la laisse : jamais plus loin que `length` du corps
+      const dx = lame.x - f.x;
+      const dy = lame.y - f.y;
+      const d = Math.hypot(dx, dy);
+      if (d > b.length) {
+        const r = b.length / d;
+        lame.x = f.x + dx * r;
+        lame.y = f.y + dy * r;
+      }
+
+      /* --- ce qu'elle blesse ---------------------------------------------
+       * `onStage` et pas `alive` : un adversaire hors arène ne doit pas être
+       * touché à son dernier point connu (invariant 8). Chaque lame a son
+       * propre verrou, donc les deux peuvent toucher dans le même pas — c'est
+       * voulu, c'est ce qui rend l'encerclement dangereux. */
+      lame.cd = Math.max(0, lame.cd - dt);
+      if (lame.cd > 0) continue;
+      for (const g of game.fighters) {
+        if (g === f || g.team === f.team || !g.onStage) continue;
+        if (Math.hypot(g.x - lame.x, g.y - lame.y) > b.radius + g.radius) continue;
+        lame.cd = b.cooldown;
+        game.damage(g, b.damage, f, {
+          kind: 'blade',
+          x: lame.x,
+          y: lame.y,
+          nx: g.x - lame.x,
+          ny: g.y - lame.y,
+          knockback: b.knockback,
+        });
+        break;
+      }
     }
   },
 
@@ -257,13 +251,20 @@ export const neonAbilities = {
       f.heading = wrapAngle(Math.atan2(t.y - f.y, t.x - f.x));
       f.weaponAngle = f.heading;
     }
-    // la lame libre le suit dans le pas : sans ça elle traverserait l'arène en
-    // ligne droite pour le rattraper, et la chaîne se lirait comme un bug
-    const anc = this.anchor(f);
-    f.state.bx = anc.x;
-    f.state.by = anc.y;
-    f.state.bvx = 0;
-    f.state.bvy = 0;
+    /**
+     * **Les deux lames le suivent dans le pas.** Sans ça elles traverseraient
+     * l'arène en ligne droite pour le rattraper, et la chaîne — qui les relie
+     * l'une à l'autre — barrerait l'écran pendant une demi-seconde. Elles sont
+     * reposées sur leur point de repos, vitesse remise à zéro.
+     */
+    const b = f.el.weapon.blades;
+    for (const lame of f.state.blades) {
+      const a2 = f.heading + Math.PI + lame.side * b.spread;
+      lame.x = f.x + Math.cos(a2) * b.length;
+      lame.y = f.y + Math.sin(a2) * b.length;
+      lame.vx = 0;
+      lame.vy = 0;
+    }
     this.smoke(f, f.x, f.y, game);
   },
 
@@ -406,21 +407,25 @@ export const neonAbilities = {
   },
 
   /**
-   * Le lien spectral et la lame au bout. Les maillons sont posés par un
-   * **hachage pur** du rang (`hash01`), donc sans aucun tirage : la chaîne ne
-   * peut pas décaler le duel, quelle que soit sa densité.
+   * **La chaîne relie les deux lames l'une à l'autre**, et non une lame au
+   * corps : c'est ce que montre la maquette, et c'est ce qui rend la silhouette
+   * lisible — la bille reste nue, les deux dagues tournent autour, le lien
+   * passe derrière elle.
+   *
+   * Les maillons sont posés par un **hachage pur** du rang (`hash01`), donc
+   * sans aucun tirage : la chaîne ne peut pas décaler le duel, quelle que soit
+   * sa densité.
    */
   drawChain(ctx, f, now) {
     const spec = f.el.look.flair.chain;
-    const anc = this.anchor(f);
-    const s = f.state;
+    const [a, b] = f.state.blades;
 
     ctx.save();
     ctx.lineCap = 'round';
     ctx.globalAlpha = spec.alpha;
     ctx.beginPath();
-    ctx.moveTo(anc.x, anc.y);
-    ctx.lineTo(s.bx, s.by);
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
     ctx.lineWidth = spec.width;
     ctx.strokeStyle = spec.color;
     ctx.stroke();
@@ -431,8 +436,8 @@ export const neonAbilities = {
     for (let i = 1; i < spec.links; i++) {
       const t = i / spec.links;
       const jitter = (hash01(i * 7.31) - 0.5) * 4;
-      const x = anc.x + (s.bx - anc.x) * t - (s.by - anc.y) * 0.02 * jitter;
-      const y = anc.y + (s.by - anc.y) * t + (s.bx - anc.x) * 0.02 * jitter;
+      const x = a.x + (b.x - a.x) * t - (b.y - a.y) * 0.02 * jitter;
+      const y = a.y + (b.y - a.y) * t + (b.x - a.x) * 0.02 * jitter;
       ctx.beginPath();
       ctx.arc(x, y, spec.linkSize * (0.7 + 0.3 * Math.sin(now * 4 + i)), 0, TAU);
       ctx.fillStyle = spec.core;
@@ -442,24 +447,21 @@ export const neonAbilities = {
     ctx.globalAlpha = 1;
 
     /**
-     * **La lame libre est la même dague, pas un losange.** Premier essai : un
-     * quadrilatère tracé à la main, parce qu'il était plus court à écrire. À
-     * l'écran, la maquette montre **deux dagues jumelles** et on en voyait une
-     * belle et un caillou — l'asymétrie ne venait plus de la chaîne mais de la
-     * qualité du dessin.
-     *
-     * `drawSpriteCentered` blitte donc le même PNG, à la même hauteur dessinée
-     * que la dague principale, orienté selon **son propre déplacement** : c'est
-     * ce qui la fait virevolter au lieu de glisser à plat.
+     * **Les deux lames sont le même sprite**, blitté deux fois : la maquette
+     * montre des dagues jumelles. Chacune est orientée selon **son propre
+     * déplacement**, ce qui les fait virevoltiger indépendamment — c'est ce qui
+     * donne l'asymétrie qu'on cherche, sans qu'aucune des deux ne soit
+     * privilégiée dans le code.
      */
     const map = PIXEL_MAPS[f.el.weapon.head.sprite];
     const hauteur = map.h * f.el.weapon.head.scale;
-    const a = Math.atan2(s.bvy, s.bvx) || 0;
-    ctx.save();
-    ctx.translate(s.bx, s.by);
-    ctx.rotate(a);
-    drawSpriteCentered(ctx, f.el.weapon.head.sprite, 0, 0, hauteur);
-    ctx.restore();
+    for (const lame of f.state.blades) {
+      ctx.save();
+      ctx.translate(lame.x, lame.y);
+      ctx.rotate(Math.atan2(lame.vy, lame.vx) || 0);
+      drawSpriteCentered(ctx, f.el.weapon.head.sprite, 0, 0, hauteur);
+      ctx.restore();
+    }
   },
 
   /**
