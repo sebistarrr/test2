@@ -77,8 +77,8 @@ est `calé` ou `déduit`.
 | Personnage | Signature |
 | --- | --- |
 | `outlaw` **PISTOLERO** | tireur de glace, **canon asservi à la cible** (`weapon.spin = 0`), barillet de **10** et **0,3 s entre deux tirs** (6 et 0,6 mesurés, écarts demandés), balles gelantes (−30 % de vitesse, 1,6 s), `weaponTwirl` au rechargement. Porte le **Champ de givre**, greffé |
-| `bladesman` **RONIN** | duelliste, rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte l’**Aura de braise**, greffée |
-| `lancer` **HOPLITE** | chargeur, **lance braquée sur le cap** (`weapon.spin = 0`), charge en ligne droite, **164 px, la plus longue portée du jeu**, +2 dégâts par touche, **Foudre tombante** qui le sort de l'arène. Porte le **Dôme de drain**, greffé |
+| `bladesman` **RONIN** | duelliste, rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = Spin` (mesuré `2 × Spin`, divisé par deux avec tout le roster), brûlure au contact. Porte l’**Aura de braise**, greffée |
+| `lancer` **HOPLITE** | chargeur, **lance braquée sur le cap** (`weapon.spin = 0`), charge en ligne droite, **164 px, la plus longue portée du jeu**, +0,5 dégât par touche (mesuré +2, demandé +1, puis divisé par deux), **Foudre tombante** qui le sort de l'arène. Porte le **Dôme de drain**, greffé |
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** quand tout le monde en a 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
@@ -117,28 +117,30 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 18 duels hors
-miroir chacun : **Pistolero 15**, Druide 11, Golem 11, **Ronin 10**, Hoplite 9,
-Shinobi 7, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
-**Neon Shadow a été supprimé** (invariant 3 : il était en queue de `ROSTER`,
-sa suppression ne déplace donc aucune autre ligne) **et la norme de PV est
-revenue à 100** — elle était passée à 200 le temps d'une session, avant d'être
-redivisée par deux sur demande. `docs/FICHES.md` porte les deux relevés,
-avant/après, sur les six combattants inchangés.
-**Diviser la norme par deux rebat les cartes dans l'autre sens que le
-doublement précédent** : les duels durent 26,3 s en moyenne au lieu de ~41,9,
-et les deux mêmes combattants rebasculent. Le **Ronin remonte de 4 à 10** — ses
-dégâts plafonnent (`2 × spin`, avec surchauffe), donc une barre de vie plus
-courte lui laisse enfin le temps de la vider. Le **Shinobi s'effondre de 15 à
-7** — ses clones s'invoquent entre eux, et un duel plus court est un duel où la
-population n'a plus le temps de doubler autant de fois.
+miroir chacun : **Shinobi 16**, Pistolero 13, Druide 12, Hoplite 10, Golem 8,
+**Ronin 4**, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
+Deux changements successifs y sont empilés : **Neon Shadow a été supprimé**
+(invariant 3 : il était en queue de `ROSTER`, sa suppression ne déplace donc
+aucune autre ligne), puis **les dégâts de tous les combattants ont été divisés
+par deux** — sur la fiche, pas au moteur (`opts.kind`/`Match.damage` ne
+changent pas, chaque combattant porte sa propre division). `docs/FICHES.md`
+porte le détail par combattant et les deux relevés, avant/après.
+**Diviser les dégâts par deux rallonge les duels**, comme diviser les PV les
+aurait raccourcis — même levier, sens inverse : 41,2 s en moyenne au lieu de
+26,3, et les deux mêmes combattants rebasculent que lors du changement de
+norme de PV, dans le **même sens** cette fois (un duel plus long, par une autre
+voie). Le **Shinobi bondit de 7 à 16** — ses clones s'invoquent entre eux, et
+un duel deux fois plus long lui laisse le temps de doubler sa population deux
+fois plus souvent. Le **Ronin s'effondre de 10 à 4** — ses dégâts plafonnent
+(`Damage = Spin`, avec surchauffe), donc un duel plus long ne lui donne rien de
+plus, seulement plus de temps pour se faire rattraper.
 **Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
-d'équilibrage — et il **ne suit pas simplement la division** : 100 PV divisés
-par la durée donnent Ronin 5,6, Pistolero 5,3, Hoplite 4,3, Druide 4,2,
-Shinobi 4,0, Golem 2,3 PV/s. Ronin et Golem, à production régulière, bougent à
-peine ; Shinobi, à production qui compose, bouge le plus. La ligne
-`dummy vs dummy` finit en **`timeout`** : deux combattants sans dégâts ne se
-départagent jamais, le moteur n'ayant aucune limite de temps.
-Écart **7 à 15** entre les six qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
+d'équilibrage — et il **ne suit pas simplement la division**, cette fois non
+plus : Pistolero 3,3, Ronin 3,1, Shinobi 3,1, Hoplite 3,0, Druide 2,8,
+Golem 2,6 PV/s. La ligne `dummy vs dummy` finit en **`timeout`** : deux
+combattants sans dégâts ne se départagent jamais, le moteur n'ayant aucune
+limite de temps.
+Écart **4 à 16** entre les six qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
 toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
 un.** Le Golem le montre en grand — 5/15 dans un relevé antérieur, mais
 **54/100** sur un banc à 10 seeds × les deux camps, parce qu'il est en queue de

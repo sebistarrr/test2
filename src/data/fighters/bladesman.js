@@ -186,8 +186,10 @@ export const BLADESMAN = fiche({
     hitbox: { from: 0.42, radius: 22.1 },
     melee: {
       /** Mesuré, **exact et sans exception** : `damage = 2,00 × Spin Speed`.
-       *  La valeur n'est jamais stockée, elle est dérivée de la pile. */
-      damage: (f) => Math.max(2, Math.round(f.stacks * 2)),
+       *  La valeur n'est jamais stockée, elle est dérivée de la pile.
+       *  **Divisé par deux, demandé** : le multiplicateur passe à 1,00, sans
+       *  toucher à la Spin Speed elle-même (mesurée, et lue par le rendu). */
+      damage: (f) => Math.max(1, Math.round(f.stacks)),
       cooldown: 1, // mesuré : verrou de 1 000 ms entre deux touches
       knockback: 250,
       selfRecoil: 85,
@@ -211,7 +213,8 @@ export const BLADESMAN = fiche({
         stackGain: 0.15,
         stackMax: 3,
         dot: {
-          damage: (self) => Math.max(1, Math.round(self.stacks)),
+          // divisé par deux, demandé : même Spin Speed, moitié moins de brûlure
+          damage: (self) => Math.max(0.5, Math.round(self.stacks * 0.5)),
           interval: 1,
           duration: 1,
           ring: '#e8621b',
@@ -314,7 +317,7 @@ export const BLADESMAN = fiche({
      *  rafraîchissement de la brûlure ci-dessus. Calé au banc (`matrix.mjs`) :
      *  à 2 dégâts/0,6 s elle cumulait avec la brûlure au contact et balayait
      *  les deux autres actifs (5/6). */
-    aura: { radius: 140, tickInterval: 0.6, tickDamage: 1 },
+    aura: { radius: 140, tickInterval: 0.6, tickDamage: 0.5 }, // divisé par deux, demandé
   },
 
   /** Le Bretteur n'a aucun projectile : tout passe par la lame. */

@@ -236,8 +236,9 @@ export const GOLEM = fiche({
     melee: {
       /**
        * **Dégâts fixes, et fixes est le point.** Trois combattants du roster
-       * montent en dégâts au fil du duel (Pistolero 3→8, Ronin 1,6→6, Hoplite
-       * 8→16) ; celui-ci frappe pareil à la première et à la dernière seconde.
+       * montent en dégâts au fil du duel (Pistolero 1,5→4, Ronin 0,8→3,
+       * Hoplite 4→8, chiffres divisés par deux comme le reste du roster) ;
+       * celui-ci frappe pareil à la première et à la dernière seconde.
        * Un colosse ne « s'échauffe » pas, et ça lui donne le profil inverse de
        * l'Hoplite : redoutable tout de suite, jamais plus qu'au début.
        *
@@ -250,8 +251,12 @@ export const GOLEM = fiche({
        *
        * Un point de dégât vaut ~11 duels sur 100 : à 9 il écrase le roster, à 7
        * il ne tient plus. 8 est le seul point de la bande.
+       *
+       * **8 → 4, divisé par deux sur demande**, avec tout le reste du roster —
+       * ce banc-ci décrivait l'ancien point d'équilibre, pas celui-ci ; la
+       * matrice est régénérée et comparée après le changement (invariant 3).
        */
-      damage: 8,
+      damage: 4,
       /**
        * Le verrou le plus long du roster après le Pistolero (3 s) : 1 s pour le
        * Ronin et le Shinobi, 1,1 s pour l'Hoplite, 1,7 s pour le Druide.
@@ -310,7 +315,7 @@ export const GOLEM = fiche({
      *  du Shinobi (75) ou du champ de givre du Pistolero (130). */
     radius: 170,
     /**
-     * Calé bas devant les 8 du poing : l'onde est là pour **atteindre**, pas
+     * Calé bas devant les 4 du poing : l'onde est là pour **atteindre**, pas
      * pour tuer.
      *
      * **Et elle pèse beaucoup moins qu'il n'y paraît** : l'ablation par source
@@ -323,8 +328,10 @@ export const GOLEM = fiche({
      * la mesure a démenti (le total ne bougeait que de 6 points pour ~380 PV
      * sur 100 duels), et elle est remontée à 6. **Mesurer d'où vient le dégât
      * avant de balayer** : c'est exactement le piège documenté, repayé ici.
+     *
+     * **6 → 3, divisé par deux sur demande**, comme le reste du roster.
      */
-    damage: 6,
+    damage: 3,
     /** Elle repousse fort : c'est ce qui décolle un mêlée collé à lui, et ce
      *  qui l'empêche d'enchaîner onde + poing sur la même cible. */
     knockback: 340,
@@ -371,13 +378,14 @@ export const GOLEM = fiche({
        * sismique — l'inverse de ce que laisse croire la lecture de la fiche,
        * parce qu'un rayon de 260 px sur une arène de 640 ne rate jamais.
        *
-       * Elle valait 18 à la conception ; ramenée à **10** après le banc. C'est
-       * le seul chiffre du personnage qui frappe sans que l'adversaire puisse
-       * rien y faire — ni s'écarter, ni interposer un mur — donc il ne doit pas
-       * porter le duel à lui seul.
+       * Elle valait 18 à la conception ; ramenée à **10** après le banc, puis
+       * **divisée par deux sur demande (10 → 5)** avec tout le reste du
+       * roster. C'est le seul chiffre du personnage qui frappe sans que
+       * l'adversaire puisse rien y faire — ni s'écarter, ni interposer un mur
+       * — donc il ne doit pas porter le duel à lui seul.
        */
       radius: 260, // presque la moitié des 640 px de côté de l'arène
-      damage: 10, // plus qu'un coup de poing : c'est le pic de dégâts du jeu
+      damage: 5, // plus qu'un coup de poing : c'est le pic de dégâts du jeu
       knockback: 600,
       ring: { to: 300, time: 0.5, color: 'rgba(140,128,110,0.85)', width: 9 },
       shake: 16, // la plus grosse secousse de caméra du roster
@@ -454,8 +462,9 @@ export const GOLEM = fiche({
       /** **4 → 3, demandé.** C'est la contrepartie du passage en anneau : huit
        *  éclats au lieu de trois avaient rendu 8 points de victoire au Golem
        *  (54/100 → 62/100 hors Mannequin), et ce point de dégât en reprend
-       *  l'essentiel sans toucher à la géométrie du pouvoir. */
-      damage: 3,
+       *  l'essentiel sans toucher à la géométrie du pouvoir.
+       *  **3 → 1,5, divisé par deux sur demande** après cet écart. */
+      damage: 1.5,
       radius: 12,
       life: 2.2,
       bounces: 1,

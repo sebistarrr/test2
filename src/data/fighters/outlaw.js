@@ -232,8 +232,11 @@ export const OUTLAW = fiche({
     hitbox: { from: 0.62, radius: 12 },
     melee: {
       /** Mesuré : la stat « Damage » part de 3,00 et monte de 0,10 par coup
-       *  au but. Elle sert **à la fois** au tir et au coup à bout portant. */
-      damage: (f) => Math.max(3, Math.round(f.stacks)),
+       *  au but. Elle sert **à la fois** au tir et au coup à bout portant.
+       *  **Divisé par deux, demandé** : plancher, départ (`progression.stack`),
+       *  gain et plafond (`onHit` ci-dessous) suivent tous la même division,
+       *  pour garder le même nombre de coups jusqu'au plafond. */
+      damage: (f) => Math.max(1.5, Math.round(f.stacks)),
       /** Calé, et c'est le verrou le plus long du roster : le canon étant
        *  asservi à l'adversaire, il est **toujours** aligné, donc ce verrou est
        *  la seule chose qui limite le coup à bout portant. À 1,5 s, le
@@ -241,7 +244,7 @@ export const OUTLAW = fiche({
       cooldown: 3,
       knockback: 240,
       selfRecoil: 119, // mesuré : recul de 95 px/s hors ultime → ×1,25
-      onHit: { stackGain: 0.1, stackMax: 8 }, // mesuré : +0,10 par coup au but
+      onHit: { stackGain: 0.05, stackMax: 4 }, // mesuré ×0,5, demandé
     },
   },
 
@@ -393,7 +396,7 @@ export const OUTLAW = fiche({
       follows: true, // le champ suit le porteur
       slow: 0.35,
       tickInterval: 0.7,
-      tickDamage: 1,
+      tickDamage: 0.5, // divisé par deux, demandé
     },
     snow: { count: 90, fall: 46, drift: 22, color: 'rgba(186,230,253,0.9)' },
     /**
@@ -424,7 +427,7 @@ export const OUTLAW = fiche({
       sprite: 'iceShard',
       scale: 2.4,
       speed: 380,
-      damage: 2,
+      damage: 1, // divisé par deux, demandé
       radius: 10,
       life: 3.4,
       bounces: 2, // les éclats ricochent sur les murs (observé sur la Glace)
@@ -456,7 +459,7 @@ export const OUTLAW = fiche({
        *  et la dispersion redevient le seul garde-fou de la précision. */
       speed: 936,
       /** Mêmes dégâts que le coup à bout portant : c'est la même stat. */
-      damage: (f) => Math.max(3, Math.round(f.stacks)),
+      damage: (f) => Math.max(1.5, Math.round(f.stacks)),
       radius: 8, // calé avec la dispersion et la vitesse, pour 0,60 coup/s au banc
       life: 1.4,
       bounces: 0,
@@ -489,16 +492,20 @@ export const OUTLAW = fiche({
        * pour immobiliser — `slowFactor` retient le pire ralentissement actif,
        * donc deux balles coup sur coup ne s'empilent pas, elles prolongent.
        *
-       * `stackGain` reste **mesuré** : +0,10 par balle au but.
+       * `stackGain` et `stackMax` suivent la même division par deux que
+       * `weapon.melee.onHit` : les deux nourrissent la même pile partagée
+       * (`f.stacks`), ils doivent avancer au même pas.
        */
-      onHit: { stackGain: 0.1, stackMax: 8, slow: 0.5, slowDuration: 1.6 },
+      onHit: { stackGain: 0.05, stackMax: 4, slow: 0.5, slowDuration: 1.6 },
     },
   },
 
-  /** Mesuré : « Damage: 3.00 » et « Ammo: 6/6 » sur la première image. */
+  /** Mesuré : « Damage: 3.00 » et « Ammo: 6/6 » sur la première image.
+   *  **Divisé par deux, demandé** : départ à 1,5, voir `weapon.melee` pour le
+   *  reste de la division (plancher, gain par coup, plafond). */
   /** `stack2` est la réserve de départ : elle suit le barillet, sinon il
    *  commencerait le duel avec un chargeur incomplet. */
-  progression: { stack: 3, stack2: 10 },
+  progression: { stack: 1.5, stack2: 10 },
 
   hud: {
     stats: [

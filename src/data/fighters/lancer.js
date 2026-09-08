@@ -382,9 +382,10 @@ export const LANCER = fiche({
        *  portée — 10 → 12 → 14 → 16 → 18 → 20 sur la vidéo, avec des chutes de
        *  PV de l'Outlaw exactement égales (100 → 90 → 78 → 64 → 48 → 30).
        *  Six touches ont suffi. Aucun plafond n'est visible sur 33,6 s.
-       *  **Écart assumé, demandé** : départ à 8 au lieu de 10 — voir
-       *  `progression.stack` et `onHit` plus bas pour la même demande. */
-      damage: (f) => Math.max(8, Math.round(f.stacks)),
+       *  **Écart assumé, demandé** : départ à 8 au lieu de 10, puis **divisé
+       *  par deux sur demande** — voir `progression.stack` et `onHit` plus bas
+       *  pour la même division. */
+      damage: (f) => Math.max(4, Math.round(f.stacks)),
       /**
        * **Mesuré, et c'est la charge qui l'a rendu au relevé.** Sur la vidéo
        * les touches de lance tombent à 13,63 / 14,77 / 16,37 s : le verrou réel
@@ -437,8 +438,11 @@ export const LANCER = fiche({
        * quadratique en durée de duel. À gain divisé par deux, il faut deux
        * fois plus de touches pour l'atteindre : la matrice doit être
        * regénérée et comparée après ce changement (invariant 3).
+       *
+       * **Tout redivisé par deux, demandé** : gain, plafond et départ suivent
+       * ensemble, pour garder le même nombre de touches jusqu'au plafond.
        */
-      onHit: { stackGain: 1, stackMax: 16 },
+      onHit: { stackGain: 0.5, stackMax: 8 },
     },
   },
 
@@ -590,7 +594,7 @@ export const LANCER = fiche({
       core: 'rgba(255,255,255,0.55)',
       width: 5,
       tickInterval: 0.5,
-      tickDamage: 1,
+      tickDamage: 0.5, // divisé par deux, demandé
       slow: 0.15, // ralentit la cible tant que le lien tient
       motes: 26,
     },
@@ -600,8 +604,9 @@ export const LANCER = fiche({
   projectiles: {},
 
   /** Mesuré à l'origine : « Damage: 10.00 » à la première image du duel.
-   *  **Écart assumé, demandé** : départ à 8, voir `weapon.melee` ci-dessus. */
-  progression: { stack: 8, stack2: 0 },
+   *  **Écart assumé, demandé** : départ à 8, puis divisé par deux sur demande
+   *  — voir `weapon.melee` ci-dessus. */
+  progression: { stack: 4, stack2: 0 },
 
   hud: {
     stats: [(f) => `Damage: ${formatHalf(f.stacks)}`],

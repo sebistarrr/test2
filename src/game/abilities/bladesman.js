@@ -316,7 +316,8 @@ export const bladesmanAbilities = {
       game.damage(target, sp.aura.tickDamage, f, { kind: 'aura', silent: true });
       target.applyDot(
         {
-          damage: Math.max(1, Math.round(f.stacks)),
+          // divisé par deux, demandé — même formule que weapon.melee.onHit.dot
+          damage: Math.max(0.5, Math.round(f.stacks * 0.5)),
           interval: 1,
           duration: 2,
           source: f,

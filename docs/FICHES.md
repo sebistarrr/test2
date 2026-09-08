@@ -22,21 +22,22 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 39 |
-| 📦 Archive — les huit éléments supprimés | 76 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 150 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 940 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1059 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1316 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1881 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2372 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2588 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 2674 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 2729 |
-| Le son de chacun | 2797 |
-| Équilibrage du roster | 2850 |
-| Règles communes (moteur) | 2948 |
-| Comment les mesures ont été prises | 2972 |
+| Comment lire une valeur | 42 |
+| 📦 Archive — les huit éléments supprimés | 91 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 165 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 955 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1074 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1331 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1896 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2387 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2601 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 2687 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 2742 |
+| Les dégâts de tous les combattants, divisés par deux | 2810 |
+| Le son de chacun | 2920 |
+| Équilibrage du roster | 2973 |
+| Règles communes (moteur) | 3071 |
+| Comment les mesures ont été prises | 3095 |
 
 ## Comment lire une valeur
 
@@ -63,6 +64,18 @@ les recale en une commande.
 Les fiches sont **immuables** : `deepFreeze` les gèle au chargement du module et
 `assertFrozen()` le revérifie au lancement de chaque duel. Un duel ne peut donc
 pas déteindre sur le suivant.
+
+**Les dégâts cités dans les sections par combattant ci-dessous sont ceux
+d'origine, avant la division par deux demandée sur tout le roster** (voir
+« Les dégâts de tous les combattants, divisés par deux », après les sept
+sections de combattant) : reformuler chaque citation aurait demandé de rouvrir
+des dizaines de tableaux figés depuis leur relevé, pour des chiffres qu'un seul
+tableau récapitule déjà. Deux exceptions, patchées sur place parce qu'elles
+citaient une formule comme un fait actuel et non comme une mesure : le corps à
+corps et la brûlure au contact du Ronin, section RONIN. Pour toute autre valeur
+de dégât **actuelle**, diviser par deux ce qui est écrit ici, ou lire
+directement la fiche (`src/data/fighters/<id>.js`), qui reste la seule source
+de vérité.
 
 **Un seul écart volontaire au relevé de scène** : le fond hors-arène. La vidéo
 est sur papier crème `rgb(249,241,218)`, le site l'a remplacé par une encre
@@ -1071,7 +1084,7 @@ distance*, il ne fuit pas.
 | Sprite | 40 × 16 cellules ×2,68. Garde **orange vif** (232,160,40), petite croix trapue. Lame **asymétrique** — bande gris-brun sur l'arête haute, corps ivoire en bas — et **fuselée** : une lame à côtés parallèles donne un bout carré que le relevé n'a pas. Les deux arêtes sont dentées, d'où l'aspect scie | mesuré |
 | **Rotation** | plancher **0,80** tour/s, plafond **3,00**, jamais franchis. Montée passive **+0,21/s**, sauts discrets de **+0,15** — un par coup porté. Au plafond : palier d'environ **1,8 s** (55 images), puis effondrement à **−3,0/s** jusqu'au plancher, et le cycle repart. Quatre cycles visibles : plafonds aux images 231, 441, 681, 951 | mesuré |
 | Ce qui déclenche l'effondrement | **non identifiable sur la vidéo** : il ne coïncide ni avec BLADE RUSH, ni avec LEAD HAIL. Le modèle de surchauffe après palier reproduit exactement la courbe — c'est un `calé`, pas un `mesuré` | calé |
-| Corps à corps | `Damage = 2,00 × Spin Speed`, **exact et sans exception**, soit 2 à 6 PV. Verrou de 1 000 ms entre deux touches. **Ajout demandé** : brûlure d'un tic à l'impact — voir « Brûlure et Aura de braise » | mesuré + demandé |
+| Corps à corps | `Damage = 2,00 × Spin Speed`, **exact et sans exception**, soit 2 à 6 PV — le multiplicateur mesuré ; **divisé par deux en jeu, demandé** (`1,00 × Spin Speed`, soit 1 à 3 PV), voir « Les dégâts de tous les combattants, divisés par deux ». Verrou de 1 000 ms entre deux touches. **Ajout demandé** : brûlure d'un tic à l'impact — voir « Brûlure et Aura de braise » | mesuré + demandé |
 | Ultime | *Ruée de lame* (`BLADE RUSH`) — horloge de 9 s **+ 6 % par coup porté** : les cycles relevés font 273, 214 et 333 images, donc pas une simple horloge. Ruée de 1,5 s minutée, vitesse ×1,55 (939 px/s contre 605), verrou de touche à **115 ms** | mesuré |
 | Deux régimes de la ruée | **loin**, cap asservi sur l'adversaire à pleine vitesse ; **à portée** (120 px), la lame **orbite**. Foncer droit dessus traverse la zone utile en une centaine de millisecondes — au banc d'origine la lame n'y restait que 57 % de la ruée pour un seul coup porté | mesuré + calé |
 | **Éventail vert** | `#B1C404` à 55 % — mesuré image 643 : le cœur rend (211,219,109) sur l'arène crème. Ouverture bornée **en angle** : 1,6 rad en régime normal, 3,0 rad pendant la ruée, où il vire au vert fluo. L'aire verte passe de ~3 500 px² à 18 488 px² au pic, un facteur 5,3 : l'éventail **s'ouvre**, il ne fait pas que changer de teinte | mesuré |
@@ -1123,7 +1136,7 @@ attendu et documenté, pas une dérive.
 
 | Ajout | Détail | Source |
 | --- | --- | --- |
-| Brûlure au contact | `weapon.melee.onHit.dot` — chaque coup de lame marque la cible d'un tic de brûlure, `Math.max(1, round(Spin Speed))`, sur 1 s | demandé, calé |
+| Brûlure au contact | `weapon.melee.onHit.dot` — chaque coup de lame marque la cible d'un tic de brûlure, `Math.max(1, round(Spin Speed))` à l'ajout, **divisé par deux en jeu depuis** (`Math.max(0.5, round(Spin Speed × 0,5))`), sur 1 s | demandé, calé |
 | Aura de braise | pouvoir **greffé** en troisième créneau (`special.infernalRage`), même patron que le Champ de givre et le Dôme de drain — voir la section suivante | demandé |
 | Aura et sillage | `look.aura` et `look.trail` passent du vert-jaune/or terne aux teintes exactes de l'aura du Feu (`#f97316`) | écart assumé |
 
@@ -2793,6 +2806,116 @@ Pistolero, à production plus régulière, se rapprochent d'un rapport constant
 sans y être tout à fait. **Le banc de DPS n'est donc pas un invariant** : il
 mesure la production **dans la fenêtre de temps qu'un adversaire donné lui
 laisse**, pas une constante du combattant.
+
+## Les dégâts de tous les combattants, divisés par deux
+
+**Demandé, sur les six combattants qui frappent** (le Mannequin en est déjà à
+zéro). Contrairement à la norme de PV, il n'y a **aucune constante à toucher**
+côté moteur : `Match.damage()` ne connaît aucun combattant, chaque dégât vient
+d'une valeur de fiche (invariant 12). La division s'est donc faite **fiche par
+fiche**, une par une, sur chaque source de dégâts.
+
+### Ce qui a été divisé, combattant par combattant
+
+| Combattant | Source | Avant | Après |
+| --- | --- | --- | --- |
+| Pistolero | mêlée/balle (`f.stacks`, plancher et cadre) | 3,00 → 8,00 | 1,50 → 4,00 |
+| | Éclat de givre (Champ de givre) | 2 | 1 |
+| | Tic du Champ de givre | 1 | 0,5 |
+| Ronin | mêlée (`Damage = 2 × Spin`) | `2 × Spin` | `1 × Spin` |
+| | Brûlure au contact (`onHit.dot`) | `1 × Spin`, plancher 1 | `0,5 × Spin`, plancher 0,5 |
+| | Tic de l'Aura de braise | 1 | 0,5 |
+| | Brûlure de l'Aura de braise (code du module, pas la fiche — voir plus bas) | `1 × Spin`, plancher 1 | `0,5 × Spin`, plancher 0,5 |
+| Hoplite | mêlée/chute (`f.stacks`, plancher et cadre) | 8,00 → 16,00 | 4,00 → 8,00 |
+| | Tic du Dôme de drain | 1 | 0,5 |
+| Shinobi | mêlée | 2 | 1 |
+| | Rafale de tornade (`f.stacks`, ramené à l'échelle des PV) | `stacks / 2`, plancher 2 | `stacks / 4`, plancher 1 |
+| | Shuriken de SHURIKEN TORNADO | 3 | 1,5 |
+| Druide | mêlée | 2 | 1 |
+| | Tic de l'Orage de ronces | 1 | 0,5 |
+| | Orbe de ronce | 2 | 1 |
+| | Orbe majeure | 6 | 3 |
+| Golem | mêlée | 8 | 4 |
+| | Onde sismique | 6 | 3 |
+| | Impact du Séisme | 10 | 5 |
+| | Éclat de roche | 3 | 1,5 |
+
+**Le Ronin est le seul cas où la division ne touche pas un nombre, mais un
+multiplicateur.** Sa Spin Speed (0,80 à 3,00 tour/s) est **mesurée** et pilote
+aussi le rendu (vitesse de rotation de la lame) : la diviser aurait changé ce
+que l'œil voit, pas seulement ce que la cible encaisse. `Damage = 2 × Spin`
+devient donc `Damage = 1 × Spin` — le multiplicateur porte toute la division,
+la Spin Speed ne bouge pas d'un chiffre.
+
+**Le Pistolero et l'Hoplite divisent trois valeurs ensemble, pas une seule.**
+Leur dégât est `f.stacks` (plancher compris), et `f.stacks` part d'une valeur
+de départ (`progression.stack`) qui grimpe par paliers (`onHit.stackGain`)
+jusqu'à un plafond (`onHit.stackMax`) : diviser seulement le départ aurait
+laissé un plafond deux fois trop haut ; diviser aussi le plafond sans le gain
+aurait fait grimper deux fois moins de coups pour l'atteindre. Départ, gain et
+plafond sont donc divisés **ensemble**, pour que le nombre de coups nécessaires
+pour plafonner reste le même — exactement la règle déjà posée quand l'Hoplite
+était passé de +2,00 à +1,00 par touche. Le Pistolero tire aussi par un
+**second** `onHit` (celui de la balle, dupliqué de celui du corps à corps
+parce que les deux nourrissent la même pile) : les deux ont dû suivre.
+
+**Une brûlure du Ronin est codée dans son module, pas dans sa fiche — le seul
+cas du roster.** `game/abilities/bladesman.js` pose une seconde brûlure
+(distincte de `weapon.melee.onHit.dot`) directement dans son code, avec la
+même formule `Math.max(1, Math.round(f.stacks))` recopiée en dur. Ce n'est pas
+une exception voulue à l'invariant 12 — c'est un writeoff qui traîne depuis
+l'ajout de l'Aura de braise — mais elle inflige de vrais dégâts, donc elle a dû
+être divisée comme le reste : `Math.max(0.5, Math.round(f.stacks * 0.5))`.
+
+### L'effet sur la matrice — le même levier que les PV, dans l'autre sens
+
+Diviser les dégâts a le même effet que diviser les PV en sens inverse : les
+duels s'**allongent**, exactement comme les diviser les avait raccourcis à la
+section précédente. Comparaison à composition égale, sur les six mêmes
+combattants :
+
+| | Dégâts pleins (avant) | Dégâts divisés par deux (après) |
+| --- | --- | --- |
+| **Shinobi** | 7 | **16** |
+| Pistolero | 13 | 13 |
+| Druide | 11 | 12 |
+| Hoplite | 9 | 10 |
+| Golem | 11 | 8 |
+| **Ronin** | 10 | **4** |
+
+Les duels durent **41,2 s en moyenne au lieu de 26,3** — presque le retour à la
+durée de l'ère à 200 PV (41,9 s), et c'est cohérent : diviser les dégâts par
+deux à PV constants revient, pour le temps que met un duel à se conclure, à peu
+près à doubler les PV à dégâts constants. **Les deux mêmes combattants
+rebasculent, mais cette fois dans le même sens qu'avant** (pas en miroir comme
+lors du changement de norme de PV) : un duel plus long, quelle qu'en soit la
+cause, profite toujours au Shinobi et coûte toujours au Ronin.
+
+- **Le Shinobi bondit (7 → 16).** Ses clones s'invoquent entre eux : un duel
+  deux fois plus long lui laisse deux fois plus d'occasions de faire doubler sa
+  population, et la population, elle, ne dépend d'aucun dégât — seulement du
+  temps.
+- **Le Ronin s'effondre (10 → 4).** Son débit plafonne (`Damage = Spin`, avec
+  surchauffe) : un duel deux fois plus long ne lui donne pas deux fois plus de
+  dégâts, seulement deux fois plus de temps pour se faire toucher.
+
+### Le banc de DPS, encore une fois pas un invariant
+
+| | Dégâts pleins | Dégâts divisés par deux | Écart |
+| --- | --- | --- | --- |
+| Pistolero | 5,31 | 3,26 | −2,05 |
+| **Ronin** | 5,61 | 3,11 | **−2,50** |
+| Shinobi | 3,96 | 3,11 | **−0,85** |
+| Hoplite | 4,27 | 2,99 | −1,28 |
+| Druide | 4,19 | 2,76 | −1,43 |
+| Golem | 4,49 | 2,59 | −1,90 |
+
+Même leçon que pour les PV, rejouée en miroir : aucun n'a exactement perdu la
+moitié de son DPS contre le Mannequin, parce que le DPS mesure une production
+**dans la fenêtre que le combat lui laisse**, pas une constante. Le Ronin, à
+débit plafonné, perd le plus en valeur absolue mais dans un rapport proche de
+la moitié attendue ; le Shinobi, dont la production compose avec le temps,
+perd le moins — la fenêtre plus longue compense une bonne part de la division.
 
 ## Le son de chacun
 

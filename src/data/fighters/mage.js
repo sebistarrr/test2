@@ -178,8 +178,13 @@ export const MAGE = fiche({
        * 24 — mais seulement **en plus** de l'orbe à 2. Les deux leviers ne se
        * cumulent pas : près du seuil, un point de dégât bascule des courses
        * déjà serrées.
+       *
+       * **Divisé par deux, demandé** — cette fois avec l'orbe (ci-dessous) qui
+       * suit la même division, donc sans le déséquilibre relatif que produirait
+       * ce levier seul. La matrice est régénérée et comparée après le
+       * changement (invariant 3), pas supposée stable.
        */
-      damage: 2,
+      damage: 1,
       cooldown: 1.7,
       knockback: 260,
       selfRecoil: 120,
@@ -244,7 +249,7 @@ export const MAGE = fiche({
       },
       root: 0.7,
       tickInterval: 0.7,
-      tickDamage: () => 1,
+      tickDamage: () => 0.5, // divisé par deux, demandé
       healInterval: 1,
       healAmount: 1,
     },
@@ -371,7 +376,7 @@ export const MAGE = fiche({
       sprite: 'mageOrb',
       scale: 2.2, // carte de 11 px -> orbe de 24 px, la taille du cristal
       speed: 470,
-      damage: 2,
+      damage: 1, // divisé par deux, demandé
       radius: 11,
       life: 2.6,
       bounces: 1,
@@ -384,7 +389,8 @@ export const MAGE = fiche({
      * la tire.
      *
      * Elle reprend l'orbe ordinaire en la poussant sur les trois axes qui se
-     * lisent à l'écran : **trois fois les dégâts** (6 contre 2), plus grosse
+     * lisent à l'écran : **trois fois les dégâts** (3 contre 1, divisés par
+     * deux ensemble sur demande — 6 contre 2 avant), plus grosse
      * (44 px contre 24), plus rapide (620 contre 470) et un guidage plus sec
      * (3,4 rad/s contre 2,6). C'est ce qui doit payer une seconde
      * d'immobilité — une orbe à peine meilleure ne vaudrait jamais le risque,
@@ -402,7 +408,7 @@ export const MAGE = fiche({
       sprite: 'mageOrb',
       scale: 4, // même carte de 11 px, dessinée deux fois plus grand que l'orbe
       speed: 620,
-      damage: 6,
+      damage: 3,
       radius: 20,
       life: 3.4,
       bounces: 1,

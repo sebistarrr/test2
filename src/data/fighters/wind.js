@@ -222,8 +222,10 @@ export const WIND = fiche({
        * Écarté : réduire `hitbox.radius` (75). Il est **déduit du shuriken
        * dessiné** — le rétrécir ferait mentir le sprite sur l'endroit où il
        * touche, ce que le dépôt s'interdit.
+       *
+       * **2 → 1, divisé par deux sur demande**, après le resserrement ci-dessus.
        */
-      damage: 2,
+      damage: 1,
       cooldown: 1, // cadence la plus rapide du roster
       knockback: 205,
       selfRecoil: 70,
@@ -259,8 +261,11 @@ export const WIND = fiche({
       radius: 125, // mesuré : ~120-130 px de diamètre visible
       duration: 0.2,
       knockback: 430, // la rafale projette au lieu d'aspirer
-      /** « Tornado Damage » du HUD, ramené à l'échelle des PV. */
-      damage: (self) => Math.max(2, Math.round(self.stacks / 2)),
+      /** « Tornado Damage » du HUD, ramené à l'échelle des PV, **divisé par
+       *  deux sur demande** en plus (le second /2, dans le diviseur). La pile
+       *  affichée (`f.stacks`, 10 → 24) ne bouge pas : c'est la stat relevée
+       *  sur la vidéo, seule sa conversion en dégâts change. */
+      damage: (self) => Math.max(1, Math.round(self.stacks / 4)),
       damageGain: 2, // mesuré : 10 → 24 par pas de 2
       damageMax: 24, // plafond mesuré, apparié au plancher de 0,5 s
       /**
@@ -456,8 +461,9 @@ export const WIND = fiche({
       /** **4 → 3, demandé.** C'est le projectile de la Tornade de shurikens
        *  (`ultimate.volley.projectile`), et rien d'autre ne le tire : le
        *  changement ne touche donc que la décharge d'ultime, pas la Tornade
-       *  ordinaire, dont les dégâts sortent de `ability.tornado.damage`. */
-      damage: 3,
+       *  ordinaire, dont les dégâts sortent de `ability.tornado.damage`.
+       *  **3 → 1,5, divisé par deux sur demande** après ce premier écart. */
+      damage: 1.5,
       radius: 15,
       life: 2.2,
       bounces: 1,
