@@ -122,6 +122,30 @@ export const GOLEM = fiche({
   },
 
   /**
+   * **Bruitages** (recettes dans `data/sound.js`). **Le plus grave du roster,
+   * et de loin** : `pitch: 0.72` descend tout le personnage de presque une
+   * demi-octave, murs compris. C'est le pendant sonore de ce que sa fiche fait
+   * partout ailleurs — rayon 50 contre 41, 400 PV contre 200, 370 px/s contre
+   * 430 : il est plus lourd que les autres, et il doit s'entendre plus lourd
+   * qu'eux sans qu'aucune ligne de code ne le sache.
+   */
+  sound: {
+    pitch: 0.72,
+    shot: 'pebble',
+    /** Pierre contre pierre : mat, avec une queue de gravats. */
+    hit: 'crunch',
+    impact: 'impact',
+    bounce: 'thud',
+    /** L'onde sismique frappe le sol : le même tambour que ses rebonds, en plus gros. */
+    ability: 'thud',
+    /** La roche qui se fend avant que les huit éclats ne partent — eux ont
+     *  leur propre `pebble`, tiré par tiré. */
+    special: 'crunch',
+    /** La seule recette du banc qui descende sous 40 Hz. Elle est pour lui. */
+    ultimate: 'quake',
+  },
+
+  /**
    * **Le plus lent du roster, et de loin** : 370 px/s contre 655 (Pistolero),
    * 624 (Druide), 560 (Ronin), 500 (Shinobi) et 430 (Hoplite).
    *

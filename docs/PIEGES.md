@@ -23,12 +23,13 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 367 |
 | &nbsp;&nbsp;· Éditer les données | 406 |
 | &nbsp;&nbsp;· Interface et rendu | 439 |
-| &nbsp;&nbsp;· Refactoriser | 525 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 566 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 568 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 611 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 654 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 673 |
+| &nbsp;&nbsp;· Le son | 525 |
+| &nbsp;&nbsp;· Refactoriser | 576 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 617 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 619 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 662 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 705 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 724 |
 
 ---
 
@@ -521,6 +522,57 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   classement a un sens est lu **à la fin du duel**, clones compris — un duel à
   deux qui a vu naître un clone n'est donc plus « à deux » pour ce test, et
   c'est ce qui rendait le doublon visible jusqu'en 1 contre 1.
+
+### Le son
+
+Quatre pièges, tous **muets** — c'est leur point commun et c'est ce qui les rend
+coûteux : aucun ne plante, aucun ne se voit à l'écran, et une capture ne dit
+rien. D'où `tools/sound-check.mjs`, qui joue des duels entiers et compte.
+
+- **Un son ne s'ouvre qu'à un geste.** Un `AudioContext` créé au chargement du
+  module naît `suspended` et **le reste tout le duel** : pas d'erreur, pas de
+  son, et rien dans la console. Il est donc créé au premier `pointerdown` ou
+  `keydown` (`main.js`), et `unlock()` fait aussi le `resume()` — un contexte
+  peut retomber en suspens quand l'onglet passe en arrière-plan. Conséquence
+  heureuse : sans geste, `sfx.ctx` est `null` et **tous les appels sortent
+  immédiatement**, donc `matrix.mjs` et `shot.mjs` ne paient rien.
+- **Un plafond de voix qui se décrémente dans un rappel finit par ne plus
+  redescendre.** La première version comptait les voix (`this.voices++` puis
+  `src.onended = () => this.voices--`). Un seul `onended` manqué — un contexte
+  fermé, un `stop()` avalé — et le compteur reste au plafond de `MIX.maxVoices` :
+  **le jeu devient muet définitivement**, sans une erreur. Remplacé par une
+  **liste d'échéances** (`busy`), purgée à chaque tir contre `ctx.currentTime` :
+  l'horloge du contexte ne peut pas oublier de passer.
+- **Le même bruitage joué deux fois en 50 ms ne s'entend pas deux fois**, il
+  sature. La simulation tourne à 120 Hz : une balle qui touche pendant six pas
+  déclenche six détonations en 50 ms, et l'oreille n'entend qu'un seul coup
+  écrêté. `MIX.repeatGap` (45 ms, par recette) est à la sortie audio ce que
+  `meleeCd` est au moteur. C'est aussi lui qui rend supportable un Shinobi à
+  cinq clones : cinq corps qui frappent dans la même image font **un** son.
+- **La synthèse vocale ne passe par aucun graphe audio.** `speechSynthesis`
+  sort directement sur la carte son : elle ne peut ni se mixer, ni se couper
+  autrement que par `cancel()`, ni **entrer dans la vidéo exportée**. Les
+  bruitages, eux, y entreraient (une piste de `MediaStreamDestination` ajoutée
+  au flux de `recorder.js`). L'export reste donc **muet, franchement** : porter
+  les coups sans le nom du vainqueur serait pire que le silence. Corollaire
+  d'interface : `sfx.silence()` doit être appelé à chaque sortie d'écran et
+  quand l'onglet se cache — c'est la seule chose du jeu qui survive à
+  `loop.stop()`.
+
+Deux points de conception qui ont bien tenu, notés pour ne pas les défaire :
+
+- **Trois créneaux sur cinq n'ont demandé aucune ligne dans les huit modules**,
+  parce que le moteur voyait déjà passer l'événement : le tir dans
+  `Projectiles.spawn`, la touche dans `Match.damage`, l'ultime dans la bascule
+  de `f.ult.active` que `flair.cast` détectait déjà. Le rebond de mur non plus :
+  `f.wall` était posé pour les ondes de `flair.js`. **Chercher l'endroit où
+  l'image lit déjà l'événement** avant d'ajouter un état.
+- **Une arme qui n'existe pas pour le moteur doit le dire.** `Match.hitSound`
+  ne reconnaît une touche d'arme qu'à `kind: 'melee'` ; les deux dagues de Neon
+  Shadow sont intégrées par son module, donc son coup principal sonnait comme
+  un projectile perdu. Un mot dans les options de `damage` (`sound: 'hit'`)
+  suffit — même forme que `opts.kind` : un module l'écrit, le moteur s'en sert,
+  et il ne sait pas pourquoi.
 
 ### Refactoriser
 

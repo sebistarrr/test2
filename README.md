@@ -52,9 +52,11 @@ l'arène s'éclaircit, les armes tournent, mais personne n'avance.
 
 ### Points de vie
 
-Les points de vie ne se règlent pas : chacun part des **100** du cahier des
-charges. Seul un pouvoir peut faire entrer un combattant avec les siens — les
-clones du Shinobi naissent à 25.
+Les points de vie ne se règlent pas : la norme est de **200**, demandée (c'était
+100, le chiffre du cahier des charges). Une fiche peut porter les siens — le
+Golem en a **400**, sa seule défense — et un pouvoir peut faire entrer un
+combattant avec les siens : les clones du Shinobi naissent à 50, **un quart d'un
+combattant**, et c'est ce rapport qui borne le pouvoir.
 
 Chacun porte en plus un **pouvoir spécial**, sur horloge propre, avec sa jauge
 juste sous celle de l'ultime. Il s'ajoute à l'ultime, il ne le remplace pas —
@@ -108,6 +110,7 @@ empêche Jekyll d'ignorer les dossiers.
 | `?lang=fr`   | **toute l'interface** en français — HUD, titre d'arène et écrans DOM (par défaut : l'anglais de la vidéo) |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |
 | `?rec=0`     | n'enregistre pas le duel : pas d'export possible, mais pas un cycle dépensé pour lui |
+| `?sound=0`   | duel muet d'emblée — bruitages **et** annonces (le bouton 🔊 de la page fait la même chose à tout moment) |
 
 Exemple : `index.html?a=lancer&b=mage&seed=6&debug=1`
 
@@ -134,6 +137,36 @@ Tout cela suit une règle de composition : **rien ne se pose entre le spectateur
 et les combattants**. Ce qui remplit le cadre est au fond, sur les bords, ou
 derrière la boule. Tout vit dans `src/render/flair.js`, avec son propre aléa :
 la mise en scène ne peut pas déplacer une virgule de l'équilibrage.
+
+### Le son
+
+Le duel s'entend autant qu'il se voit, et **sans un seul fichier audio** :
+`src/data/sound.js` porte une vingtaine de **recettes de synthèse** — une ou
+deux couches d'oscillateur et de bruit blanc filtré, avec leur enveloppe — que
+`src/render/audio.js` monte à la volée dans un `AudioContext`.
+
+- **Chaque action a son bruit** : le tir (quel que soit le projectile), la
+  touche d'arme, l'impact d'un projectile, le tic d'une brûlure, le rebond sur
+  un mur, le choc de deux corps, les trois créneaux de pouvoir, le K.O., la
+  fanfare de victoire.
+- **C'est la fiche qui décide de la matière**, comme pour les sprites et les
+  couleurs : elle nomme une recette par créneau et une transposition. Le Golem
+  sonne une demi-octave sous le roster (`pitch: 0.72`), Neon Shadow au-dessus —
+  sans une ligne de code qui les distingue.
+- **Un annonceur nomme les combattants** : « pistolero versus ronin » à
+  l'ouverture, « pistolero wins » à la parade. Il passe par la synthèse vocale
+  du navigateur et parle **la langue de l'écran** (donc l'anglais par défaut,
+  le français avec `?lang=fr`).
+- Le son s'ouvre au **premier clic** — les navigateurs interdisent de sonner
+  avant un geste — et le bouton 🔊 en haut à droite le coupe à tout moment
+  (`?sound=0` pour démarrer muet).
+- **La vidéo exportée reste muette**, délibérément : la synthèse vocale sort
+  hors de tout graphe audio et ne peut pas être captée, or un export qui
+  porterait les coups sans le nom du vainqueur serait pire que le silence.
+
+Comme la mise en scène visuelle, le son ne fait que **lire** : il ne touche à
+aucun état, ne tire pas dans l'aléa de simulation, et la matrice d'équilibrage
+est restée identique au caractère près après son ajout.
 
 La partie se termine par **deux secondes de parade** : les perdants quittent
 l'arène, le ou les vainqueurs glissent au centre, grandissent, leur arme
@@ -171,6 +204,8 @@ src/
 │   ├── defaults.js        valeurs universelles + helper `fiche()`
 │   ├── format.js          formatage des lignes de stat du HUD
 │   ├── tuning.js          géométrie de scène mesurée sur la vidéo
+│   ├── sound.js           **le banc de bruitages** : des recettes de synthèse,
+│   │                      aucun fichier audio
 │   └── freeze.js          deepFreeze + garde-fou d'immutabilité
 ├── render/
 │   ├── canvas.js          repère logique 720x1280, DPR, pixel-perfect
@@ -181,6 +216,7 @@ src/
 │   ├── recorder.js        film du duel → vidéo verticale 1080x1920 (Shorts)
 │   ├── effects.js         particules de jeu (étincelles, neige, fantômes)
 │   ├── flair.js           mise en scène : rubans, nappes, ondes de mur, nombres
+│   ├── audio.js           **le son** : synthèse des bruitages + l'annonceur
 │   └── text.js            texte ajusté pour ne jamais déborder du HUD
 ├── game/
 │   ├── match.js           machine à états du duel + dégâts + rendu global
@@ -207,6 +243,8 @@ tools/                     outillage de vérification (non chargé par la page)
 ├── probe.mjs              durée, touches et coups/s d'un combattant sur tout
 │                          le roster — garde-fou chiffré du Pistolero
 ├── lang-check.mjs         garde-fou de la langue (tables et champs `Ref`)
+├── sound-check.mjs        banc du son : quelle action fait quel bruit, et
+│                          chaque recette réellement montée dans un AudioContext
 ├── shot.mjs               captures d'écran, avec déclenchement de pouvoir
 ├── frames.py              extraction d'images d'une vidéo de référence
 ├── montage.py             planche-contact des images extraites

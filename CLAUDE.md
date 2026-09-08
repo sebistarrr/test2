@@ -53,6 +53,8 @@ recale.
 | Pouvoirs d'un combattant | `src/game/abilities/<id>.js` |
 | Pouvoir **spécial** greffé (3<sup>e</sup> créneau) | bloc `special` de la fiche + `f.state.spec` dans le module |
 | Mise en scène (rubans, fuseaux, nappes, ondes, nombres) | `src/render/flair.js` + `look.flair` de chaque fiche |
+| **Son** : synthèse des bruitages et annonceur | `src/render/audio.js` |
+| **Recettes de bruitage** (aucun fichier audio) | `src/data/sound.js` + `sound` de chaque fiche |
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
 | Libellés d'interface (les deux langues) | `src/ui/lang.js` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
@@ -216,6 +218,39 @@ empêche le HTML et la table de diverger sans que ça se voie.
 
 ---
 
+## Son
+
+**Aucun fichier audio, et ce n'est pas une contrainte subie** : les bruitages
+sont **synthétisés** (`data/sound.js` porte les recettes, `render/audio.js` les
+monte). Rien à charger, rien qui puisse manquer à la première touche, et un
+timbre qui se **transpose par combattant**.
+
+- **La fiche décide, comme pour les sprites.** Bloc `sound` : `pitch` et un nom
+  de recette par créneau (`shot`, `hit`, `impact`, `bounce`, `ability`,
+  `special`, `ultimate`). Le moteur ne connaît toujours aucun combattant : il
+  joue le créneau, la fiche dit la matière. Un projectile peut nommer la sienne
+  (`projectiles.x.sound`), et une fiche peut ajouter un créneau que son seul
+  module lit (l'Hoplite : `strike`, la foudre qui tombe).
+- **Le son ne lit que de l'état déjà calculé** et n'écrit rien — même contrat
+  que `flair.js`. Il ne tire ni dans `game.rng` ni dans `viewRng` (voir
+  l'invariant 2) : sa dérive de hauteur passe par `Math.random`, exprès.
+- **Trois créneaux n'ont demandé aucune ligne dans les huit modules** parce que
+  le moteur voyait déjà passer l'événement : le tir (`Projectiles.spawn`), la
+  touche (`Match.damage`) et l'ultime (la bascule de `f.ult.active`, déjà
+  détectée pour l'éclat d'incantation). Seuls `ability` et `special` sont
+  appelés par les modules, une ligne chacun.
+- **L'annonceur parle la langue de l'écran** (`ui/lang.js`, clés `speech*`), et
+  les noms lui sont passés **en minuscules** : une voix de synthèse épelle
+  volontiers un mot tout en capitales.
+- **Le son s'ouvre à un geste** et pas avant (`sfx.unlock()` sur le premier
+  clic) : sans geste, `sfx` n'a pas de contexte et **tous ses appels sont des
+  `return`** — c'est ce qui le rend gratuit pour `matrix.mjs` et `shot.mjs`.
+- **La vidéo exportée reste muette, exprès** : la synthèse vocale sort hors de
+  tout graphe `AudioContext` et ne peut pas être captée, or un export qui
+  porterait les coups sans le nom du vainqueur serait pire que le silence.
+
+---
+
 ## Invariants — à ne jamais casser
 
 1. **Fiches gelées.** `deepFreeze` + `assertFrozen()` à chaque duel. Un duel ne
@@ -228,6 +263,10 @@ empêche le HTML et la table de diverger sans que ça se voie.
      les vainqueurs. Déjà arrivé deux fois.
    - `game.viewRng` = rendu seul. Toute décoration passe par lui, ou par un
      hachage pur (`hash01` dans `plant.js`).
+   - `render/audio.js` a son propre aléa, et c'est **`Math.random`** : ni l'un
+     ni l'autre des deux flux. Le premier changerait les vainqueurs, le second
+     déplacerait le tremblement de caméra — donc l'image d'un duel rejoué à la
+     même graine, que le bouton « Revoir ce duel » promet identique.
    - `render/flair.js` est **la** porte d'entrée pour ajouter du spectacle :
      aléa `viewRng`, banc de particules séparé, aucun accès à `game.rng`. Sa
      règle de composition : **rien entre le spectateur et les combattants** —
@@ -343,6 +382,11 @@ node tools/fiche-check.mjs               # trois pannes silencieuses :
 
 node tools/lang-check.mjs                # les deux tables de ui/lang.js portent les
                                          # mêmes clés, et chaque fiche ses champs `Ref`
+
+node tools/sound-check.mjs               # deux pannes muettes :
+                                         #  • une action qui ne sonne pas (duels joués,
+                                         #    sons comptés, par combattant)
+                                         #  • une recette que l'AudioContext refuse
 
 node tools/matrix.mjs                    # tous les affrontements x 3 seeds, sans rendu
 node tools/matrix.mjs > /tmp/a.txt && diff tools/matrix-reference.txt /tmp/a.txt
@@ -505,6 +549,22 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   est **repassé** après la boucle (`Fighter.drawHpNumber()`, appelée deux fois),
   `globalAlpha` remis à 1 avant.
 
+**Sonoriser**
+
+- **Un son ne s'ouvre qu'à un geste** : un `AudioContext` créé au chargement
+  naît suspendu et reste muet tout le duel, **sans une erreur**.
+- **Un plafond de voix qui se décrémente dans un rappel finit par ne plus
+  redescendre** : compter des échéances, pas des voix.
+- **Le même bruitage joué deux fois en 50 ms ne s'entend pas deux fois**, il
+  sature : un garde-fou de répétition est aussi nécessaire qu'un `meleeCd`.
+- **La synthèse vocale ne passe par aucun graphe audio** : elle ne peut donc
+  ni se mixer, ni s'enregistrer, ni entrer dans la vidéo exportée.
+- **Chercher l'endroit où l'image lit déjà l'événement** avant d'ajouter un
+  état pour le son : trois créneaux sur cinq n'ont coûté aucune ligne aux huit
+  modules.
+- **Une arme que le moteur ne connaît pas doit dire qu'elle en est une**
+  (`opts.sound` dans `damage`), sinon elle sonne comme un projectile perdu.
+
 **Refactoriser**
 
 - **Une refactorisation se mesure à ce qu'elle retire**, pas à ce qu'elle
@@ -526,7 +586,8 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 
 - **Français** dans le code, les commentaires, la doc et les réponses — mais
   **anglais dans l'application**. Un nouveau combattant apporte ses champs `Ref`
-  en même temps que sa fiche.
+  en même temps que sa fiche, et son bloc `sound` avec : sans lui il est
+  **muet**, et rien ne crie à part `tools/sound-check.mjs`.
 - Commentaires qui expliquent **pourquoi** (et citent la mesure), pas quoi.
 - Après un changement **visuel** : capture de contrôle + matrice inchangée. Si
   la matrice bouge, le changement n'était pas visuel.

@@ -161,6 +161,7 @@ export const outlawAbilities = {
   /** Incantation : onde de choc qui déborde l'arène, puis le champ s'ouvre. */
   castBlizzard(f, game) {
     const sp = f.el.special;
+    game.sfx.cast(f, 'special');
     f.state.spec = sp.duration;
     f.state.fieldTick = 0;
     f.state.shardTimer = 0; // la première salve part avec l'onde de choc
@@ -307,6 +308,13 @@ export const outlawAbilities = {
       f.state.reload = a.reload;
       // l'angle de depart du tour : il s'y referme exactement
       f.state.reloadFrom = f.weaponAngle;
+      /**
+       * **Le son du pouvoir est celui du rechargement, pas celui du tir.** La
+       * rafale s'entend déjà, une détonation par balle : c'est le barillet
+       * qu'on réarme qui manquait, et c'est aussi le seul moment où le
+       * Pistolero ne fait rien — il a besoin d'être audible.
+       */
+      game.sfx.cast(f, 'ability');
       return;
     }
     // pendant HIGH NOON la cadence double (mesuré)

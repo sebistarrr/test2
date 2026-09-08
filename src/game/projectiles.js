@@ -13,6 +13,7 @@ import { hash01 } from '../core/math.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { TAU, dist, clamp, wrapAngle } from '../core/math.js';
 import { drawSpriteCentered } from '../render/sprites.js';
+import { sfx } from '../render/audio.js';
 
 export class Projectiles {
   /**
@@ -32,6 +33,18 @@ export class Projectiles {
   spawn(owner, key, angle, offset = owner.radius + 6) {
     const def = owner.el.projectiles[key];
     if (!def) throw new Error(`[projectiles] « ${key} » absent de la fiche ${owner.el.id}`);
+    /**
+     * **Un tir, un son — pour tout le roster d'un seul endroit.**
+     *
+     * Balles, éclats, shurikens, orbes et éclats de roche passent tous par ici :
+     * c'est le seul point du dépôt où « un projectile part » soit dit une fois.
+     * Le projectile peut nommer sa propre recette (`def.sound`, l'éclat de
+     * givre et l'orbe majeure le font) ; sinon c'est le `shot` de la fiche.
+     */
+    sfx.play(def.sound ?? owner.el.sound?.shot, {
+      x: owner.x,
+      pitch: owner.el.sound?.pitch ?? 1,
+    });
     this.list.push({
       def,
       owner,

@@ -14,6 +14,14 @@
  * deux affrontements. Preuve : `tools/matrix.mjs` doit rester identique au
  * caractère près.
  *
+ * **Le son se branche ici, aux mêmes endroits que la mise en scène.** Le duel
+ * annonce qui affronte qui à l'ouverture, sonne le gong, joue chaque coup, ses
+ * rebonds et ses chocs, puis nomme le vainqueur à la parade. Rien de tout cela
+ * n'a demandé un état de plus : le son lit ce que l'image lisait déjà
+ * (`f.wall`, `opts.kind`, la bascule de `f.ult.active`), et `render/audio.js`
+ * ne peut rien écrire. Un contexte sans audio — les deux outils Playwright —
+ * n'entend rien et ne paie rien.
+ *
  * Phases : intro → fight → ko → **victory** → over
  *
  * `victory` est le temps de gloire : les perdants ont disparu de l'arène, **le
@@ -37,6 +45,7 @@ import { abilitiesFor } from './abilities/index.js';
 import { resolveBodies, weaponHit } from './physics.js';
 import { Effects } from '../render/effects.js';
 import { Flair } from '../render/flair.js';
+import { sfx } from '../render/audio.js';
 import { createRng } from '../core/rng.js';
 import { buildBackdrop, drawBackdrop } from '../render/scene.js';
 import { drawFighterHud, drawRosterHp, drawRosterPowers } from '../render/hud.js';
@@ -72,10 +81,11 @@ export class Match {
    * Omis, chacun a le sien — chacun pour soi, et le duel d'origine quand il y
    * en a deux. `[0, 0, 1, 1]` fait un 2 contre 2.
    *
-   * **Les points de vie ne se règlent plus.** Chacun part des 100 du cahier
-   * des charges ; seul un module peut en poser d'autres à un combattant qu'il
-   * fait entrer (le Clone d'ombre du Shinobi naît à 25), et c'est le paramètre
-   * `maxHp` du `Fighter`, pas une option de partie.
+   * **Les points de vie ne se règlent plus.** Chacun part de la norme de 200
+   * (`MATCH.maxHp`), sauf si sa fiche en porte d'autres ; seul un module peut
+   * en poser d'autres à un combattant qu'il fait entrer (le Clone d'ombre du
+   * Shinobi naît à 50), et c'est le paramètre `maxHp` du `Fighter`, pas une
+   * option de partie.
    */
   constructor({ elements, teams = null, rng, lang = 'ref', debug = false, onEnd }) {
     const els = elements.map((id) => getElement(id));
@@ -99,6 +109,17 @@ export class Match {
     // viewRng. Rien de ce qu'elle fait ne peut décaler la simulation.
     this.flair = new Flair(this.viewRng);
     this.projectiles = new Projectiles(this.fx);
+    /**
+     * **Le son, offert aux modules par `game`.**
+     *
+     * Ce n'est **pas** un moteur par duel, contrairement à `fx` et `flair` :
+     * c'est le singleton de la page (un `AudioContext` par revanche épuiserait
+     * le quota du navigateur, même leçon que le `captureStream()` de
+     * l'enregistreur). Il est posé ici pour que les huit modules de pouvoirs
+     * l'atteignent comme ils atteignent déjà `game.fx` et `game.rng`, sans
+     * import et sans savoir qu'il est partagé.
+     */
+    this.sfx = sfx;
 
     /**
      * Camps. Par défaut le rang de chacun : à deux, cela redonne 0 et 1, donc
@@ -109,10 +130,10 @@ export class Match {
 
     /**
      * `el.maxHp` est **une valeur de fiche**, pas une option de partie : elle
-     * est absente des cinq premières fiches, qui retombent donc sur les 100 du
-     * cahier des charges, et vaut 200 chez le Golem — dont c'est toute la
-     * défense. À ne pas confondre avec les PV réglables retirés du dépôt, qui
-     * étaient un curseur offert au joueur.
+     * est absente de sept fiches sur huit, qui suivent donc la norme de 200, et
+     * vaut 400 chez le Golem — dont c'est toute la défense. À ne pas confondre
+     * avec les PV réglables retirés du dépôt, qui étaient un curseur offert au
+     * joueur.
      */
     this.fighters = els.map(
       (el, i) => new Fighter(el, i, rng, spawnFor(i, n), el.maxHp ?? MATCH.maxHp),
@@ -166,6 +187,50 @@ export class Match {
      * @type {Fighter[]}
      */
     this.arrivants = [];
+
+    /**
+     * **L'annonce d'ouverture, demandée : qui affronte qui.**
+     *
+     * Elle part ici et pas au premier pas, parce que l'attente d'avant-combat
+     * ne dure qu'une seconde et qu'une voix synthétique met à peu près ce
+     * temps-là à dire deux noms : partir à la construction laisse l'annonce
+     * finir à peu près sur le gong.
+     *
+     * Sans geste d'ouverture (une page chargée sur `?a=…&b=…`, `matrix.mjs`,
+     * `shot.mjs`), `sfx` n'a pas de contexte audio et cet appel ne fait
+     * strictement rien — c'est ce qui rend le son gratuit pour les outils.
+     */
+    sfx.say(this.introSpeech());
+  }
+
+  /**
+   * Texte de l'annonce d'ouverture, dans la langue de l'écran.
+   *
+   * **Un camp, un groupe de noms** : le duel dit « A versus B », le 2 contre 2
+   * « A and B versus C and D », la bataille royale enfile tout le monde. Rien
+   * ici ne connaît de format — comme le reste du moteur, il ne lit que les
+   * camps (invariant 13).
+   *
+   * **Dédoublonné par `el.id`**, comme le bandeau de victoire et les plaques du
+   * HUD : un Shinobi et son clone sont deux combattants du tableau mais un seul
+   * personnage à nommer.
+   *
+   * Les noms sont **mis en minuscules** : une voix de synthèse épelle volontiers
+   * un mot tout en capitales, qu'elle prend pour un sigle — « K, O » au lieu de
+   * « ko ». L'écran, lui, garde ses capitales.
+   */
+  introSpeech() {
+    const T = UI[this.lang] ?? UI.ref;
+    /** @type {Map<number, string[]>} */
+    const camps = new Map();
+    this.fighters.forEach((f, i) => {
+      const camp = this.teams[i];
+      if (!camps.has(camp)) camps.set(camp, []);
+      const noms = camps.get(camp);
+      const nom = label(f.el, this.lang).toLowerCase();
+      if (!noms.includes(nom)) noms.push(nom);
+    });
+    return T.speechVersus([...camps.values()].map((noms) => T.speechSide(noms)));
   }
 
   /**
@@ -243,7 +308,12 @@ export class Match {
 
     switch (this.phase) {
       case 'intro':
-        if (this.phaseTime >= MATCH.introDuration) this.setPhase('fight');
+        if (this.phaseTime >= MATCH.introDuration) {
+          this.setPhase('fight');
+          // le gong d'engagement : il ferme l'attente et couvre la fin de
+          // l'annonce d'ouverture
+          sfx.play('gong');
+        }
         break;
       case 'ko':
         if (this.phaseTime >= MATCH.koDuration) this.startVictory();
@@ -266,6 +336,14 @@ export class Match {
       for (const f of this.fighters) {
         if (this.phase === 'ko' && !f.alive) continue;
         f.step(dt, this.time, attente);
+        /**
+         * **Le rebond sonne.** `f.wall` est déjà posé par `Fighter.step` pour
+         * la mise en scène (les ondes de mur de `flair.js`) : le son se
+         * contente de le lire, exactement comme l'image. Rien de nouveau dans
+         * le moteur, et le combattant dit lui-même de quel bois il est fait —
+         * c'est sa fiche qui nomme la recette et sa hauteur.
+         */
+        if (f.wall) sfx.cast(f, 'bounce');
       }
     }
 
@@ -276,7 +354,9 @@ export class Match {
         // les mêmes appels dans le même ordre pour deux combattants, mais
         // « les mêmes appels » ne suffit pas ici : c'est « les mêmes
         // expressions » qui est exigé (invariant 3).
-        resolveBodies(this.a, this.b);
+        // `resolveBodies` rendait déjà vrai quand les deux corps se touchent :
+        // le son s'y branche sans rien changer aux expressions du duel.
+        if (resolveBodies(this.a, this.b)) this.bumpSound(this.a, this.b);
         this.resolveMelee(this.a, this.b);
         this.resolveMelee(this.b, this.a);
       } else {
@@ -284,7 +364,9 @@ export class Match {
         // Les corps se bousculent **entre tous**, alliés compris : un coéquipier
         // reste un obstacle, et c'est ce qui rend le 2 contre 2 lisible.
         for (let i = 0; i < fs.length; i++) {
-          for (let j = i + 1; j < fs.length; j++) resolveBodies(fs[i], fs[j]);
+          for (let j = i + 1; j < fs.length; j++) {
+            if (resolveBodies(fs[i], fs[j])) this.bumpSound(fs[i], fs[j]);
+          }
         }
         // Les armes, elles, ne touchent que le camp adverse.
         for (let i = 0; i < fs.length; i++) {
@@ -332,7 +414,16 @@ export class Match {
     // le moteur n'a pas besoin de savoir ce que fait l'ultime pour l'annoncer
     for (const f of this.fighters) {
       const on = f.ult.active > 0;
-      if (on && !f.wasUlting) this.flair.cast(f, f.el.look.flair?.castFlash);
+      if (on && !f.wasUlting) {
+        this.flair.cast(f, f.el.look.flair?.castFlash);
+        /**
+         * **Aucun des huit modules n'a une ligne pour le son de son ultime.**
+         * Le moteur détectait déjà l'incantation ici pour l'éclat blanc ; il
+         * lui suffit de jouer la recette que la fiche nomme, et c'est vrai pour
+         * tout ultime futur sans une ligne de plus.
+         */
+        sfx.cast(f, 'ultimate');
+      }
       f.wasUlting = on;
     }
     this.flair.update(dtRaw, this.fighters, this.phase === 'fight');
@@ -495,8 +586,52 @@ export class Match {
     // mise en scène : le nombre s'envole et la gerbe part aux couleurs de
     // l'attaquant, quel que soit le canal de dégâts (y compris les silencieux)
     this.flair.hit(opts.x ?? target.x, opts.y ?? target.y, amt, source, target);
+    this.hitSound(source, opts, opts.x ?? target.x);
 
     if (target.hp <= 0) this.knockout(target, source);
+  }
+
+  /**
+   * **Le son d'un coup, quel que soit le canal.**
+   *
+   * Trois matières seulement, et c'est **la fiche de la source** qui les nomme
+   * (le Golem écrase, le Shinobi tranche, le Druide allume) :
+   *
+   *  • `hit` pour une touche d'arme — le geste principal du jeu ;
+   *  • `impact`, plus petit, pour tout ce qui arrive de loin. Il ne doit pas
+   *    couvrir une touche d'arme jouée dans la même image ;
+   *  • `ember` pour un tic de dégât sur la durée, commun à tout le roster : une
+   *    brûlure n'est le geste de personne, c'est un état.
+   *
+   * Une source qui n'est pas un combattant (une zone sans porteur) ne sonne
+   * pas : `sfx.cast` sort de lui-même sur une fiche sans bloc `sound`.
+   *
+   * **`opts.sound` passe outre**, et c'est nécessaire : le moteur ne reconnaît
+   * une touche d'arme qu'à `kind: 'melee'`, or une arme peut très bien ne pas
+   * passer par lui — les deux dagues de Neon Shadow sont intégrées par son
+   * module, qui appelle `damage` lui-même. Sans ce mot-là, le coup principal du
+   * personnage sonnait comme un projectile perdu. Même forme que `opts.kind` :
+   * un module l'écrit, le moteur s'en sert, et il ne sait pas pourquoi.
+   *
+   * @param {Fighter} source
+   * @param {{kind?:string, sound?:string}} opts les options de `damage()`
+   * @param {number} x abscisse du coup, pour le panoramique
+   */
+  hitSound(source, opts, x) {
+    if (!opts.sound && opts.kind === 'dot') {
+      sfx.play('ember', { x });
+      return;
+    }
+    sfx.cast(source, opts.sound ?? (opts.kind === 'melee' ? 'hit' : 'impact'), { x });
+  }
+
+  /**
+   * Deux corps qui se percutent. **Le son n'est celui de personne** — il naît
+   * entre les deux — donc il ne passe pas par une fiche : recette commune,
+   * jouée au point de contact.
+   */
+  bumpSound(a, b) {
+    sfx.play('bump', { x: (a.x + b.x) / 2 });
   }
 
   /** Facteur de mort subite (1 avant le seuil, croissant ensuite). */
@@ -516,6 +651,7 @@ export class Match {
     target.hp = Math.min(target.maxHp, target.hp + Math.max(0, amount));
     const healed = target.hp - before;
     if (healed > 0) {
+      sfx.play('heal', { x: target.x });
       this.fx.burst(target.x, target.y, 8, {
         color: [source?.el?.accent ?? '#4ade80', '#bbf7d0', '#ffffff'],
         speed: 150,
@@ -554,6 +690,9 @@ export class Match {
 
   /** Gerbe, anneau et secousse d'une mort. Extrait pour servir aux deux cas. */
   deathFx(loser) {
+    // le seul bruitage du banc qui dure presque une seconde : il tombe pendant
+    // le ralenti, et il a la place
+    sfx.play('ko', { x: loser.x });
     this.fx.burst(loser.x, loser.y, 60, {
       color: [loser.el.look.body, '#ffffff', loser.el.look.accent],
       speed: 520,
@@ -649,6 +788,40 @@ export class Match {
       });
     }
     this.shake(5, 0.3);
+
+    /**
+     * **L'annonce du vainqueur, demandée.** Elle part avec la parade, donc au
+     * même instant que le bandeau qui l'écrit : la voix et le texte disent la
+     * même chose en même temps, et la parade dure assez (2 s) pour que la
+     * phrase finisse avant l'écran de résultat.
+     *
+     * La fanfare est jouée **avant** la voix : `sfx.say` annule l'annonce en
+     * cours, jamais les bruitages, donc les deux se superposent comme voulu.
+     */
+    sfx.play('fanfare');
+    const noms = this.winnerLabels();
+    const T = UI[this.lang] ?? UI.ref;
+    sfx.say(noms.length > 1
+      ? T.speechWinners(T.speechSide(noms.map((n) => n.toLowerCase())))
+      : T.speechWinner(noms[0].toLowerCase()));
+  }
+
+  /**
+   * **Les noms à annoncer, un par personnage.**
+   *
+   * Dédoublonné par `el.id`, la même clé que les plaques de PV du HUD : le
+   * Shinobi et ses clones sont des combattants distincts du tableau — c'est
+   * tout l'intérêt du Clone d'ombre — mais ils partagent une fiche, donc
+   * `gagnants.map(label)` écrivait et disait « SHINOBI + SHINOBI ».
+   *
+   * Ce sont bien les **noms** qu'on dédoublonne, pas les vainqueurs :
+   * `this.winners` reste complet, donc les deux billes paradent toujours au
+   * centre. Il y a deux corps à l'écran, il n'y a qu'un personnage à nommer.
+   */
+  winnerLabels() {
+    const gagnants = this.winners ?? (this.winner ? [this.winner] : []);
+    const uniques = [...new Map(gagnants.map((f) => [f.el.id, f.el])).values()];
+    return uniques.map((el) => label(el, this.lang));
   }
 
   /** Anneaux et étincelles pendant les secondes de gloire. */
@@ -948,20 +1121,11 @@ export class Match {
     const T = UI[this.lang] ?? UI.ref;
     /**
      * **Un personnage n'est nommé qu'une fois, même s'il paradait à plusieurs
-     * corps.** Le Shinobi et ses clones sont des combattants distincts du
-     * tableau — c'est tout l'intérêt du Clone d'ombre — mais ils partagent une
-     * fiche, donc `gagnants.map(label)` écrivait « SHINOBI + SHINOBI WIN ».
-     *
-     * Le dédoublonnage se fait sur `el.id`, la même clé que celle qui groupe
-     * déjà les plaques de PV du HUD (`render/hud.js`) : deux corps d'un même
-     * combattant y font une seule plaque, ils doivent faire un seul nom.
-     *
-     * Ce sont bien les **noms** qu'on dédoublonne, pas les vainqueurs :
-     * `this.winners` reste complet, donc les deux billes paradent toujours au
-     * centre. Il y a deux corps à l'écran, il n'y a qu'un personnage à nommer.
+     * corps** — voir `winnerLabels()`, qui porte le dédoublonnage et la raison.
+     * Le bandeau et l'annonce parlée passent par **la même** liste : ils ne
+     * peuvent donc pas nommer deux choses différentes.
      */
-    const uniques = [...new Map(gagnants.map((f) => [f.el.id, f.el])).values()];
-    const noms = uniques.map((el) => label(el, this.lang));
+    const noms = this.winnerLabels();
     const texte = noms.length > 1 ? T.winners(noms.join(' + ')) : T.winner(noms[0]);
 
     const i = ARENA.inner;

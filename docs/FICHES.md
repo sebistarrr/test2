@@ -32,10 +32,11 @@ les recale en une commande.
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2372 |
 | 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2585 |
 | 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2797 |
-| La norme passe à 200 PV, le Golem à 400 | 2883 |
-| Équilibrage du roster | 2938 |
-| Règles communes (moteur) | 3036 |
-| Comment les mesures ont été prises | 3060 |
+| La norme passe à 200 PV, le Golem à 400 | 2884 |
+| Le son de chacun | 2939 |
+| Équilibrage du roster | 2987 |
+| Règles communes (moteur) | 3085 |
+| Comment les mesures ont été prises | 3109 |
 
 ## Comment lire une valeur
 
@@ -2935,6 +2936,54 @@ Le banc de DPS contre le Mannequin, lui, ne bouge pas d'un dixième (Pistolero
 2,5 PV/s) : le Mannequin ne riposte pas, donc doubler les PV des deux camps n'y
 change rien. **C'est ce qui prouve que le bouleversement vient de la durée, pas
 de la production.**
+
+## Le son de chacun
+
+**Demandé** : des bruitages, une annonce d'ouverture (« qui affronte qui »), une
+annonce du vainqueur, et **un son par action**.
+
+Chaque fiche porte donc un bloc `sound` : une **transposition** (`pitch`) et un
+nom de recette par créneau. Les recettes sont dans `src/data/sound.js` — de la
+synthèse, **aucun fichier audio** — et le mécanisme est décrit dans la section
+« Son » de `CLAUDE.md`.
+
+| | `pitch` | Tir | Touche | Pouvoir | Spécial | Ultime |
+| --- | --- | --- | --- | --- | --- | --- |
+| Pistolero | 1 | `gunshot` | `blade` | `click` (le rechargement) | `frost` | `riser` |
+| Ronin | 0,92 | — | `blade` | — (passif) | `fire` | `riser` |
+| Hoplite | 0,95 | — | `pierce` | `dash` | `hum` | `riser` + `zap` à l'impact |
+| Shinobi | 1,20 | `whoosh` | `blade` | `whoosh` | `summon` | `riser` |
+| Druide | 1,05 | `orb` | `blade` | — (passif) | `bloom` | `riser` |
+| Golem | **0,72** | `pebble` | `crunch` | `thud` | `crunch` | `quake` |
+| Neon Shadow | 1,15 | — | `blade` | `warp` | `zap` | `eclipse` |
+| Mannequin | 0,85 | — | — | — | — | — |
+
+Quatre choix qui ne se devinent pas :
+
+- **Le `pitch` fait tout le travail d'identité.** Le Golem est à 0,72 — presque
+  une demi-octave sous le roster, murs compris — et c'est le pendant sonore de
+  ce que sa fiche fait partout ailleurs : rayon 50 contre 41, 400 PV contre 200,
+  370 px/s contre 430. Il est plus lourd, il s'entend plus lourd, et **aucune
+  ligne de code ne le sait**.
+- **Un pouvoir passif n'a pas de son.** La Danse d'acier du Ronin et la Sève
+  montante du Druide sont des montées continues : il n'y a aucun instant à
+  sonoriser, et un son sur une pente serait un son sans geste.
+- **Le pouvoir du Pistolero sonne au *rechargement*, pas au tir.** La rafale
+  s'entend déjà, une détonation par balle ; le clic du barillet qu'on réarme
+  était le seul moment du personnage qui ne s'entendait pas — et c'est justement
+  le moment où il ne fait rien.
+- **L'Hoplite est le seul à avoir deux sons pour un pouvoir** (`riser` au
+  décollage, `zap` à la chute), par un créneau `strike` que son seul module lit.
+  La Foudre tombante a deux instants séparés par une seconde et demie ; un seul
+  son n'aurait pas pu dire les deux.
+
+L'annonceur, lui, passe par la **synthèse vocale du navigateur** et parle la
+langue de l'écran (clés `speech*` de `ui/lang.js`) : « pistolero versus ronin »
+puis « pistolero wins ». Les noms lui sont donnés **en minuscules**, parce
+qu'une voix de synthèse épelle volontiers un mot tout en capitales.
+
+**La matrice est restée identique au caractère près** après tout cela : le son
+ne lit que de l'état déjà calculé.
 
 ## Équilibrage du roster
 

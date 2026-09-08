@@ -139,6 +139,9 @@ export const windAbilities = {
    */
   castTornado(chef, groupe, now, game) {
     const a = chef.el.ability;
+    // une seule rafale s'entend, même quand cinq corps la jouent : c'est le
+    // chef qui la sonne, comme c'est lui qui avance l'horloge du groupe
+    game.sfx.cast(chef, 'ability');
     const t = a.tornado;
     const degats = t.damage(chef);
 
@@ -312,6 +315,7 @@ export const windAbilities = {
    */
   castClone(f, chef, game) {
     const sp = f.el.special;
+    game.sfx.cast(f, 'special');
     const behind = f.heading + Math.PI;
     const inner = ARENA.inner;
     const r = f.el.look.radius;

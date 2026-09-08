@@ -122,6 +122,9 @@ export const mageAbilities = {
     f.state.specCd -= dt;
     if (f.state.specCd <= 0) {
       f.state.spec = sp.duration;
+      // c'est l'**enracinement** qu'on sonne, pas le tir : le grand coup part
+      // une seconde plus tard avec le son propre de l'orbe majeure
+      game.sfx.cast(f, 'special');
       return;
     }
 

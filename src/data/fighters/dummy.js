@@ -102,6 +102,27 @@ export const DUMMY = fiche({
   },
 
   /**
+   * **Bruitages : presque rien, et c'est encore le sujet.** Il n'a ni arme, ni
+   * projectile, ni pouvoir — donc aucune action à sonoriser. Il ne lui reste
+   * que ses rebonds sur les murs, et c'est exactement ce qu'on veut : **le son
+   * du duel doit être celui de l'autre**, comme l'image.
+   *
+   * Le grave (`0.85`) lui donne le creux d'un sac de frappe. Les touches qu'il
+   * encaisse, elles, sonnent aux couleurs de l'adversaire — c'est la fiche de
+   * la **source** qui décide du son d'un coup, pas celle de la cible.
+   */
+  sound: {
+    pitch: 0.85,
+    shot: null,
+    hit: null,
+    impact: null,
+    bounce: 'thud',
+    ability: null,
+    special: null,
+    ultimate: null,
+  },
+
+  /**
    * **Il se déplace, mais il ne poursuit personne.** `seek: 0` — comme
    * l'Hoplite, il file droit et ne change de cap qu'aux rebonds. C'est le
    * réglage qui sert la démonstration : une cible **mobile** montre les

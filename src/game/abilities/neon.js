@@ -233,6 +233,13 @@ export const neonAbilities = {
         f.stacks = Math.min(b.cap, f.stacks + b.gain);
         game.damage(g, degats, f, {
           kind: 'blade',
+          /**
+           * **C'est bien une touche d'arme**, même si le moteur n'en sait
+           * rien : ses deux lames sont intégrées ici, pas par lui. Sans ce
+           * mot, `Match.hitSound` ne voyait pas `kind: 'melee'` et son coup
+           * principal sonnait comme un projectile perdu.
+           */
+          sound: 'hit',
           x: lame.x,
           y: lame.y,
           nx: g.x - lame.x,
@@ -265,6 +272,7 @@ export const neonAbilities = {
    * expirer avant le module qui le pilote.
    */
   castStep(f, game) {
+    game.sfx.cast(f, 'ability');
     const a = f.el.ability;
     f.state.step = a.duration;
     f.offstage = a.duration + 0.1;
@@ -376,6 +384,9 @@ export const neonAbilities = {
   /** Déclenchement : dégâts, chaînes de fumée, flash violet. */
   springRift(f, cible, now, game) {
     const sp = f.el.special;
+    // c'est le **déclenchement** qui sonne, pas la pose : l'orbe posé au sol
+    // attend en silence, et c'est ce silence qui rend le piège surprenant
+    game.sfx.cast(f, 'special', { x: f.state.riftX });
     game.damage(cible, sp.damage, f, {
       kind: 'rift',
       x: f.state.riftX,

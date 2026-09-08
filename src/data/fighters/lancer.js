@@ -207,6 +207,31 @@ export const LANCER = fiche({
     accent: '#f0b400',
   },
 
+  /**
+   * **Bruitages** (recettes dans `data/sound.js`). Sa touche est un `pierce` et
+   * non un `blade` : 164 px de portée, une pointe, et le son doit dire *piqué*
+   * là où le Ronin dit *tranché*.
+   */
+  sound: {
+    pitch: 0.95,
+    shot: null,
+    hit: 'pierce',
+    impact: 'impact',
+    bounce: 'thud',
+    /** La charge : un souffle qui monte, posé au départ de la ruée. */
+    ability: 'dash',
+    /** Le dôme est une nappe entretenue, donc un bourdon et pas un impact. */
+    special: 'hum',
+    /** La montée est celle du **bond** : l'ultime commence par un décollage. */
+    ultimate: 'riser',
+    /**
+     * **Créneau propre à l'Hoplite**, lu par son seul module : la Foudre
+     * tombante a deux instants, et un seul son n'aurait pas pu dire les deux.
+     * `riser` part au décollage, `zap` à l'arrivée.
+     */
+    strike: 'zap',
+  },
+
   /** Mesuré 432 px/s (médiane de 37 segments rectilignes, bille isolée par
    *  érosion pour ne pas suivre la lance) → ×1,25 = 540. **Gardé tel quel**,
    *  contrairement au Hors-la-loi et au Bretteur qui ont dû être ralentis :

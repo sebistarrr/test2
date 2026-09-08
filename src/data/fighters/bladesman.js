@@ -98,6 +98,26 @@ export const BLADESMAN = fiche({
     accent: '#f97316',
   },
 
+  /**
+   * **Bruitages** (recettes dans `data/sound.js`). Un cran sous le Pistolero :
+   * la lame est plus grave que le revolver, et c'est ce qui les sépare à
+   * l'oreille quand les deux frappent dans la même seconde.
+   *
+   * **Pas de son de pouvoir** : la Danse d'acier est un *passif*, la rotation
+   * qui monte toute seule. Il n'y a aucun instant à sonoriser — un son sur une
+   * montée continue serait un son sans geste.
+   */
+  sound: {
+    pitch: 0.92,
+    shot: null, // il n'a aucun projectile
+    hit: 'blade',
+    impact: 'impact',
+    bounce: 'thud',
+    ability: null,
+    special: 'fire',
+    ultimate: 'riser',
+  },
+
   /** Mesuré 605 px/s (médiane de 49 segments rectilignes) → ×1,25 = 756.
    *  Calé à 560 : c'est le combattant le plus rapide du roster, ce que dit le
    *  relevé, sans aller jusqu'aux 756 px/s qu'une lame de 152 px de portée

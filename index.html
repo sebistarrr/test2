@@ -21,6 +21,10 @@
          en coordonnées logiques 720x1280 identiques à la vidéo de référence. -->
     <canvas id="stage" width="720" height="1280" aria-label="Duel arena"></canvas>
 
+    <!-- Coupure du son. Il n'a pas de texte : son libellé est son aria-label,
+         posé par `ui/lang.js` et réécrit à chaque bascule par `main.js`. -->
+    <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="Mute the sound">🔊</button>
+
     <!-- Écran de sélection (DOM, superposé au canvas) -->
     <section id="screen-select" class="screen" aria-label="Fighter selection">
       <h1 class="select-title">CHOOSE YOUR FIGHTERS</h1>

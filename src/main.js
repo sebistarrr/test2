@@ -8,6 +8,7 @@
  *                     écrans DOM (par défaut : l'anglais de la vidéo)
  *   ?debug=1          hitboxes + compteurs
  *   ?rec=0            n'enregistre pas le duel (pas d'export, mais zéro coût)
+ *   ?sound=0          duel muet — bruitages **et** annonces
  *
  * @module main
  */
@@ -24,6 +25,7 @@ import { createResultScreen } from './ui/result.js';
 import { createRecorder, createNullRecorder } from './render/recorder.js';
 import { UI, applyStaticLabels } from './ui/lang.js';
 import { MATCH } from './data/tuning.js';
+import { sfx } from './render/audio.js';
 
 const params = new URLSearchParams(location.search);
 const LANG = params.get('lang') === 'fr' ? 'fr' : 'ref';
@@ -32,6 +34,8 @@ const T = UI[LANG];
 const DEBUG = params.get('debug') === '1';
 /** Le film du duel coûte un peu de fil principal : `?rec=0` le coupe net. */
 const RECORD = params.get('rec') !== '0';
+/** `?sound=0` : duel muet d'emblée, bruitages **et** annonces. */
+const SOUND = params.get('sound') !== '0';
 
 const canvas = document.querySelector('#stage');
 const stage = createStage(canvas);
@@ -56,6 +60,52 @@ const loop = createLoop({
 // HTML et la table de ui/lang.js ne puissent pas diverger en silence
 applyStaticLabels(document, LANG);
 
+/* --------------------------------------------------------------- */
+/*  Son                                                             */
+/* --------------------------------------------------------------- */
+
+// L'annonceur parle la langue de l'écran : une voix anglaise sur une interface
+// française serait exactement la moitié d'écran que `ui/lang.js` interdit.
+sfx.setLang(LANG);
+sfx.setMuted(!SOUND);
+
+// poignée de debug, posée dès le chargement et non au premier duel : le son
+// s'ouvre et se coupe depuis l'écran de sélection, donc bien avant qu'il y ait
+// un `__match` à inspecter. `tools/sound-check.mjs` s'en sert.
+globalThis.__sfx = sfx;
+
+/**
+ * **Le son ne s'ouvre qu'à un vrai geste.** Les navigateurs refusent de faire
+ * sonner une page que personne n'a touchée ; un `AudioContext` créé au
+ * chargement naît suspendu et reste muet **même une fois le duel lancé**, sans
+ * la moindre erreur en console. On le crée donc au premier clic ou à la
+ * première touche.
+ *
+ * L'écoute n'est pas `once` : le contexte peut retomber en suspens quand
+ * l'onglet passe en arrière-plan, et `unlock()` le réveille aussi. C'est deux
+ * comparaisons par clic.
+ */
+const ouvrirLeSon = () => sfx.unlock();
+document.addEventListener('pointerdown', ouvrirLeSon, { passive: true });
+document.addEventListener('keydown', ouvrirLeSon, { passive: true });
+
+const soundBtn = document.querySelector('#btn-sound');
+/** Icône, état ARIA et libellé du bouton — les trois vont ensemble. */
+function refreshSoundBtn() {
+  if (!soundBtn) return;
+  soundBtn.textContent = sfx.muted ? '🔇' : '🔊';
+  soundBtn.setAttribute('aria-pressed', String(sfx.muted));
+  soundBtn.setAttribute('aria-label', sfx.muted ? T.soundUnmute : T.soundMute);
+}
+soundBtn?.addEventListener('click', () => {
+  sfx.setMuted(!sfx.muted);
+  refreshSoundBtn();
+  // un clic pour dire que le son est revenu : sans lui, remettre le son au
+  // milieu d'une seconde calme ne produit rien et se lit comme une panne
+  if (!sfx.muted) sfx.play('click');
+});
+refreshSoundBtn();
+
 const selectScreen = createSelectScreen({
   root: document.querySelector('#screen-select'),
   onStart: (ids, teams) => startMatch(ids, undefined, teams),
@@ -71,6 +121,9 @@ const resultScreen = createResultScreen({
   onExport: () => recorder.download(`duel-${lastPair.join('-')}-seed${lastSeed}`),
   lang: LANG,
   onBack: () => {
+    // une annonce de victoire ne doit pas suivre le joueur sur l'écran de
+    // sélection : la voix est la seule chose du jeu qui survivrait à `stop()`
+    sfx.silence();
     resultScreen.hide();
     loop.stop();
     recorder.reset();
@@ -170,6 +223,9 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     loop.stop();
     recorder.pause();
+    // le duel s'arrête, l'annonceur aussi — la synthèse vocale, elle, continue
+    // de parler dans un onglet caché
+    sfx.silence();
   } else {
     recorder.resume();
     loop.start();

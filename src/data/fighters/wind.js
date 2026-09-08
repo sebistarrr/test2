@@ -91,6 +91,28 @@ export const WIND = fiche({
     accent: '#8f8f99',
   },
 
+  /**
+   * **Bruitages** (recettes dans `data/sound.js`). Le plus haut du roster —
+   * c'est le personnage le plus rapide et le plus léger, et une hauteur au
+   * dessus de tous les autres est ce qui le dit en un coup.
+   *
+   * Attention en le modifiant : **les clones partagent cette fiche**, donc ils
+   * partagent ce timbre. C'est voulu — un clone est le même personnage — et
+   * c'est aussi pourquoi le garde-fou de répétition de `data/sound.js` compte :
+   * cinq corps qui frappent dans la même image ne doivent faire qu'un son.
+   */
+  sound: {
+    pitch: 1.2,
+    shot: 'whoosh',
+    hit: 'blade',
+    impact: 'impact',
+    bounce: 'thud',
+    /** La rafale de tornade : de l'air, rien d'autre. */
+    ability: 'whoosh',
+    special: 'summon',
+    ultimate: 'riser',
+  },
+
   // le plus rapide et le plus manœuvrant du roster (observé)
   movement: { speed: 500, turnRate: 2.2, seek: 0.4 },
 

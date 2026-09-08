@@ -88,10 +88,33 @@ export const UI = {
     /** @param {number} hp @param {string} dur @param {number} hits @param {number} seed */
     resultDetail: (hp, dur, hits, seed) =>
       `${hp} HP left · ${dur} s duel · ${hits} hits · seed ${seed}`,
+    // --- annonces parlées (render/audio.js)
+    /**
+     * **Ce que dit l'annonceur, et rien d'autre ne le dit.** Ces quatre entrées
+     * sont écrites pour être *entendues*, pas lues : pas de capitales (une voix
+     * de synthèse épelle un mot tout en majuscules comme un sigle), pas de
+     * ponctuation décorative, et des mots pleins là où l'écran se contente d'un
+     * signe. C'est pour cela qu'elles ne réutilisent pas `winner`/`winners`.
+     *
+     * @param {string[]} noms les combattants d'un même camp
+     */
+    speechSide: (noms) => noms.join(' and '),
+    /** @param {string[]} cotes un texte par camp */
+    speechVersus: (cotes) => cotes.join(' versus '),
+    /** @param {string} nom */
+    speechWinner: (nom) => `${nom} wins`,
+    /** Deux vainqueurs ou plus : l'accord change, comme au bandeau. */
+    speechWinners: (noms) => `${noms} win`,
     exportDone: 'Video downloaded — ready for YouTube Shorts.',
     exportUnsupported: 'Video export is not available in this browser.',
     /** @param {string} ext @param {string} mb */
     exportReady: (ext, mb) => `Vertical 1080 × 1920 · ${ext} · ${mb} MB`,
+    // --- son
+    /** Le bouton ne porte qu'une icône : ces deux libellés sont son `aria-label`,
+     *  et ils changent avec son état — c'est le seul texte d'interface qui le
+     *  fasse, d'où deux clés au lieu d'une. */
+    soundMute: 'Mute the sound',
+    soundUnmute: 'Turn the sound back on',
     // --- accessibilité
     ariaStage: 'Duel arena',
     ariaSelect: 'Fighter selection',
@@ -150,9 +173,16 @@ export const UI = {
     winners: (names) => `${names} L’EMPORTENT`,
     resultDetail: (hp, dur, hits, seed) =>
       `${hp} PV restants · duel de ${dur} s · ${hits} touches · seed ${seed}`,
+    // --- annonces parlées (voir le commentaire côté anglais)
+    speechSide: (noms) => noms.join(' et '),
+    speechVersus: (cotes) => cotes.join(' contre '),
+    speechWinner: (nom) => `${nom} l’emporte`,
+    speechWinners: (noms) => `${noms} l’emportent`,
     exportDone: 'Vidéo téléchargée — prête pour YouTube Shorts.',
     exportUnsupported: 'Export vidéo indisponible sur ce navigateur.',
     exportReady: (ext, mb) => `Vertical 1080 × 1920 · ${ext} · ${mb} Mo`,
+    soundMute: 'Couper le son',
+    soundUnmute: 'Remettre le son',
     ariaStage: 'Arène de duel',
     ariaSelect: 'Sélection des combattants',
     ariaRoster: 'Combattants disponibles',
@@ -207,6 +237,9 @@ export function applyStaticLabels(root, lang) {
   set('#btn-back', t.back);
   set('noscript p', t.noscript);
 
+  // Le bouton de son n'a pas de texte : son libellé *est* son `aria-label`, et
+  // `main.js` le réécrit à chaque bascule.
+  aria('#btn-sound', t.soundMute);
   aria('#stage', t.ariaStage);
   aria('#screen-select', t.ariaSelect);
   aria('#roster', t.ariaRoster);

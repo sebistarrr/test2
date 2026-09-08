@@ -24,9 +24,11 @@ export class Fighter {
    *   vidéo**. Au-delà de deux combattants ces deux points ne suffisent plus et
    *   c'est `Match` qui répartit l'anneau, mais le duel repasse exactement par
    *   la valeur d'origine.
-   * @param {number} [maxHp] points de vie de départ. 100 par défaut, la valeur
-   *   du cahier des charges ; réglable par combattant depuis l'écran de
-   *   sélection ou l'URL.
+   * @param {number} [maxHp] points de vie de départ. La norme (`MATCH.maxHp`,
+   *   200) par défaut ; une fiche peut porter les siens (le Golem, 400) et un
+   *   module peut en imposer à un combattant qu'il fait entrer (le Clone
+   *   d'ombre, 50). Ce n'est pas une option de partie : le curseur de PV a été
+   *   retiré du dépôt.
    */
   constructor(element, slot, rng, spawn = MATCH.spawn[slot], maxHp = MATCH.maxHp) {
     this.el = element;

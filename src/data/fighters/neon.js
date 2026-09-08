@@ -121,6 +121,24 @@ export const NEON = fiche({
   },
 
   /**
+   * **Bruitages** (recettes dans `data/sound.js`). Le plus haut avec le Shinobi,
+   * mais pour l'inverse : lui n'est pas léger, il est *irréel*. Ses deux sons
+   * propres sont des balayages — `warp` monte quand il disparaît, `eclipse`
+   * descend quand la lumière s'en va — là où tout le reste du roster frappe.
+   */
+  sound: {
+    pitch: 1.15,
+    shot: null, // ses lames ne sont pas des projectiles : le module les intègre
+    hit: 'blade',
+    impact: 'impact',
+    bounce: 'thud',
+    ability: 'warp',
+    special: 'zap',
+    /** L'unique usage de `eclipse`, et la seule recette descendante du banc. */
+    ultimate: 'eclipse',
+  },
+
+  /**
    * **Il glisse.** Rapide et très manœuvrant (2,4 rad/s, le plus haut du
    * roster), mais `seek` modéré : il ne fonce pas droit sur sa cible, il
    * l'aborde en courbe — ce qui sert la lecture des images fantômes, qui ne

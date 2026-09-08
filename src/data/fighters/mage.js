@@ -64,6 +64,24 @@ export const MAGE = fiche({
   },
 
   /**
+   * **Bruitages** (recettes dans `data/sound.js`). Le seul du roster dont le
+   * tir n'a **aucun transitoire** : une orbe ne claque pas, elle s'allume.
+   * C'est la recette `orb`, deux sinus qui montent, et c'est ce qui le rend
+   * reconnaissable au milieu d'une mêlée de métal et de pierre.
+   */
+  sound: {
+    pitch: 1.05,
+    shot: 'orb',
+    hit: 'blade',
+    impact: 'impact',
+    bounce: 'thud',
+    /** La Sève montante est un passif : aucun instant à sonoriser. */
+    ability: null,
+    special: 'bloom',
+    ultimate: 'riser',
+  },
+
+  /**
    * **Le plus rapide du roster**, et c'est le relevé qui le dit : 548 px/s de
    * médiane sur 258 couples d'images (p25 507, p75 629), contre 521 pour le
    * Dragoon dans la **même** vidéo — dont on sait par ailleurs qu'il vaut
@@ -378,6 +396,9 @@ export const MAGE = fiche({
     greatOrb: {
       label: 'Orbe majeure',
       labelRef: 'Greater Orb',
+      /** Son propre au projectile, à la place du `shot` de la fiche : l'orbe
+       *  majeure vaut trois orbes, elle doit s'entendre plus grosse. */
+      sound: 'bloom',
       sprite: 'mageOrb',
       scale: 4, // même carte de 11 px, dessinée deux fois plus grand que l'orbe
       speed: 620,

@@ -105,6 +105,52 @@ body {
 }
 
 /* ---------------------------------------------------------------
+   Coupure du son
+   ---------------------------------------------------------------
+   Posé sur le canvas, en haut à droite, **au-dessus des écrans DOM**
+   (`z-index` : les écrans de sélection et de fin couvrent toute la scène et
+   l'enterreraient) : le son doit pouvoir se couper à tout moment, y compris
+   pendant une annonce de victoire, écran de résultat affiché.
+
+   Il est volontairement discret — 3,4 % de la largeur, presque transparent au
+   repos : l'arène est le sujet, et la bande au-dessus d'elle porte le titre du
+   duel. */
+.sound-btn {
+  position: absolute;
+  top: 1.4%;
+  right: 1.6%;
+  z-index: 2;
+  width: 7.4%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  /**
+   * 3,4 % de la largeur du canvas, **sans conteneur de requête**. Les écrans
+   * DOM peuvent écrire en `cqw` parce qu'ils déclarent `container-type` ; ce
+   * bouton, lui, est posé sur `#app`, et faire de `#app` un conteneur lui
+   * imposerait `contain: inline-size` alors que sa largeur est justement
+   * déduite de sa hauteur et de son ratio. On refait donc le calcul de `#app`
+   * à la main : sa largeur vaut `min(56.25dvh, 100vw)`.
+   */
+  font-size: min(1.91dvh, 3.4vw);
+  line-height: 1;
+  color: var(--on-paper);
+  background: rgba(0, 0, 0, 0.28);
+  border: 2px solid rgba(244, 237, 220, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 120ms linear, transform 120ms ease-out;
+}
+
+.sound-btn:hover,
+.sound-btn:focus-visible {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+/* ---------------------------------------------------------------
    Écrans superposés
    --------------------------------------------------------------- */
 .screen {

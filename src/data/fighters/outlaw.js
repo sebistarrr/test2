@@ -175,6 +175,32 @@ export const OUTLAW = fiche({
     accent: '#8fd0ee',
   },
 
+  /**
+   * **Bruitages** — les recettes sont dans `data/sound.js`, la fiche ne fait
+   * que les nommer, exactement comme elle nomme ses sprites et ses couleurs.
+   *
+   * `pitch: 1` : c'est lui la référence de hauteur du roster, et c'est mérité —
+   * la détonation est le son le plus reconnaissable du jeu, tous les autres se
+   * placent par rapport à elle.
+   */
+  sound: {
+    pitch: 1,
+    shot: 'gunshot',
+    /** Le Peacemaker frappe de la crosse, pas de la balle : du métal sec. */
+    hit: 'blade',
+    impact: 'impact',
+    bounce: 'thud',
+    /**
+     * **Le percuteur qu'on réarme, pas un tir.** La rafale du Six-Shooter
+     * s'entend déjà, une détonation par balle : lui donner en plus un son de
+     * pouvoir ferait deux bruits pour un seul geste. Ce clic-là est celui du
+     * **rechargement**, le moment où le barillet vrille et où il ne tire plus.
+     */
+    ability: 'click',
+    special: 'frost',
+    ultimate: 'riser',
+  },
+
   /** Mesuré 483 px/s (médiane de 57 segments rectilignes) → ×1,25 = 604.
    *  Calé à 455 (à 604 px/s dans cette arène le pistolero traverse le cadre
    *  plus vite qu'il ne recharge, et la matrice le fait gagner partout), puis
@@ -385,6 +411,13 @@ export const OUTLAW = fiche({
     iceShard: {
       label: 'Éclat de givre',
       labelRef: 'Frost Shard',
+      /**
+       * **Un projectile peut avoir son propre son**, sinon il prend le `shot`
+       * de la fiche. Ici il le faut : le Champ de givre crache des éclats à la
+       * volée, et les faire détoner au revolver ferait entendre un chargeur
+       * infini. `pebble` est sec et court, il s'empile sans saturer.
+       */
+      sound: 'pebble',
       sprite: 'iceShard',
       scale: 2.4,
       speed: 380,

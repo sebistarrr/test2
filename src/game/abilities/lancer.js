@@ -333,6 +333,7 @@ export const lancerAbilities = {
   dash(f, game) {
     const L = f.el.weapon.lunge;
     this.setPhase(f, 'dash');
+    game.sfx.cast(f, 'ability');
     /**
      * **La charge est strictement linéaire.** Le cap est réécrit à chaque pas
      * et la vitesse est un facteur constant, donc la trajectoire est déjà une
@@ -469,6 +470,13 @@ export const lancerAbilities = {
     const target = f.opponent;
 
     f.state.jump = 'ground';
+    /**
+     * **La foudre tombe ici, donc elle sonne ici.** Le moteur a déjà joué la
+     * montée (`ultimate`) au décollage, ce qui est le bon son pour un
+     * combattant qui part en l'air ; l'arrivée est autre chose, et une seule
+     * fois — pas une par victime, contrairement aux dégâts qui suivent.
+     */
+    game.sfx.cast(f, 'strike');
     f.ult.active = 0;
     f.offstage = 0;
     f.state.mark = null;
@@ -577,6 +585,7 @@ export const lancerAbilities = {
   /** Incantation : le dôme se fige à l'endroit où le Lancier se trouve. */
   castTether(f, game) {
     const sp = f.el.special;
+    game.sfx.cast(f, 'special');
     f.state.spec = sp.duration;
     f.state.tetherTick = 0;
     f.state.dome = { x: f.x, y: f.y, r: sp.dome.radius };

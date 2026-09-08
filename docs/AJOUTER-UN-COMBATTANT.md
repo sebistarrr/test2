@@ -51,6 +51,7 @@ export const CRYSTAL = fiche({
   tagline: '…',           taglineRef: '…',
   icon: 'iconCrystal',
   look: { body, hpColor, outline, accent, aura, flair, trail },
+  sound: { pitch, shot, hit, impact, bounce, ability, special, ultimate },
   movement: { speed, turnRate, seek },
   weapon: { name, nameRef, reach, spin: SPIN, spinDir, handle, head, hitbox, melee },
   ability: { id, name, nameRef, cooldown, … },
@@ -70,6 +71,11 @@ Trois règles qui coûtent cher à rattraper :
   retomber sur la portée, sinon le dessin ment sur la hitbox. La largeur
   dessinée vaut `map.w × head.scale` ; `handle.length` peut être négatif (talon
   derrière le pivot, ou sprite centré sur la bille — voir le Shinobi).
+- **Le bloc `sound` aussi**, sinon le combattant est **muet** : `pitch` le
+  transpose tout entier, et chaque créneau nomme une recette de
+  `src/data/sound.js` (`null` si le créneau n'existe pas — un pouvoir passif n'a
+  aucun instant à sonoriser). Rien ne plante sans lui, rien ne se voit à
+  l'écran : c'est `tools/sound-check.mjs` qui le dit.
 - **Les champs `Ref` sont obligatoires.** L'application est en anglais, le
   dépôt en français ; `label()` a un repli silencieux qui évite le plantage
   mais pas un écran à moitié traduit. `lang-check` les vérifie.
@@ -81,9 +87,9 @@ Trois règles qui coûtent cher à rattraper :
 Deux clés facultatives, qui ne servent qu'à qui y déroge :
 
 - **`maxHp`** — points de vie de départ, lus par `Match` (`el.maxHp ??
-  MATCH.maxHp`). Absente, le combattant part des 100 du cahier des charges ; le
-  Golem porte 200. Rien dans le rendu ne divise par une constante, tout divise
-  par `Fighter.maxHp`, donc il n'y a rien d'autre à toucher.
+  MATCH.maxHp`). Absente, le combattant suit la norme de 200 ; le Golem porte
+  400. Rien dans le rendu ne divise par une constante, tout divise par
+  `Fighter.maxHp`, donc il n'y a rien d'autre à toucher.
 - **`look.radius`** — rayon du corps, 41 par défaut, 50 chez le Golem. Un corps
   plus large est **plus facile à toucher** : c'est un réglage d'équilibrage
   autant qu'un choix de dessin.
@@ -127,6 +133,7 @@ python3 -m http.server 8085 &          # requis par les outils Playwright
 node tools/fiche-snapshot.mjs > /tmp/avant.txt   # AVANT de toucher aux données
 node tools/fiche-check.mjs             # câblage, sprites, fiche ↔ module
 node tools/lang-check.mjs              # les deux moitiés de chaque libellé
+node tools/sound-check.mjs             # aucune action muette, aucune recette morte
 node tools/matrix.mjs > /tmp/a.txt && diff tools/matrix-reference.txt /tmp/a.txt
 node tools/shot.mjs "?a=<id>&b=outlaw&seed=11" /tmp/s 4,10
 ```

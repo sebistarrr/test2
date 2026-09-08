@@ -255,6 +255,7 @@ export const bladesmanAbilities = {
   /** Incantation : nova de cubes orange, reprise de `fire.js` (`castRage`). */
   castInfernalRage(f, game) {
     const sp = f.el.special;
+    game.sfx.cast(f, 'special');
     f.state.spec = sp.duration;
     f.state.rageAuraTick = 0;
 

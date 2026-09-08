@@ -106,6 +106,7 @@ export const golemAbilities = {
    */
   castShockwave(f, now, game) {
     const a = f.el.ability;
+    game.sfx.cast(f, 'ability');
     game.fx.ring(f.x, f.y, f.radius, a.ring.to, a.ring.time, a.ring.color, a.ring.width, false);
     game.shake(5, 0.25);
 
@@ -139,6 +140,9 @@ export const golemAbilities = {
    */
   castShards(f, game) {
     const sp = f.el.special;
+    // la roche qui se détache de lui ; les huit éclats sonnent ensuite
+    // eux-mêmes, chacun par `Projectiles.spawn`
+    game.sfx.cast(f, 'special');
     const base = game.rng.range(0, TAU);
 
     for (let i = 0; i < sp.count; i++) {
