@@ -22,19 +22,19 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 37 |
-| 📦 Archive — les huit éléments supprimés | 74 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 148 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 938 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 965 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1222 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1787 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2279 |
-| 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2492 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2705 |
-| Équilibrage du roster | 2791 |
-| Règles communes (moteur) | 2889 |
-| Comment les mesures ont été prises | 2913 |
+| Comment lire une valeur | 39 |
+| 📦 Archive — les huit éléments supprimés | 76 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 150 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 940 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1011 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1268 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1833 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2324 |
+| 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2537 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2749 |
+| Équilibrage du roster | 2835 |
+| Règles communes (moteur) | 2933 |
+| Comment les mesures ont été prises | 2957 |
 
 ## Comment lire une valeur
 
@@ -963,6 +963,50 @@ citée entre parenthèses.
 | HUD | `Damage: 3.00 → 5.50` (+0,10 **au coup au but**, pas au coup tiré) et `Ammo: n/6` | mesuré |
 
 ---
+
+### DPS ×1,5 et barillet de 6 à 10
+
+**Demandé**, et les deux se mesurent séparément parce qu'ils ne font pas la
+même chose.
+
+**Le barillet ne change presque rien au DPS.** 6 → 10 balles : 4,222 → 4,199
+PV/s contre le Mannequin, soit rien du tout. Le calcul le confirme — à 0,6 s
+entre deux tirs et 0,7 s de rechargement, un cycle de six balles dure 4,3 s
+(1,40 tir/s) et un cycle de dix en dure 6,7 (1,49 tir/s). **+6 % de cadence**,
+noyés dans sa dispersion. Il fallait le mesurer avant de toucher aux dégâts,
+sinon on aurait cumulé deux hausses en croyant n'en faire qu'une.
+
+C'est un **écart assumé au relevé** : la vidéo montre « Ammo: n/6 », et le nom
+même de l'arme (`Six-Shooter`) le dit. Le HUD écrivait « /6 » en dur à deux
+endroits — il lit désormais `ability.magazine`, sans quoi il aurait menti.
+
+**Le ×1,5 de DPS a demandé ×1,78 sur les dégâts, et c'est instructif.** Toutes
+ses sources ont été échelonnées ensemble (pile de dégâts, éclats de givre 2 → 3,
+tic du Champ de givre 1 → 1,5) — et à ×1,5 sur tout, le DPS n'est monté que de
+×1,377.
+
+La cause est une **boucle de rétroaction** : ses dégâts montent avec la pile
+(+0,178 par touche), donc un duel plus court lui laisse **moins de temps pour
+monter en puissance**. Plus on augmente ses dégâts, plus il tue vite, moins sa
+pile a le temps de servir. Le levier sature visiblement — sur la fin, +1,7 % de
+dégâts n'ont rendu que +0,4 % de DPS.
+
+Mesuré sur 20 duels contre le Mannequin (les 3 seeds de la matrice sont trop
+bruités pour ça, ils donnaient 6,2 là où le banc donne 5,5) :
+
+| | Avant | Après |
+| --- | --- | --- |
+| Production | 3,752 PV/s | **5,547 PV/s** |
+| Rapport | — | **×1,48** |
+| Temps pour tuer 200 PV | 53,3 s | 36,1 s |
+
+**Conséquence d'équilibrage, à connaître.** Il passe de **20 victoires sur 60**
+(le dernier du roster) à **117 sur 120** — 20 duels sur 21 dans la matrice
+officielle. Il ne manquait donc à ce personnage que des dégâts : sa survie était
+déjà là, il ne mourait pas, il n'arrivait simplement pas à conclure. Multiplier
+sa production par 1,5 ne l'a pas rendu correct, ça l'a rendu dominant.
+
+L'écart du roster passe de 8-14 à **7-20**. C'est assumé et non corrigé.
 
 ## ⚔ RONIN — `bladesman` (affiché « RONIN »)
 

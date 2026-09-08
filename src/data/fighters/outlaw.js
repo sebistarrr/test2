@@ -207,7 +207,7 @@ export const OUTLAW = fiche({
     melee: {
       /** Mesuré : la stat « Damage » part de 3,00 et monte de 0,10 par coup
        *  au but. Elle sert **à la fois** au tir et au coup à bout portant. */
-      damage: (f) => Math.max(3, Math.round(f.stacks)),
+      damage: (f) => Math.max(5.35, Math.round(f.stacks)),
       /** Calé, et c'est le verrou le plus long du roster : le canon étant
        *  asservi à l'adversaire, il est **toujours** aligné, donc ce verrou est
        *  la seule chose qui limite le coup à bout portant. À 1,5 s, le
@@ -215,7 +215,7 @@ export const OUTLAW = fiche({
       cooldown: 3,
       knockback: 240,
       selfRecoil: 119, // mesuré : recul de 95 px/s hors ultime → ×1,25
-      onHit: { stackGain: 0.1, stackMax: 8 }, // mesuré : +0,10 par coup au but
+      onHit: { stackGain: 0.178, stackMax: 14.3 }, // mesuré : +0,10 par coup au but
     },
   },
 
@@ -226,7 +226,19 @@ export const OUTLAW = fiche({
     nameRef: 'Six-Shooter',
     /** Mesuré : ~18 images entre deux décréments d'`Ammo` à 30 fps. */
     cooldown: 0.6,
-    magazine: 6, // mesuré : le HUD affiche « Ammo: n/6 »
+    /**
+     * **6 → 10 balles, demandé.** C'est un **écart assumé au relevé** : la
+     * vidéo montre « Ammo: n/6 », six chambres, et le nom même de l'arme
+     * (`Six-Shooter`) le dit. On ne réécrit pas la mesure, on s'en écarte
+     * volontairement — même régime que le rechargement divisé par deux
+     * juste en dessous.
+     *
+     * Conséquence à ne pas manquer : le barillet **augmente le DPS à lui
+     * seul**, en réduisant la part du duel passée à recharger. Il fallait
+     * donc le mesurer avant de toucher aux dégâts, sinon on aurait cumulé
+     * deux hausses en croyant n'en faire qu'une.
+     */
+    magazine: 10,
     /** Le rechargement est le trou observé entre `0/6` et `6/6` : 1,4 s
      *  mesuré. **Divisé par deux sur demande** — c'est donc un écart assumé au
      *  relevé, pas une nouvelle mesure. Le tour de vrille du pistolet suit
@@ -336,7 +348,7 @@ export const OUTLAW = fiche({
       follows: true, // le champ suit le porteur
       slow: 0.35,
       tickInterval: 0.7,
-      tickDamage: 1,
+      tickDamage: 1.5,
     },
     snow: { count: 90, fall: 46, drift: 22, color: 'rgba(186,230,253,0.9)' },
     /**
@@ -360,7 +372,7 @@ export const OUTLAW = fiche({
       sprite: 'iceShard',
       scale: 2.4,
       speed: 380,
-      damage: 2,
+      damage: 3,
       radius: 10,
       life: 3.4,
       bounces: 2, // les éclats ricochent sur les murs (observé sur la Glace)
@@ -392,7 +404,7 @@ export const OUTLAW = fiche({
        *  et la dispersion redevient le seul garde-fou de la précision. */
       speed: 936,
       /** Mêmes dégâts que le coup à bout portant : c'est la même stat. */
-      damage: (f) => Math.max(3, Math.round(f.stacks)),
+      damage: (f) => Math.max(5.35, Math.round(f.stacks)),
       radius: 8, // calé avec la dispersion et la vitesse, pour 0,60 coup/s au banc
       life: 1.4,
       bounces: 0,
@@ -427,21 +439,23 @@ export const OUTLAW = fiche({
        *
        * `stackGain` reste **mesuré** : +0,10 par balle au but.
        */
-      onHit: { stackGain: 0.1, stackMax: 8, slow: 0.5, slowDuration: 1.6 },
+      onHit: { stackGain: 0.178, stackMax: 14.3, slow: 0.5, slowDuration: 1.6 },
     },
   },
 
   /** Mesuré : « Damage: 3.00 » et « Ammo: 6/6 » sur la première image. */
-  progression: { stack: 3, stack2: 6 },
+  /** `stack2` est la réserve de départ : elle suit le barillet, sinon il
+   *  commencerait le duel avec un chargeur incomplet. */
+  progression: { stack: 5.35, stack2: 10 },
 
   hud: {
     stats: [
       (f) => `Damage: ${formatHalf(f.stacks)}`,
-      (f) => `Ammo: ${Math.round(f.stacks2)}/6`,
+      (f) => `Ammo: ${Math.round(f.stacks2)}/${f.el.ability.magazine}`,
     ],
     statsFr: [
       (f) => `Dégâts : ${formatHalf(f.stacks)}`,
-      (f) => `Balles : ${Math.round(f.stacks2)}/6`,
+      (f) => `Balles : ${Math.round(f.stacks2)}/${f.el.ability.magazine}`,
     ],
     color: '#6fc3e8', // bleu clair : la ligne de stat est posée sur l'encre sombre
   },
