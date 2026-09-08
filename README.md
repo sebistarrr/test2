@@ -120,7 +120,7 @@ Exemple : `index.html?a=lancer&b=mage&seed=6&debug=1`
 | --- | --- |
 | **Revanche** | même affiche, **nouveau** tirage |
 | **Revoir ce duel** | même affiche **et** même seed : la simulation étant déterministe, le duel se rejoue coup pour coup — vérifié automatiquement (mêmes touches, mêmes dégâts, même durée à la milliseconde) |
-| **Exporter en Short** | télécharge la vidéo du duel qu'on vient de regarder, en **vertical 1080 × 1920**, prête à publier en YouTube Short |
+| **Exporter en Short** | télécharge la vidéo du duel qu'on vient de regarder, en **vertical 1080 × 1920, avec le son**, prête à publier en YouTube Short. La ligne sous le bouton dit ce que porte le fichier : format, poids, et « with sound » ou « no sound » |
 
 La seed du duel est affichée sous le vainqueur : elle suffit à le refaire jouer
 plus tard avec `?seed=`.
@@ -160,9 +160,21 @@ deux couches d'oscillateur et de bruit blanc filtré, avec leur enveloppe — qu
 - Le son s'ouvre au **premier clic** — les navigateurs interdisent de sonner
   avant un geste — et le bouton 🔊 en haut à droite le coupe à tout moment
   (`?sound=0` pour démarrer muet).
-- **La vidéo exportée reste muette**, délibérément : la synthèse vocale sort
-  hors de tout graphe audio et ne peut pas être captée, or un export qui
-  porterait les coups sans le nom du vainqueur serait pire que le silence.
+- **La vidéo exportée porte le son** — c'est tout l'objet de l'export : le
+  mixage est dérivé vers une piste audio ajoutée au flux du `MediaRecorder`, et
+  le fichier téléchargé sonne. Deux choses à savoir avant de publier :
+  - **couper le son ne coupe que les enceintes.** On regarde en silence, on
+    publie avec le son ;
+  - **un duel lancé directement sur `?a=…&b=…` est filmé muet** : le navigateur
+    exige un geste avant d'ouvrir le son, et personne n'a cliqué. Passer par
+    l'écran de sélection suffit. La ligne d'export le dit dans les deux cas
+    (« with sound » / « no sound »), plutôt que de le laisser découvrir après
+    publication.
+- **La voix de l'annonceur n'entre pas dans le fichier**, et ne le pourra pas :
+  la synthèse vocale du navigateur sort hors de tout graphe audio, aucune API ne
+  permet de la router. Ce qu'elle dit, l'image le dit aussi : le titre d'arène
+  nomme les deux camps pendant tout le duel, le bandeau de parade nomme le
+  vainqueur.
 
 Comme la mise en scène visuelle, le son ne fait que **lire** : il ne touche à
 aucun état, ne tire pas dans l'aléa de simulation, et la matrice d'équilibrage
@@ -245,6 +257,9 @@ tools/                     outillage de vérification (non chargé par la page)
 ├── lang-check.mjs         garde-fou de la langue (tables et champs `Ref`)
 ├── sound-check.mjs        banc du son : quelle action fait quel bruit, et
 │                          chaque recette réellement montée dans un AudioContext
+├── export-check.mjs       banc de l'export : le fichier produit est relu **et
+│                          redécodé en PCM**, seul moyen de distinguer une piste
+│                          audio vivante d'une piste silencieuse
 ├── shot.mjs               captures d'écran, avec déclenchement de pouvoir
 ├── frames.py              extraction d'images d'une vidéo de référence
 ├── montage.py             planche-contact des images extraites

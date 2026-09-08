@@ -245,9 +245,23 @@ timbre qui se **transpose par combattant**.
 - **Le son s'ouvre à un geste** et pas avant (`sfx.unlock()` sur le premier
   clic) : sans geste, `sfx` n'a pas de contexte et **tous ses appels sont des
   `return`** — c'est ce qui le rend gratuit pour `matrix.mjs` et `shot.mjs`.
-- **La vidéo exportée reste muette, exprès** : la synthèse vocale sort hors de
-  tout graphe `AudioContext` et ne peut pas être captée, or un export qui
-  porterait les coups sans le nom du vainqueur serait pire que le silence.
+- **La vidéo exportée porte les bruitages** — c'est l'objet de l'export, publier
+  le duel. Le graphe se sépare en deux après le compresseur : une branche va aux
+  enceintes, l'autre est une piste audio que `recorder.js` ajoute au flux du
+  canvas. Trois conséquences :
+  - **le MIME se choisit à chaque `start()`**, pas une fois pour la session : un
+    conteneur qui ne nomme aucun codec audio donne un fichier muet, et le son
+    peut n'être ouvert qu'au deuxième duel (il faut un geste) ;
+  - **couper le son ne coupe que les enceintes** (le robinet est après la
+    dérivation) : on regarde en silence, on publie avec le son. L'inverse
+    livrerait un fichier muet sans prévenir ;
+  - **un duel lancé sur `?a=…&b=…` est filmé muet** : personne n'a cliqué. La
+    ligne d'export le dit (`with sound` / `no sound`), plutôt que de le laisser
+    découvrir après publication.
+- **La voix, elle, n'entre pas dans l'export et ne le pourra pas** :
+  `speechSynthesis` sort hors de tout graphe `AudioContext`, aucune API ne
+  permet de la router. Ce que la voix dit, **l'image le dit aussi** — le titre
+  d'arène nomme les deux camps, le bandeau de parade nomme le vainqueur.
 
 ---
 
@@ -387,6 +401,11 @@ node tools/sound-check.mjs               # deux pannes muettes :
                                          #  • une action qui ne sonne pas (duels joués,
                                          #    sons comptés, par combattant)
                                          #  • une recette que l'AudioContext refuse
+
+node tools/export-check.mjs              # le fichier exporté sonne-t-il vraiment ?
+                                         # deux duels filmés (dont un son coupé),
+                                         # relus puis **redécodés en PCM** : le compte
+                                         # d'octets prouve la piste, le RMS le contenu
 
 node tools/matrix.mjs                    # tous les affrontements x 3 seeds, sans rendu
 node tools/matrix.mjs > /tmp/a.txt && diff tools/matrix-reference.txt /tmp/a.txt
@@ -558,7 +577,14 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Le même bruitage joué deux fois en 50 ms ne s'entend pas deux fois**, il
   sature : un garde-fou de répétition est aussi nécessaire qu'un `meleeCd`.
 - **La synthèse vocale ne passe par aucun graphe audio** : elle ne peut donc
-  ni se mixer, ni s'enregistrer, ni entrer dans la vidéo exportée.
+  ni se mixer, ni s'enregistrer, ni entrer dans la vidéo exportée. Ce que la
+  voix dit, l'image doit le dire aussi.
+- **Une piste audio dans le flux ne fait pas un fichier sonore** : le MIME doit
+  nommer le codec audio, et seul un **redécodage en PCM** distingue une piste
+  vivante d'une piste silencieuse — un encodeur à débit constant produit autant
+  d'octets pour l'une que pour l'autre.
+- **Un robinet de coupure placé avant la dérivation d'enregistrement livre une
+  vidéo muette** sans que rien ne le dise.
 - **Chercher l'endroit où l'image lit déjà l'événement** avant d'ajouter un
   état pour le son : trois créneaux sur cinq n'ont coûté aucune ligne aux huit
   modules.

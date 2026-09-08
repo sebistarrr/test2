@@ -23,13 +23,13 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 367 |
 | &nbsp;&nbsp;· Éditer les données | 406 |
 | &nbsp;&nbsp;· Interface et rendu | 439 |
-| &nbsp;&nbsp;· Le son | 525 |
-| &nbsp;&nbsp;· Refactoriser | 576 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 617 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 619 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 662 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 705 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 724 |
+| &nbsp;&nbsp;· Le son | 526 |
+| &nbsp;&nbsp;· Refactoriser | 602 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 643 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 645 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 688 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 731 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 750 |
 
 ---
 
@@ -525,9 +525,12 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 
 ### Le son
 
-Quatre pièges, tous **muets** — c'est leur point commun et c'est ce qui les rend
+Six pièges, tous **muets** — c'est leur point commun et c'est ce qui les rend
 coûteux : aucun ne plante, aucun ne se voit à l'écran, et une capture ne dit
-rien. D'où `tools/sound-check.mjs`, qui joue des duels entiers et compte.
+rien. Les deux derniers sont pires encore, puisqu'ils ne se découvrent qu'après
+publication. D'où deux bancs : `tools/sound-check.mjs`, qui joue des duels
+entiers et compte les sons, et `tools/export-check.mjs`, qui filme un duel et
+**redécode le fichier produit**.
 
 - **Un son ne s'ouvre qu'à un geste.** Un `AudioContext` créé au chargement du
   module naît `suspended` et **le reste tout le duel** : pas d'erreur, pas de
@@ -551,13 +554,38 @@ rien. D'où `tools/sound-check.mjs`, qui joue des duels entiers et compte.
   cinq clones : cinq corps qui frappent dans la même image font **un** son.
 - **La synthèse vocale ne passe par aucun graphe audio.** `speechSynthesis`
   sort directement sur la carte son : elle ne peut ni se mixer, ni se couper
-  autrement que par `cancel()`, ni **entrer dans la vidéo exportée**. Les
-  bruitages, eux, y entreraient (une piste de `MediaStreamDestination` ajoutée
-  au flux de `recorder.js`). L'export reste donc **muet, franchement** : porter
-  les coups sans le nom du vainqueur serait pire que le silence. Corollaire
-  d'interface : `sfx.silence()` doit être appelé à chaque sortie d'écran et
-  quand l'onglet se cache — c'est la seule chose du jeu qui survive à
+  autrement que par `cancel()`, ni **entrer dans la vidéo exportée**. Ce n'est
+  pas un oubli de l'implémentation, c'est la spécification — il n'existe aucune
+  API pour la router. La règle qui en sort : **ce que la voix dit, l'image doit
+  le dire aussi**, et c'était déjà le cas (titre d'arène, bandeau de parade).
+  Corollaire d'interface : `sfx.silence()` doit être appelé à chaque sortie
+  d'écran et quand l'onglet se cache — c'est la seule chose du jeu qui survive à
   `loop.stop()`.
+- **Une piste audio dans le flux ne fait pas un fichier sonore.** Trois
+  conditions, et chacune manquante donne un fichier muet sans une erreur :
+  1. le flux doit **porter** la piste (`stream.addTrack`), et l'ajouter après la
+     création d'un `MediaRecorder` ne change rien pour celui-là — il en naît un
+     neuf à chaque duel, c'est ce qui rattrape le cas ;
+  2. le **MIME doit nommer le codec audio** : `video/webm;codecs=vp9` seul laisse
+     le navigateur décider, quand il n'ignore pas la piste. D'où deux listes de
+     candidats et un choix fait **à chaque `start()`** — le son peut n'être
+     ouvert qu'au deuxième duel, puisqu'il faut un geste ;
+  3. le contenu doit être **non silencieux** — et c'est le point que rien ne
+     signale : un encodeur à débit constant produit à peu près autant d'octets
+     pour du silence que pour un duel entier, donc `webkitAudioDecodedByteCount`
+     ne distingue pas les deux. Seul un **redécodage en PCM** le fait, et c'est
+     ce que mesure `tools/export-check.mjs` (relevé : 2 canaux, RMS 0,023,
+     crête 0,34 sur un duel de 8,9 s).
+  Mesure du navigateur du dépôt, à ne pas généraliser :
+  `video/mp4;codecs=avc1.42E01E,mp4a.40.2` est **refusé** par le Chromium de
+  Playwright (pas de H.264), et c'est `video/mp4` nu qui passe — et qui produit
+  bien de l'AAC. Le repli de liste n'est donc pas théorique.
+- **Le robinet de coupure se place après la dérivation d'enregistrement.** Le
+  graphe est `master → compresseur ┬→ enceintes / └→ piste`. L'inverse — couper
+  au master — livrerait une **vidéo muette** à qui a regardé son duel en
+  silence, ce qui est exactement le geste de quelqu'un qui monte une vidéo. La
+  coupure ne coupe donc que les enceintes (et la voix, qui n'est pas
+  enregistrable de toute façon).
 
 Deux points de conception qui ont bien tenu, notés pour ne pas les défaire :
 

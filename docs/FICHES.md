@@ -2982,6 +2982,12 @@ langue de l'écran (clés `speech*` de `ui/lang.js`) : « pistolero versus ronin
 puis « pistolero wins ». Les noms lui sont donnés **en minuscules**, parce
 qu'une voix de synthèse épelle volontiers un mot tout en capitales.
 
+**Il est la seule chose du jeu qui n'entre pas dans la vidéo exportée** : les
+bruitages y sont (piste audio dérivée du mixage), la voix ne peut pas l'être —
+`speechSynthesis` sort hors de tout graphe `AudioContext`. C'est pourquoi le
+titre d'arène et le bandeau de parade comptent : ils disent à l'image ce que la
+voix dit à l'oreille.
+
 **La matrice est restée identique au caractère près** après tout cela : le son
 ne lit que de l'état déjà calculé.
 

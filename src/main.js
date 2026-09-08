@@ -73,6 +73,9 @@ sfx.setMuted(!SOUND);
 // s'ouvre et se coupe depuis l'écran de sélection, donc bien avant qu'il y ait
 // un `__match` à inspecter. `tools/sound-check.mjs` s'en sert.
 globalThis.__sfx = sfx;
+// troisième poignée : le banc de l'export (`tools/export-check.mjs`) a besoin du
+// fichier produit, qui n'existe qu'à la fin d'un duel
+globalThis.__recorder = recorder;
 
 /**
  * **Le son ne s'ouvre qu'à un vrai geste.** Les navigateurs refusent de faire
@@ -184,7 +187,14 @@ async function finishRecording() {
       return;
     }
     const mb = (blob.size / 1048576).toFixed(1);
-    resultScreen.setExport('ready', T.exportReady(recorder.extension.toUpperCase(), mb));
+    resultScreen.setExport(
+      'ready',
+      T.exportReady(
+        recorder.extension.toUpperCase(),
+        mb,
+        recorder.hasAudio ? T.exportSound : T.exportSilent,
+      ),
+    );
   } catch (err) {
     console.warn('[export] échec :', err);
     resultScreen.setExport('failed', T.exportUnsupported);

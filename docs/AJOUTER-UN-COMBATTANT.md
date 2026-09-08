@@ -134,6 +134,7 @@ node tools/fiche-snapshot.mjs > /tmp/avant.txt   # AVANT de toucher aux données
 node tools/fiche-check.mjs             # câblage, sprites, fiche ↔ module
 node tools/lang-check.mjs              # les deux moitiés de chaque libellé
 node tools/sound-check.mjs             # aucune action muette, aucune recette morte
+node tools/export-check.mjs            # la vidéo exportée porte bien le son
 node tools/matrix.mjs > /tmp/a.txt && diff tools/matrix-reference.txt /tmp/a.txt
 node tools/shot.mjs "?a=<id>&b=outlaw&seed=11" /tmp/s 4,10
 ```

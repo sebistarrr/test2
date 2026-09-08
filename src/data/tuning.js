@@ -313,4 +313,10 @@ export const EXPORT = deepFreeze({
    * réencode de toute façon à l'envoi.
    */
   bitrate: 6_000_000,
+  /**
+   * **128 kbit/s pour la piste audio.** Le duel n'est fait que de sons courts
+   * et synthétiques, sans musique ni voix : au-delà, on paie des bits pour du
+   * silence et des transitoires. YouTube réencode en Opus de toute façon.
+   */
+  audioBitrate: 128_000,
 });

@@ -107,8 +107,18 @@ export const UI = {
     speechWinners: (noms) => `${noms} win`,
     exportDone: 'Video downloaded — ready for YouTube Shorts.',
     exportUnsupported: 'Video export is not available in this browser.',
-    /** @param {string} ext @param {string} mb */
-    exportReady: (ext, mb) => `Vertical 1080 × 1920 · ${ext} · ${mb} MB`,
+    /**
+     * @param {string} ext @param {string} mb @param {string} son
+     *
+     * `son` dit si le fichier porte la piste audio : ça se voit à l'ouverture
+     * du fichier, donc **après** l'avoir publié. Le navigateur exige un geste
+     * avant d'ouvrir le son, et une page lancée directement sur `?a=…&b=…` n'en
+     * a pas reçu : un duel peut donc être filmé muet, et il vaut mieux le lire
+     * ici que le découvrir sur YouTube.
+     */
+    exportReady: (ext, mb, son) => `Vertical 1080 × 1920 · ${ext} · ${mb} MB · ${son}`,
+    exportSound: 'with sound',
+    exportSilent: 'no sound',
     // --- son
     /** Le bouton ne porte qu'une icône : ces deux libellés sont son `aria-label`,
      *  et ils changent avec son état — c'est le seul texte d'interface qui le
@@ -180,7 +190,9 @@ export const UI = {
     speechWinners: (noms) => `${noms} l’emportent`,
     exportDone: 'Vidéo téléchargée — prête pour YouTube Shorts.',
     exportUnsupported: 'Export vidéo indisponible sur ce navigateur.',
-    exportReady: (ext, mb) => `Vertical 1080 × 1920 · ${ext} · ${mb} Mo`,
+    exportReady: (ext, mb, son) => `Vertical 1080 × 1920 · ${ext} · ${mb} Mo · ${son}`,
+    exportSound: 'avec le son',
+    exportSilent: 'sans le son',
     soundMute: 'Couper le son',
     soundUnmute: 'Remettre le son',
     ariaStage: 'Arène de duel',

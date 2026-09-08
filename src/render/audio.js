@@ -31,13 +31,19 @@
  *     navigateurs et de la plupart des environnements de test — les annonces
  *     disparaissent alors sans emporter les bruitages avec elles.
  *
- * **Ce que le son ne fait pas : entrer dans la vidéo exportée.** Les bruitages
- * y arriveraient (il suffirait d'ajouter la piste de `MediaStreamDestination`
- * au flux de `render/recorder.js`), mais **pas les annonces** : la synthèse
- * vocale du navigateur sort directement sur la carte son, hors de tout graphe
- * `AudioContext`, et rien ne permet de la capter. Un export qui porterait les
- * coups sans le nom du vainqueur serait pire que muet — l'export reste donc
- * muet, franchement.
+ * **Les bruitages entrent dans la vidéo exportée, les annonces non.** Le graphe
+ * se sépare en deux après le compresseur (voir `unlock()`) : une branche va aux
+ * enceintes, l'autre est une **piste audio** que `render/recorder.js` ajoute au
+ * flux du `MediaRecorder`. Le fichier téléchargé est donc sonore, ce qui est
+ * tout l'objet de l'export — publier le duel.
+ *
+ * La **voix**, elle, ne peut pas suivre : `speechSynthesis` sort directement
+ * sur la carte son, hors de tout graphe `AudioContext`, et aucune API ne permet
+ * de la router ni de la capter. Ce n'est pas un oubli, c'est la spécification.
+ * L'annonce reste donc **une chose qu'on entend en jouant**, et la vidéo dit la
+ * même chose **par l'image** : le titre d'arène nomme les deux camps pendant
+ * tout le duel, le bandeau de parade nomme le vainqueur. Ce qui manquerait à un
+ * spectateur — savoir qui se bat et qui gagne — est à l'écran.
  *
  * @module render/audio
  */
@@ -56,6 +62,10 @@ class Audio {
     this.ctx = null;
     /** @type {GainNode|null} */
     this.master = null;
+    /** @type {GainNode|null} robinet des **enceintes seules** (le bouton de coupure). */
+    this.speaker = null;
+    /** @type {MediaStreamAudioDestinationNode|null} la piste que filme l'export. */
+    this.record = null;
     /** @type {AudioBuffer|null} une seconde de bruit blanc, partagée. */
     this.noise = null;
     this.muted = false;
@@ -81,9 +91,16 @@ class Audio {
     return this.busy.length;
   }
 
-  /** Le son est-il en état de jouer ? Faux tant qu'aucun geste n'a eu lieu. */
+  /**
+   * Le son est-il en état de jouer ? Faux tant qu'aucun geste n'a eu lieu.
+   *
+   * **La coupure n'entre pas dans cette condition**, et c'est volontaire : un
+   * duel coupé continue de monter ses voix, qui partent dans la piste
+   * d'enregistrement et s'arrêtent au robinet des enceintes. Sans ça, couper le
+   * son livrerait une vidéo muette.
+   */
   get ready() {
-    return this.ctx !== null && !this.muted;
+    return this.ctx !== null;
   }
 
   /**
@@ -118,9 +135,35 @@ class Audio {
       comp.attack.value = 0.004;
       comp.release.value = 0.18;
       this.master = this.ctx.createGain();
-      this.master.gain.value = this.muted ? 0 : MIX.master;
+      this.master.gain.value = MIX.master;
       this.master.connect(comp);
-      comp.connect(this.ctx.destination);
+
+      /**
+       * **Le graphe se sépare en deux après le compresseur**, et c'est ce qui
+       * met le son dans la vidéo exportée :
+       *
+       *   master → compresseur ┬→ `speaker` (le bouton de coupure) → enceintes
+       *                        └→ `record`  (piste audio) → `MediaRecorder`
+       *
+       * Deux conséquences, toutes deux voulues :
+       *
+       *  • **couper le son ne coupe que les enceintes.** L'export garde ses
+       *    bruitages — c'est même le geste de qui monte une vidéo : regarder en
+       *    silence et publier avec le son. Le contraire (mixer la coupure dans
+       *    la piste) livrerait un fichier muet sans que rien ne le dise, et ça
+       *    ne se découvrirait qu'après téléchargement ;
+       *  • la piste enregistrée est prise **après** le compresseur, donc elle
+       *    porte exactement le mixage qu'on entend, pas la somme brute.
+       */
+      this.speaker = this.ctx.createGain();
+      this.speaker.gain.value = this.muted ? 0 : 1;
+      comp.connect(this.speaker);
+      this.speaker.connect(this.ctx.destination);
+      if (typeof this.ctx.createMediaStreamDestination === 'function') {
+        this.record = this.ctx.createMediaStreamDestination();
+        comp.connect(this.record);
+      }
+
       this.noise = this._buildNoise();
     }
     if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
@@ -133,15 +176,33 @@ class Audio {
   }
 
   /**
-   * Coupe ou rétablit **tout** — bruitages et annonces. Le contexte n'est pas
-   * fermé : le rouvrir demanderait un nouveau geste, et l'utilisateur qui
-   * remet le son n'en fera pas forcément un.
+   * Coupe ou rétablit **les enceintes** — bruitages et annonces.
+   *
+   * **Pas la vidéo exportée** : la piste d'enregistrement est branchée avant ce
+   * robinet (voir `unlock()`), donc un duel regardé en silence se télécharge
+   * quand même avec son. C'est la seule lecture utile du bouton pour qui monte
+   * une vidéo, et l'inverse livrerait un fichier muet sans prévenir.
+   *
+   * Le contexte n'est pas fermé : le rouvrir demanderait un nouveau geste, et
+   * l'utilisateur qui remet le son n'en fera pas forcément un.
    */
   setMuted(on) {
     this.muted = !!on;
-    if (this.master) this.master.gain.value = this.muted ? 0 : MIX.master;
+    if (this.speaker) this.speaker.gain.value = this.muted ? 0 : 1;
     if (this.muted) this.silence();
     return this.muted;
+  }
+
+  /**
+   * **La piste audio du duel, pour `render/recorder.js`.**
+   *
+   * `null` tant que le son n'a pas été ouvert par un geste : l'enregistreur
+   * filme alors sans son, comme avant. Il la redemande à chaque duel, donc un
+   * premier duel muet (page ouverte sur `?a=…&b=…`, sans un clic) n'empêche pas
+   * la revanche d'être sonore.
+   */
+  captureTrack() {
+    return this.record?.stream.getAudioTracks()[0] ?? null;
   }
 
   /** Arrête net l'annonce en cours (changement d'écran, coupure du son). */
@@ -313,7 +374,9 @@ class Audio {
    * @param {string} texte déjà construit dans la bonne langue par l'appelant
    */
   say(texte) {
-    if (!this.ready || !texte) return;
+    // seule chose que la coupure arrête vraiment : la voix ne va pas dans la
+    // piste enregistrée, il n'y a donc rien à préserver
+    if (!this.ready || this.muted || !texte) return;
     const synth = globalThis.speechSynthesis;
     if (!synth || typeof globalThis.SpeechSynthesisUtterance !== 'function') return;
     try {
