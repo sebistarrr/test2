@@ -959,7 +959,7 @@ citée entre parenthèses.
 | **Barillet** | 6 coups, ~0,6 s entre deux (≈ 18 images à 30 fps), puis un rechargement de 1,4 s — le trou observé entre `0/6` et `6/6` | mesuré + calé |
 | **Recul** | 119 px/s par coup (95), **988 px/s (790) sous LEAD HAIL**. C'est lui qui produit le pic de 1 380 px/s relevé à l'image 1011 : chaque coup de la rafale le propulse violemment | mesuré |
 | **Dispersion** | ±0,75 rad. **Déduite d'une mesure** : la vidéo montre 25 paliers de +0,10 en 38,6 s pour ~50 tirs, soit une balle sur deux et **0,65 coup/s**. Sans dispersion, une visée réécrite à chaque image touche toujours — le banc donnait 1,30 coup/s, exactement le double | déduit |
-| Ultime | *Pluie de plomb* (`LEAD HAIL`) — horloge **pure** de 7,0 s (charge de 1,13 px/image sur 238 px utiles), effet 6,2 s (vidage à 1,28 px/image) : cadence doublée, +22 % de vitesse, recul ×8,3 | mesuré |
+| Ultime | *Main du mort* (`DEAD MAN’S HAND`, anciennement *Pluie de plomb* / `LEAD HAIL`, renommé sur demande) — horloge **pure** de 7,0 s (charge de 1,13 px/image sur 238 px utiles), effet 6,2 s (vidage à 1,28 px/image) : cadence doublée, +22 % de vitesse, recul ×8,3 | mesuré |
 | Rendu de l'ultime | la vidéo fait virer **toute l'arène** au crème `#FDF7ED`. Ici le décor ne bouge jamais : la lumière se pose **au sol, sous le pistolero** | écart assumé |
 | Projectile | *Balle* — `outlawShot` 9 × 3 ×3,2, 720 px/s, dégâts = la pile courante. Sillage **pâle** de 2 px, (213,182,153) à (236,206,177) : les cinq taches alignées de l'image 224 sont ce sillage en tirets, pas cinq projectiles | mesuré + calé |
 | HUD | `Damage: 3.00 → 5.50` (+0,10 **au coup au but**, pas au coup tiré) et `Ammo: n/6` | mesuré |
@@ -1301,7 +1301,7 @@ dessous.
 
 | Combattant | Jauge d'ultime | Couleur reprise de |
 | --- | --- | --- |
-| Pistolero | LEAD HAIL : `#3f97c9` → `#3fbde0` / texte `#fdf7ed` → `#f2fdff` | Champ de givre |
+| Pistolero | DEAD MAN’S HAND : `#3f97c9` → `#3fbde0` / texte `#fdf7ed` → `#f2fdff` | Champ de givre |
 | Ronin | BLADE RUSH : `#f97316` → `#ea580c` / texte `#2a0e05` → `#fff1f0` | Aura de braise |
 | Hoplite | BOND : `#5d3d8e` → `#7c3aed` / texte `#ffffff` → `#f3e8ff` | Dôme de drain |
 

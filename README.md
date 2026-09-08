@@ -13,7 +13,7 @@ calé**, et leurs fiches ne portent pas un seul `mesuré`.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
-| **Pistolero** | Pacificateur | **canon asservi à la cible** — il ne tourne pas ; barillet de **10** et **un tir toutes les 0,3 s** (six balles et 0,6 s mesurés, tous deux changés sur demande), balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Pluie de plomb / LEAD HAIL (cadence doublée, recul ×8) |
+| **Pistolero** | Pacificateur | **canon asservi à la cible** — il ne tourne pas ; barillet de **10** et **un tir toutes les 0,3 s** (six balles et 0,6 s mesurés, tous deux changés sur demande), balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Main du mort / DEAD MAN’S HAND (cadence doublée, recul ×8) |
 | **Ronin** | Lame de braise (transcrite d'une maquette) | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
 | **Hoplite** | Lance d'orage (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Foudre tombante / THUNDERFALL — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
@@ -76,7 +76,7 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 
 <sup>Les nouveaux formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [une bataille royale à cinq](docs/capture-royale.png) · [la parade à deux vainqueurs](docs/capture-fin-2v2.png).</sup>
 
-<sup>L’Hoplite (charge, Dôme de drain) contre le Ronin (surchauffe, Aura de braise). Voir aussi [l'écran de sélection](docs/capture-selection.png), [le Pistolero sous LEAD HAIL](docs/capture-horsloi.png), [la ruée du Ronin](docs/capture-bretteur.png), [la Foudre tombante de l’Hoplite](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
+<sup>L’Hoplite (charge, Dôme de drain) contre le Ronin (surchauffe, Aura de braise). Voir aussi [l'écran de sélection](docs/capture-selection.png), [le Pistolero sous DEAD MAN’S HAND](docs/capture-horsloi.png), [la ruée du Ronin](docs/capture-bretteur.png), [la Foudre tombante de l’Hoplite](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
 
 ---
 
@@ -237,7 +237,7 @@ src/
 │   ├── projectiles.js     projectiles génériques pilotés par la fiche
 │   └── abilities/
 │       ├── index.js       registre
-│       ├── outlaw.js      Visée asservie + Barillet + Pluie de plomb + Champ de givre
+│       ├── outlaw.js      Visée asservie + Barillet + Main du mort + Champ de givre
 │       ├── bladesman.js   Courbe de rotation (surchauffe) + Ruée + Rage
 │       ├── lancer.js      Charge + Foudre tombante + Dôme de drain
 │       ├── wind.js        Tornade de shurikens + Clone d'ombre
@@ -305,7 +305,7 @@ identique sur un écran 60 Hz ou 144 Hz, et les collisions arme/corps ne
 ## Langue
 
 **L'application est en anglais** — c'est la langue de la vidéo de référence
-(`DARK`, `LEAD HAIL`, `Damage: 5.50`), donc celle du HUD et du titre d'arène
+(`DARK`, `BLADE RUSH`, `Damage: 5.50`), donc celle du HUD et du titre d'arène
 depuis toujours ; les écrans de sélection et de fin ont suivi. `?lang=fr`
 bascule l'ensemble, chrome DOM compris.
 
@@ -346,10 +346,10 @@ convertit en **×1,25** vers ce repère 720 × 1280 — **sauf celle de Magia,
 | Boule Pistolero / Ronin  | `#8a5934` / mesurée `#dcc462` ; le jeu met le Ronin en **orange `#e8621b`**, avec sa lame de braise (écart assumé, voir `docs/FICHES.md`) |
 | Portée d'arme                 | revolver 122 px, sabre/lame 152 px |
 | Rotation du sabre             | 0,80 → 3,00 tour/s, palier de 1,8 s au plafond, effondrement à −3,0/s |
-| Recul du revolver             | 119 px/s, **988 px/s sous LEAD HAIL** |
+| Recul du revolver             | 119 px/s, **988 px/s sous DEAD MAN’S HAND** |
 | Progression « Damage » (Pistolero) | 3,00 → 5,50 par pas de 0,10, **au coup au but** |
 | « Damage » du Ronin        | `2,00 × Spin Speed`, exact, jamais stocké |
-| LEAD HAIL                     | horloge de 7,0 s, effet 6,2 s, cadence doublée |
+| DEAD MAN’S HAND                | horloge de 7,0 s, effet 6,2 s, cadence doublée |
 | BLADE RUSH                    | horloge de 9 s + 6 % par coup, ruée de 1,5 s, verrou à 115 ms |
 | Précision du Pistolero      | 25 coups au but en 38,6 s = **0,65 coup/s** |
 | Boule Hoplite                 | mesurée `#574a84` indigo ; le jeu la met en **violet `#7046ac`**, la teinte de la lance électrique — donc tout près du relevé. Traînée cramoisie `#a32b4a` conservée |

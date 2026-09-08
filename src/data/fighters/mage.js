@@ -316,7 +316,7 @@ export const MAGE = fiche({
      * *plus près* de qui venait le punir.
      *
      * 420 : au-dessus du recul de tir du Pistolero (119) et sous celui de sa
-     * Pluie de plomb (988). Calé au banc — voir la matrice.
+     * Main du mort (988). Calé au banc — voir la matrice.
      */
     recoil: 420,
     /**

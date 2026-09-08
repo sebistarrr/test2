@@ -113,9 +113,10 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   0,16 s (13 px tient). Et la largeur des passes d'aura calculée en `1/k` mettait
   la passe **la plus large en dernier**, donc le cœur opaque délavait l'arme au
   lieu de la cerner.
-- **LEAD HAIL ne teinte pas l'arène.** Sur sa vidéo, l'arène entière vire au
-  crème pendant l'ultime du Pistolero. Ici le décor est rasterisé une fois et
-  **ne bouge jamais** (invariant 4) : la lumière se pose donc au sol.
+- **L'ultime du Pistolero (`DEAD MAN’S HAND`, anciennement `LEAD HAIL`) ne
+  teinte pas l'arène.** Sur sa vidéo, l'arène entière vire au crème pendant cet
+  ultime. Ici le décor est rasterisé une fois et **ne bouge jamais**
+  (invariant 4) : la lumière se pose donc au sol.
 - Filigrane `@ElementalArmoryLeague` non reproduit — ni le « ballthing.com » /
   « @ballthingsim » des vidéos des trois invités.
 

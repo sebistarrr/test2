@@ -306,10 +306,13 @@ export const OUTLAW = fiche({
 
   ultimate: {
     id: 'highNoon',
-    name: 'Pluie de plomb',
-    nameRef: 'LEAD HAIL',
-    barLabel: 'LEAD HAIL',
-    barLabelFr: 'PLUIE DE PLOMB',
+    /** Renommé sur demande (« Pluie de plomb » / `LEAD HAIL`) : la main de
+     *  cartes tristement célèbre de Wild Bill Hickok (as et huit), un classique
+     *  du folklore du gunslinger — le thème du Pistolero. */
+    name: 'Main du mort',
+    nameRef: 'DEAD MAN’S HAND',
+    barLabel: 'DEAD MAN’S HAND',
+    barLabelFr: 'MAIN DU MORT',
     /** **Écart assumé, demandé.** Reprend exactement la couleur de la jauge
      *  de Blizzard juste en dessous (`special.barFill`/`barText`) : les deux
      *  jauges d'un même combattant doivent se lire comme une paire — taille,
