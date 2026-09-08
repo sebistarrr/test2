@@ -13,7 +13,7 @@ calé**, et leurs fiches ne portent pas un seul `mesuré`.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
-| **Pistolero** | Pacificateur | **canon asservi à la cible** — il ne tourne pas ; barillet de **10** (six mesurés, porté à dix sur demande), balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Pluie de plomb / LEAD HAIL (cadence doublée, recul ×8) |
+| **Pistolero** | Pacificateur | **canon asservi à la cible** — il ne tourne pas ; barillet de **10** et **un tir toutes les 0,3 s** (six balles et 0,6 s mesurés, tous deux changés sur demande), balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Pluie de plomb / LEAD HAIL (cadence doublée, recul ×8) |
 | **Ronin** | Lame de braise (transcrite d'une maquette) | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = 2 × Spin` | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
 | **Hoplite** | Lance d'orage (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Foudre tombante / THUNDERFALL — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |

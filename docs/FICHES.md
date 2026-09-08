@@ -26,15 +26,15 @@ les recale en une commande.
 | 📦 Archive — les huit éléments supprimés | 76 |
 | 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 150 |
 | 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 940 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1011 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1268 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1833 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2324 |
-| 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2537 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2749 |
-| Équilibrage du roster | 2835 |
-| Règles communes (moteur) | 2933 |
-| Comment les mesures ont été prises | 2957 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1017 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1274 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1839 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2330 |
+| 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2543 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2755 |
+| Équilibrage du roster | 2841 |
+| Règles communes (moteur) | 2939 |
+| Comment les mesures ont été prises | 2963 |
 
 ## Comment lire une valeur
 
@@ -964,49 +964,55 @@ citée entre parenthèses.
 
 ---
 
-### DPS ×1,5 et barillet de 6 à 10
+### Cadence divisée par deux, barillet de 6 à 10 — et le retour arrière sur les dégâts
 
-**Demandé**, et les deux se mesurent séparément parce qu'ils ne font pas la
-même chose.
+**Deux demandes successives, dont la première a été défaite.** Un premier essai
+multipliait sa production par 1,5 en gonflant tous ses dégâts (pile ×1,78,
+éclats de givre 2 → 3, tic du Champ de givre 1 → 1,5). Il a été **entièrement
+défait à la valeur près** : ses dégâts sont revenus à leur relevé. Le levier
+retenu est la **cadence**.
 
 **Le barillet ne change presque rien au DPS.** 6 → 10 balles : 4,222 → 4,199
 PV/s contre le Mannequin, soit rien du tout. Le calcul le confirme — à 0,6 s
 entre deux tirs et 0,7 s de rechargement, un cycle de six balles dure 4,3 s
-(1,40 tir/s) et un cycle de dix en dure 6,7 (1,49 tir/s). **+6 % de cadence**,
-noyés dans sa dispersion. Il fallait le mesurer avant de toucher aux dégâts,
-sinon on aurait cumulé deux hausses en croyant n'en faire qu'une.
+(1,40 tir/s) et un cycle de dix en dure 6,7 (1,49 tir/s) : **+6 % de cadence**,
+noyés dans sa dispersion. Il fallait le mesurer seul, sinon on aurait cumulé
+deux hausses en croyant n'en faire qu'une.
 
 C'est un **écart assumé au relevé** : la vidéo montre « Ammo: n/6 », et le nom
 même de l'arme (`Six-Shooter`) le dit. Le HUD écrivait « /6 » en dur à deux
 endroits — il lit désormais `ability.magazine`, sans quoi il aurait menti.
 
-**Le ×1,5 de DPS a demandé ×1,78 sur les dégâts, et c'est instructif.** Toutes
-ses sources ont été échelonnées ensemble (pile de dégâts, éclats de givre 2 → 3,
-tic du Champ de givre 1 → 1,5) — et à ×1,5 sur tout, le DPS n'est monté que de
-×1,377.
+**Le vrai levier est le délai entre deux tirs** : `ability.cooldown` 0,6 → 0,3 s,
+autre écart assumé (mesuré à ~18 images entre deux décréments d'`Ammo` à 30 fps).
+Et **les deux réglages se répondent enfin** : à 0,3 s entre deux tirs, un
+chargeur de six se viderait en 1,8 s et il passerait son duel à recharger. C'est
+la cadence qui rend le barillet utile, pas l'inverse.
 
-La cause est une **boucle de rétroaction** : ses dégâts montent avec la pile
-(+0,178 par touche), donc un duel plus court lui laisse **moins de temps pour
-monter en puissance**. Plus on augmente ses dégâts, plus il tue vite, moins sa
-pile a le temps de servir. Le levier sature visiblement — sur la fin, +1,7 % de
-dégâts n'ont rendu que +0,4 % de DPS.
-
-Mesuré sur 20 duels contre le Mannequin (les 3 seeds de la matrice sont trop
-bruités pour ça, ils donnaient 6,2 là où le banc donne 5,5) :
-
-| | Avant | Après |
+| Mesure sur 20 duels contre le Mannequin | Avant | Après |
 | --- | --- | --- |
-| Production | 3,752 PV/s | **5,547 PV/s** |
-| Rapport | — | **×1,48** |
-| Temps pour tuer 200 PV | 53,3 s | 36,1 s |
+| Production | 3,752 PV/s | **5,074 PV/s** |
+| Rapport | — | **×1,35** |
+| Temps pour tuer 200 PV | 53,3 s | 39,4 s |
 
-**Conséquence d'équilibrage, à connaître.** Il passe de **20 victoires sur 60**
-(le dernier du roster) à **117 sur 120** — 20 duels sur 21 dans la matrice
-officielle. Il ne manquait donc à ce personnage que des dégâts : sa survie était
-déjà là, il ne mourait pas, il n'arrivait simplement pas à conclure. Multiplier
-sa production par 1,5 ne l'a pas rendu correct, ça l'a rendu dominant.
+Moins que le doublement de la cadence, parce que sa dispersion lui fait manquer
+une balle sur deux et que ni le Champ de givre ni les éclats ne suivent le
+rythme du barillet.
 
-L'écart du roster passe de 8-14 à **7-20**. C'est assumé et non corrigé.
+**Ce que l'essai abandonné a appris, et qui reste vrai.** En montant tous ses
+dégâts à ×1,5, le DPS n'était monté que de ×1,377 — à cause d'une **boucle de
+rétroaction** : ses dégâts croissent avec sa pile, donc un duel plus court lui
+laisse moins de temps pour monter en puissance. Il avait fallu ×1,78 sur les
+dégâts pour obtenir ×1,48 sur le DPS, et le levier saturait visiblement (sur la
+fin, +1,7 % de dégâts ne rendaient que +0,4 % de DPS). **La cadence n'a pas ce
+défaut** : elle ne dépend pas de la durée du duel.
+
+**Conséquence d'équilibrage.** Il passe de **20 victoires sur 60** — le dernier
+du roster — à **105 sur 120**, et de 12 à 17 sur la matrice officielle. C'est
+moins que les 117/120 qu'avait produits la voie des dégâts, mais il domine
+toujours. Le constat de fond ne change pas : **il ne manquait à ce personnage
+que du rythme, pas de la survie** — il ne mourait pas, il n'arrivait pas à
+conclure. L'écart du roster passe de 8-14 à **8-17**, assumé et non corrigé.
 
 ## ⚔ RONIN — `bladesman` (affiché « RONIN »)
 

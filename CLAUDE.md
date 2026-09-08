@@ -74,7 +74,7 @@ Neon Shadow — sont inventés**, aucune de leurs valeurs ne peut donc porter
 
 | Personnage | Signature |
 | --- | --- |
-| `outlaw` **PISTOLERO** | tireur de glace, **canon asservi à la cible** (`weapon.spin = 0`), barillet de **10** (6 mesurés, écart demandé), balles gelantes (−30 % de vitesse, 1,6 s), `weaponTwirl` au rechargement. Porte le **Champ de givre**, greffé |
+| `outlaw` **PISTOLERO** | tireur de glace, **canon asservi à la cible** (`weapon.spin = 0`), barillet de **10** et **0,3 s entre deux tirs** (6 et 0,6 mesurés, écarts demandés), balles gelantes (−30 % de vitesse, 1,6 s), `weaponTwirl` au rechargement. Porte le **Champ de givre**, greffé |
 | `bladesman` **RONIN** | duelliste, rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = 2 × Spin`, brûlure au contact. Porte l’**Aura de braise**, greffée |
 | `lancer` **HOPLITE** | chargeur, **lance braquée sur le cap** (`weapon.spin = 0`), charge en ligne droite, **164 px, la plus longue portée du jeu**, +2 dégâts par touche, **Foudre tombante** qui le sort de l'arène. Porte le **Dôme de drain**, greffé |
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
@@ -114,17 +114,18 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 21 duels hors
-miroir chacun : **Pistolero 20**, Golem 14, Ronin 12, Druide 12,
-Neon Shadow 10, Hoplite 9, Shinobi 7, Mannequin 0 (il ne peut pas gagner,
-c'est sa définition). Le Pistolero domine depuis que son DPS a été multiplié
-par 1,5 sur demande — **20 duels sur 21**, écart assumé et non corrigé.
+miroir chacun : **Pistolero 17**, Golem 15, Druide 13, Ronin 12,
+Neon Shadow 10, Hoplite 9, Shinobi 8, Mannequin 0 (il ne peut pas gagner,
+c'est sa définition). Le Pistolero domine depuis que son **délai entre deux
+tirs a été divisé par deux** sur demande (0,6 → 0,3 s, **aucun dégât
+touché**) — écart assumé et non corrigé.
 **Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
 d'équilibrage : 200 PV divisés par la durée donnent la production réelle de
-chacun contre une cible qui ne riposte pas — Pistolero 6,2, Shinobi 5,9,
+chacun contre une cible qui ne riposte pas — Pistolero 6,3, Shinobi 5,9,
 Ronin 5,8, Hoplite 5,5, Druide 5,3, Neon Shadow 4,6, Golem 2,5 PV/s. La ligne
 `dummy vs dummy` finit en **`timeout`** : deux combattants sans dégâts ne se
 départagent jamais, le moteur n'ayant aucune limite de temps.
-Écart **7 à 20** entre les sept qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
+Écart **8 à 17** entre les sept qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
 toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
 un.** Le Golem le montre en grand — 5/15 ici, mais **54/100** sur un banc à
 10 seeds × les deux camps, parce qu'il est en queue de `ROSTER` donc toujours
