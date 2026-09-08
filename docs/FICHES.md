@@ -31,10 +31,10 @@ les recale en une commande.
 | 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1787 |
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2279 |
 | 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2492 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2629 |
-| Équilibrage du roster | 2715 |
-| Règles communes (moteur) | 2813 |
-| Comment les mesures ont été prises | 2837 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2705 |
+| Équilibrage du roster | 2791 |
+| Règles communes (moteur) | 2889 |
+| Comment les mesures ont été prises | 2913 |
 
 ## Comment lire une valeur
 
@@ -2512,6 +2512,82 @@ pas accrochée au corps.
 
 **Zéro ligne de moteur pour un personnage entier**, et c'est la vérification que
 les compteurs génériques de l'invariant 7 tenaient leur promesse.
+
+### Les quatre axes d'amélioration
+
+Passe d'affinage demandée après un audit du personnage — d'où viennent ses
+dégâts, et ce que chacun de ses outils rapporte réellement (120 duels) :
+
+| Source | Part de ses dégâts | Déclenchements / duel |
+| --- | --- | --- |
+| Les deux lames | 72,5 % | en continu |
+| Éclipse totale | 19,8 % | 1,20 |
+| Faille du vide | 7,6 % | 1,55 (sur 1,86 posées) |
+| Pas du vide | 0 % | 2,74 |
+
+**1. Le Pas du vide projette les lames.** Le pouvoir avait été jugé « plat »
+parce qu'en changer la recharge ne déplaçait que 3 duels sur 140, et j'en avais
+conclu qu'il *désarmait* son porteur. **La mesure dit l'inverse** : dans les
+1,2 s qui suivent un pas, ses lames produisent **5,00 PV/s contre 2,43 le reste
+du temps**. Le mécanisme double déjà sa production ; ce qui est petit, c'est la
+fenêtre — 3,3 s sur un duel de 26,7 s, soit ~8,5 PV de surplus. Le levier était
+donc l'ampleur, pas la fréquence. À l'atterrissage, les deux lames sont
+maintenant **projetées vers la cible** à 900 px/s, verrous remis à zéro.
+
+**2. La Faille du vide cloue une seconde au lieu d'une demie.** Le piège se
+déclenchait bien (83 % des orbes posés — les adversaires le poursuivent, donc
+ils passent là où il était), mais 0,5 s ne préparait rien. À 1 s, il devient une
+mise en place et le personnage obtient son **premier enchaînement** : la faille
+cloue, le pas amène les lames, les lames frappent une cible immobilisée.
+
+**3. La dette visuelle de la refonte, réparée.** Neutraliser `weapon` (portée 0)
+avait cassé deux choses qui lisaient sur `reach` :
+
+- `flair.js` trace le trait d'arme des fantômes de `handle.length` à `reach` —
+  deux valeurs nulles ici, donc **les fantômes avaient perdu leurs dagues** ;
+- le ruban suit la pointe d'arme, donc il partait **du centre de la bille**.
+
+Le module tient désormais sa propre file de fantômes de lames (même cadence que
+celle du moteur, pour que les deux traînées battent ensemble), et
+`Fighter.ribbonAnchor` — **crochet générique** ajouté pour l'occasion, sur le
+patron des compteurs de l'invariant 7 — laisse un module désigner le point que
+suit le ruban. Deux lignes de moteur, purement visuelles : la matrice n'a pas
+bougé d'un caractère sur les sept autres combattants.
+
+**4. Les lames montent en puissance.** Le relevé infligé/subi par adversaire
+avait montré l'essentiel :
+
+| Adversaire | Il inflige | Il subit | Résultat d'alors |
+| --- | --- | --- | --- |
+| Golem | **124** | 100 | **0/20** |
+| Ronin | 99 | 82 | 18/20 |
+| Druide | 88 | 89 | 5/20 |
+
+Contre le Golem il infligeait **plus que contre n'importe qui d'autre** et
+perdait vingt fois sur vingt : il en plaçait 124 sur les 200 à franchir pendant
+que le Golem lui plaçait exactement sa barre. Il n'était pas dominé, il manquait
+de temps. Les lames passent donc de 8 dégâts plats à une **pile croissante**
+(`f.stacks`, 6 → 13 par pas de 0,35 à chaque touche), le mécanisme du Pistolero
+et de l'Hoplite, affiché au HUD comme chez eux. C'est la seule forme qui aide
+dans les duels longs sans rien changer aux courts.
+
+**Résultat des quatre ensemble** : le total ne bouge quasiment pas (82 → 80 sur
+140), mais **la forme se resserre nettement**.
+
+| Adversaire | Avant | Après |
+| --- | --- | --- |
+| Hoplite | 15/20 | 18/20 |
+| Ronin | **18/20** | 11/20 |
+| Shinobi | 14/20 | 10/20 |
+| Pistolero | 10/20 | 9/20 |
+| Druide | 5/20 | 8/20 |
+| Golem | **0/20** | 4/20 |
+| **Écart** | **0 à 18** | **4 à 18** |
+
+Hors Mannequin, il passe de 62/120 à **60/120 — exactement 50 %**. Les deux
+affrontements qui l'humiliaient (Golem, Druide) remontent, celui qu'il
+dominait (Ronin) redescend : c'est le resserrement qu'on cherchait, obtenu sans
+toucher au total.
 
 ### Les deux dagues deviennent mobiles
 

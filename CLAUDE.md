@@ -114,8 +114,8 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 21 duels hors
-miroir chacun : Pistolero 15, Druide 14, Golem 14, Ronin 11, Neon Shadow 11,
-Hoplite 10, Shinobi 9, Mannequin 0 (il ne peut pas gagner, c'est sa
+miroir chacun : Druide 14, Golem 14, Neon Shadow 13, Pistolero 12, Ronin 12,
+Hoplite 11, Shinobi 8, Mannequin 0 (il ne peut pas gagner, c'est sa
 définition).
 **Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
 d'équilibrage : 200 PV divisés par la durée donnent la production réelle de
@@ -123,7 +123,7 @@ chacun contre une cible qui ne riposte pas — Shinobi 5,9, Ronin 5,8, Hoplite
 5,5, Druide 5,3, Pistolero 4,2, Neon Shadow 4,2, Golem 2,5 PV/s. La ligne
 `dummy vs dummy` finit en **`timeout`** : deux combattants sans dégâts ne se
 départagent jamais, le moteur n'ayant aucune limite de temps.
-Écart **9 à 15** entre les sept qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
+Écart **8 à 14** entre les sept qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
 toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
 un.** Le Golem le montre en grand — 5/15 ici, mais **54/100** sur un banc à
 10 seeds × les deux camps, parce qu'il est en queue de `ROSTER` donc toujours
@@ -481,6 +481,9 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   session**.
 - **Un ultime qui déplace son porteur est aussi une esquive** : l'espacer retire
   les dégâts *et* la survie, d'où des falaises (Neon Shadow, 15 s → 17 s).
+- **Un pouvoir peut marcher et ne rien peser** : mesurer la production *pendant*
+  sa fenêtre avant de conclure qu'il est cassé — le levier est alors l'ampleur,
+  pas la fréquence (Pas du vide).
 - **Une arme n'a pas besoin du moteur du tout** : un module peut intégrer ses
   positions et appeler `game.damage` lui-même, `weapon` neutralisé et
   `f.customWeapon` posé (les deux dagues de Neon Shadow).

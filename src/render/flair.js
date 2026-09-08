@@ -338,13 +338,24 @@ export class Flair {
     ctx.globalAlpha = 1;
   }
 
-  /** Mémorise la pointe de l'arme pour en faire un ruban. */
+  /**
+   * Mémorise la pointe de l'arme pour en faire un ruban.
+   *
+   * **`f.ribbonAnchor` permet à un module de désigner un autre point.** C'est un
+   * crochet générique de plus, sur le patron des compteurs du `Fighter` : un
+   * module le pose, le rendu le lit, et le rendu **ne sait pas pourquoi**.
+   * Il existe parce qu'un combattant peut n'avoir aucune arme au sens du moteur
+   * — Neon Shadow porte deux lames que son module intègre lui-même, donc
+   * `reach` vaut zéro chez lui et la pointe suivie serait le centre de sa
+   * bille : le ruban se décrocherait de ce qu'il est censé suivre.
+   */
   _trackRibbon(f) {
     const r = this.ribbons.get(f);
     if (!r) return;
     const reach = f.el.weapon.reach;
-    r.pts[r.head * 2] = f.x + Math.cos(f.weaponAngle) * reach;
-    r.pts[r.head * 2 + 1] = f.y + Math.sin(f.weaponAngle) * reach;
+    const ancre = f.ribbonAnchor;
+    r.pts[r.head * 2] = ancre ? ancre.x : f.x + Math.cos(f.weaponAngle) * reach;
+    r.pts[r.head * 2 + 1] = ancre ? ancre.y : f.y + Math.sin(f.weaponAngle) * reach;
     r.head = (r.head + 1) % RIBBON;
     if (r.n < RIBBON) r.n++;
   }

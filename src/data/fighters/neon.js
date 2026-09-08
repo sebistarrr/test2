@@ -212,19 +212,28 @@ export const NEON = fiche({
        *  vise pas. */
       radius: 26,
       /**
-       * **Toute sa production passe par là maintenant**, et c'est un levier
-       * extrêmement raide. Les 4 dégâts de la dague braquée ont disparu avec
-       * elle — elle pesait 47 % de sa production — et ces lames doivent tout
-       * porter. Balayé au banc (140 duels) :
+       * **Les lames montent en puissance au fil du duel — demandé.**
        *
-       * | dégâts par lame | 5 | **8** | 10 |
-       * | --- | --- | --- | --- |
-       * | victoires /140 | 36 | **82** | 103 |
+       * Elles frappaient à 8, plat. Le banc avait montré qu'il **perdait 20 duels
+       * sur 20 contre le Golem tout en lui infligeant plus qu'à n'importe qui
+       * d'autre** (124 PV contre 200 à franchir, pendant que le Golem lui en
+       * plaçait 100, soit sa barre entière). Il n'était pas dominé : il lui
+       * manquait du temps. Une production **croissante** est la seule réponse
+       * qui n'exige de toucher ni sa vitesse, ni les autres fiches.
        *
-       * ~9 duels par point, soit la même raideur que la mêlée qu'elles
-       * remplacent. 8 est le point qui le remet à 52 %.
+       * Les dégâts effectifs sont donc `Math.round(f.stacks)`, et `f.stacks`
+       * monte de `gain` à chaque touche de lame jusqu'à `cap` — le même
+       * mécanisme que la pile du Pistolero (3 → 8) et de l'Hoplite (8 → 16),
+       * affiché au HUD comme chez eux.
+       *
+       * `damage` reste ici comme **valeur de repli** si jamais la pile n'était
+       * pas initialisée : sa valeur exacte n'est plus lue en duel.
        */
       damage: 8,
+      /** Départ de la pile — voir `progression.stack`, qui porte la vraie
+       *  valeur initiale lue par le moteur. */
+      gain: 0.35,
+      cap: 13,
       /** Verrou **par lame**, chacune le sien : sans lui, une lame qui frôle
        *  l'adversaire toucherait à chaque pas. */
       cooldown: 0.85,
@@ -264,6 +273,22 @@ export const NEON = fiche({
     /** Distance derrière la cible où il se repose. Un peu plus que la somme
      *  des rayons, pour ne pas naître dans son corps. */
     offset: 96,
+    /**
+     * **La ruée de lames à l'atterrissage — l'axe qui rend ce pouvoir visible.**
+     *
+     * Mesure d'abord, parce qu'elle contredit l'intuition : dans les 1,2 s qui
+     * suivent un pas, ses lames produisent **5,00 PV/s contre 2,43 le reste du
+     * temps** — la fenêtre double déjà sa production. Le pouvoir n'était donc
+     * pas cassé. Il était **trop court pour peser** : 1,2 s × 2,74 pas = 3,3 s
+     * sur un duel de 26,7 s, soit ~8,5 PV de surplus sur ~100 infligés. C'est
+     * pourquoi en changer la *fréquence* ne bougeait rien (6,5 → 10 s : 3 duels
+     * sur 140) — le levier n'est pas la fréquence, c'est l'**ampleur**.
+     *
+     * À l'atterrissage, les deux lames sont donc **projetées vers la cible** à
+     * cette vitesse, verrous remis à zéro. Le pas cesse d'être une
+     * relocalisation pour devenir une frappe.
+     */
+    lunge: 900,
     /** Fumée noire au départ **et** à l'arrivée : sans marque au point de
      *  départ, il disparaît d'une image à l'autre sans que rien ne le dise —
      *  c'est la leçon de l'onde de décollage du Bond. */
@@ -362,8 +387,19 @@ export const NEON = fiche({
     /** Rayon de déclenchement, bord à bord. */
     radius: 46,
     damage: 5,
-    /** Demandé : 0,5 s de chaînes. Voir la note sur la borne du moteur. */
-    hold: 0.5,
+    /**
+     * **0,5 → 1 s.** Le piège se déclenchait bien (1,55 fois par duel, soit
+     * 83 % des orbes posés — les adversaires le poursuivent, donc ils passent
+     * là où il était) mais ne rapportait que 7,6 % de ses dégâts, et son
+     * maintien était trop court pour préparer quoi que ce soit.
+     *
+     * À 1 s, il cesse d'être une source de dégâts pour devenir une **mise en
+     * place** : la faille cloue, le Pas du vide amène les lames, les lames
+     * frappent une cible immobilisée. C'est le premier enchaînement du
+     * personnage — avant, ses trois pouvoirs étaient trois horloges qui ne se
+     * parlaient pas.
+     */
+    hold: 1,
     slow: 0.75,
     /** L'orbe au sol, tant qu'il n'a pas servi. */
     orb: { radius: 18, fill: 'rgba(126,34,206,0.55)', edge: '#f0abfc', pulse: 3.2 },
@@ -376,16 +412,18 @@ export const NEON = fiche({
   /** Aucun projectile : tout passe par les deux lames et les pouvoirs. */
   projectiles: {},
 
-  progression: { stack: 0, stack2: 0 },
+  /** **La pile est sa stat de HUD**, comme chez le Pistolero et l'Hoplite :
+   *  elle démarre à 6 et monte à chaque touche de lame jusqu'à 13. */
+  progression: { stack: 6, stack2: 0 },
 
   hud: {
     /** Ses deux horloges — il n'a aucune stat qui monte, comme le Golem. */
     stats: [
-      (f) => `Void Step: ${formatSeconds(Math.max(0, f.ability.timer))}`,
+      (f) => `Blade Damage: ${Math.round(f.stacks)}`,
       (f) => (f.state.riftLive ? 'Rift: armed' : `Rift: ${formatSeconds(Math.max(0, f.state.specCd ?? 0))}`),
     ],
     statsFr: [
-      (f) => `Pas du vide : ${formatSeconds(Math.max(0, f.ability.timer))}`,
+      (f) => `Dégâts de lame : ${Math.round(f.stacks)}`,
       (f) => (f.state.riftLive ? 'Faille : armée' : `Faille : ${formatSeconds(Math.max(0, f.state.specCd ?? 0))}`),
     ],
     color: '#d8b4fe',

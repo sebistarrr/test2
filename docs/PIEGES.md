@@ -20,15 +20,15 @@ relevé, puis les pièges eux-mêmes.
 | **Pièges déjà rencontrés** | 124 |
 | &nbsp;&nbsp;· Mesurer | 126 |
 | &nbsp;&nbsp;· Équilibrer | 161 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 324 |
-| &nbsp;&nbsp;· Éditer les données | 363 |
-| &nbsp;&nbsp;· Interface et rendu | 396 |
-| &nbsp;&nbsp;· Refactoriser | 482 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 523 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 525 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 568 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 611 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 630 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 345 |
+| &nbsp;&nbsp;· Éditer les données | 384 |
+| &nbsp;&nbsp;· Interface et rendu | 417 |
+| &nbsp;&nbsp;· Refactoriser | 503 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 544 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 546 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 589 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 632 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 651 |
 
 ---
 
@@ -320,6 +320,27 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   100 px. Le rappel doit viser un point **décalé** (ici, dans le dos du cap) :
   c'est ce décalage qui crée la traîne, le déport en virage et la distance au
   repos, tous les trois d'un coup et sans qu'aucun ne soit codé.
+
+- **Un pouvoir peut fonctionner parfaitement et ne rien peser : mesurer sa
+  fenêtre avant de le déclarer cassé.** Le Pas du vide de Neon Shadow avait été
+  jugé « plat » parce qu'en changer la recharge (6,5 → 10 s) ne déplaçait que
+  3 duels sur 140, et j'en avais conclu — à tort, et en le disant avec aplomb —
+  qu'il *désarmait* son porteur. La mesure dit l'inverse : dans les 1,2 s qui
+  suivent un pas, ses lames produisent **5,00 PV/s contre 2,43 le reste du
+  temps**. Le mécanisme double sa production. Ce qui est petit, c'est la
+  **fenêtre** : 1,2 s × 2,74 pas = 3,3 s sur un duel de 26,7 s, soit ~8,5 PV de
+  surplus sur ~100 infligés. D'où la règle : quand un levier de *fréquence* est
+  plat, mesurer la production **pendant** l'effet avant de toucher au mécanisme
+  — le vrai levier est souvent l'ampleur de la fenêtre, pas son retour.
+- **Un combattant peut infliger plus que tous les autres et perdre 20 fois sur
+  20.** Neon Shadow plaçait 124 PV par duel contre le Golem — son meilleur score
+  de tout le roster — et perdait 0/20, parce qu'il en faut 200 et que le Golem
+  lui en plaçait exactement 100, soit sa barre entière. Il n'était pas dominé,
+  il manquait de temps. **Un ratio de victoires ne dit pas si le problème est la
+  production ou le réservoir** : relever les deux (infligé *et* subi, par
+  adversaire) sépare les deux causes, et elles n'appellent pas le même
+  correctif. Ici la réponse a été une production **croissante** (`f.stacks`),
+  seule forme qui aide dans les duels longs sans rien changer aux courts.
 
 ### Déterminisme et ordre d'exécution
 

@@ -45,9 +45,12 @@ export const neonAbilities = {
      * reliés visuellement par la chaîne.
      */
     f.state.blades = [
-      { x: f.x, y: f.y, vx: 0, vy: 0, cd: 0, side: +1 },
-      { x: f.x, y: f.y, vx: 0, vy: 0, cd: 0, side: -1 },
+      { x: f.x, y: f.y, vx: 0, vy: 0, cd: 0, side: +1, spectres: [] },
+      { x: f.x, y: f.y, vx: 0, vy: 0, cd: 0, side: -1, spectres: [] },
     ];
+    /** Cadence de semis des fantômes de lame, reprise de `look.flair.ghost`
+     *  pour que les deux traînées battent ensemble. */
+    f.state.ghostDebt = 0;
 
     /**
      * **Le moteur ne peint plus d'arme.** `Fighter.paintWeapon` cède la main dès
@@ -165,6 +168,23 @@ export const neonAbilities = {
     const b = f.el.weapon.blades;
     const k = Math.exp(-b.damp * dt);
 
+    /**
+     * **Les fantômes des lames, et pourquoi ils sont ici et pas dans
+     * `flair.js`.** Le moteur sème bien des silhouettes tant que `f.ghosting`
+     * tourne, mais il y trace l'arme de `handle.length` à `reach` — deux
+     * valeurs nulles chez lui, puisqu'il n'a pas d'arme au sens du moteur.
+     * Ses fantômes avaient donc perdu leurs dagues en devenant des billes
+     * nues : une régression introduite en neutralisant son bloc `weapon`.
+     *
+     * Le module tient donc sa propre file, à la **même cadence** que celle du
+     * moteur (`look.flair.ghost.every`) pour que les deux traînées battent
+     * ensemble. Aucun tirage : c'est un enregistrement de positions.
+     */
+    const spec = f.el.look.flair.ghost;
+    f.state.ghostDebt += dt;
+    const seme = f.state.ghostDebt >= spec.every;
+    if (seme) f.state.ghostDebt -= spec.every;
+
     for (const lame of f.state.blades) {
       const a = f.heading + Math.PI + lame.side * b.spread;
       const cx = f.x + Math.cos(a) * b.length;
@@ -176,6 +196,11 @@ export const neonAbilities = {
       lame.vy *= k;
       lame.x += lame.vx * dt;
       lame.y += lame.vy * dt;
+
+      if (seme) {
+        lame.spectres.push({ x: lame.x, y: lame.y, a: Math.atan2(lame.vy, lame.vx) || 0 });
+        if (lame.spectres.length > 7) lame.spectres.shift();
+      }
 
       // la laisse : jamais plus loin que `length` du corps
       const dx = lame.x - f.x;
@@ -198,7 +223,15 @@ export const neonAbilities = {
         if (g === f || g.team === f.team || !g.onStage) continue;
         if (Math.hypot(g.x - lame.x, g.y - lame.y) > b.radius + g.radius) continue;
         lame.cd = b.cooldown;
-        game.damage(g, b.damage, f, {
+        /**
+         * **La pile monte à chaque touche, et c'est elle qui décide des
+         * dégâts** — pas la valeur de fiche. Même mécanique que le Pistolero et
+         * l'Hoplite, et c'est ce qui lui donne de quoi finir un réservoir de
+         * 200 PV : il n'était pas dominé par le Golem, il manquait de temps.
+         */
+        const degats = Math.round(f.stacks);
+        f.stacks = Math.min(b.cap, f.stacks + b.gain);
+        game.damage(g, degats, f, {
           kind: 'blade',
           x: lame.x,
           y: lame.y,
@@ -209,6 +242,16 @@ export const neonAbilities = {
         break;
       }
     }
+
+    /**
+     * **Le ruban suit une lame**, et non plus le centre de la bille.
+     * `render/flair.js` trace le ruban depuis la pointe d'arme, à `reach` du
+     * corps : chez lui `reach` vaut zéro, donc le ruban se décrochait de ce
+     * qu'il est censé suivre. `Fighter.ribbonAnchor` est le crochet générique
+     * posé pour ça — un module désigne le point, le rendu le lit sans savoir
+     * pourquoi.
+     */
+    f.ribbonAnchor = f.state.blades[0];
   },
 
   /* ------------------------------------------------------------------ */
@@ -252,18 +295,39 @@ export const neonAbilities = {
       f.weaponAngle = f.heading;
     }
     /**
-     * **Les deux lames le suivent dans le pas.** Sans ça elles traverseraient
-     * l'arène en ligne droite pour le rattraper, et la chaîne — qui les relie
-     * l'une à l'autre — barrerait l'écran pendant une demi-seconde. Elles sont
-     * reposées sur leur point de repos, vitesse remise à zéro.
+     * **Les deux lames le suivent dans le pas, puis sont projetées vers la
+     * cible.**
+     *
+     * Le suivi d'abord : sans lui elles traverseraient l'arène en ligne droite
+     * pour le rattraper, et la chaîne qui les relie barrerait l'écran pendant
+     * une demi-seconde.
+     *
+     * La ruée ensuite, et c'est l'axe qui donne au Pas du vide son poids : elles
+     * repartent à `ability.lunge` px/s vers l'adversaire, **verrous remis à
+     * zéro** pour qu'elles puissent frapper immédiatement. Le pendule reprend
+     * la main tout de suite après — le ressort les ramènera — donc c'est bien
+     * une impulsion, pas un nouveau mode.
+     *
+     * Sans cible (elle vient de mourir), on se contente du repos : projeter des
+     * lames vers un `undefined` produirait des NaN, et un NaN de position ne
+     * crie pas, il fait disparaître le dessin.
      */
     const b = f.el.weapon.blades;
+    const vise = t ? Math.atan2(t.y - f.y, t.x - f.x) : null;
     for (const lame of f.state.blades) {
       const a2 = f.heading + Math.PI + lame.side * b.spread;
       lame.x = f.x + Math.cos(a2) * b.length;
       lame.y = f.y + Math.sin(a2) * b.length;
-      lame.vx = 0;
-      lame.vy = 0;
+      if (vise === null) {
+        lame.vx = 0;
+        lame.vy = 0;
+      } else {
+        // léger éventail : deux lames sur la même trajectoire n'en font qu'une
+        const ang = vise + lame.side * 0.22;
+        lame.vx = Math.cos(ang) * a.lunge;
+        lame.vy = Math.sin(ang) * a.lunge;
+        lame.cd = 0;
+      }
     }
     this.smoke(f, f.x, f.y, game);
   },
@@ -455,6 +519,32 @@ export const neonAbilities = {
      */
     const map = PIXEL_MAPS[f.el.weapon.head.sprite];
     const hauteur = map.h * f.el.weapon.head.scale;
+    const fant = f.el.look.flair.ghost;
+
+    /**
+     * **Les fantômes des lames**, du plus ancien (le plus effacé) au plus
+     * récent, dessinés **avant** les lames elles-mêmes pour passer dessous.
+     * L'opacité suit le même carré que celle des fantômes du moteur
+     * (`k * k` dans `flair.js`), pour que les deux traînées s'éteignent au même
+     * rythme.
+     */
+    ctx.save();
+    for (const lame of f.state.blades) {
+      const n = lame.spectres.length;
+      for (let i = 0; i < n; i++) {
+        const k = (i + 1) / n;
+        ctx.globalAlpha = fant.alpha * k * k;
+        const g = lame.spectres[i];
+        ctx.save();
+        ctx.translate(g.x, g.y);
+        ctx.rotate(g.a);
+        drawSpriteCentered(ctx, f.el.weapon.head.sprite, 0, 0, hauteur * (0.6 + 0.4 * k));
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+
     for (const lame of f.state.blades) {
       ctx.save();
       ctx.translate(lame.x, lame.y);

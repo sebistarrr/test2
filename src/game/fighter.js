@@ -118,6 +118,19 @@ export class Fighter {
     this.ghosting = 0;
 
     /**
+     * Point que suit le ruban de `render/flair.js`, quand un module en désigne
+     * un autre que la pointe d'arme. `null` = comportement d'origine.
+     *
+     * Même forme que les compteurs ci-dessus : un module le pose, le rendu le
+     * lit, et le rendu **ne sait pas pourquoi**. Il existe parce qu'un
+     * combattant peut n'avoir aucune arme au sens du moteur — Neon Shadow porte
+     * deux lames que son module intègre, donc `weapon.reach` vaut zéro chez lui
+     * et la pointe suivie serait le centre de sa bille.
+     * @type {{x:number,y:number}|null}
+     */
+    this.ribbonAnchor = null;
+
+    /**
      * Décalage **perpendiculaire** de l'ancrage de l'arme, en px, positif vers
      * la gauche de l'axe. Même forme que les autres compteurs génériques : un
      * module l'écrit, `weaponPivot()` s'en sert, et le moteur ne sait pas
