@@ -992,9 +992,10 @@ export class Flair {
   /** État critique : au-dessus des combattants, sous les nombres. */
   drawDanger(ctx, fighters, now) {
     for (const f of fighters) {
-      // **Un quart de ses points de vie**, pas 25 en absolu : avec des PV
-      // réglables, un seuil fixe s'allumerait d'entrée à 20 PV et jamais à 500.
-      // À 100 PV — le défaut — le seuil vaut toujours 25.
+      // **Un quart de ses points de vie**, pas un seuil absolu : les PV varient
+      // par combattant (400 pour le Golem, 50 pour un clone) et la norme
+      // elle-même a déjà changé (100 → 200). Un seuil fixe s'allumerait
+      // d'entrée chez l'un et jamais chez l'autre.
       const seuil = f.maxHp * 0.25;
       if (!f.onStage || f.hp > seuil) continue;
       const urgency = 1 - f.hp / seuil;

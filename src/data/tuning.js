@@ -172,7 +172,19 @@ export const PHYSICS = deepFreeze({
 });
 
 export const MATCH = deepFreeze({
-  maxHp: 100,
+  /**
+   * **Points de vie de départ, pour qui n'en déclare pas — 200, demandé.**
+   *
+   * C'était 100, le chiffre du cahier des charges. Les fiches qui portent leur
+   * propre `maxHp` ne sont pas concernées : `Match` lit `el.maxHp ?? MATCH.maxHp`,
+   * donc le Golem garde les siens (400) et tous les autres suivent cette valeur.
+   *
+   * Doubler cette constante **double la durée des duels** et change donc la
+   * matrice entière — ce n'est pas un réglage confiné, c'est le rythme du jeu.
+   * Rien n'a eu à bouger ailleurs : le dépôt s'interdit depuis longtemps de
+   * diviser par une constante de PV, tout passe par `Fighter.maxHp`.
+   */
+  maxHp: 200,
   /**
    * **Vitesse de déroulement du duel. À 1 : la vitesse d'origine.**
    *

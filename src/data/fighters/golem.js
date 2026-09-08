@@ -15,7 +15,7 @@ import { formatSeconds } from '../format.js';
  *  existants se partagent deux axes : vite et fragile (Shinobi, Ronin), ou à
  *  distance et fuyant (Pistolero, Druide). Personne n'encaisse. Le Golem est
  *  l'inverse de tous : le plus lent, la portée d'arme la plus courte, mais
- *  **200 PV** au lieu de 100.
+ *  **le double des PV de tout le monde**.
  *
  *  **Sa défense, c'est sa barre de vie, et rien d'autre — demandé.** Pas de
  *  réduction de dégâts, pas d'armure qui absorbe, pas d'invulnérabilité
@@ -43,20 +43,20 @@ export const GOLEM = fiche({
   icon: 'iconGolem',
 
   /**
-   * **200 PV au lieu de 100 — demandé, et c'est toute sa défense.**
+   * **400 PV quand tout le monde en a 200 — demandé, et c'est toute sa défense.**
    *
    * Le moteur sait déjà donner des PV par combattant : `Fighter.maxHp` est un
-   * paramètre du constructeur (le Clone d'ombre du Shinobi naît à 25), et tout
+   * paramètre du constructeur (le Clone d'ombre du Shinobi naît à 50), et tout
    * ce qui affiche une proportion de vie divise par **lui**, jamais par une
    * constante — plaque du HUD, cerclage rouge de danger. Il ne manquait que la
    * lecture de la fiche, faite en une ligne dans `Match` (`el.maxHp ??
-   * MATCH.maxHp`), donc les cinq autres restent à 100 sans qu'on les touche.
+   * MATCH.maxHp`), donc les autres suivent la norme sans qu'on les touche.
    *
    * À ne pas confondre avec les PV **réglables** retirés du dépôt : ceux-là
    * étaient une option de partie offerte au joueur. Celui-ci est une valeur de
    * fiche, comme la vitesse ou la portée.
    */
-  maxHp: 200,
+  maxHp: 400,
 
   look: {
     /**
@@ -65,7 +65,7 @@ export const GOLEM = fiche({
      * `look.radius` est déjà lu génériquement (`Fighter.radius`, et
      * `ui/select.js` cadre la carte dessus) : aucune ligne de moteur ne suppose
      * 41. Conséquence de jeu assumée — un corps plus large est **plus facile à
-     * toucher**, ce qui est le juste prix des 200 PV.
+     * toucher**, ce qui est le juste prix de ses 400 PV.
      */
     radius: 50,
     /** Granit sombre. Il faut qu'il se distingue des cinq autres corps
@@ -249,7 +249,7 @@ export const GOLEM = fiche({
        */
       knockback: 500,
       /**
-       * **Volontairement bas (60), et c'est là qu'il pèse ses 200 PV.**
+       * **Volontairement bas (60), et c'est là qu'il pèse ses 400 PV.**
        * Partout ailleurs le recul propre est du même ordre que le recul infligé
        * (l'Hoplite est à 460/460, symétrique). Ici il encaisse un dixième de ce
        * qu'il donne : il ne recule pas quand il frappe. Le moteur n'a aucune

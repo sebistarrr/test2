@@ -32,9 +32,10 @@ les recale en une commande.
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2372 |
 | 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2585 |
 | 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2797 |
-| Équilibrage du roster | 2883 |
-| Règles communes (moteur) | 2981 |
-| Comment les mesures ont été prises | 3005 |
+| La norme passe à 200 PV, le Golem à 400 | 2883 |
+| Équilibrage du roster | 2938 |
+| Règles communes (moteur) | 3036 |
+| Comment les mesures ont été prises | 3060 |
 
 ## Comment lire une valeur
 
@@ -2879,6 +2880,61 @@ ne montre aussi directement :
 
 Le Golem produit **2,2 fois moins** que le Shinobi — l'exact contrepoids de ses
 200 PV, et la confirmation chiffrée du compromis décrit dans sa propre section.
+
+## La norme passe à 200 PV, le Golem à 400
+
+**Demandé.** `MATCH.maxHp` : 100 → 200, et `GOLEM.maxHp` : 200 → 400. Une seule
+constante et une seule fiche — rien d'autre n'a eu à bouger, parce que le dépôt
+s'interdit depuis longtemps de diviser par une constante de PV : tout ce qui
+affiche une proportion de vie lit `Fighter.maxHp` (plaque du HUD, cerclage rouge
+de danger à un quart des PV).
+
+**Deux valeurs ont suivi, et il fallait y penser :**
+
+- **Le Clone d'ombre, 25 → 50 PV.** Sa fiche documente le chiffre comme « un
+  quart d'un vrai combattant », et c'est ce **rapport** qui borne le pouvoir —
+  le laisser à 25 en aurait fait un huitième de combattant, donc un Clone
+  d'ombre bien plus faible qu'il n'a jamais été voulu, sans qu'aucune valeur du
+  Shinobi n'ait changé.
+- **Le Mannequin perd son `maxHp` explicite.** Il portait 200 quand la norme
+  était 100 ; la norme étant passée à 200, cette clé ne faisait plus que
+  recopier le défaut. Une valeur de fiche qui recopie le défaut est une occasion
+  de divergence silencieuse, pas une intention. Son banc de DPS est intact : il
+  a toujours 200 PV, donc « 200 PV ÷ durée » reste la bonne lecture.
+
+### Ce que ça a fait à l'équilibrage, et c'est considérable
+
+Les duels durent **40,6 s en moyenne au lieu de ~26**, et **les 28 lignes de la
+matrice ont bougé** — c'est le seul changement du dépôt à ce jour qui ne soit
+confiné à personne.
+
+| | Avant | Après |
+| --- | --- | --- |
+| Pistolero | 16 | **19** |
+| Shinobi | 8 | **17** |
+| Druide | 12 | 12 |
+| Golem | 14 | 12 |
+| Neon Shadow | 12 | 10 |
+| Hoplite | 10 | 9 |
+| Ronin | 12 | **5** |
+
+**Deux basculements, et tous deux s'expliquent par la durée :**
+
+- **Le Ronin s'effondre (12 → 5).** Ses dégâts plafonnent — `2 × spin`, avec
+  surchauffe au sommet — donc il a un **débit maximum** qu'aucune durée ne
+  relève. Doubler les barres de vie double le temps qu'il lui faut pour tuer
+  sans rien lui donner en échange. C'est le combattant du roster le plus
+  pénalisé par une partie longue.
+- **Le Shinobi bondit (8 → 17).** Ses clones **s'invoquent entre eux** : la
+  population double à chaque tour d'horloge partagée. Un duel plus long n'est
+  pas linéairement meilleur pour lui, il est **exponentiellement** meilleur — un
+  doublement de plus.
+
+Le banc de DPS contre le Mannequin, lui, ne bouge pas d'un dixième (Pistolero
+6,1, Shinobi 5,9, Ronin 5,8, Hoplite 5,5, Druide 5,3, Neon Shadow 4,6, Golem
+2,5 PV/s) : le Mannequin ne riposte pas, donc doubler les PV des deux camps n'y
+change rien. **C'est ce qui prouve que le bouleversement vient de la durée, pas
+de la production.**
 
 ## Équilibrage du roster
 

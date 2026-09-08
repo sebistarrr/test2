@@ -35,11 +35,15 @@ export const DUMMY = fiche({
   taglineRef: 'Training target — never strikes, soaks it up, and lets you watch',
   icon: 'iconDummy',
 
-  /** 200 PV, demandé : le double de la norme, pour que la démonstration dure
-   *  assez longtemps qu'on voie le cycle complet des pouvoirs d'en face — un
-   *  ultime met 7 à 12 s à se charger selon le combattant. Même mécanisme que
-   *  le Golem : `Match` lit `el.maxHp ?? MATCH.maxHp`. */
-  maxHp: 200,
+  /**
+   * **Plus de `maxHp` ici : il suit la norme.**
+   *
+   * Il en portait un, à 200, parce que la norme était alors de 100 et qu'il
+   * fallait que la démonstration dure assez longtemps pour voir le cycle
+   * complet des pouvoirs d'en face. La norme étant passée à 200, cette clé ne
+   * disait plus que la valeur par défaut : une valeur de fiche qui recopie le
+   * défaut est une occasion de divergence silencieuse, pas une intention.
+   */
 
   look: {
     /**

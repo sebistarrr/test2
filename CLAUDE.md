@@ -79,11 +79,13 @@ Neon Shadow — sont inventés**, aucune de leurs valeurs ne peut donc porter
 | `lancer` **HOPLITE** | chargeur, **lance braquée sur le cap** (`weapon.spin = 0`), charge en ligne droite, **164 px, la plus longue portée du jeu**, +2 dégâts par touche, **Foudre tombante** qui le sort de l'arène. Porte le **Dôme de drain**, greffé |
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
-| `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** au lieu de 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
+| `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **400 PV** quand tout le monde en a 200 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
 | `neon` **NEON SHADOW** | **inventé, pas relevé.** **Deux dagues mobiles reliées par une chaîne**, aucune accrochée au corps : son bloc `weapon` est **neutralisé** comme celui du Mannequin (portée 0, dégâts 0) et le module intègre deux pendules dont il applique les dégâts lui-même. Images fantômes **permanentes** (`ghosting` réarmé à chaque pas), Pas du vide (`offstage`), Faille du vide, et **ÉCLIPSE TOTALE** qui peint l'arène en noir dans `drawOver` |
-| `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, 200 PV. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
+| `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, et les PV de la norme. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
-**Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 25 PV qui
+**Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 50 PV — **un
+quart d'un combattant**, et c'est le rapport qui borne le pouvoir, pas le
+chiffre — qui
 sont de **vrais combattants du tableau**, dans le camp du Shinobi, avec **tous
 ses pouvoirs** — Clone d'ombre compris, donc **un clone invoque des clones**.
 **Le groupe ne fait qu'un au HUD** (une plaque, PV cumulés, une paire de
@@ -114,11 +116,15 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 21 duels hors
-miroir chacun : **Pistolero 16**, Golem 14, Neon Shadow 12, Ronin 12,
-Druide 12, Hoplite 10, Shinobi 8, Mannequin 0 (il ne peut pas gagner,
-c'est sa définition). Le Pistolero domine depuis que son **délai entre deux
-tirs a été divisé par deux** sur demande (0,6 → 0,3 s, **aucun dégât
-touché**) — écart assumé et non corrigé.
+miroir chacun : **Pistolero 19**, Shinobi 17, Druide 12, Golem 12,
+Neon Shadow 10, Hoplite 9, **Ronin 5**, Mannequin 0 (il ne peut pas gagner,
+c'est sa définition).
+**Le passage de la norme à 200 PV a rebattu les cartes** : les duels durent
+40,6 s au lieu de ~26, et deux combattants ont basculé. Le **Ronin s'effondre
+de 12 à 5** — ses dégâts plafonnent (`2 × spin`, avec surchauffe), donc une
+barre de vie doublée le laisse sans réponse. Le **Shinobi bondit de 8 à 17** —
+ses clones s'invoquent entre eux, et un duel plus long est un duel où la
+population double une fois de plus.
 **Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
 d'équilibrage : 200 PV divisés par la durée donnent la production réelle de
 chacun contre une cible qui ne riposte pas — Pistolero 6,1, Shinobi 5,9,
@@ -155,12 +161,14 @@ lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format ne demande
 - **Les points de vie ne se règlent pas** — demandé. Il n'y a plus d'option de
   partie : le champ, ses bornes et le paramètre du moteur ont été **retirés**
   plutôt que masqués.
+- **La norme est de 200 PV** (`MATCH.maxHp`), demandée. Doubler cette constante
+  **double la durée des duels** et déplace donc la matrice entière : ce n'est
+  pas un réglage confiné, c'est le rythme du jeu.
 - **Mais `maxHp` est une valeur de fiche**, lue en une ligne par `Match`
-  (`el.maxHp ?? MATCH.maxHp`) : absente des cinq premières fiches, qui gardent
-  les 100 du cahier des charges, et à **200 chez le Golem**. À ne pas confondre
-  avec le curseur retiré ci-dessus.
-- **`Fighter.maxHp` est donc par combattant** (le Golem 200, le Clone d'ombre
-  25), donc **rien ne doit diviser par une constante** : un seuil écrit en
+  (`el.maxHp ?? MATCH.maxHp`) : absente de toutes les fiches sauf une, et à
+  **400 chez le Golem**. À ne pas confondre avec le curseur retiré ci-dessus.
+- **`Fighter.maxHp` est donc par combattant** (le Golem 400, le Clone d'ombre
+  50), donc **rien ne doit diviser par une constante** : un seuil écrit en
   valeur absolue devient faux le jour où la grandeur qu'il compare cesse d'être
   constante, et il ne crie pas en devenant faux.
 - **`MATCH.timeScale` règle la vitesse de déroulement, et vaut 1.** C'est un
@@ -405,7 +413,7 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Le levier d'un combattant faible est parfois chez un autre** — et le pouvoir
   d'un combattant peut peser sur un troisième.
 - **Une grosse barre de vie décide de la *forme* des affrontements** : le total
-  se règle sur la fiche, la forme ne s'y règle pas (Golem, 200 PV).
+  se règle sur la fiche, la forme ne s'y règle pas (Golem, le double de tous).
 - **Lire le banc ligne par ligne, pas seulement en total** : un total stable
   peut cacher une redistribution.
 - Un balayage **non monotone** est du bruit : le paramètre n'équilibre pas, et

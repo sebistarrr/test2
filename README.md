@@ -18,9 +18,9 @@ calé**, et leurs fiches ne portent pas un seul `mesuré`.
 | **Hoplite** | Lance d'orage (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+2 par touche portée** | Foudre tombante / THUNDERFALL — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
 | **Druide** | Bâton de ronce (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Orage de ronces / THORN STORM |
-| **Golem** (inventé) | Amas de roche (maquette servie par un vrai PNG, **par-dessus la bille**) — **la portée la plus courte du jeu** (100 px), et la rotation d'arme la plus lente | **le plus lent** (370 px/s), **le plus gros** (rayon 50 contre 41) et **200 PV** au lieu de 100 : il encaisse chaque coup en entier, il en encaisse simplement deux fois plus. Onde sismique sur horloge, éclats de roche pour qui reste au loin | Séisme / EARTHQUAKE (secousse sur 260 px, puis +35 % de vitesse) |
+| **Golem** (inventé) | Amas de roche (maquette servie par un vrai PNG, **par-dessus la bille**) — **la portée la plus courte du jeu** (100 px), et la rotation d'arme la plus lente | **le plus lent** (370 px/s), **le plus gros** (rayon 50 contre 41) et **400 PV** quand tout le monde en a 200 : il encaisse chaque coup en entier, il en encaisse simplement deux fois plus. Onde sismique sur horloge, éclats de roche pour qui reste au loin | Séisme / EARTHQUAKE (secousse sur 260 px, puis +35 % de vitesse) |
 | **Neon Shadow** (inventé) | Dagues du vide enchaînées — **deux lames mobiles reliées par une chaîne**, aucune accrochée au corps : elles le flanquent, traînent derrière lui et se déportent en virage | **il glisse** : images fantômes permanentes, il éclate en pixels d'ombre quand il encaisse, se téléporte dans le dos de sa cible (Pas du vide) et pose des pièges (Faille du vide) | Éclipse totale / TOTAL ECLIPSE — **l'arène passe au noir**, il ne reste que les contours néon, neuf frappes depuis des angles au hasard, puis un flash blanc |
-| **Mannequin** (inventé) | **aucune** — le seul du jeu | **cible d'entraînement** : il ne fait aucun dégât, n'a aucun pouvoir, et porte 200 PV en blanc. On le choisit pour **regarder l'autre combattant** : sa ligne de HUD compte les dégâts qu'il a subis, donc ce que l'adversaire produit vraiment | aucun (jauge vide, « NO ULTIMATE ») |
+| **Mannequin** (inventé) | **aucune** — le seul du jeu | **cible d'entraînement** : il ne fait aucun dégât, n'a aucun pouvoir, et porte les PV de la norme, en blanc. On le choisit pour **regarder l'autre combattant** : sa ligne de HUD compte les dégâts qu'il a subis, donc ce que l'adversaire produit vraiment | aucun (jauge vide, « NO ULTIMATE ») |
 
 ### Trois formats
 
@@ -65,7 +65,7 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 | **Pistolero** | **Champ de givre** — il le suit partout, ralentit et grignote ce qui entre dedans |
 | **Ronin** | **Aura de braise** — il sème des braises, et tout ce qui l’approche brûle |
 | **Hoplite** | **Dôme de drain** — l’adversaire est figé sous un dôme, un rayon le vide |
-| **Shinobi** | **Clone d'ombre** — des doubles de 25 PV qui entrent dans la partie comme de **vrais combattants**, dans son camp et avec **tous ses pouvoirs**, Clone d'ombre compris : un clone invoque des clones, et le duel passe en 2 contre 1. Au HUD le groupe ne fait qu'un — **une plaque, points de vie cumulés**, une seule paire de jauges — et **ses pouvoirs partent tous en même temps**. Un ton plus clair que lui |
+| **Shinobi** | **Clone d'ombre** — des doubles à **un quart de PV** qui entrent dans la partie comme de **vrais combattants**, dans son camp et avec **tous ses pouvoirs**, Clone d'ombre compris : un clone invoque des clones, et le duel passe en 2 contre 1. Au HUD le groupe ne fait qu'un — **une plaque, points de vie cumulés**, une seule paire de jauges — et **ses pouvoirs partent tous en même temps**. Un ton plus clair que lui |
 | **Druide** | **Tir enraciné** — des racines le clouent au sol une seconde, il cesse de bouger *et* de tirer, puis lâche une **orbe majeure** à trois fois les dégâts |
 
 <sup>[Le Champ de givre du Pistolero](docs/capture-blizzard.png) · [le Dôme de drain de l’Hoplite](docs/capture-lien.png) · [le Clone d'ombre du Shinobi](docs/capture-clone.png) · [les orbes guidées du Druide](docs/capture-mage.png) · [son Orage de ronces](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
@@ -128,7 +128,7 @@ corps, gerbe d'impact et éclat d'incantation. S'y ajoutent les **nombres de
 dégâts** qui s'envolent à chaque touche, les **ondes qui courent le long des
 murs** à chaque rebond, le **sillage** derrière une boule projetée, la
 **convergence de matière** dès 85 % de jauge d'ultime et le **cerclage rouge
-pulsé** sous 25 PV.
+pulsé** sous le quart des points de vie.
 
 Tout cela suit une règle de composition : **rien ne se pose entre le spectateur
 et les combattants**. Ce qui remplit le cadre est au fond, sur les bords, ou
