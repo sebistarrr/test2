@@ -270,9 +270,29 @@ export const outlawAbilities = {
     // la balle part de la bouche du canon, pas du centre de la bille
     game.projectiles.spawn(f, a.projectile, angle, f.el.weapon.reach * 0.9);
 
-    // recul : c'est lui qui fait tout le déplacement erratique de la vidéo
+    /**
+     * **Le recul part selon la VISÉE, pas selon la balle dispersée.**
+     *
+     * Il suivait `angle`, c'est-à-dire la trajectoire réelle de la balle,
+     * dispersion comprise — et `spread` vaut 0,75 rad, soit **±43°**. Le recul
+     * le poussait donc de côté aussi souvent que vers l'arrière : ça bouscule
+     * (le commentaire d'origine l'assumait, « le déplacement erratique de la
+     * vidéo »), mais ça ne **se lit pas** comme un recul de tir.
+     *
+     * Sur `aim`, chaque coup le repousse franchement dans le dos de sa cible.
+     * La balle, elle, garde toute sa dispersion : c'est elle qui porte la
+     * précision relevée (0,60 coup/s), et elle n'est pas touchée.
+     *
+     * À savoir si on veut aller plus loin : **l'ampleur du recul est un levier
+     * plat**. Mesuré sur un cycle de tir complet, il rapporte +2 px de
+     * distance, et toujours +2 à ±8 px qu'on le règle à 200, 300 ou 420 —
+     * `Fighter.step` calcule `v = cap × vitesse + impulsion`, donc l'impulsion
+     * se retranche d'un pilotage qui, lui, ne s'arrête jamais. Un arrêt franc
+     * de 0,18 s après le tir n'y change rien non plus. Ce qui se règle ici,
+     * c'est la **direction** du recul, pas sa force.
+     */
     const recoil = f.ult.active > 0 ? ult.recoil : a.recoil;
-    f.push(-Math.cos(angle), -Math.sin(angle), recoil);
+    f.push(-Math.cos(aim), -Math.sin(aim), recoil);
 
     game.fx.burst(
       f.x + Math.cos(angle) * f.el.weapon.reach * 0.9,

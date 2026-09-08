@@ -20,15 +20,15 @@ relevé, puis les pièges eux-mêmes.
 | **Pièges déjà rencontrés** | 124 |
 | &nbsp;&nbsp;· Mesurer | 126 |
 | &nbsp;&nbsp;· Équilibrer | 161 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 345 |
-| &nbsp;&nbsp;· Éditer les données | 384 |
-| &nbsp;&nbsp;· Interface et rendu | 417 |
-| &nbsp;&nbsp;· Refactoriser | 503 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 544 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 546 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 589 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 632 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 651 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 367 |
+| &nbsp;&nbsp;· Éditer les données | 406 |
+| &nbsp;&nbsp;· Interface et rendu | 439 |
+| &nbsp;&nbsp;· Refactoriser | 525 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 566 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 568 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 611 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 654 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 673 |
 
 ---
 
@@ -341,6 +341,28 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   adversaire) sépare les deux causes, et elles n'appellent pas le même
   correctif. Ici la réponse a été une production **croissante** (`f.stacks`),
   seule forme qui aide dans les duels longs sans rien changer aux courts.
+
+- **Un recul se règle en direction, pas en force — et sa force est un levier
+  plat.** Le Pistolero « avait l'air de se propulser vers l'adversaire ». Trois
+  mesures ont été nécessaires, dont deux lectures fausses de ma part, avant
+  d'arriver au fond :
+  1. mesurer la vitesse **à l'image du tir** ne dit rien : `Match` appelle
+     `Fighter.step()` **avant** `mod.update()`, donc le déplacement de cette
+     image-là est déjà intégré et le recul n'agit qu'à la suivante. Mesuré au
+     mauvais endroit, le recul semblait pousser **vers** la cible ;
+  2. mesuré à la bonne image, il pousse bien vers l'arrière, et fort :
+     **+415 px/s**, et il recule effectivement après 70 % de ses tirs ;
+  3. mais sur un **cycle de tir complet** il ne rapporte que **+2 px** de
+     distance — et toujours +2 à ±8 px qu'on le règle à 200, 300 ou 420, ou
+     qu'on ajoute un arrêt franc de 0,18 s après le tir. C'est le mur déjà
+     rencontré sur le Tir enraciné du Druide : `v = cap × vitesse + impulsion`,
+     donc l'impulsion se retranche d'un pilotage qui ne s'arrête jamais.
+
+  Ce qui se réglait, c'était la **direction** : le recul suivait la balle
+  *dispersée* (`spread` vaut 0,75 rad, soit **±43°**), donc il le poussait de
+  côté aussi souvent que vers l'arrière. Aligné sur la **visée**, chaque coup
+  le repousse franchement dans le dos de sa cible, et la balle garde toute sa
+  dispersion — c'est elle qui porte la précision relevée.
 
 ### Déterminisme et ordre d'exécution
 

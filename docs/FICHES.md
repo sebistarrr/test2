@@ -26,15 +26,15 @@ les recale en une commande.
 | 📦 Archive — les huit éléments supprimés | 76 |
 | 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 150 |
 | 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 940 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1017 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1274 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1839 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2330 |
-| 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2543 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2755 |
-| Équilibrage du roster | 2841 |
-| Règles communes (moteur) | 2939 |
-| Comment les mesures ont été prises | 2963 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1059 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1316 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1881 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2372 |
+| 🌌 NEON SHADOW — `neon` (inventé : deux armes, dont une au bout d'une chaîne) | 2585 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2797 |
+| Équilibrage du roster | 2883 |
+| Règles communes (moteur) | 2981 |
+| Comment les mesures ont été prises | 3005 |
 
 ## Comment lire une valeur
 
@@ -1013,6 +1013,48 @@ moins que les 117/120 qu'avait produits la voie des dégâts, mais il domine
 toujours. Le constat de fond ne change pas : **il ne manquait à ce personnage
 que du rythme, pas de la survie** — il ne mourait pas, il n'arrivait pas à
 conclure. L'écart du roster passe de 8-14 à **8-17**, assumé et non corrigé.
+
+### Le recul de tir : direction corrigée, force laissée telle quelle
+
+**Signalé** : « chaque tir a un petit effet de recul léger dans le sens inverse
+du tir, j'ai l'impression que le personnage se propulse vers l'adversaire ».
+
+Trois mesures ont été nécessaires, dont **deux lectures fausses**, et elles
+valent d'être gardées.
+
+1. **Mesurer à l'image du tir ne dit rien.** `Match` appelle `Fighter.step()`
+   **avant** `mod.update()` : le déplacement de cette image-là est déjà intégré,
+   et le recul n'agit qu'à la suivante. Mesuré au mauvais endroit, il semblait
+   pousser le Pistolero **vers** sa cible — ce qui aurait « confirmé » le
+   symptôme et envoyé chercher un bug de signe qui n'existe pas.
+2. **À la bonne image, il pousse vers l'arrière, et fort** : **+415 px/s**
+   projetés sur l'axe opposé à la cible, et il recule effectivement après
+   **70 %** de ses tirs. Le code était juste.
+3. **Mais sur un cycle de tir complet, il ne rapporte que +2 px de distance** —
+   et toujours +2 à ±8 px qu'on le règle à 200, 300 ou 420, ou qu'on ajoute un
+   arrêt franc de 0,18 s après le coup. C'est le mur déjà rencontré sur le Tir
+   enraciné du Druide : `Fighter.step` calcule `v = cap × vitesse + impulsion`,
+   donc l'impulsion se retranche d'un pilotage qui, lui, ne s'arrête jamais.
+   **L'ampleur du recul est un levier plat.**
+
+**Ce qui se réglait, c'était la direction.** Le recul suivait `angle`, la
+trajectoire réelle de la balle — dispersion comprise, et `spread` vaut 0,75 rad,
+soit **±43°**. Il le poussait donc de côté aussi souvent que vers l'arrière : ça
+bouscule (le commentaire d'origine l'assumait, « le déplacement erratique de la
+vidéo ») mais ça ne **se lit** pas comme un recul de tir.
+
+Appliqué sur `aim`, chaque coup le repousse franchement dans le dos de sa cible.
+La balle garde toute sa dispersion : c'est elle qui porte la précision relevée
+(0,60 coup/s), et elle n'est pas touchée.
+
+**Effet mesuré** : le recul passe de +392 à **+438 px/s** sur l'axe opposé, et
+surtout il devient **cohérent d'un tir à l'autre**. Son DPS ne bouge quasiment
+pas (6,3 → 6,1 PV/s) et il passe de 17 à 16 sur la matrice.
+
+**Ce qui reste vrai et n'a pas été corrigé** : sur la durée, il ne s'éloigne
+pas — son pilotage referme la distance dans le même cycle, et le banc dit que
+ni la force du recul ni un temps d'arrêt n'y changent rien. Il *tient sa
+distance*, il ne fuit pas.
 
 ## ⚔ RONIN — `bladesman` (affiché « RONIN »)
 
