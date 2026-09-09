@@ -141,14 +141,24 @@ la mise en scène ne peut pas déplacer une virgule de l'équilibrage.
 ### Le son
 
 Le duel s'entend autant qu'il se voit, et **sans un seul fichier audio** :
-`src/data/sound.js` porte une vingtaine de **recettes de synthèse** — une ou
-deux couches d'oscillateur et de bruit blanc filtré, avec leur enveloppe — que
+`src/data/sound.js` porte une trentaine de **recettes de synthèse** — de une à
+cinq couches d'oscillateur et de bruit blanc filtré, avec leur enveloppe — que
 `src/render/audio.js` monte à la volée dans un `AudioContext`.
 
 - **Chaque action a son bruit** : le tir (quel que soit le projectile), la
   touche d'arme, l'impact d'un projectile, le tic d'une brûlure, le rebond sur
   un mur, le choc de deux corps, les trois créneaux de pouvoir, le K.O., la
   fanfare de victoire.
+- **Et chaque personnage a le sien** : aucune recette de touche ni d'ultime
+  n'est partagée par deux combattants. Le Ronin frappe d'une lame, le Druide
+  d'un bâton de bois, le Shinobi d'une plaque lancée à plat — trois recettes,
+  trois matières.
+- **Les armes qui tournent sifflent en continu**, et le sifflement suit leur
+  **vitesse de rotation réelle**, image par image : la lame du Ronin va de 0,80
+  à 3,00 tour/s puis s'effondre en surchauffe, et on l'entend monter et
+  retomber. Une lame ralentie par le givre siffle plus bas. Les armes braquées
+  sur leur cible (Pistolero, Hoplite, Druide) ne tournent pas, donc ne sifflent
+  pas.
 - **C'est la fiche qui décide de la matière**, comme pour les sprites et les
   couleurs : elle nomme une recette par créneau et une transposition. Le Golem
   sonne une demi-octave sous le roster (`pitch: 0.72`), le Shinobi au-dessus —
@@ -217,7 +227,8 @@ src/
 │   ├── format.js          formatage des lignes de stat du HUD
 │   ├── tuning.js          géométrie de scène mesurée sur la vidéo
 │   ├── sound.js           **le banc de bruitages** : des recettes de synthèse,
-│   │                      aucun fichier audio
+│   │                      aucun fichier audio. SOUNDS = des événements,
+│   │                      LOOPS = des voix tenues (armes qui tournent)
 │   └── freeze.js          deepFreeze + garde-fou d'immutabilité
 ├── render/
 │   ├── canvas.js          repère logique 720x1280, DPR, pixel-perfect

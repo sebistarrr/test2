@@ -24,12 +24,12 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Éditer les données | 391 |
 | &nbsp;&nbsp;· Interface et rendu | 424 |
 | &nbsp;&nbsp;· Le son | 510 |
-| &nbsp;&nbsp;· Refactoriser | 618 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 659 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 661 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 704 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 747 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 766 |
+| &nbsp;&nbsp;· Refactoriser | 704 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 745 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 747 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 790 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 833 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 852 |
 
 ---
 
@@ -614,6 +614,92 @@ Deux points de conception qui ont bien tenu, notés pour ne pas les défaire :
   `weapon` de la fiche) sonnerait sinon comme un projectile perdu. Un mot dans
   les options de `damage` (`sound: 'hit'`) suffit — même forme que `opts.kind` :
   un module l'écrit, le moteur s'en sert, et il ne sait pas pourquoi.
+
+**Le son d'un état, pas d'un instant** — la sonorisation des six combattants
+restants, et la famille de recettes qu'elle a demandée (`LOOPS`) :
+
+- **« Aucun instant à sonoriser » ne veut pas dire « rien à sonoriser ».** Le
+  créneau `ability` du Ronin valait `null`, avec un commentaire qui le
+  justifiait : la Danse d'acier est un passif, une rotation qui monte toute
+  seule, et « un son sur une montée continue serait un son sans geste ». Le
+  raisonnement est juste et la conclusion fausse. Le Ronin porte
+  `Damage = Spin` : sa lame va de 0,80 à 3,00 tour/s, plafonne 1,8 s,
+  s'effondre à −3,0/s et repart, et **ses dégâts suivent exactement cette
+  courbe**. C'était la seule information vitale du roster qui ne s'entendait
+  pas. Ce qui manquait n'était pas un événement, c'était une **continuité** —
+  et un banc qui ne sait jouer que des événements ne peut pas en dire une. La
+  bonne question n'est pas « quel instant sonoriser » mais « quel état le
+  joueur doit-il entendre ».
+- **Mesurer la grandeur, ne pas la lire dans la fiche.** `weapon.spin` ne porte
+  que le **plancher** du Ronin (5,03 rad/s) ; tout ce qui fait l'intérêt du
+  personnage — montée, palier, effondrement — est ajouté par son module. Une
+  voix pilotée par la fiche aurait donc sonné **plat pendant tout le duel**,
+  sans rien qui plante et sans rien qui se voie. Mesurer la variation réelle de
+  `weaponAngle` donne en plus, sans une ligne : une lame ralentie par le givre
+  qui siffle plus bas (`slowFactor` est déjà dans l'angle) et un ralenti de K.O.
+  qui étire le sifflement avec l'image (le `dt` est celui de la simulation).
+  Relevé par `sound-check`, passe 3 : régime **0,00 → 1,00** pour le Ronin,
+  contre 0,35 constant pour le Shinobi et 0,60 pour le Golem, dont les armes
+  tournent à vitesse fixe.
+- **Une voix tenue n'a pas d'échéance : elle ne doit pas entrer dans le
+  compteur de voix.** `busy` est une **liste d'échéances**, précisément pour ne
+  pas dépendre d'un rappel `onended` (voir plus haut : un compteur qui ne
+  redescend jamais rend le jeu muet sans une erreur). Y pousser une voix tenue
+  serait pire encore — elle n'a aucune échéance, donc elle bloquerait une place
+  du plafond **pour toujours**. Les voix tenues vivent dans leur propre `Map`,
+  clé sur l'objet `Fighter` et non sur `el.id` : le Clone d'ombre met plusieurs
+  corps du même identifiant sur le plateau, et une clé par identifiant les
+  aurait fait se voler la voix l'un l'autre.
+- **Une voix tenue démarre au silence, et s'arrête six constantes plus tard.**
+  Au premier pas, la vitesse de référence est l'angle courant, donc le régime
+  mesuré vaut 0 : partir de la vraie vitesse ouvrirait le gain en une image, ce
+  qui s'entend comme un claquement. À l'autre bout, `setTargetAtTime`
+  **n'atteint jamais sa cible** — c'est une exponentielle asymptotique — donc
+  couper les sources à la constante de temps laisse un résidu audible ; six
+  constantes plus tard il ne reste que −52 dB. Vérifié à l'analyseur : RMS
+  0 → 0,0081 → 0,0170 aux régimes 0 / 0,5 / 1, et **exactement 0 après
+  l'arrêt**.
+- **Et tout paramètre tenu passe par `setTargetAtTime`**, jamais par une
+  écriture directe : la consigne est renvoyée 120 fois par seconde, et l'écrire
+  sec s'entend comme un escalier — d'autant plus fort que la valeur bouge vite,
+  donc exactement pendant la montée en régime qu'on cherche à faire entendre.
+  `MIX.swingGlide` vaut 0,05 s : en dessous l'escalier revient sur
+  l'effondrement de surchauffe (−3,0 tour/s, la variation la plus raide du
+  jeu) ; au-dessus la lame traîne derrière son ruban à l'image.
+
+**Deux combattants qui partagent une recette se font taire l'un l'autre.** Le
+garde-fou `MIX.repeatGap` est indexé **par recette**, pas par combattant : tant
+que le Ronin, le Shinobi et le Druide frappaient tous les trois avec `blade`,
+deux touches simultanées de deux personnages différents n'en produisaient
+qu'une. Séparer leurs recettes (`blade` / `razor` / `bough`) a donc **augmenté**
+le nombre de sons qui sortent, alors qu'on s'attendait à l'inverse : sur le banc
+à quinze duels, 4393 → **4409** sons joués, à sons perdus constants (6, soit
+0,1 % à `maxVoices: 20`). L'intuition disait « plus de matière = plus de
+pression sur le plafond » ; la mesure dit que la pression n'a pas bougé, parce
+que les couches ajoutées sont sur des **ultimes**, qui sont rares. Le plafond
+n'a donc pas eu à changer — mais c'est la mesure qui le dit, pas le
+raisonnement, et elle reste à refaire au prochain jeu de bruitages.
+
+**Un ultime qui n'annonce que « quelque chose arrive » n'annonce rien.**
+`riser`, un balayage large, a servi d'ultime à **quatre combattants sur sept** :
+il disait qu'il se passait quelque chose, jamais *quoi*, et quatre ultimes qui
+sonnent pareil ne s'annoncent pas, ils se confondent. Chacun a désormais le
+sien (`whirl`, `vault`, `cyclone`, `thorns`), et `riser` a été **retiré du banc**
+plutôt que laissé en repli — une recette que plus personne ne joue est du poids
+mort, et `sound-check` la signale. Deux d'entre eux sont volontairement la
+grande sœur d'un pouvoir du même combattant (`cyclone` de `gust`, `thorns` de
+`bloom`) : un ultime se lit mieux quand il est la version large de ce que le
+personnage fait déjà en petit.
+
+**Un pouvoir qui emprunte le son d'un accident devient un accident.** L'onde
+sismique du Golem jouait `thud` — c'est-à-dire le son de ses **propres rebonds
+sur le mur**. Son pouvoir le plus régulier était donc indiscernable d'une
+trajectoire ratée, et le commentaire de sa fiche assumait la confusion (« le
+même tambour que ses rebonds, en plus gros »). Même erreur chez le Shinobi,
+dont la Tornade jouait `whoosh`, le son de son propre lancer de shuriken. Avant
+d'attribuer une recette à un créneau, **regarder ce que le combattant joue
+déjà** : partager avec un autre personnage est un choix, partager avec son
+propre bruit de fond en est rarement un.
 
 ### Refactoriser
 

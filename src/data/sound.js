@@ -96,6 +96,22 @@ export const MIX = deepFreeze({
    * faux à l'écran — l'arène ne fait qu'un tiers de la largeur de la scène.
    */
   panWidth: 0.65,
+  /**
+   * **Constante de lissage des voix tenues**, en secondes.
+   *
+   * Une voix tenue reçoit une consigne neuve à chaque pas de simulation
+   * (120 Hz) : écrire le gain et la coupure directement ferait entendre un
+   * *escalier* — c'est le « zipper noise » classique, et il est d'autant plus
+   * audible que le paramètre bouge vite, donc précisément pendant la montée en
+   * régime du Ronin, le moment qu'on cherche à rendre.
+   *
+   * `setTargetAtTime` glisse vers la consigne avec cette constante de temps.
+   * 0,05 s est le compromis relevé à l'oreille : en dessous, l'escalier
+   * revient sur l'effondrement de surchauffe (−3,0 tour/s, la variation la
+   * plus raide du jeu) ; au-dessus, la lame « traîne » derrière son ruban à
+   * l'image, et le son cesse de dire la même chose que l'écran.
+   */
+  swingGlide: 0.05,
   /** Voix de l'annonceur : débit et hauteur (1 = réglage du navigateur). */
   voice: { rate: 1.02, pitch: 0.85, volume: 1 },
 });
@@ -243,6 +259,33 @@ export const SOUNDS = deepFreeze({
     { wave: 'triangle', f0: 1760, f1: 2640, dur: 0.12, gain: 0.2, attack: 0.006 },
     { wave: 'sine', f0: 300, f1: 120, dur: 0.09, gain: 0.22 },
   ],
+  /**
+   * **Fil de rasoir** : ce que `blade` serait s'il n'avait ni masse ni queue.
+   *
+   * Le Shinobi empruntait `blade`, la lame du Ronin — deux combattants qui
+   * frappent du même bruit ne se distinguent qu'à l'image. Or sa « lame » est
+   * un **shuriken** : une plaque de 75 px de rayon lancée à plat, qui entaille
+   * au passage au lieu de trancher en appuyant. D'où la bande deux fois plus
+   * haute (6200 contre 4200 Hz), plus **étroite** (`q` 3,2 contre 1,5) et deux
+   * fois plus courte : ça pince, ça ne fend pas.
+   */
+  razor: [
+    { wave: 'noise', filter: 'bandpass', cut0: 6200, cut1: 2600, q: 3.2, dur: 0.09, gain: 0.5 },
+    { wave: 'triangle', f0: 1200, f1: 520, dur: 0.07, gain: 0.22 },
+  ],
+  /**
+   * **Le bois qui cogne**, et c'est l'exact opposé de `razor`.
+   *
+   * Le Druide empruntait `blade` lui aussi, alors que son arme est un **Bâton
+   * de ronce** — du bois plein, sans tranchant. Un passe-bas qui s'effondre
+   * (1800 → 400 Hz) donne le mat ; le corps grave donne la masse ; l'éclat
+   * passe-haut final est l'écharde, la seule chose aiguë d'un choc de bois.
+   */
+  bough: [
+    { wave: 'noise', filter: 'lowpass', cut0: 1800, cut1: 400, q: 1.2, dur: 0.14, gain: 0.5 },
+    { wave: 'square', f0: 220, f1: 90, dur: 0.1, gain: 0.3 },
+    { wave: 'noise', filter: 'highpass', cut0: 2400, cut1: 1200, q: 1, dur: 0.05, gain: 0.2 },
+  ],
   /** Tic d'un dégât sur la durée (brûlure, givre) : presque un souffle. */
   ember: [
     { wave: 'noise', filter: 'bandpass', cut0: 1400, cut1: 700, q: 1.6, dur: 0.16, gain: 0.16, attack: 0.04 },
@@ -270,6 +313,16 @@ export const SOUNDS = deepFreeze({
   dash: [
     { wave: 'noise', filter: 'bandpass', cut0: 700, cut1: 2400, q: 1.1, dur: 0.3, gain: 0.34, attack: 0.06 },
     { wave: 'sawtooth', f0: 120, f1: 300, dur: 0.28, gain: 0.12, attack: 0.06 },
+  ],
+  /**
+   * **Bourrasque** : la Tornade du Shinobi, qui jouait `whoosh` — exactement le
+   * son de son propre lancer de shuriken. Deux gestes très différents (jeter
+   * une plaque, appeler un vent) sonnaient donc pareil. Celui-ci **monte** là
+   * où `whoosh` descend : un souffle qui se lève, pas un objet qui passe.
+   */
+  gust: [
+    { wave: 'noise', filter: 'bandpass', cut0: 500, cut1: 2000, q: 1.8, dur: 0.35, gain: 0.3, attack: 0.05 },
+    { wave: 'noise', filter: 'highpass', cut0: 1800, cut1: 4200, q: 0.8, dur: 0.3, gain: 0.12, attack: 0.06 },
   ],
   /**
    * **Givre** : le claquement de l'onde, puis la tenue vitreuse.
@@ -312,6 +365,23 @@ export const SOUNDS = deepFreeze({
     { wave: 'square', f0: 180, f1: 270, dur: 0.16, gain: 0.2, attack: 0.02 },
     { wave: 'square', f0: 270, f1: 405, dur: 0.24, gain: 0.2, delay: 0.1, attack: 0.02 },
   ],
+  /**
+   * **Onde sismique** : le séisme du Golem à l'échelle de son horloge courante.
+   *
+   * Elle jouait `thud` — c'est-à-dire **le son de ses propres rebonds sur le
+   * mur**. Le pouvoir le plus régulier du Golem était donc indiscernable d'un
+   * accident de trajectoire, et son commentaire de fiche assumait la
+   * confusion (« le même tambour que ses rebonds, en plus gros »). `tremor`
+   * est la même matière que `quake` — sinus grave, gravats passe-bas — mais
+   * deux fois plus court et une octave plus haut : on entend que c'est la
+   * *même* chose que son ultime, en plus petit. C'est ce rapport-là qui rend
+   * le Séisme lisible quand il arrive.
+   */
+  tremor: [
+    { wave: 'sine', f0: 90, f1: 38, dur: 0.5, gain: 0.42, attack: 0.02 },
+    { wave: 'noise', filter: 'lowpass', cut0: 600, cut1: 140, q: 1, dur: 0.45, gain: 0.28, attack: 0.02 },
+    { wave: 'square', f0: 60, f1: 30, dur: 0.22, gain: 0.16 },
+  ],
   /** Séisme : le seul son vraiment long du banc, et le seul sous les 40 Hz. */
   quake: [
     { wave: 'sine', f0: 62, f1: 28, dur: 1.1, gain: 0.5, attack: 0.05 },
@@ -321,16 +391,75 @@ export const SOUNDS = deepFreeze({
   heal: [
     { wave: 'sine', f0: 660, f1: 990, dur: 0.32, gain: 0.2, attack: 0.05 },
   ],
-  /** Montée d'ultime : un balayage large qui annonce que quelque chose arrive. */
-  riser: [
-    { wave: 'sawtooth', f0: 90, f1: 880, dur: 0.6, gain: 0.24, attack: 0.05 },
-    { wave: 'noise', filter: 'bandpass', cut0: 400, cut1: 5000, q: 2, dur: 0.6, gain: 0.26, attack: 0.05 },
+  /**
+   * **Tourbillon d'acier** — RUÉE DE LAME.
+   *
+   * Les quatre recettes qui suivent remplacent `riser`, un balayage large qui
+   * a servi d'ultime à **quatre combattants sur sept** : il disait « quelque
+   * chose arrive » sans jamais dire *quoi*, et quatre ultimes qui sonnent
+   * pareil ne s'annoncent pas, ils se confondent. `riser` a donc été retiré du
+   * banc plutôt que laissé en repli — une recette que plus personne ne joue
+   * est du poids mort, et `tools/sound-check.mjs` la signale.
+   *
+   * Celle-ci est la seule des quatre dont **tout monte ensemble** — bande,
+   * scie et timbre : la RUÉE DE LAME est une accélération, la lame passe de
+   * son plancher à son plafond. L'anneau d'acier en retard de 100 ms est la
+   * roue de flamme qui se referme.
+   */
+  whirl: [
+    { wave: 'noise', filter: 'bandpass', cut0: 500, cut1: 4200, q: 2.2, dur: 0.6, gain: 0.3, attack: 0.05 },
+    { wave: 'sawtooth', f0: 150, f1: 900, dur: 0.55, gain: 0.18, attack: 0.04 },
+    { wave: 'triangle', f0: 880, f1: 1760, dur: 0.3, gain: 0.14, delay: 0.1, attack: 0.02 },
+  ],
+  /**
+   * **Le décollage** — FOUDRE TOMBANTE.
+   *
+   * L'Hoplite est le seul du roster à **quitter l'arène** (`offstage`), et son
+   * ultime a donc deux instants distincts, déjà servis par deux créneaux
+   * (`ultimate` au départ, `strike` à l'arrivée). Ce qu'il manquait au départ,
+   * c'est l'**appui** : la couche grave sans retard est la poussée sur le sol,
+   * les deux suivantes sont le corps qui s'éloigne. Un balayage seul faisait
+   * décoller quelque chose qui n'avait jamais touché terre.
+   */
+  vault: [
+    { wave: 'square', f0: 90, f1: 200, dur: 0.12, gain: 0.22 },
+    { wave: 'noise', filter: 'bandpass', cut0: 400, cut1: 3000, q: 1.4, dur: 0.45, gain: 0.3, attack: 0.04 },
+    { wave: 'sine', f0: 120, f1: 620, dur: 0.4, gain: 0.2, attack: 0.03 },
+  ],
+  /**
+   * **La tornade** — TORNADE DE SHURIKENS.
+   *
+   * La plus longue des quatre (0,75 s) et la seule sans couche grave : une
+   * tornade n'a pas de fond, elle a une **enveloppe**. Le passe-haut en retard
+   * de 80 ms est le métal qui entre dans le vent — c'est ce qui la sépare
+   * d'une simple bourrasque (`gust`, son pouvoir de Tornade), dont elle est
+   * sinon la grande sœur.
+   */
+  cyclone: [
+    { wave: 'noise', filter: 'bandpass', cut0: 700, cut1: 3400, q: 2.6, dur: 0.75, gain: 0.28, attack: 0.08 },
+    { wave: 'noise', filter: 'highpass', cut0: 2000, cut1: 6000, q: 0.8, dur: 0.6, gain: 0.14, attack: 0.1, delay: 0.08 },
+    { wave: 'triangle', f0: 440, f1: 1320, dur: 0.5, gain: 0.12, attack: 0.06 },
+  ],
+  /**
+   * **Les ronces qui poussent** — ORAGE DE RONCES.
+   *
+   * La seule des quatre qui ne balaie pas vers l'aigu d'un trait : le
+   * bandpass monte (ça pousse) mais l'éclat passe-haut, lui, **descend** —
+   * c'est le bois qui craque, et il craque en retombant. Même parenté avec
+   * `bloom`, son pouvoir végétal, que `cyclone` avec `gust` : l'ultime est la
+   * version large de ce que le combattant fait déjà en petit.
+   */
+  thorns: [
+    { wave: 'noise', filter: 'bandpass', cut0: 600, cut1: 2200, q: 3, dur: 0.5, gain: 0.24, attack: 0.06 },
+    { wave: 'triangle', f0: 220, f1: 440, dur: 0.45, gain: 0.2, attack: 0.04 },
+    { wave: 'noise', filter: 'highpass', cut0: 3400, cut1: 1200, q: 1, dur: 0.22, gain: 0.16, delay: 0.1 },
   ],
   /**
    * **Le glas** : une cloche, son octave grave, et la rue qui se vide derrière.
    *
-   * `riser` annonce « quelque chose arrive » et convient à quatre combattants ;
-   * il ne dit pas *quoi*. MAIN DU MORT est un duel à midi — ce qui l'ouvre
+   * **La première du banc à avoir quitté `riser`**, et le patron des quatre
+   * ci-dessus : un ultime doit dire *quoi* arrive, pas seulement que quelque
+   * chose arrive. MAIN DU MORT est un duel à midi — ce qui l'ouvre
    * n'est pas une montée de synthé mais **une cloche qu'on frappe**, avec ce
    * qui va avec : le battant sur le bronze (le transitoire passe-bande), puis
    * la tension et le vent, tous deux **en retard de 120 ms** pour que la cloche
@@ -376,5 +505,68 @@ export const SOUNDS = deepFreeze({
   /** Clic d'interface : les écrans DOM ne sont pas muets non plus. */
   click: [
     { wave: 'square', f0: 900, f1: 600, dur: 0.045, gain: 0.16 },
+  ],
+});
+
+/**
+ * ============================================================================
+ *  SONS TENUS — la seule famille du banc qui n'ait pas de fin
+ * ============================================================================
+ *
+ * Tout ce qui précède est un **événement** : quelque chose arrive, on le joue,
+ * il s'éteint. Il manquait la famille inverse — un son qui **dure tant qu'un
+ * état dure** et dont la matière suit ce que fait le combattant, image par
+ * image.
+ *
+ * **Pourquoi elle manquait, et à qui.** Le Ronin porte `Damage = Spin` : toute
+ * sa fiche tient dans la vitesse de sa lame, qui monte de 0,80 à 3,00 tour/s,
+ * tient un palier, puis s'effondre en surchauffe et repart. Ce cycle est la
+ * chose la plus importante du personnage, il est **visible** (le ruban de
+ * pointe s'allonge) et il était **totalement muet** : son créneau `ability`
+ * valait `null`, faute d'instant à sonoriser. C'est justement le point — il
+ * n'y a pas d'instant, il y a une *continuité*, et un banc qui ne sait jouer
+ * que des événements ne peut pas la dire.
+ *
+ * **Une couche tenue interpole entre deux états au lieu de décrire un geste.**
+ * Là où une couche de `SOUNDS` porte `cut0`/`cut1` (début → fin *dans le
+ * temps*), une couche d'ici porte les mêmes noms pour **repos → plein
+ * régime** : c'est le `level` (0 à 1) passé image par image qui déplace le
+ * curseur, et non l'horloge. Deux conséquences :
+ *
+ *  • `dur`, `delay` et `attack` n'ont aucun sens ici et n'y sont pas — une
+ *    voix tenue n'a pas de durée, elle a un début et un arrêt ;
+ *  • `gain0` est presque toujours 0 : à `level` nul, la voix doit être
+ *    **inaudible sans être coupée**, sinon chaque passage par zéro
+ *    s'entendrait comme un clic.
+ *
+ * C'est `render/audio.js` qui monte ces voix (`swing()`), et le `level` vient
+ * de la **vitesse de rotation réellement mesurée** sur `weaponAngle` — pas de
+ * `weapon.spin`, qui ne connaît que le plancher. Voir la note de `swing()`.
+ */
+export const LOOPS = deepFreeze({
+  /**
+   * **L'air fendu par une lame.** Bande étroite qui monte avec la vitesse : le
+   * sifflement d'un objet plat qui tourne vite est une **résonance**, pas un
+   * bruit large — c'est le `q` élevé qui fait la différence entre une lame et
+   * un ventilateur.
+   *
+   * La seconde couche ne sort qu'en haut de course (`gain1` trois fois plus
+   * bas) : c'est le grésillement de pointe, et il ne doit s'entendre que quand
+   * le Ronin est au plafond. Sans elle, le palier de surchauffe sonnait
+   * exactement comme le milieu de la montée.
+   */
+  swish: [
+    { wave: 'noise', filter: 'bandpass', cut0: 300, cut1: 2600, q: 1.6, gain0: 0, gain1: 0.3 },
+    { wave: 'noise', filter: 'highpass', cut0: 800, cut1: 5200, q: 0.7, gain0: 0, gain1: 0.12 },
+  ],
+  /**
+   * **La pierre qui racle.** Le Golem tourne quatre fois moins vite que le
+   * Ronin : `swish` transposé n'aurait donné qu'un sifflement grave, soit un
+   * petit objet lourd, pas une masse. Un passe-bas et une scie sous 100 Hz
+   * donnent le frottement — ce qu'on entend d'un bloc, c'est ce qu'il **traîne**.
+   */
+  grind: [
+    { wave: 'noise', filter: 'lowpass', cut0: 180, cut1: 900, q: 1.2, gain0: 0, gain1: 0.26 },
+    { wave: 'sawtooth', f0: 40, f1: 95, gain0: 0, gain1: 0.1 },
   ],
 });

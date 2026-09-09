@@ -222,8 +222,13 @@ export const LANCER = fiche({
     ability: 'dash',
     /** Le dôme est une nappe entretenue, donc un bourdon et pas un impact. */
     special: 'hum',
-    /** La montée est celle du **bond** : l'ultime commence par un décollage. */
-    ultimate: 'riser',
+    /**
+     * **Le décollage, et d'abord l'appui.** L'ultime commence par un bond, et
+     * il est le seul du roster à quitter l'arène (`offstage`). `riser` faisait
+     * décoller quelque chose qui n'avait jamais touché terre : `vault` pose la
+     * poussée au sol avant le corps qui s'éloigne.
+     */
+    ultimate: 'vault',
     /**
      * **Créneau propre à l'Hoplite**, lu par son seul module : la Foudre
      * tombante a deux instants, et un seul son n'aurait pas pu dire les deux.

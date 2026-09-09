@@ -1105,6 +1105,10 @@ est passé de 14 à **20**, où il ne reste que 0,4 %, et ce qui saute encore n'
 plus que `thud`. Le détail, et le piège de mesure qui a d'abord annoncé 90 % de
 pertes, sont dans `docs/PIEGES.md`, section « Le son ».
 
+**Les six autres ont suivi**, et le prix attendu n'est pas venu : voir « Le son
+de chacun », plus bas — le plafond n'a pas bougé, et il passe même *plus* de
+sons qu'avant.
+
 ## ⚔ RONIN — `bladesman` (affiché « RONIN »)
 
 > Duelliste — sa lame accélère jusqu'à la surchauffe, puis fond sur sa cible.
@@ -3098,34 +3102,80 @@ nom de recette par créneau. Les recettes sont dans `src/data/sound.js` — de l
 synthèse, **aucun fichier audio** — et le mécanisme est décrit dans la section
 « Son » de `CLAUDE.md`.
 
-| | `pitch` | Tir | Touche | Pouvoir | Spécial | Ultime |
-| --- | --- | --- | --- | --- | --- | --- |
-| Pistolero | 1 | `gunshot` | `blade` | `click` (le rechargement) | `frost` | `riser` |
-| Ronin | 0,92 | — | `blade` | — (passif) | `fire` | `riser` |
-| Hoplite | 0,95 | — | `pierce` | `dash` | `hum` | `riser` + `zap` à l'impact |
-| Shinobi | 1,20 | `whoosh` | `blade` | `whoosh` | `summon` | `riser` |
-| Druide | 1,05 | `orb` | `blade` | — (passif) | `bloom` | `riser` |
-| Golem | **0,72** | `pebble` | `crunch` | `thud` | `crunch` | `quake` |
-| Mannequin | 0,85 | — | — | — | — | — |
+| | `pitch` | Tir | Touche | Pouvoir | **Voix tenue** | Spécial | Ultime |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Pistolero | 1 | `gunshot` | `pistolwhip` | `cylinder` (le rechargement) | — | `frost` | `knell` |
+| Ronin | 0,92 | — | `blade` | — (passif) | **`swish` 5 → 19 rad/s** | `fire` | `whirl` |
+| Hoplite | 0,95 | — | `pierce` | `dash` | — | `hum` | `vault` + `zap` à l'impact |
+| Shinobi | 1,20 | `whoosh` | `razor` | `gust` | `swish` 5 → 19, gain 0,4 | `summon` | `cyclone` |
+| Druide | 1,05 | `orb` | `bough` | — (passif) | — | `bloom` | `thorns` |
+| Golem | **0,72** | `pebble` | `crunch` | `tremor` | `grind` 0,5 → 4 rad/s | `crunch` | `quake` |
+| Mannequin | 0,85 | — | — | — | — | — | — |
 
-Quatre choix qui ne se devinent pas :
+**Plus aucun créneau n'est partagé** entre deux combattants, sauf `bounce`
+(`thud` — le mur n'appartient à personne) et `impact` (le projectile générique,
+que seul le Pistolero surcharge, en `frostbite`). Le banc est passé par un état
+intermédiaire où quatre combattants partageaient `blade` et **cinq `riser`** ;
+`riser` n'existe plus.
+
+Six choix qui ne se devinent pas :
 
 - **Le `pitch` fait tout le travail d'identité.** Le Golem est à 0,72 — presque
   une demi-octave sous le roster, murs compris — et c'est le pendant sonore de
   ce que sa fiche fait partout ailleurs : rayon 50 contre 41, 200 PV contre 100,
   370 px/s contre 430. Il est plus lourd, il s'entend plus lourd, et **aucune
   ligne de code ne le sait**.
-- **Un pouvoir passif n'a pas de son.** La Danse d'acier du Ronin et la Sève
-  montante du Druide sont des montées continues : il n'y a aucun instant à
-  sonoriser, et un son sur une pente serait un son sans geste.
+- **Un pouvoir passif n'a pas de son — mais il peut avoir une voix.** La Danse
+  d'acier du Ronin et la Sève montante du Druide sont des montées continues :
+  aucun instant à sonoriser, et un son sur une pente serait un son sans geste.
+  Le raisonnement tient toujours, la conclusion non : la Danse d'acier est
+  `Damage = Spin`, donc **la courbe la plus importante du personnage**, et elle
+  était muette. Elle passe désormais par une **voix tenue** (`sound.swing`),
+  pilotée par la rotation réellement mesurée sur `weaponAngle` — plancher =
+  silence, plafond = plein régime, et le cycle de surchauffe s'entend avant de
+  se lire sur la jauge. La Sève montante, elle, n'a rien à tenir : sa montée est
+  une **cadence** (+0,05 orbe par tir), qui s'entend d'elle-même dans
+  l'espacement des `orb`.
+- **Les trois voix tenues ne racontent pas la même chose.** Seul le Ronin
+  *varie* (régime relevé 0,00 → 1,00 par `sound-check`). Le Shinobi et le Golem
+  tournent à vitesse fixe : leur voix est un régime constant (0,35 et 0,60), et
+  leur `gain` est volontairement bas — ce qui ne raconte rien de nouveau ne doit
+  pas peser sur ce qui raconte. Ce qu'elles apportent est ailleurs : elles sont
+  panoramiques, donc on entend **où** est le combattant, ce qui compte pour le
+  plus rapide du roster et ses clones dispersés.
 - **Le pouvoir du Pistolero sonne au *rechargement*, pas au tir.** La rafale
-  s'entend déjà, une détonation par balle ; le clic du barillet qu'on réarme
-  était le seul moment du personnage qui ne s'entendait pas — et c'est justement
-  le moment où il ne fait rien.
-- **L'Hoplite est le seul à avoir deux sons pour un pouvoir** (`riser` au
+  s'entend déjà, une détonation par balle ; le barillet qu'on réarme était le
+  seul moment du personnage qui ne s'entendait pas — et c'est justement le
+  moment où il ne fait rien.
+- **L'Hoplite est le seul à avoir deux sons pour un pouvoir** (`vault` au
   décollage, `zap` à la chute), par un créneau `strike` que son seul module lit.
   La Foudre tombante a deux instants séparés par une seconde et demie ; un seul
   son n'aurait pas pu dire les deux.
+- **Deux ultimes sont la grande sœur d'un pouvoir du même combattant** :
+  `cyclone` de `gust` chez le Shinobi, `thorns` de `bloom` chez le Druide, et
+  `quake` de `tremor` chez le Golem. Un ultime se lit mieux quand il est la
+  version large de ce que le personnage fait déjà en petit — c'est ce rapport
+  qui le rend reconnaissable, pas son volume.
+
+**Ce que la séparation a coûté, et le contre-sens.** Une voix de
+`MIX.maxVoices` est une **couche**, pas un bruitage, et sonoriser le Pistolero
+avait fait passer les sons perdus de 0 % à 2,3 % (d'où le plafond relevé de 14 à
+20). On attendait donc le même prix, six fois. Mesuré sur le même banc — quinze
+duels, l'algorithme de `play()` rejoué sur l'horloge du duel — il n'a rien
+coûté : **6 sons perdus avant, 6 après** (0,1 % à `maxVoices: 20`), et
+**4393 → 4409 sons effectivement joués**, donc seize de plus. Deux raisons, dont
+la seconde ne se devine pas :
+
+1. les couches ajoutées sont sur des **ultimes**, qui partent une poignée de
+   fois par duel — là où le Pistolero avait enrichi son *tir*, joué des
+   centaines de fois ;
+2. `MIX.repeatGap` est indexé **par recette, pas par combattant** : tant que
+   trois personnages frappaient avec `blade`, deux touches simultanées de deux
+   d'entre eux n'en produisaient **qu'une**. Leur donner chacun la sienne a levé
+   ce bâillon.
+
+Le plafond reste donc à 20 — mais c'est la mesure qui le dit, pas le
+raisonnement, et elle est à refaire au prochain jeu de bruitages.
 
 L'annonceur, lui, passe par la **synthèse vocale du navigateur** et parle la
 langue de l'écran (clés `speech*` de `ui/lang.js`) : « pistolero versus ronin »

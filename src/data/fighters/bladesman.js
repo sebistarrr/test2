@@ -103,9 +103,12 @@ export const BLADESMAN = fiche({
    * la lame est plus grave que le revolver, et c'est ce qui les sépare à
    * l'oreille quand les deux frappent dans la même seconde.
    *
-   * **Pas de son de pouvoir** : la Danse d'acier est un *passif*, la rotation
-   * qui monte toute seule. Il n'y a aucun instant à sonoriser — un son sur une
-   * montée continue serait un son sans geste.
+   * **La Danse d'acier n'a pas de son de pouvoir, elle a une voix tenue.**
+   * C'est un *passif* — la rotation qui monte toute seule — donc il n'y a
+   * effectivement aucun instant à sonoriser, et `ability` reste `null`. Mais
+   * en conclure que le pouvoir devait rester muet était une erreur : ce qui
+   * manquait n'était pas un événement, c'était une **continuité**, et le banc
+   * ne savait pas en jouer. Voir `swing` ci-dessous.
    */
   sound: {
     pitch: 0.92,
@@ -114,8 +117,24 @@ export const BLADESMAN = fiche({
     impact: 'impact',
     bounce: 'thud',
     ability: null,
+    /**
+     * **Le personnage entier tient dans cette ligne.**
+     *
+     * `Damage = Spin` : sa lame va de 0,80 à 3,00 tour/s, plafonne 1,8 s,
+     * s'effondre à −3,0/s et repart — et ses dégâts suivent exactement cette
+     * courbe. C'était jusqu'ici la seule information vitale du roster qui ne
+     * s'entendait pas.
+     *
+     * `from`/`to` sont ses **deux bornes mesurées**, converties en rad/s :
+     * 0,80 tour/s = 5,03 et 3,00 tour/s = 18,85. Prendre ses vraies bornes,
+     * et non une échelle commode, est ce qui fait que la voix balaie toute sa
+     * course : plancher = silence, plafond = plein régime. On entend donc le
+     * cycle de surchauffe **avant** de le lire sur la jauge.
+     */
+    swing: { loop: 'swish', from: 5, to: 19, gain: 1 },
     special: 'fire',
-    ultimate: 'riser',
+    /** Une accélération, pas une annonce : bande, scie et timbre montent ensemble. */
+    ultimate: 'whirl',
   },
 
   /** Mesuré 605 px/s (médiane de 49 segments rectilignes) → ×1,25 = 756.

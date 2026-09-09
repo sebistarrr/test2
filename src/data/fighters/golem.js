@@ -138,8 +138,23 @@ export const GOLEM = fiche({
     hit: 'crunch',
     impact: 'impact',
     bounce: 'thud',
-    /** L'onde sismique frappe le sol : le même tambour que ses rebonds, en plus gros. */
-    ability: 'thud',
+    /**
+     * **L'onde sismique jouait `thud`** — c'est-à-dire le son de ses *propres
+     * rebonds sur le mur*. Son pouvoir le plus régulier était donc
+     * indiscernable d'un accident de trajectoire. `tremor` est la même matière
+     * que son `quake` d'ultime, une octave plus haut et deux fois plus court :
+     * on entend que c'est la même chose en plus petit, et c'est ce rapport qui
+     * rend le Séisme lisible quand il arrive.
+     */
+    ability: 'tremor',
+    /**
+     * **Le bloc racle au lieu de siffler.** Il tourne quatre fois moins vite
+     * que le Ronin (SPIN × 0,45, soit 2,6 rad/s) : `swish` transposé n'aurait
+     * donné qu'un sifflement grave — un petit objet lourd, pas une masse. Ses
+     * bornes sont les siennes, pas celles du Ronin, sans quoi il resterait
+     * collé au silence.
+     */
+    swing: { loop: 'grind', from: 0.5, to: 4, gain: 0.55 },
     /** La roche qui se fend avant que les huit éclats ne partent — eux ont
      *  leur propre `pebble`, tiré par tiré. */
     special: 'crunch',

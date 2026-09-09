@@ -74,8 +74,12 @@ Trois règles qui coûtent cher à rattraper :
 - **Le bloc `sound` aussi**, sinon le combattant est **muet** : `pitch` le
   transpose tout entier, et chaque créneau nomme une recette de
   `src/data/sound.js` (`null` si le créneau n'existe pas — un pouvoir passif n'a
-  aucun instant à sonoriser). Rien ne plante sans lui, rien ne se voit à
-  l'écran : c'est `tools/sound-check.mjs` qui le dit.
+  aucun instant à sonoriser, ce qui ne veut pas dire qu'il n'a rien à faire
+  entendre : voir `sound.swing` plus bas). Rien ne plante sans lui, rien ne se
+  voit à l'écran : c'est `tools/sound-check.mjs` qui le dit. Prendre une recette
+  qu'un autre combattant utilise déjà est permis, mais s'y résoudre plutôt que
+  s'y résigner — `MIX.repeatGap` étant indexé par recette, deux personnages qui
+  la partagent se **coupent mutuellement** quand ils frappent en même temps.
 - **Les champs `Ref` sont obligatoires.** L'application est en anglais, le
   dépôt en français ; `label()` a un repli silencieux qui évite le plantage
   mais pas un écran à moitié traduit. `lang-check` les vérifie.
@@ -93,6 +97,16 @@ Deux clés facultatives, qui ne servent qu'à qui y déroge :
 - **`look.radius`** — rayon du corps, 41 par défaut, 50 chez le Golem. Un corps
   plus large est **plus facile à toucher** : c'est un réglage d'équilibrage
   autant qu'un choix de dessin.
+- **`sound.swing`** — une **voix tenue** pour une arme qui tourne, à ne déclarer
+  que si `weapon.spin` n'est pas nul : `{ loop, from, to, gain }`, où `loop`
+  nomme une recette de `LOOPS` (`data/sound.js`) et où `from`/`to` sont les
+  bornes de rotation **en rad/s** qui font passer la voix du silence au plein
+  régime. Prendre **ses** bornes à lui, pas celles d'un autre : un combattant
+  calé sur une échelle qui n'est pas la sienne reste collé au silence ou au
+  plafond. Un tour par seconde vaut 2π ≈ 6,28 rad/s. La vitesse est **mesurée
+  sur `weaponAngle`**, donc elle inclut ce que le module ajoute au plancher de
+  la fiche — c'est tout l'intérêt : le cycle de surchauffe du Ronin s'entend
+  parce qu'il est mesuré, il aurait été plat s'il avait été lu.
 
 **Un combattant peut n'avoir aucune arme** (le Mannequin) : `head.sprite: null`,
 `reach: 0` et une hitbox `from`/`to`/`radius` à zéro suffisent — la condition de

@@ -266,15 +266,29 @@ timbre qui se **transpose par combattant**.
   joue le créneau, la fiche dit la matière. Un projectile peut nommer la sienne
   (`projectiles.x.sound`), et une fiche peut ajouter un créneau que son seul
   module lit (l'Hoplite : `strike`, la foudre qui tombe).
-- **Chantier en cours : un jeu de bruitages *par* combattant, demandé.** Le banc
-  a d'abord été écrit en matières partagées — quatre combattants sur `blade`,
-  cinq sur `riser`, le Pistolero jusqu'à emprunter `click`, le son de
-  l'interface, pour son rechargement — la transposition (`pitch`) faisant seule
-  la différence. **Le Pistolero est fait** (`gunshot` enrichi d'un claquement et
-  d'une queue, `cylinder`, `pistolwhip`, `frostbite`, `frost` enrichi de son
-  onde, `knell`) ; **les six autres attendent leur tour**. Les recettes restent
-  nommées par **matière**, jamais par combattant : c'est la fiche qui les
-  attribue, et deux combattants peuvent en partager une.
+- **Chaque combattant a son jeu de bruitages, demandé — le chantier est clos.**
+  Le banc avait d'abord été écrit en matières partagées : quatre combattants sur
+  `blade`, **cinq sur `riser`**, le Pistolero jusqu'à emprunter `click`, le son
+  de l'interface, pour son rechargement — la transposition (`pitch`) faisant
+  seule la différence. Plus aucun créneau n'est partagé aujourd'hui, sauf
+  `bounce` (`thud`, le mur, qui n'appartient à personne) et `impact` (le
+  projectile générique). `riser` a été **supprimé** : sans lecteur, une recette
+  est du poids mort, et `sound-check` la signale. Les recettes restent nommées
+  par **matière**, jamais par combattant : c'est la fiche qui les attribue.
+- **Deux combattants qui partagent une recette se font taire l'un l'autre** —
+  `MIX.repeatGap` est indexé par recette, pas par combattant. Séparer `blade` en
+  trois a donc fait passer **plus** de sons, pas moins (4393 → 4409 sur quinze
+  duels), à sons perdus constants. Contre-intuitif, mesuré, détaillé dans
+  `docs/PIEGES.md`.
+- **Deux familles de recettes, et la seconde dit un *état*.** `SOUNDS` joue des
+  **événements** ; `LOOPS` tient une voix tant qu'un état dure et en module la
+  matière image par image (`sfx.swing`, déclaré par `sound.swing` dans la
+  fiche). C'est ce qui manquait au Ronin, dont toute la fiche tient dans
+  `Damage = Spin` : son cycle de rotation était **visible et muet**. Le régime
+  est **mesuré sur `weaponAngle`**, jamais lu dans `weapon.spin`, qui n'en porte
+  que le plancher — d'où, gratuitement, une lame ralentie par le givre qui
+  siffle plus bas. Les quatre armes braquées du roster (`spin = 0`) restent
+  muettes sans qu'aucun test ne les nomme.
 - **Le son ne lit que de l'état déjà calculé** et n'écrit rien — même contrat
   que `flair.js`. Il ne tire ni dans `game.rng` ni dans `viewRng` (voir
   l'invariant 2) : sa dérive de hauteur passe par `Math.random`, exprès.
@@ -633,6 +647,17 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Un garde-fou de couverture ne voit que ce qu'il exerce** : `sound-check`
   ne joue que des duels, donc il criait « recette morte » sur le clic des
   écrans DOM.
+- **« Aucun instant à sonoriser » ne veut pas dire « rien à sonoriser »** : ce
+  qui manquait au Ronin était un *état*, pas un événement — la bonne question
+  est « quel état le joueur doit entendre », pas « quel instant sonoriser ».
+- **Piloter une voix tenue par la fiche la fait sonner plate** : mesurer la
+  grandeur réelle, la fiche n'en porte souvent que le plancher.
+- **Une voix tenue n'a pas d'échéance** : la mettre dans le compteur de voix
+  bloquerait une place du plafond pour toujours. Elle démarre au silence, et
+  s'arrête six constantes de lissage après sa consigne, jamais à une.
+- **Un pouvoir qui emprunte le son d'un accident devient un accident** : l'onde
+  sismique du Golem jouait le bruit de ses propres rebonds sur le mur. Regarder
+  ce que le combattant joue **déjà** avant d'attribuer une recette.
 
 **Refactoriser**
 

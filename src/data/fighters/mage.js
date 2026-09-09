@@ -72,13 +72,25 @@ export const MAGE = fiche({
   sound: {
     pitch: 1.05,
     shot: 'orb',
-    hit: 'blade',
+    /**
+     * **Son arme est un bâton, pas une lame** — du bois plein, sans tranchant.
+     * Il empruntait `blade` et sonnait donc comme le Ronin, ce que le Bâton de
+     * ronce dément à l'image. `bough` est l'exact inverse : passe-bas qui
+     * s'effondre au lieu d'un sifflement qui monte.
+     */
+    hit: 'bough',
     impact: 'impact',
     bounce: 'thud',
-    /** La Sève montante est un passif : aucun instant à sonoriser. */
+    /**
+     * La Sève montante est un passif : aucun instant à sonoriser. Et rien à
+     * tenir non plus — contrairement au Ronin, sa montée est une **cadence**
+     * (+0,05 orbe par tir), pas une rotation. Elle s'entend donc d'elle-même,
+     * dans l'espacement des `orb`.
+     */
     ability: null,
     special: 'bloom',
-    ultimate: 'riser',
+    /** Ça pousse (le bandpass monte) et ça craque en retombant (l'éclat descend). */
+    ultimate: 'thorns',
   },
 
   /**

@@ -347,6 +347,22 @@ export class Match {
       }
     }
 
+    /**
+     * **Le sifflement des armes qui tournent**, tenu d'un pas à l'autre.
+     *
+     * Un appel unique pour tout le plateau, et **après** la boucle de pas :
+     * `sfx.swing` mesure la rotation sur la variation de `weaponAngle`, il lui
+     * faut donc l'angle du pas courant, déjà intégré par `Fighter.step` et
+     * déjà corrigé par les modules. Comme le rebond ci-dessus, le son ne fait
+     * que lire — il n'écrit rien, ne tire dans aucun des deux flux d'aléa, et
+     * la matrice ne bouge pas (invariants 2 et 3).
+     *
+     * Il reçoit `dt`, pas `dtRaw` : c'est le pas que viennent de consommer les
+     * combattants, donc le ralenti du K.O. étire le sifflement avec l'image.
+     * La parade le referme — plus personne ne se bat, plus rien ne siffle.
+     */
+    sfx.swing(this.fighters, dt, this.phase !== 'victory');
+
     // corps à corps + collisions
     if (this.phase === 'fight') {
       if (this.fighters.length === 2) {
@@ -437,6 +453,15 @@ export class Match {
   setPhase(next) {
     this.phase = next;
     this.phaseTime = 0;
+    /**
+     * **Les voix tenues se referment ici, et pas dans `update`.** Un duel fini
+     * n'est plus mis à jour du tout : sans ce point d'arrêt, la dernière lame
+     * en rotation sifflerait pendant tout l'écran de résultat, puis la
+     * revanche ouvrirait un second jeu de voix par-dessus le premier — la
+     * même fuite que celle contre laquelle `busy` est écrit, mais en pire,
+     * puisque rien ne les ferait jamais redescendre.
+     */
+    if (next === 'over') sfx.stopSwings();
   }
 
   /** @param {Fighter} f */

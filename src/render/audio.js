@@ -48,8 +48,9 @@
  * @module render/audio
  */
 
+import { wrapAngle } from '../core/math.js';
 import { ARENA } from '../data/tuning.js';
-import { MIX, SOUNDS } from '../data/sound.js';
+import { LOOPS, MIX, SOUNDS } from '../data/sound.js';
 
 /** @typedef {'ref'|'fr'} Lang */
 
@@ -84,6 +85,21 @@ class Audio {
      * @type {number[]}
      */
     this.busy = [];
+    /**
+     * **Voix tenues en cours, une par combattant qui en déclare une.**
+     *
+     * Clé : l'objet `Fighter` lui-même — pas son `el.id`. Le Clone d'ombre
+     * met plusieurs corps du **même identifiant** sur le plateau en même
+     * temps ; une clé par identifiant les aurait fait se voler la voix l'un
+     * l'autre, et le dernier né aurait fait taire son invocateur.
+     *
+     * Ces voix ne comptent **pas** dans `busy` : `busy` est une liste
+     * d'échéances, et une voix tenue n'en a pas. L'y mettre reviendrait à
+     * bloquer une place du plafond de mixage pour toujours — c'est
+     * exactement la fuite que `busy` a été écrit pour éviter.
+     * @type {Map<object, {layers:object[], pan:StereoPannerNode|null, angle:number}>}
+     */
+    this.swings = new Map();
   }
 
   /** Voix en cours. Lu par `tools/sound-check.mjs`. */
@@ -274,6 +290,190 @@ class Audio {
     const spec = f?.el?.sound;
     if (!spec) return;
     this.play(spec[slot], { x: opts.x ?? f.x, pitch: spec.pitch ?? 1, gain: opts.gain });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Voix tenues — le son d'un état, pas d'un instant                   */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * **Le sifflement des armes qui tournent**, tenu et modulé image par image.
+   *
+   * Tout le reste du banc joue des **événements** ; ceci joue un **état**. La
+   * différence n'est pas cosmétique : le Ronin porte `Damage = Spin`, donc
+   * toute sa fiche tient dans une vitesse qui monte, plafonne, s'effondre et
+   * repart — et ce cycle, qui est le personnage entier, n'avait aucun instant
+   * à sonoriser. Son créneau `ability` valait `null` pour cette raison.
+   *
+   * **La vitesse est mesurée sur `weaponAngle`, jamais lue dans la fiche**, et
+   * c'est le point important. `weapon.spin` ne porte que le **plancher** du
+   * Ronin (5,03 rad/s) : le surplus qui fait tout l'intérêt — la montée
+   * passive, le palier, l'effondrement — est ajouté par son module, et une
+   * lecture de fiche l'aurait entièrement manqué. Mesurer l'angle réel donne
+   * aussi, gratuitement et sans une ligne de plus, deux choses justes :
+   *
+   *  • une lame **ralentie par le givre** siffle plus bas (`slowFactor` est
+   *    déjà dans l'angle) ;
+   *  • le ralenti du K.O. étire le sifflement avec l'image, parce que `dt` est
+   *    celui de la simulation.
+   *
+   * Le moteur ne connaît toujours aucun combattant (invariant 12) : il mesure
+   * une rotation pour **tous**, et seule une fiche qui déclare `sound.swing`
+   * ouvre une voix. Les quatre armes braquées du roster (`weapon.spin = 0`,
+   * Pistolero, Hoplite, Druide, Mannequin) restent donc muettes sans qu'aucun
+   * test ne les nomme — elles ne tournent pas, il n'y a rien à entendre.
+   *
+   * @param {object[]} fighters combattants du pas courant
+   * @param {number} dt pas de **simulation** (celui passé à `Fighter.step`)
+   * @param {boolean} [active] faux pendant la parade : tout se referme
+   */
+  swing(fighters, dt, active = true) {
+    if (!this.ready) return;
+    const now = this.ctx.currentTime;
+    const vus = new Set();
+
+    if (active && dt > 0) {
+      for (const f of fighters) {
+        const spec = f?.el?.sound?.swing;
+        if (!spec || !LOOPS[spec.loop]) continue;
+        // invariant 8 : `alive` ne suffit pas — pendant le Bond de l'Hoplite un
+        // combattant est vivant et **absent**, et sa lame ne doit pas continuer
+        // de siffler à son dernier point connu
+        if (!f.alive || !f.onStage) continue;
+
+        let v = this.swings.get(f);
+        /**
+         * Premier pas d'une voix : l'angle de référence est l'angle courant,
+         * donc la vitesse mesurée vaut 0 et la voix **démarre au silence**
+         * avant de monter. Partir de la vraie vitesse ouvrirait le gain d'un
+         * coup, ce qui s'entend comme un claquement.
+         */
+        const vitesse = v ? Math.abs(wrapAngle(f.weaponAngle - v.angle)) / dt : 0;
+        if (!v) {
+          v = this._openSwing(spec);
+          if (!v) continue;
+          this.swings.set(f, v);
+        }
+        v.angle = f.weaponAngle;
+        vus.add(f);
+
+        const bas = spec.from ?? 0;
+        const haut = spec.to ?? 1;
+        const level = Math.max(0, Math.min(1, (vitesse - bas) / (haut - bas || 1)));
+        this._driveSwing(v, level, f.el.sound.pitch ?? 1, spec.gain ?? 1, this._pan(f.x), now);
+      }
+    }
+
+    // ce qui n'a pas été vu ce pas-ci s'éteint : mort, sorti de scène, ou
+    // duel fini. Supprimer d'une `Map` pendant son parcours est sûr.
+    for (const [f, v] of this.swings) {
+      if (vus.has(f)) continue;
+      this._releaseSwing(v, now);
+      this.swings.delete(f);
+    }
+  }
+
+  /**
+   * **Referme toutes les voix tenues.** Appelé à la fin d'un duel : sans ça,
+   * une lame continuerait de siffler sur l'écran de résultat, et la revanche
+   * ouvrirait un second jeu de voix par-dessus le premier.
+   */
+  stopSwings() {
+    if (this.ctx) {
+      const now = this.ctx.currentTime;
+      for (const v of this.swings.values()) this._releaseSwing(v, now);
+    }
+    this.swings.clear();
+  }
+
+  /** Monte une voix tenue : sources bouclées, filtres, gains, panoramique. */
+  _openSwing(spec) {
+    const rec = LOOPS[spec.loop];
+    const ctx = this.ctx;
+    const pan = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null;
+    const sortie = pan ?? this.master;
+    if (pan) pan.connect(this.master);
+
+    const layers = rec.map((L) => {
+      let src;
+      let osc = null;
+      if (L.wave === 'noise') {
+        src = ctx.createBufferSource();
+        src.buffer = this.noise;
+        src.loop = true;
+      } else {
+        src = ctx.createOscillator();
+        src.type = L.wave ?? 'sine';
+        osc = src;
+      }
+      let node = src;
+      let filter = null;
+      if (L.filter) {
+        filter = ctx.createBiquadFilter();
+        filter.type = L.filter;
+        filter.Q.value = L.q ?? 1;
+        node.connect(filter);
+        node = filter;
+      }
+      const gain = ctx.createGain();
+      gain.gain.value = 0; // le silence est le seul départ qui ne claque pas
+      node.connect(gain);
+      gain.connect(sortie);
+      src.start();
+      return { spec: L, src, osc, filter, gain };
+    });
+
+    return { layers, pan, angle: 0 };
+  }
+
+  /**
+   * Porte le régime courant sur une voix déjà montée.
+   *
+   * **Tout passe par `setTargetAtTime`**, jamais par une écriture directe :
+   * ces paramètres reçoivent une consigne neuve 120 fois par seconde, et les
+   * écrire sec s'entendrait comme un escalier — d'autant plus fort que la
+   * valeur bouge vite, donc exactement pendant la montée en régime qu'on
+   * cherche à faire entendre. Voir `MIX.swingGlide`.
+   */
+  _driveSwing(v, level, pitch, vol, pan, now) {
+    const glide = MIX.swingGlide;
+    if (v.pan) v.pan.pan.setTargetAtTime(pan, now, glide);
+    for (const L of v.layers) {
+      const s = L.spec;
+      const g0 = s.gain0 ?? 0;
+      L.gain.gain.setTargetAtTime((g0 + ((s.gain1 ?? 0) - g0) * level) * vol, now, glide);
+      if (L.filter) {
+        const c0 = s.cut0 ?? 1000;
+        const c = c0 + ((s.cut1 ?? c0) - c0) * level;
+        L.filter.frequency.setTargetAtTime(Math.max(20, c * pitch), now, glide);
+      }
+      if (L.osc) {
+        const f0 = s.f0 ?? 440;
+        const f = f0 + ((s.f1 ?? f0) - f0) * level;
+        L.osc.frequency.setTargetAtTime(Math.max(1, f * pitch), now, glide);
+      }
+    }
+  }
+
+  /**
+   * Éteint une voix tenue, puis arrête ses sources.
+   *
+   * `setTargetAtTime` **n'atteint jamais sa cible** — c'est une exponentielle
+   * asymptotique. Couper les sources à la constante de temps laisserait donc
+   * un résidu audible : six constantes plus tard, il ne reste que −52 dB, ce
+   * qui s'arrête sans clic.
+   */
+  _releaseSwing(v, now) {
+    const glide = MIX.swingGlide;
+    for (const L of v.layers) {
+      try {
+        L.gain.gain.cancelScheduledValues(now);
+        L.gain.gain.setTargetAtTime(0, now, glide);
+        L.src.stop(now + glide * 6);
+      } catch {
+        /* une source déjà arrêtée n'est pas une panne */
+      }
+    }
   }
 
   /** Panoramique déduit de l'abscisse : centre d'arène = centre du stéréo. */

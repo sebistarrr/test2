@@ -48,7 +48,7 @@ const out = await page.evaluate(async () => {
   const { createRng } = await import('/src/core/rng.js');
   const { ROSTER, ELEMENTS } = await import('/src/data/elements.js');
   const { sfx } = await import('/src/render/audio.js');
-  const { SOUNDS } = await import('/src/data/sound.js');
+  const { SOUNDS, LOOPS } = await import('/src/data/sound.js');
 
   /** @type {Map<string, number>} */
   const total = new Map();
@@ -107,6 +107,25 @@ const out = await page.evaluate(async () => {
   // et un combattant qui n'aurait aucun son serait muet sans que rien ne crie
   const muets = ROSTER.filter((id) => !(parCombattant.get(id)?.size));
 
+  /**
+   * **Les voix tenues ne passent pas par `play`**, donc le compteur ci-dessus
+   * ne les voit pas : elles se déclarent dans la fiche (`sound.swing`) et se
+   * montent directement. Le câblage se vérifie donc ici, à plat — une fiche
+   * qui nomme une recette absente de `LOOPS` serait silencieuse sans rien
+   * casser, et une recette de `LOOPS` que personne ne nomme est du poids mort,
+   * exactement comme pour `SOUNDS`. Que la voix *sorte* vraiment est une autre
+   * question, et c'est la passe 3 qui y répond.
+   */
+  const tenues = ROSTER
+    .map((id) => [id, ELEMENTS[id].sound?.swing ?? null])
+    .filter(([, s]) => s);
+  const loopsInconnues = tenues
+    .filter(([, s]) => !LOOPS[s.loop])
+    .map(([id, s]) => `${id} → ${s.loop}`);
+  const loopsMortes = Object.keys(LOOPS).filter(
+    (k) => !tenues.some(([, s]) => s.loop === k),
+  );
+
   return {
     total: [...total.entries()].sort((a, b) => b[1] - a[1]),
     parCombattant: ROSTER.map((id) => [id, [...(parCombattant.get(id) ?? [])].sort()]),
@@ -114,6 +133,9 @@ const out = await page.evaluate(async () => {
     jamais,
     muets,
     dits,
+    tenues: tenues.map(([id, s]) => [id, s.loop, s.from, s.to, s.gain ?? 1]),
+    loopsInconnues,
+    loopsMortes,
   };
 });
 
@@ -124,7 +146,7 @@ const out = await page.evaluate(async () => {
 const synthese = await page.evaluate(async () => {
   // page neuve : `sfx.play` n'est plus remplacé par le compteur
   const { sfx } = await import('/src/render/audio.js?passe2');
-  const { SOUNDS } = await import('/src/data/sound.js');
+  const { SOUNDS, LOOPS } = await import('/src/data/sound.js');
   if (!sfx.unlock()) return { ouvert: false, pannes: [], voix: 0 };
 
   const pannes = [];
@@ -161,7 +183,96 @@ const synthese = await page.evaluate(async () => {
       pannes.push(`${nom} (pitch 1,2) : ${e.message}`);
     }
   }
+  /**
+   * **Les recettes tenues se montent autrement**, donc elles se cassent
+   * autrement : pas de `dur` à valider mais un `BiquadFilter` et un
+   * oscillateur pilotés par `setTargetAtTime`, aux deux bouts de la course
+   * (repos et plein régime). Une fréquence interdite lève ici, et seulement
+   * ici.
+   */
+  for (const nom of Object.keys(LOOPS)) {
+    try {
+      const v = sfx._openSwing({ loop: nom });
+      if (!v?.layers.length) pannes.push(`${nom} (tenue) : aucune couche montée`);
+      for (const niveau of [0, 0.5, 1]) {
+        sfx._driveSwing(v, niveau, 0.72, 1, -0.3, sfx.ctx.currentTime);
+        sfx._driveSwing(v, niveau, 1.2, 1, 0.3, sfx.ctx.currentTime);
+      }
+      sfx._releaseSwing(v, sfx.ctx.currentTime);
+    } catch (e) {
+      pannes.push(`${nom} (tenue) : ${e.message}`);
+    }
+  }
+
   return { ouvert: true, pannes, voix, etat: sfx.ctx.state, taux: sfx.ctx.sampleRate };
+});
+
+/* ------------------------------------------------------------------ */
+/*  Passe 3 : une voix tenue sort-elle vraiment, et sur quelle course ?  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * **La panne propre aux voix tenues : un régime bloqué.**
+ *
+ * Les deux passes ci-dessus prouvent le câblage et la synthèse, et laisseraient
+ * passer le seul défaut qui compte vraiment ici — un `level` coincé à 0 (voix
+ * inaudible tout le duel) ou à 1 (voix constante, qui ne raconte plus rien).
+ * Aucun des deux ne plante, aucun ne se voit à l'image, et le second est même
+ * *pire* que le silence : il fatigue sans informer.
+ *
+ * On joue donc de vrais duels, contexte audio ouvert, en interceptant le seul
+ * endroit qui connaît le régime (`_driveSwing`) — et on relève le **minimum et
+ * le maximum atteints**. Un combattant dont la course est plate est signalé.
+ */
+const tenu = await page.evaluate(async () => {
+  const { Match } = await import('/src/game/match.js');
+  const { createRng } = await import('/src/core/rng.js');
+  const { ROSTER, ELEMENTS } = await import('/src/data/elements.js');
+  const { sfx } = await import('/src/render/audio.js');
+  if (!sfx.unlock()) return { ouvert: false, releve: [] };
+
+  const brut = sfx._driveSwing.bind(sfx);
+  /** @type {Map<string, {min:number, max:number, n:number, plafond:number}>} */
+  const vu = new Map();
+  let courant = null;
+  sfx._driveSwing = (v, level, pitch, vol, pan, now) => {
+    if (courant) {
+      const e = vu.get(courant) ?? { min: 1, max: 0, n: 0, plafond: 0 };
+      e.min = Math.min(e.min, level);
+      e.max = Math.max(e.max, level);
+      e.n++;
+      /**
+       * **Compter les pas au plafond, et pas seulement regarder le minimum.**
+       * Toute voix démarre au silence par construction (voir `swing()`), donc
+       * `min` vaut 0 pour tout le monde dès la première image : un régime
+       * bloqué à 1 passerait un test sur le minimum sans être vu.
+       */
+      if (level > 0.99) e.plafond++;
+      vu.set(courant, e);
+    }
+    return brut(v, level, pitch, vol, pan, now);
+  };
+
+  const dt = 1 / 120;
+  const attendus = ROSTER.filter((id) => ELEMENTS[id].sound?.swing);
+  for (const id of attendus) {
+    courant = id;
+    // face au Mannequin, comme la passe 1 : il ne déclare aucune voix tenue,
+    // donc tout ce qui est relevé vient bien du combattant testé
+    const m = new Match({ elements: [id, 'dummy'], rng: createRng(7), lang: 'ref', onEnd() {} });
+    let t = 0;
+    while (m.phase !== 'over' && t < 200) { m.update(dt); t += dt; }
+  }
+  courant = null;
+  sfx._driveSwing = brut;
+  sfx.stopSwings();
+
+  return {
+    ouvert: true,
+    releve: attendus.map((id) => [id, vu.get(id) ?? null]),
+    // une voix qui survit à la fin du duel sifflerait sur l'écran de résultat
+    restantes: sfx.swings.size,
+  };
 });
 
 /**
@@ -193,6 +304,12 @@ for (const [id, etat] of out.fiches) console.log(`  ${id.padEnd(10)} ${etat}`);
 console.log('\nannonces parlées (échantillon) :');
 for (const d of out.dits) console.log(`  « ${d} »`);
 
+console.log('\nvoix tenues déclarées (fiche → recette, bornes en rad/s) :');
+for (const [id, loop, from, to, gain] of out.tenues) {
+  console.log(`  ${id.padEnd(10)} ${loop.padEnd(7)} ${from} → ${to} rad/s, gain ${gain}`);
+}
+if (!out.tenues.length) console.log('  —');
+
 console.log('\nsynthèse (vrai AudioContext) :');
 if (!synthese.ouvert) {
   console.log('  aucun contexte audio disponible dans ce navigateur');
@@ -201,11 +318,41 @@ if (!synthese.ouvert) {
   for (const p of synthese.pannes) console.log(`  ✗ ${p}`);
 }
 
+console.log('\nrégime des voix tenues (duel réel, face au Mannequin) :');
+const plates = [];
+const jamaisTenues = [];
+if (!tenu.ouvert) {
+  console.log('  aucun contexte audio : rien de mesuré');
+} else {
+  for (const [id, e] of tenu.releve) {
+    if (!e) {
+      console.log(`  ${id.padEnd(10)} JAMAIS PILOTÉE`);
+      jamaisTenues.push(id);
+      continue;
+    }
+    const auPlafond = e.plafond / e.n;
+    console.log(
+      `  ${id.padEnd(10)} régime ${e.min.toFixed(2)} → ${e.max.toFixed(2)}` +
+        ` — ${(auPlafond * 100).toFixed(1)} % du temps au plafond, sur ${e.n} pas`,
+    );
+    // un régime qui ne quitte jamais le silence ne s'entend pas ; un régime
+    // collé au plafond ne dit plus rien et fatigue
+    if (e.max < 0.05) plates.push(`${id} : jamais au-dessus de 0,05`);
+    else if (auPlafond > 0.9) plates.push(`${id} : ${(auPlafond * 100).toFixed(0)} % du temps au plafond`);
+  }
+}
+
 const soucis = [];
 if (out.muets.length) soucis.push(`combattants muets : ${out.muets.join(', ')}`);
 if (!synthese.ouvert) soucis.push("aucun contexte audio : la passe de synthèse n'a rien vérifié");
 if (synthese.pannes?.length) soucis.push(`recettes en panne : ${synthese.pannes.join(' | ')}`);
 if (jamais.length) soucis.push(`recettes jamais jouées : ${jamais.join(', ')}`);
+if (out.loopsInconnues.length) soucis.push(`voix tenues sur une recette absente de LOOPS : ${out.loopsInconnues.join(', ')}`);
+if (out.loopsMortes.length) soucis.push(`recettes tenues que personne ne déclare : ${out.loopsMortes.join(', ')}`);
+if (!tenu.ouvert) soucis.push("aucun contexte audio : le régime des voix tenues n'a rien vérifié");
+if (jamaisTenues.length) soucis.push(`voix tenues déclarées mais jamais pilotées : ${jamaisTenues.join(', ')}`);
+if (plates.length) soucis.push(`voix tenues sans course utile : ${plates.join(' | ')}`);
+if (tenu.restantes) soucis.push(`${tenu.restantes} voix tenue(s) encore ouverte(s) après la fin des duels`);
 if (errs.length) soucis.push(`erreurs page : ${errs.slice(0, 5).join(' | ')}`);
 
 if (soucis.length) {

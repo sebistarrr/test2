@@ -104,13 +104,31 @@ export const WIND = fiche({
   sound: {
     pitch: 1.2,
     shot: 'whoosh',
-    hit: 'blade',
+    /**
+     * **Sa « lame » est une plaque lancée à plat**, pas un fil : elle entaille
+     * au passage. Il empruntait `blade`, la lame du Ronin — deux combattants
+     * qui frappent du même bruit ne se distinguent qu'à l'image.
+     */
+    hit: 'razor',
     impact: 'impact',
     bounce: 'thud',
-    /** La rafale de tornade : de l'air, rien d'autre. */
-    ability: 'whoosh',
+    /** Un souffle qui **se lève**, là où `whoosh` — son propre lancer — passe
+     *  et s'en va. Les deux gestes jouaient la même recette. */
+    ability: 'gust',
+    /**
+     * **Le shuriken tourne en permanence** (`weapon.spin` = SPIN × 1,716, soit
+     * 9,9 rad/s) : contrairement au Ronin, sa vitesse ne varie pas, la voix est
+     * donc un **régime constant** et non une courbe. D'où un `gain` volontairement
+     * bas : ce qui ne raconte rien de nouveau ne doit pas peser sur ce qui
+     * raconte. Ce qu'elle apporte est ailleurs — elle est panoramique, donc on
+     * l'entend **où il est**, ce qui compte pour le combattant le plus rapide
+     * du roster et pour ses clones dispersés.
+     */
+    swing: { loop: 'swish', from: 5, to: 19, gain: 0.4 },
     special: 'summon',
-    ultimate: 'riser',
+    /** La grande sœur de `gust` : la plus longue du banc, et sans grave — une
+     *  tornade n'a pas de fond, elle a une enveloppe. */
+    ultimate: 'cyclone',
   },
 
   // le plus rapide et le plus manœuvrant du roster (observé)
