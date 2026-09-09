@@ -13,7 +13,7 @@ fiches ne portent pas un seul `mesuré`.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
-| **Pistolero** | Pacificateur | **canon asservi à la cible** — il ne tourne pas ; barillet de **10** et **un tir toutes les 0,3 s** (six balles et 0,6 s mesurés, tous deux changés sur demande), balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Main du mort / DEAD MAN’S HAND (cadence doublée, recul ×8) |
+| **Pistolero** | Pacificateur | **canon asservi à la cible** — il ne tourne pas ; barillet de **10** et **un tir toutes les 0,345 s** (six balles et 0,6 s mesurés, tous deux changés sur demande), balles qui gèlent, et **un tour du pistolet sur lui-même** au rechargement | Main du mort / DEAD MAN’S HAND (cadence doublée, recul ×8) |
 | **Ronin** | Lame de braise (transcrite d'une maquette) | rotation qui monte de 0,80 à 3,00 tour/s puis **surchauffe** ; `Damage = Spin` (mesuré `2 × Spin`, divisé par deux sur demande avec tout le roster) | Ruée de lame / BLADE RUSH (verrou de touche à 115 ms, éventail vert grand ouvert) |
 | **Hoplite** | Lance d'orage (**164 px, la plus longue portée du jeu**) — **elle suit son cap de déplacement**, elle ne vise pas | **charge** en ligne droite à 2,6 × sa vitesse, pointe en avant, en semant des images fantômes ; dégâts qui montent de **+0,5 par touche portée** (mesuré +2, demandé +1, puis divisé par deux avec tout le roster) | Foudre tombante / THUNDERFALL — il **quitte l'arène** 1,5 s, un marqueur suit sa cible, puis il retombe dessus |
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
@@ -55,8 +55,8 @@ Les points de vie ne se règlent pas : la norme est de **100**, le chiffre du
 cahier des charges (elle est passée à 200 le temps d'une session, puis a été
 redivisée par deux sur demande). Une fiche peut porter les siens — le Golem en
 a **200**, sa seule défense — et un pouvoir peut faire entrer un combattant
-avec les siens : les clones du Shinobi naissent à 25, **un quart d'un
-combattant**, et c'est ce rapport qui borne le pouvoir.
+avec les siens : les clones du Shinobi naissent à **15** (25, sous le quart
+d'un combattant, demandé), et c'est ce rapport qui borne le pouvoir.
 
 Chacun porte en plus un **pouvoir spécial**, sur horloge propre, avec sa jauge
 juste sous celle de l'ultime. Il s'ajoute à l'ultime, il ne le remplace pas —
@@ -67,7 +67,7 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 | **Pistolero** | **Champ de givre** — il le suit partout, ralentit et grignote ce qui entre dedans |
 | **Ronin** | **Aura de braise** — il sème des braises, et tout ce qui l’approche brûle |
 | **Hoplite** | **Dôme de drain** — l’adversaire est figé sous un dôme, un rayon le vide |
-| **Shinobi** | **Clone d'ombre** — des doubles à **un quart de PV** qui entrent dans la partie comme de **vrais combattants**, dans son camp et avec **tous ses pouvoirs**, Clone d'ombre compris : un clone invoque des clones, et le duel passe en 2 contre 1. Au HUD le groupe ne fait qu'un — **une plaque, points de vie cumulés**, une seule paire de jauges — et **ses pouvoirs partent tous en même temps**. Un ton plus clair que lui |
+| **Shinobi** | **Clone d'ombre** — des doubles à **15 PV** (sous le quart d'un combattant) qui entrent dans la partie comme de **vrais combattants**, dans son camp et avec **tous ses pouvoirs**, Clone d'ombre compris : un clone invoque des clones, et le duel passe en 2 contre 1. Au HUD le groupe ne fait qu'un — **une plaque, points de vie cumulés**, une seule paire de jauges — et **ses pouvoirs partent tous en même temps**. Un ton plus clair que lui |
 | **Druide** | **Tir enraciné** — des racines le clouent au sol une seconde, il cesse de bouger *et* de tirer, puis lâche une **orbe majeure** à trois fois les dégâts |
 
 <sup>[Le Champ de givre du Pistolero](docs/capture-blizzard.png) · [le Dôme de drain de l’Hoplite](docs/capture-lien.png) · [le Clone d'ombre du Shinobi](docs/capture-clone.png) · [les orbes guidées du Druide](docs/capture-mage.png) · [son Orage de ronces](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>

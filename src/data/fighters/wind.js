@@ -353,26 +353,26 @@ export const WIND = fiche({
     barFill: '#71717a',
     barText: '#e0e0e5',
     /**
-     * **25 PV, demandé** — une valeur de fiche à nouveau.
+     * **25 → 15, demandé** — le clone reste une valeur de fiche, pas un
+     * héritage du Shinobi (voir l'historique juste au-dessous).
      *
      * Le clone a hérité un temps des PV **restants** du Shinobi. Ça n'a plus
-     * cours : il naît à 25, quel que soit l'état de celui qui l'invoque. Le
+     * cours : il naît à 15, quel que soit l'état de celui qui l'invoque. Le
      * pouvoir cesse donc d'être auto-décroissant, et cesse surtout de peser sur
      * un troisième combattant — c'est l'héritage qui avait fait tomber le
      * Pistolero de 15/48 à 10/48 sans que sa fiche ne bouge, un clone à 100 PV
      * absorbant le barillet entier là où un clone fragile tombait en quatre
      * balles.
      *
-     * **Un quart d'un vrai combattant** : il meurt vite, et c'est ce qui borne
-     * un pouvoir qui donne désormais un **combattant complet** de plus.
-     *
-     * 25 → 50 → 25 en suivant les deux passages de la norme (100 → 200 → 100).
-     * Ce n'est pas un réglage à part : c'est le **rapport** qui porte le
-     * garde-fou, et le laisser à 50 aurait fait du clone la moitié d'un
-     * combattant plutôt qu'un quart, donc un pouvoir plus fort qu'il n'a jamais
-     * été voulu — sans qu'aucune valeur du Shinobi n'ait changé.
+     * **Sous le quart d'un vrai combattant** (15/100, contre 25/100
+     * auparavant) : il meurt encore plus vite, ce qui borne davantage un
+     * pouvoir qui donne un **combattant complet** de plus. Le garde-fou du
+     * rapport (25 → 50 → 25 en suivant les deux passages de la norme
+     * 100 → 200 → 100) est rompu par cette demande précise — 15 est un chiffre
+     * absolu, pas un quart recalé, et redeviendrait à réévaluer si la norme de
+     * PV bougeait encore.
      */
-    hp: 25,
+    hp: 15,
     /**
      * **Une seule horloge pour tout le groupe — demandé.**
      *

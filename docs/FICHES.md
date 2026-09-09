@@ -22,23 +22,24 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 42 |
-| 📦 Archive — les huit éléments supprimés | 91 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 165 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 955 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1074 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1331 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1896 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2387 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2601 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 2687 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 2742 |
-| Les dégâts de tous les combattants, divisés par deux | 2810 |
-| Rééquilibrage confiné au Golem et au Ronin | 2920 |
-| Le son de chacun | 3007 |
-| Équilibrage du roster | 3060 |
-| Règles communes (moteur) | 3158 |
-| Comment les mesures ont été prises | 3182 |
+| Comment lire une valeur | 43 |
+| 📦 Archive — les huit éléments supprimés | 92 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 166 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 956 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1075 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1332 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1897 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2388 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2602 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 2688 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 2743 |
+| Les dégâts de tous les combattants, divisés par deux | 2811 |
+| Rééquilibrage confiné au Golem et au Ronin | 2921 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3008 |
+| Le son de chacun | 3058 |
+| Équilibrage du roster | 3111 |
+| Règles communes (moteur) | 3209 |
+| Comment les mesures ont été prises | 3233 |
 
 ## Comment lire une valeur
 
@@ -3004,6 +3005,56 @@ plus haut dans ce document — une matrice à seed unique par paire peut cacher
 un écart aussi bien qu'elle peut l'exagérer. Le banc à 10 seeds × deux camps
 reste la mesure la plus fiable de l'effet réel ; la matrice officielle reste
 le garde-fou de non-régression, pas l'instrument de réglage fin.
+
+## Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient
+
+Demandé en deux valeurs directes, sans banc de calage préalable : le Shinobi
+(16/18, meilleur du roster) et le Pistolero (14/18, deuxième) étaient les
+deux qui dominaient le plus après le rééquilibrage Golem/Ronin ci-dessus.
+
+- **Clone d'ombre : `special.aura.hp` 25 → 15.** Le clone était déjà borné à
+  « un quart d'un vrai combattant » (25/100) par construction ; il descend
+  **sous** ce quart. Le garde-fou de rapport (25 → 50 → 25 aux deux passages
+  de la norme de PV) est rompu par cette demande précise — 15 est désormais un
+  chiffre absolu, à réévaluer si la norme de PV bouge encore.
+- **Pistolero : `weapon.cooldown` 0,3 → 0,345 (+15 %).** Même levier que celui
+  qui avait divisé ce délai par deux à l'origine (section PISTOLERO plus
+  haut) : il rallonge le temps entre deux tirs sans toucher au barillet ni
+  aux dégâts de la balle.
+
+### Effet sur la matrice officielle
+
+Régénérée à 3 seeds, stable sur un second passage, diff confiné aux lignes où
+le Shinobi ou le Pistolero apparaissent (invariant 3 respecté — 12 lignes sur
+28, toutes portant l'un des deux) :
+
+| | Avant | Après |
+| --- | --- | --- |
+| **Shinobi** | 16 | **12** |
+| Pistolero | 14 | 13 |
+| Druide | 12 | 13 |
+| Hoplite | 9 | 11 |
+| Golem | 8 | 10 |
+| Ronin | 4 | 4 |
+
+Le Shinobi encaisse le plus gros coup (−4) : il perd l'affrontement à
+l'Hoplite, au Druide et au Golem qu'il gagnait tous les trois avant — le clone
+à 15 PV meurt avant d'avoir eu le temps de peser sur l'issue, ce qui est
+précisément l'effet recherché sur un pouvoir qui donne un combattant complet
+de plus. Le Pistolero perd net 1 : il cède l'Hoplite mais reprend le Shinobi
+(déjà affaibli par son propre nerf) — la cadence plus lente coûte davantage
+qu'elle ne rapporte contre un adversaire qui, lui, encaissait déjà l'autre
+changement.
+
+**Le Ronin ne bouge pas (toujours 4/18)** : aucun des deux nerfs ne touche à
+ses affrontements — ni le Shinobi ni le Pistolero ne figurent parmi les
+adversaires où il tenait un espoir.
+
+Sans qu'aucune de leurs propres fiches n'ait changé, **l'Hoplite (9 → 11) et
+le Golem (8 → 10) remontent**, et le **Druide (12 → 13) gagne un point** —
+tous trois profitent directement de l'affaiblissement du Shinobi sur leur
+propre ligne. Encore le piège déjà nommé plusieurs fois dans ce document :
+« le levier d'un combattant faible est parfois chez un autre. »
 
 ## Le son de chacun
 

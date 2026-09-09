@@ -76,7 +76,7 @@ est `calé` ou `déduit`.
 
 | Personnage | Signature |
 | --- | --- |
-| `outlaw` **PISTOLERO** | tireur de glace, **canon asservi à la cible** (`weapon.spin = 0`), barillet de **10** et **0,3 s entre deux tirs** (6 et 0,6 mesurés, écarts demandés), balles gelantes (−30 % de vitesse, 1,6 s), `weaponTwirl` au rechargement. Porte le **Champ de givre**, greffé |
+| `outlaw` **PISTOLERO** | tireur de glace, **canon asservi à la cible** (`weapon.spin = 0`), barillet de **10** et **0,345 s entre deux tirs** (6 et 0,6 mesurés, écarts demandés), balles gelantes (−30 % de vitesse, 1,6 s), `weaponTwirl` au rechargement. Porte le **Champ de givre**, greffé |
 | `bladesman` **RONIN** | duelliste, rotation 0,80 → 3,00 tour/s puis surchauffe, `Damage = Spin` (mesuré `2 × Spin`, divisé par deux avec tout le roster), brûlure au contact. Porte l’**Aura de braise**, greffée |
 | `lancer` **HOPLITE** | chargeur, **lance braquée sur le cap** (`weapon.spin = 0`), charge en ligne droite, **164 px, la plus longue portée du jeu**, +0,5 dégât par touche (mesuré +2, demandé +1, puis divisé par deux), **Foudre tombante** qui le sort de l'arène. Porte le **Dôme de drain**, greffé |
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
@@ -84,9 +84,9 @@ est `calé` ou `déduit`.
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** quand tout le monde en a 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
 | `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, et les PV de la norme. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
-**Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 25 PV — **un
-quart d'un combattant**, et c'est le rapport qui borne le pouvoir, pas le
-chiffre — qui
+**Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 15 PV
+(25 à l'origine, **un quart d'un combattant** — c'est le rapport qui borne le
+pouvoir, pas le chiffre — puis descendu **sous** ce quart sur demande) qui
 sont de **vrais combattants du tableau**, dans le camp du Shinobi, avec **tous
 ses pouvoirs** — Clone d'ombre compris, donc **un clone invoque des clones**.
 **Le groupe ne fait qu'un au HUD** (une plaque, PV cumulés, une paire de
@@ -117,28 +117,41 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 18 duels hors
-miroir chacun : **Shinobi 16**, Druide 12, Pistolero 14, Hoplite 9, Golem 8,
+miroir chacun : **Pistolero 13**, Druide 13, Shinobi 12, Hoplite 11, Golem 10,
 **Ronin 4**, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
-Trois changements successifs y sont empilés : **Neon Shadow a été supprimé**
+Quatre changements successifs y sont empilés : **Neon Shadow a été supprimé**
 (invariant 3 : il était en queue de `ROSTER`, sa suppression ne déplace donc
 aucune autre ligne), puis **les dégâts de tous les combattants ont été divisés
 par deux** — sur la fiche, pas au moteur (`opts.kind`/`Match.damage` ne
 changent pas, chaque combattant porte sa propre division) —, puis un
-**rééquilibrage confiné au Golem et au Ronin**, les deux plus faibles.
+**rééquilibrage confiné au Golem et au Ronin**, les deux plus faibles, puis un
+**nerf confiné au Shinobi et au Pistolero**, les deux qui dominaient le plus.
 `docs/FICHES.md` porte le détail par combattant et les relevés, avant/après.
-Sur ce dernier changement : Golem gagne `movement.speed` 370 → 420 et
+Sur le rééquilibrage Golem/Ronin : Golem gagne `movement.speed` 370 → 420 et
 `weapon.melee.damage` 4 → 7 (les deux leviers combinés font mieux que la
 somme de leurs effets isolés, banc à dix duels par adversaire : 12/50 → 24/50
 en combinant, contre 20/50 pour le dégât seul) ; Ronin gagne
 `weapon.melee.onHit.dot.duration` 1 → 1,5 (5/50 → 8/50 au même banc). Le
-Pistolero et le Shinobi restent des murs pour les deux — rapides, à distance,
-0 ou 1/10 à chaque palier testé — écart structurel, connu et non corrigé.
+Pistolero et le Shinobi restaient des murs pour les deux — rapides, à
+distance, 0 ou 1/10 à chaque palier testé — écart structurel, connu et non
+corrigé.
 **Sur la matrice officielle à 3 seeds, le Golem reste à 8/18** (gagne un
 affrontement au Hoplite, en perd un au Pistolero — net nul sur ces seeds
 précises) **et le Ronin reste à 4/18** : le gain que le banc à 10 seeds montre
 ne tombe pas dans les 3 seeds que joue `matrix.mjs`. Ce n'est pas une
 contradiction, c'est la limite déjà documentée plus bas : une matrice à seed
 unique peut cacher un écart aussi bien qu'elle peut l'exagérer.
+Sur le nerf Shinobi/Pistolero, demandé directement en valeurs (pas de banc de
+calage) : le Clone d'ombre naît à `special.aura.hp` 25 → 15 PV, sous le quart
+d'un combattant qui bornait le pouvoir jusqu'ici ; le Pistolero tire à
+`weapon.cooldown` 0,3 → 0,345 s (+15 %). Effet sur la matrice officielle,
+avant → après : **Shinobi 16 → 12** (perd l'Hoplite, le Druide et le Golem —
+le clone plus fragile meurt avant d'avoir pesé), **Pistolero 14 → 13** (perd
+l'Hoplite, gagne le Shinobi — net −1, la cadence plus lente coûte plus qu'elle
+ne rapporte face à un adversaire déjà touché par le nerf du Shinobi). Sans
+qu'on ait touché à leur fiche : **Hoplite 9 → 11**, **Golem 8 → 10**, Druide
+12 → 13 — encore le piège « le levier d'un combattant faible est parfois chez
+un autre ».
 **Diviser les dégâts par deux rallonge les duels**, comme diviser les PV les
 aurait raccourcis — même levier, sens inverse : 41,2 s en moyenne au lieu de
 26,3, et les deux mêmes combattants rebasculent que lors du changement de

@@ -269,8 +269,12 @@ export const OUTLAW = fiche({
      * maintenant que le barillet de dix sert à quelque chose.
      *
      * Aucun dégât n'est touché : sa balle vaut toujours ce que la vidéo dit.
+     *
+     * **0,3 → 0,345, demandé (+15 %).** Rallonge le même levier de cadence, en
+     * sens inverse cette fois : moins de tirs par seconde, sans toucher au
+     * barillet ni à la balle.
      */
-    cooldown: 0.3,
+    cooldown: 0.345,
     /**
      * **6 → 10 balles, demandé.** C'est un **écart assumé au relevé** : la
      * vidéo montre « Ammo: n/6 », six chambres, et le nom même de l'arme
