@@ -17,19 +17,19 @@ relevé, puis les pièges eux-mêmes.
 | **Méthode de relevé vidéo** | 36 |
 | &nbsp;&nbsp;· Le repère de mesure n'est pas le même partout | 48 |
 | **Écarts volontaires au relevé** | 65 |
-| **Pièges déjà rencontrés** | 126 |
-| &nbsp;&nbsp;· Mesurer | 128 |
-| &nbsp;&nbsp;· Équilibrer | 163 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 339 |
-| &nbsp;&nbsp;· Éditer les données | 378 |
-| &nbsp;&nbsp;· Interface et rendu | 411 |
-| &nbsp;&nbsp;· Le son | 497 |
-| &nbsp;&nbsp;· Refactoriser | 576 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 617 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 619 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 662 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 705 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 724 |
+| **Pièges déjà rencontrés** | 139 |
+| &nbsp;&nbsp;· Mesurer | 141 |
+| &nbsp;&nbsp;· Équilibrer | 176 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 352 |
+| &nbsp;&nbsp;· Éditer les données | 391 |
+| &nbsp;&nbsp;· Interface et rendu | 424 |
+| &nbsp;&nbsp;· Le son | 510 |
+| &nbsp;&nbsp;· Refactoriser | 589 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 630 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 632 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 675 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 718 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 737 |
 
 ---
 
@@ -119,6 +119,19 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   (invariant 4) : la lumière se pose donc au sol.
 - Filigrane `@ElementalArmoryLeague` non reproduit — ni le « ballthing.com » /
   « @ballthingsim » des vidéos des trois invités.
+- **Les bruitages de touche sonnent plus fort et plus large que sur la vidéo
+  de référence, demandé.** L'audio de *Outlaw vs Bladesman* (le duel qui a
+  fourni le relevé visuel du Pistolero et du Ronin) a été mesuré directement :
+  crête proche de la saturation (0,7 à 1,0 en amplitude normalisée) et une
+  énergie qui déborde largement dans le médium-aigu, contre des recettes de
+  `data/sound.js` plus mesurées. `gunshot`, `blade`, `pierce`, `crunch` et
+  `impact` ont leur `gain` relevé, et `blade`/`pierce` leur `q` de bandpass
+  abaissé (bande plus large, moins « sifflement fin »). Le compresseur de
+  `render/audio.js` (seuil −18 dB, ratio 8:1) fait le reste : le gain plus
+  haut le sollicite davantage, ce qui *est* le son « à la limite de la
+  saturation » entendu sur la vidéo — pas un défaut à corriger derrière. Aucun
+  gain de fiche de combattant n'a bougé, la matrice reste identique au
+  caractère près.
 
 ---
 

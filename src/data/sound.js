@@ -91,10 +91,22 @@ export const SOUNDS = deepFreeze({
   /*  Tirs et lancers                                                   */
   /* ---------------------------------------------------------------- */
 
-  /** Détonation : un claquement de bruit large, un corps grave très court. */
+  /**
+   * Détonation : un claquement de bruit large, un corps grave très court.
+   *
+   * **Gain relevé, demandé** — une vidéo de référence (le duel Outlaw vs
+   * Bladesman d'origine) montre des impacts nettement plus francs que le banc
+   * ne les rendait : crête proche de la saturation (0,7 à 1,0 en amplitude
+   * normalisée sur l'audio de la vidéo), et une énergie qui déborde largement
+   * dans le médium-aigu plutôt que de rester grave. Le compresseur de
+   * `render/audio.js` (seuil −18 dB, ratio 8:1) absorbe la crête : monter le
+   * gain d'une couche la pousse dans le compresseur, ce qui *est* le son
+   * « punchy, à la limite de la saturation » de la référence — ce n'est pas
+   * un défaut à corriger, c'est le levier à tirer.
+   */
   gunshot: [
-    { wave: 'noise', filter: 'lowpass', cut0: 5200, cut1: 420, q: 1, dur: 0.17, gain: 0.55 },
-    { wave: 'square', f0: 240, f1: 60, dur: 0.09, gain: 0.35 },
+    { wave: 'noise', filter: 'lowpass', cut0: 5200, cut1: 420, q: 1, dur: 0.17, gain: 0.78 },
+    { wave: 'square', f0: 240, f1: 60, dur: 0.09, gain: 0.5 },
   ],
   /** Lame ou shuriken qui fend l'air : du bruit passe-bande qui descend. */
   whoosh: [
@@ -115,25 +127,43 @@ export const SOUNDS = deepFreeze({
   /*  Touches                                                           */
   /* ---------------------------------------------------------------- */
 
-  /** Tranchant : un sifflement métallique bref sur un corps médium. */
+  /**
+   * Tranchant : un sifflement métallique bref sur un corps médium.
+   *
+   * **Gain relevé et bande élargie, demandé** — même geste que `gunshot`
+   * ci-dessus : la vidéo de référence rend ses touches plus fortes et plus
+   * larges en spectre (moins « sifflement fin », plus « claquement large »).
+   * `q` baissé (2,2 → 1,5) élargit le bandpass au lieu de le resserrer.
+   */
   blade: [
-    { wave: 'noise', filter: 'bandpass', cut0: 4200, cut1: 1100, q: 2.2, dur: 0.13, gain: 0.42 },
-    { wave: 'triangle', f0: 700, f1: 220, dur: 0.11, gain: 0.24 },
+    { wave: 'noise', filter: 'bandpass', cut0: 4200, cut1: 1100, q: 1.5, dur: 0.13, gain: 0.6 },
+    { wave: 'triangle', f0: 700, f1: 220, dur: 0.11, gain: 0.34 },
   ],
-  /** Pointe : plus étroit et plus haut que `blade`, il pique au lieu de trancher. */
+  /**
+   * Pointe : plus étroit et plus haut que `blade`, il pique au lieu de
+   * trancher. **Gain relevé et bande élargie, demandé** — même geste que
+   * `blade`.
+   */
   pierce: [
-    { wave: 'noise', filter: 'bandpass', cut0: 5200, cut1: 2200, q: 4, dur: 0.1, gain: 0.34 },
-    { wave: 'square', f0: 900, f1: 380, dur: 0.08, gain: 0.16 },
+    { wave: 'noise', filter: 'bandpass', cut0: 5200, cut1: 2200, q: 2.5, dur: 0.1, gain: 0.48 },
+    { wave: 'square', f0: 900, f1: 380, dur: 0.08, gain: 0.24 },
   ],
-  /** Pierre contre pierre : grave, mat, avec une queue de gravats. */
+  /**
+   * Pierre contre pierre : grave, mat, avec une queue de gravats. **Gain
+   * relevé, demandé** — même geste que `blade`.
+   */
   crunch: [
-    { wave: 'noise', filter: 'lowpass', cut0: 1100, cut1: 160, q: 1.1, dur: 0.28, gain: 0.5 },
-    { wave: 'square', f0: 110, f1: 48, dur: 0.16, gain: 0.3 },
+    { wave: 'noise', filter: 'lowpass', cut0: 1100, cut1: 160, q: 1.1, dur: 0.28, gain: 0.68 },
+    { wave: 'square', f0: 110, f1: 48, dur: 0.16, gain: 0.4 },
   ],
-  /** Impact de projectile : plus petit qu'une touche d'arme, il ne doit pas la couvrir. */
+  /**
+   * Impact de projectile : plus petit qu'une touche d'arme, il ne doit pas la
+   * couvrir — ce rapport-là est gardé. **Gain relevé, demandé** — même geste
+   * que `blade`, à l'échelle du projectile.
+   */
   impact: [
-    { wave: 'noise', filter: 'lowpass', cut0: 2600, cut1: 500, q: 1, dur: 0.11, gain: 0.32 },
-    { wave: 'sine', f0: 320, f1: 120, dur: 0.1, gain: 0.2 },
+    { wave: 'noise', filter: 'lowpass', cut0: 2600, cut1: 500, q: 1, dur: 0.11, gain: 0.46 },
+    { wave: 'sine', f0: 320, f1: 120, dur: 0.1, gain: 0.28 },
   ],
   /** Tic d'un dégât sur la durée (brûlure, givre) : presque un souffle. */
   ember: [
