@@ -266,6 +266,15 @@ timbre qui se **transpose par combattant**.
   joue le créneau, la fiche dit la matière. Un projectile peut nommer la sienne
   (`projectiles.x.sound`), et une fiche peut ajouter un créneau que son seul
   module lit (l'Hoplite : `strike`, la foudre qui tombe).
+- **Chantier en cours : un jeu de bruitages *par* combattant, demandé.** Le banc
+  a d'abord été écrit en matières partagées — quatre combattants sur `blade`,
+  cinq sur `riser`, le Pistolero jusqu'à emprunter `click`, le son de
+  l'interface, pour son rechargement — la transposition (`pitch`) faisant seule
+  la différence. **Le Pistolero est fait** (`gunshot` enrichi d'un claquement et
+  d'une queue, `cylinder`, `pistolwhip`, `frostbite`, `frost` enrichi de son
+  onde, `knell`) ; **les six autres attendent leur tour**. Les recettes restent
+  nommées par **matière**, jamais par combattant : c'est la fiche qui les
+  attribue, et deux combattants peuvent en partager une.
 - **Le son ne lit que de l'état déjà calculé** et n'écrit rien — même contrat
   que `flair.js`. Il ne tire ni dans `game.rng` ni dans `viewRng` (voir
   l'invariant 2) : sa dérive de hauteur passe par `Math.random`, exprès.
@@ -617,6 +626,13 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   modules.
 - **Une arme que le moteur ne connaît pas doit dire qu'elle en est une**
   (`opts.sound` dans `damage`), sinon elle sonne comme un projectile perdu.
+- **Une voix est une *couche*, pas un bruitage** : enrichir une recette se paie
+  sur **les autres sons** (`MIX.maxVoices` refuse le son entier), et un son
+  refusé ne plante pas — il manque. À remesurer à chaque combattant sonorisé,
+  et **sur l'horloge du duel**, jamais sur celle du contexte audio.
+- **Un garde-fou de couverture ne voit que ce qu'il exerce** : `sound-check`
+  ne joue que des duels, donc il criait « recette morte » sur le clic des
+  écrans DOM.
 
 **Refactoriser**
 

@@ -185,20 +185,35 @@ export const OUTLAW = fiche({
    */
   sound: {
     pitch: 1,
+    /** Claquement, souffle, calibre, et le renvoi de la rue déserte derrière. */
     shot: 'gunshot',
-    /** Le Peacemaker frappe de la crosse, pas de la balle : du métal sec. */
-    hit: 'blade',
-    impact: 'impact',
+    /**
+     * **Le Peacemaker frappe de la crosse, pas de la balle : du métal sec.**
+     * Il empruntait `blade` — la lame du Ronin — qui siffle haut et long ;
+     * `pistolwhip` est la même matière deux fois plus bas et sans queue, donc
+     * une masse qui cogne au lieu d'un fil qui tranche.
+     */
+    hit: 'pistolwhip',
+    /**
+     * **Sa balle gèle** (`onHit.slow`, −30 % pendant 1,6 s) : son impact est le
+     * seul du banc dont le corps **monte** au lieu de retomber — le gel prend
+     * après le choc. L'`impact` générique disait juste « quelque chose a
+     * touché ».
+     */
+    impact: 'frostbite',
     bounce: 'thud',
     /**
-     * **Le percuteur qu'on réarme, pas un tir.** La rafale du Six-Shooter
+     * **Le barillet qu'on réarme, pas un tir.** La rafale du Six-Shooter
      * s'entend déjà, une détonation par balle : lui donner en plus un son de
-     * pouvoir ferait deux bruits pour un seul geste. Ce clic-là est celui du
-     * **rechargement**, le moment où le barillet vrille et où il ne tire plus.
+     * pouvoir ferait deux bruits pour un seul geste. Ce son-là est celui du
+     * **rechargement**, le moment où le barillet vrille et où il ne tire plus —
+     * et il dure ce que dure le geste (0,7 s de `reload`), là où le `click`
+     * emprunté à l'interface tenait 45 ms.
      */
-    ability: 'click',
+    ability: 'cylinder',
     special: 'frost',
-    ultimate: 'riser',
+    /** Un duel à midi s'ouvre sur une cloche, pas sur une montée de synthé. */
+    ultimate: 'knell',
   },
 
   /** Mesuré 483 px/s (médiane de 57 segments rectilignes) → ×1,25 = 604.

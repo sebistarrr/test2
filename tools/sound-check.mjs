@@ -26,6 +26,8 @@
  * Le navigateur est lancé sans la règle du geste d'ouverture, sans quoi la
  * seconde passe n'aurait aucun contexte audio à instrumenter.
  */
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 
 const URL = process.env.URL ?? 'http://127.0.0.1:8085';
@@ -97,7 +99,10 @@ const out = await page.evaluate(async () => {
     for (let j = i + 1; j < ROSTER.length; j++) jouer(ROSTER[i], ROSTER[j], 200);
   }
 
-  // couverture : une recette du banc que personne ne joue est du poids mort
+  // couverture : une recette du banc que personne ne joue est du poids mort.
+  // « Personne » se juge en dehors d'ici : un duel ne peut pas jouer ce qui se
+  // déclenche hors duel (le clic des écrans DOM), donc la liste est recoupée
+  // côté Node avec les recettes **nommées en dur dans `src/`**.
   const jamais = Object.keys(SOUNDS).filter((k) => !total.has(k));
   // et un combattant qui n'aurait aucun son serait muet sans que rien ne crie
   const muets = ROSTER.filter((id) => !(parCombattant.get(id)?.size));
@@ -159,8 +164,25 @@ const synthese = await page.evaluate(async () => {
   return { ouvert: true, pannes, voix, etat: sfx.ctx.state, taux: sfx.ctx.sampleRate };
 });
 
+/**
+ * **Une recette peut vivre hors duel**, et la passe ci-dessus ne peut pas le
+ * voir : elle ne joue que des duels. Le clic des écrans DOM (`main.js`) en est
+ * une — elle n'a ni fiche ni combattant, seulement un appel en dur. On relit
+ * donc `src/` pour les récupérer, plutôt que de déclarer une liste
+ * d'exceptions ici : une liste écrite à la main survit à la disparition de ce
+ * qu'elle excuse, et c'est exactement la panne silencieuse que ce banc traque.
+ */
+const source = (await Promise.all(
+  (await fs.readdir('src', { recursive: true }))
+    .filter((f) => f.endsWith('.js'))
+    .map((f) => fs.readFile(path.join('src', f), 'utf8')),
+)).join('\n');
+const horsDuel = out.jamais.filter((nom) => source.includes(`play('${nom}'`));
+const jamais = out.jamais.filter((nom) => !horsDuel.includes(nom));
+
 console.log('recettes jouées (chacun contre le Mannequin, puis toutes les paires) :');
 for (const [nom, n] of out.total) console.log(`  ${nom.padEnd(10)} ${String(n).padStart(5)}`);
+if (horsDuel.length) console.log(`  (hors duel, nommées en dur dans src/ : ${horsDuel.join(', ')})`);
 
 console.log('\npar combattant :');
 for (const [id, sons] of out.parCombattant) console.log(`  ${id.padEnd(10)} ${sons.join(', ') || '—'}`);
@@ -183,7 +205,7 @@ const soucis = [];
 if (out.muets.length) soucis.push(`combattants muets : ${out.muets.join(', ')}`);
 if (!synthese.ouvert) soucis.push("aucun contexte audio : la passe de synthèse n'a rien vérifié");
 if (synthese.pannes?.length) soucis.push(`recettes en panne : ${synthese.pannes.join(' | ')}`);
-if (out.jamais.length) soucis.push(`recettes jamais jouées : ${out.jamais.join(', ')}`);
+if (jamais.length) soucis.push(`recettes jamais jouées : ${jamais.join(', ')}`);
 if (errs.length) soucis.push(`erreurs page : ${errs.slice(0, 5).join(' | ')}`);
 
 if (soucis.length) {

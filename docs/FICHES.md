@@ -22,24 +22,24 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 43 |
-| 📦 Archive — les huit éléments supprimés | 92 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 166 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 956 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1075 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1332 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1897 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2388 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2602 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 2688 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 2743 |
-| Les dégâts de tous les combattants, divisés par deux | 2811 |
-| Rééquilibrage confiné au Golem et au Ronin | 2921 |
-| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3008 |
-| Le son de chacun | 3058 |
-| Équilibrage du roster | 3111 |
-| Règles communes (moteur) | 3209 |
-| Comment les mesures ont été prises | 3233 |
+| Comment lire une valeur | 44 |
+| 📦 Archive — les huit éléments supprimés | 93 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 167 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 957 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1108 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1365 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1930 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2421 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2635 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 2721 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 2776 |
+| Les dégâts de tous les combattants, divisés par deux | 2844 |
+| Rééquilibrage confiné au Golem et au Ronin | 2954 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3041 |
+| Le son de chacun | 3091 |
+| Équilibrage du roster | 3144 |
+| Règles communes (moteur) | 3242 |
+| Comment les mesures ont été prises | 3266 |
 
 ## Comment lire une valeur
 
@@ -1072,6 +1072,38 @@ pas (6,3 → 6,1 PV/s) et il passe de 17 à 16 sur la matrice.
 pas — son pilotage referme la distance dans le même cycle, et le banc dit que
 ni la force du recul ni un temps d'arrêt n'y changent rien. Il *tient sa
 distance*, il ne fuit pas.
+
+### Son propre jeu de bruitages — le premier du roster
+
+Demandé : « pour chaque personnage, je veux des bruits associés », en
+commençant par lui. Le banc de `data/sound.js` avait été écrit en **matières
+partagées**, ce qui était le bon départ (une recette par matière, la fiche
+l'attribue) mais laissait le roster se ressembler : quatre combattants sur
+`blade`, cinq sur `riser`, et le Pistolero **cinq créneaux sur sept** empruntés
+— dont son rechargement, qui jouait littéralement `click`, le son des boutons
+de l'interface. Seule la transposition (`pitch`) les séparait.
+
+| Créneau | Avant | Après | Pourquoi |
+| --- | --- | --- | --- |
+| `shot` | `gunshot` (2 couches) | `gunshot` **enrichi** (4) | il manquait le **claquement** — un coup de feu s'identifie à son transitoire, pas à son grave — et la **queue** en retard de 55 ms, le renvoi de la rue déserte |
+| `hit` | `blade` | `pistolwhip` | c'est la lame du Ronin qu'il empruntait ; le Peacemaker frappe **de la crosse** : même matière deux fois plus bas, sans queue métallique |
+| `impact` | `impact` | `frostbite` | sa balle **gèle** (`onHit.slow`, −30 % pendant 1,6 s) : seule recette du banc dont le corps **monte** (1760 → 2640 Hz), parce que le gel continue après le choc |
+| `ability` | `click` | `cylinder` | le rechargement dure **0,7 s** et le pistolet vrille pendant tout ce temps ; trois crans, la roue, le verrou — là où le clic d'interface tenait 45 ms |
+| `special` | `frost` (2) | `frost` **enrichi** (4) | le Champ de givre part en **onde de 40 à 900 px** avant de se poser : le son ne disait que le disque. Les deux couches ajoutées sont l'onde, un balayage qui **s'ouvre** de 600 à 7000 Hz |
+| `ultimate` | `riser` | `knell` | `riser` dit « quelque chose arrive » à cinq combattants, jamais *quoi*. MAIN DU MORT est un duel à midi : **une cloche** (311/622 Hz, accordées à l'octave pour sonner comme *une* cloche), le battant sur le bronze, puis la tension et le vent en retard de 120 ms |
+
+`bounce` reste sur `thud`, partagé par tout le monde : c'est un corps contre un
+mur, pas une signature.
+
+**Ce que ça a coûté ailleurs, et qui ne criait pas.** Une voix de
+`MIX.maxVoices` est une **couche**, pas un bruitage, et `play()` refuse le son
+entier quand le plafond est atteint : ces couches en plus se paient donc sur
+**les autres sons**. Mesuré sur quinze duels, en rejouant l'algorithme de
+`play()` sur l'horloge du duel : **0 % de sons perdus avant, 2,3 % après** — des
+rechargements et des impacts, exactement ce qu'on venait d'écrire. Le plafond
+est passé de 14 à **20**, où il ne reste que 0,4 %, et ce qui saute encore n'est
+plus que `thud`. Le détail, et le piège de mesure qui a d'abord annoncé 90 % de
+pertes, sont dans `docs/PIEGES.md`, section « Le son ».
 
 ## ⚔ RONIN — `bladesman` (affiché « RONIN »)
 

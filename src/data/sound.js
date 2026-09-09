@@ -68,8 +68,28 @@ export const MIX = deepFreeze({
   /**
    * Voix simultanées. Au-delà, un son est simplement abandonné : mieux vaut
    * perdre le huitième impact d'une mêlée que faire tousser le mixage.
+   *
+   * **14 → 20, et c'est une mesure, pas un confort.** Une voix est une
+   * *couche*, pas un bruitage : enrichir une recette la fait peser plus lourd
+   * sur ce plafond, et le prix se paie sur **les autres sons**, pas sur elle.
+   * Donner son propre jeu au Pistolero (`gunshot` passé de 2 à 4 couches,
+   * `cylinder` et `knell` à 5) a fait passer les sons perdus de **0 % à 2,3 %**
+   * sur quinze duels — rechargements et impacts compris. Le banc, en rejouant
+   * l'algorithme de `play()` sur l'horloge du duel :
+   *
+   * | plafond | 14 | 16 | 18 | 20 | 24 |
+   * | --- | --- | --- | --- | --- | --- |
+   * | sons perdus | 2,3 % | 1,4 % | 0,5 % | **0,4 %** | 0 % |
+   *
+   * 20 est le coude : ce qui saute encore n'est plus que `thud`, le rebond de
+   * mur — le son le plus fréquent du jeu et le moins porteur de sens. Aller à
+   * 24 ne rachèterait que lui.
+   *
+   * **À remesurer à chaque combattant qu'on sonorise** : six jeux propres
+   * empileront six fois cette pression, et rien ne criera — un son perdu ne
+   * plante pas, il manque.
    */
-  maxVoices: 14,
+  maxVoices: 20,
   /**
    * Largeur du panoramique. À 1, un combattant collé au mur gauche serait
    * **entièrement** dans l'oreille gauche, ce qui est fatigant au casque et
@@ -105,8 +125,40 @@ export const SOUNDS = deepFreeze({
    * un défaut à corriger, c'est le levier à tirer.
    */
   gunshot: [
+    /**
+     * **Le claquement, et c'est lui qu'on reconnaît.** Moins de 50 ms, très
+     * haut, attaque à 1 ms : un coup de feu s'identifie à son transitoire, pas
+     * à son grave. Sans cette couche la recette sonnait « souffle », pas
+     * « détonation ».
+     */
+    { wave: 'noise', filter: 'highpass', cut0: 3200, cut1: 1100, q: 0.7, dur: 0.045, gain: 0.9, attack: 0.001 },
+    /** Le souffle de la charge, plus grave et plus long que le claquement. */
     { wave: 'noise', filter: 'lowpass', cut0: 5200, cut1: 420, q: 1, dur: 0.17, gain: 0.78 },
+    /** Le corps : c'est cette couche qui donne le **calibre**. */
     { wave: 'square', f0: 240, f1: 60, dur: 0.09, gain: 0.5 },
+    /**
+     * **La queue, en retard sur le claquement** : le renvoi de la rue déserte.
+     * Le `delay` de 55 ms est ce qui la fait entendre comme un *écho* et non
+     * comme une deuxième couche du même coup — en dessous de ~40 ms l'oreille
+     * les fond en un seul événement.
+     */
+    { wave: 'noise', filter: 'bandpass', cut0: 1300, cut1: 520, q: 2.2, dur: 0.33, gain: 0.17, delay: 0.055, attack: 0.02 },
+  ],
+  /**
+   * **Le barillet qu'on réarme** : trois crans, la roue qui tourne, le verrou.
+   *
+   * Le rechargement dure 0,7 s sur la fiche du Pistolero et le pistolet vrille
+   * pendant tout ce temps ; un clic unique ne remplissait pas ce geste — il
+   * empruntait même littéralement `click`, le son de l'interface. Les trois
+   * crans à 85 ms d'intervalle donnent la **mécanique**, le souffle passe-bande
+   * la roue, et le dernier transitoire le moment où ça se referme.
+   */
+  cylinder: [
+    { wave: 'noise', filter: 'bandpass', cut0: 2600, cut1: 4300, q: 3.4, dur: 0.26, gain: 0.13, attack: 0.05 },
+    { wave: 'square', f0: 1500, f1: 1150, dur: 0.02, gain: 0.2 },
+    { wave: 'square', f0: 1660, f1: 1250, dur: 0.02, gain: 0.2, delay: 0.085 },
+    { wave: 'square', f0: 1840, f1: 1360, dur: 0.02, gain: 0.2, delay: 0.17 },
+    { wave: 'noise', filter: 'highpass', cut0: 1900, cut1: 3400, q: 1, dur: 0.05, gain: 0.34, delay: 0.255 },
   ],
   /** Lame ou shuriken qui fend l'air : du bruit passe-bande qui descend. */
   whoosh: [
@@ -165,6 +217,32 @@ export const SOUNDS = deepFreeze({
     { wave: 'noise', filter: 'lowpass', cut0: 2600, cut1: 500, q: 1, dur: 0.11, gain: 0.46 },
     { wave: 'sine', f0: 320, f1: 120, dur: 0.1, gain: 0.28 },
   ],
+  /**
+   * **Coup de crosse** : le Peacemaker frappe avec sa masse, pas avec un fil.
+   *
+   * Là où `blade` siffle haut (bandpass à 4200 Hz, c'est une lame qui tranche),
+   * celui-ci est **mat et médium** : la même famille de recette, une octave et
+   * demie plus bas, sans queue métallique. C'est ce qui sépare à l'oreille un
+   * duelliste d'un homme qui cogne avec son arme.
+   */
+  pistolwhip: [
+    { wave: 'noise', filter: 'bandpass', cut0: 1900, cut1: 480, q: 1.2, dur: 0.1, gain: 0.5 },
+    { wave: 'square', f0: 300, f1: 110, dur: 0.08, gain: 0.32 },
+  ],
+  /**
+   * **La balle gelante qui mord** : un impact qui *prend* au lieu de retomber.
+   *
+   * La seule recette du banc dont la couche de corps **monte** (1760 → 2640 Hz)
+   * : partout ailleurs un impact descend, parce qu'un choc perd son énergie.
+   * Ici le gel continue après la balle — c'est exactement ce que fait la fiche
+   * (`onHit.slow`, −30 % de vitesse pendant 1,6 s), et l'oreille doit
+   * l'entendre continuer.
+   */
+  frostbite: [
+    { wave: 'noise', filter: 'highpass', cut0: 2800, cut1: 6400, q: 0.8, dur: 0.09, gain: 0.34 },
+    { wave: 'triangle', f0: 1760, f1: 2640, dur: 0.12, gain: 0.2, attack: 0.006 },
+    { wave: 'sine', f0: 300, f1: 120, dur: 0.09, gain: 0.22 },
+  ],
   /** Tic d'un dégât sur la durée (brûlure, givre) : presque un souffle. */
   ember: [
     { wave: 'noise', filter: 'bandpass', cut0: 1400, cut1: 700, q: 1.6, dur: 0.16, gain: 0.16, attack: 0.04 },
@@ -193,8 +271,20 @@ export const SOUNDS = deepFreeze({
     { wave: 'noise', filter: 'bandpass', cut0: 700, cut1: 2400, q: 1.1, dur: 0.3, gain: 0.34, attack: 0.06 },
     { wave: 'sawtooth', f0: 120, f1: 300, dur: 0.28, gain: 0.12, attack: 0.06 },
   ],
-  /** Givre : une tenue vitreuse, très haute, sans grave du tout. */
+  /**
+   * **Givre** : le claquement de l'onde, puis la tenue vitreuse.
+   *
+   * La fiche du Pistolero décrit un Champ de givre qui part en **onde de 40 à
+   * 900 px en 0,95 s** avant de se poser en disque : le son ne disait que le
+   * disque. Les deux couches d'ouverture sont l'onde — un grave sec qui claque
+   * au déclenchement, et un balayage passe-haut qui **s'ouvre** de 600 à
+   * 7000 Hz, la traduction à l'oreille d'un anneau qui gagne le bord de
+   * l'écran. Les deux couches d'origine, elles, ne bougent pas : c'est le
+   * champ lui-même, et il était juste.
+   */
   frost: [
+    { wave: 'sine', f0: 180, f1: 58, dur: 0.3, gain: 0.34 },
+    { wave: 'noise', filter: 'highpass', cut0: 600, cut1: 7000, q: 0.8, dur: 0.55, gain: 0.34, attack: 0.012 },
     { wave: 'sine', f0: 2600, f1: 1500, dur: 0.5, gain: 0.16, attack: 0.05 },
     { wave: 'noise', filter: 'highpass', cut0: 2400, cut1: 5200, q: 0.7, dur: 0.5, gain: 0.14, attack: 0.08 },
   ],
@@ -235,6 +325,28 @@ export const SOUNDS = deepFreeze({
   riser: [
     { wave: 'sawtooth', f0: 90, f1: 880, dur: 0.6, gain: 0.24, attack: 0.05 },
     { wave: 'noise', filter: 'bandpass', cut0: 400, cut1: 5000, q: 2, dur: 0.6, gain: 0.26, attack: 0.05 },
+  ],
+  /**
+   * **Le glas** : une cloche, son octave grave, et la rue qui se vide derrière.
+   *
+   * `riser` annonce « quelque chose arrive » et convient à quatre combattants ;
+   * il ne dit pas *quoi*. MAIN DU MORT est un duel à midi — ce qui l'ouvre
+   * n'est pas une montée de synthé mais **une cloche qu'on frappe**, avec ce
+   * qui va avec : le battant sur le bronze (le transitoire passe-bande), puis
+   * la tension et le vent, tous deux **en retard de 120 ms** pour que la cloche
+   * arrive seule et se fasse entendre avant d'être accompagnée.
+   *
+   * Ré♯ grave et son octave (311 / 622 Hz) : deux couches accordées à l'octave
+   * sonnent comme *une* cloche, deux couches accordées autrement sonnent comme
+   * deux notes — c'est la même raison qui fait que `play()` transpose toutes
+   * les couches d'un coup par le même facteur.
+   */
+  knell: [
+    { wave: 'triangle', f0: 622, f1: 616, dur: 1.05, gain: 0.3, attack: 0.004 },
+    { wave: 'sine', f0: 311, f1: 308, dur: 1.2, gain: 0.28, attack: 0.004 },
+    { wave: 'noise', filter: 'bandpass', cut0: 3000, cut1: 1100, q: 2.4, dur: 0.3, gain: 0.2 },
+    { wave: 'sawtooth', f0: 110, f1: 466, dur: 0.75, gain: 0.16, attack: 0.07, delay: 0.12 },
+    { wave: 'noise', filter: 'bandpass', cut0: 500, cut1: 2600, q: 2, dur: 0.8, gain: 0.13, attack: 0.1, delay: 0.12 },
   ],
 
   /* ---------------------------------------------------------------- */

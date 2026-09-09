@@ -24,12 +24,12 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Éditer les données | 391 |
 | &nbsp;&nbsp;· Interface et rendu | 424 |
 | &nbsp;&nbsp;· Le son | 510 |
-| &nbsp;&nbsp;· Refactoriser | 589 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 630 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 632 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 675 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 718 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 737 |
+| &nbsp;&nbsp;· Refactoriser | 618 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 659 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 661 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 704 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 747 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 766 |
 
 ---
 
@@ -509,7 +509,7 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 
 ### Le son
 
-Six pièges, tous **muets** — c'est leur point commun et c'est ce qui les rend
+Huit pièges, tous **muets** — c'est leur point commun et c'est ce qui les rend
 coûteux : aucun ne plante, aucun ne se voit à l'écran, et une capture ne dit
 rien. Les deux derniers sont pires encore, puisqu'ils ne se découvrent qu'après
 publication. D'où deux bancs : `tools/sound-check.mjs`, qui joue des duels
@@ -570,6 +570,35 @@ entiers et compte les sons, et `tools/export-check.mjs`, qui filme un duel et
   silence, ce qui est exactement le geste de quelqu'un qui monte une vidéo. La
   coupure ne coupe donc que les enceintes (et la voix, qui n'est pas
   enregistrable de toute façon).
+
+- **Une voix, c'est une couche — pas un bruitage.** `MIX.maxVoices` compte des
+  couches, et `play()` refuse **le son entier** quand le plafond est atteint :
+  enrichir une recette se paie donc sur **les autres sons**, jamais sur elle, et
+  un son refusé ne plante pas — il manque. Donner son propre jeu au Pistolero
+  (`gunshot` de 2 à 4 couches, `cylinder` et `knell` à 5) a fait passer les sons
+  perdus de **0 % à 2,3 %** sur quinze duels : des rechargements et des impacts,
+  exactement ce qu'on venait d'écrire. Le plafond est passé à 20, où il ne reste
+  que 0,4 % — et ce qui saute encore n'est plus que `thud`, le rebond de mur, le
+  son le plus fréquent et le moins porteur de sens.
+  **Le banc se mesure sur l'horloge du duel, pas sur celle du contexte audio** :
+  en simulation accélérée `ctx.currentTime` n'avance pas avec le duel, tous les
+  sons se posent au même instant réel et le plafond crève artificiellement — la
+  première mesure annonçait 90 % de pertes, ce qui n'aurait rien voulu dire. On
+  enregistre l'instant *du duel* de chaque son, puis on rejoue l'algorithme de
+  `play()` sur cette horloge-là. Le même relevé sert d'avant/après sans toucher
+  au dépôt, puisque le son ne touche jamais la simulation : la chronologie des
+  événements est identique des deux côtés, seules les recettes changent.
+  **À remesurer à chaque combattant qu'on sonorise** — six jeux propres
+  empileront six fois cette pression.
+- **Un garde-fou de couverture ne voit que ce qu'il exerce.**
+  `tools/sound-check.mjs` déclare morte toute recette qu'aucun duel ne joue.
+  Le jour où le Pistolero a cessé d'emprunter `click` pour son rechargement, le
+  banc a crié à la recette morte — alors que `click` est le son des écrans DOM,
+  joué par `main.js`, hors de tout duel. Le réflexe (une liste d'exceptions dans
+  l'outil) aurait survécu à la disparition de ce qu'elle excuse ; l'outil relit
+  donc `src/` et considère vivante une recette **nommée en dur** quelque part.
+  Un garde-fou qui crie à tort finit par ne plus être lu — c'est déjà la leçon
+  de l'invariant 9, ici payée une seconde fois.
 
 Deux points de conception qui ont bien tenu, notés pour ne pas les défaire :
 
