@@ -148,18 +148,30 @@ export const GOLEM = fiche({
   },
 
   /**
-   * **Le plus lent du roster, et de loin** : 370 px/s contre 655 (Pistolero),
-   * 624 (Druide), 560 (Ronin), 500 (Shinobi) et 430 (Hoplite).
+   * **Le plus lent du roster, et de loin** : 420 px/s contre 655 (Pistolero),
+   * 624 (Druide), 560 (Ronin), 500 (Shinobi) et 430 (Hoplite) — désormais
+   * juste sous l'Hoplite plutôt que loin derrière tout le monde.
    *
    * `turnRate` bas aussi (1,3 contre 1,3–2,2 ailleurs) : il ne se contente pas
    * d'aller lentement, il **change de direction lentement**, ce qui est la
    * moitié de la sensation de masse. `seek` moyen — il vise sa cible, il ne
    * file pas tout droit comme l'Hoplite.
    *
-   * Calé : c'est le premier chiffre à remonter si le banc montre qu'il ne
-   * touche jamais un tireur.
+   * **370 → 420, demandé** (rééquilibrage Ronin/Golem). Calé à l'origine avec
+   * exactement ce commentaire : « le premier chiffre à remonter si le banc
+   * montre qu'il ne touche jamais un tireur ». Le banc l'a montré à la
+   * lettre — mais balayé seul (`weapon.melee.damage` inchangé), le levier
+   * s'est révélé plat : 370 → 12/50, 420 → 13/50, 500 → 14/50 sur le banc à
+   * dix duels par adversaire (cinq par camp), en restant bloqué à 0/10 contre
+   * le Pistolero et le Shinobi à chaque palier — piège déjà nommé, « un banc
+   * qui plafonne dit que le levier n'est pas le bon ». Gardé à 420 malgré
+   * tout, mais **combiné** à `weapon.melee.damage` (le vrai levier, voir plus
+   * bas) : ensemble ils font mieux que la somme de leurs effets isolés
+   * (12 → 24/50, quand 370+dégât seul faisait 20/50) — l'un lui permet de
+   * rattraper, l'autre de faire mal une fois arrivé. Toujours le plus lent du
+   * roster.
    */
-  movement: { speed: 370, turnRate: 1.3, seek: 0.34 },
+  movement: { speed: 420, turnRate: 1.3, seek: 0.34 },
 
   weapon: {
     /** **Renommé avec le dessin** : ce n'est plus un poing, c'est un amas de
@@ -253,10 +265,19 @@ export const GOLEM = fiche({
        * il ne tient plus. 8 est le seul point de la bande.
        *
        * **8 → 4, divisé par deux sur demande**, avec tout le reste du roster —
-       * ce banc-ci décrivait l'ancien point d'équilibre, pas celui-ci ; la
-       * matrice est régénérée et comparée après le changement (invariant 3).
+       * ce banc-ci décrivait l'ancien point d'équilibre, pas celui-ci.
+       *
+       * **4 → 7, rééquilibrage Ronin/Golem** (avec `movement.speed`
+       * ci-dessus). Rebalayé au banc à dix duels par adversaire : 5 → 15/50,
+       * 6 → 20/50, 7 → 26/50, 8 → 27/50 — linéaire puis rendements
+       * décroissants passé 7, avec le Ronin et l'Hoplite déjà proches du
+       * plafond (10/10 et 9/10) : pousser plus loin les aurait écrasés sans
+       * faire bouger le Pistolero (2/10) ni le Shinobi (1/10), tous deux plus
+       * rapides et à distance — écart structurel, connu et non corrigé.
+       * Arrêté à 7. La matrice est régénérée et comparée après le changement
+       * (invariant 3).
        */
-      damage: 4,
+      damage: 7,
       /**
        * Le verrou le plus long du roster après le Pistolero (3 s) : 1 s pour le
        * Ronin et le Shinobi, 1,1 s pour l'Hoplite, 1,7 s pour le Druide.

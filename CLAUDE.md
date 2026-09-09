@@ -117,14 +117,28 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 18 duels hors
-miroir chacun : **Shinobi 16**, Pistolero 13, Druide 12, Hoplite 10, Golem 8,
+miroir chacun : **Shinobi 16**, Druide 12, Pistolero 14, Hoplite 9, Golem 8,
 **Ronin 4**, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
-Deux changements successifs y sont empilés : **Neon Shadow a été supprimé**
+Trois changements successifs y sont empilés : **Neon Shadow a été supprimé**
 (invariant 3 : il était en queue de `ROSTER`, sa suppression ne déplace donc
 aucune autre ligne), puis **les dégâts de tous les combattants ont été divisés
 par deux** — sur la fiche, pas au moteur (`opts.kind`/`Match.damage` ne
-changent pas, chaque combattant porte sa propre division). `docs/FICHES.md`
-porte le détail par combattant et les deux relevés, avant/après.
+changent pas, chaque combattant porte sa propre division) —, puis un
+**rééquilibrage confiné au Golem et au Ronin**, les deux plus faibles.
+`docs/FICHES.md` porte le détail par combattant et les relevés, avant/après.
+Sur ce dernier changement : Golem gagne `movement.speed` 370 → 420 et
+`weapon.melee.damage` 4 → 7 (les deux leviers combinés font mieux que la
+somme de leurs effets isolés, banc à dix duels par adversaire : 12/50 → 24/50
+en combinant, contre 20/50 pour le dégât seul) ; Ronin gagne
+`weapon.melee.onHit.dot.duration` 1 → 1,5 (5/50 → 8/50 au même banc). Le
+Pistolero et le Shinobi restent des murs pour les deux — rapides, à distance,
+0 ou 1/10 à chaque palier testé — écart structurel, connu et non corrigé.
+**Sur la matrice officielle à 3 seeds, le Golem reste à 8/18** (gagne un
+affrontement au Hoplite, en perd un au Pistolero — net nul sur ces seeds
+précises) **et le Ronin reste à 4/18** : le gain que le banc à 10 seeds montre
+ne tombe pas dans les 3 seeds que joue `matrix.mjs`. Ce n'est pas une
+contradiction, c'est la limite déjà documentée plus bas : une matrice à seed
+unique peut cacher un écart aussi bien qu'elle peut l'exagérer.
 **Diviser les dégâts par deux rallonge les duels**, comme diviser les PV les
 aurait raccourcis — même levier, sens inverse : 41,2 s en moyenne au lieu de
 26,3, et les deux mêmes combattants rebasculent que lors du changement de

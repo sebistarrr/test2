@@ -14,22 +14,22 @@ relevé, puis les pièges eux-mêmes.
 
 | Section | Ligne |
 | --- | --- |
-| **Méthode de relevé vidéo** | 35 |
-| &nbsp;&nbsp;· Le repère de mesure n'est pas le même partout | 47 |
-| **Écarts volontaires au relevé** | 64 |
-| **Pièges déjà rencontrés** | 124 |
-| &nbsp;&nbsp;· Mesurer | 126 |
-| &nbsp;&nbsp;· Équilibrer | 161 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 367 |
-| &nbsp;&nbsp;· Éditer les données | 406 |
-| &nbsp;&nbsp;· Interface et rendu | 439 |
-| &nbsp;&nbsp;· Le son | 526 |
-| &nbsp;&nbsp;· Refactoriser | 602 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 643 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 645 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 688 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 731 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 750 |
+| **Méthode de relevé vidéo** | 36 |
+| &nbsp;&nbsp;· Le repère de mesure n'est pas le même partout | 48 |
+| **Écarts volontaires au relevé** | 65 |
+| **Pièges déjà rencontrés** | 126 |
+| &nbsp;&nbsp;· Mesurer | 128 |
+| &nbsp;&nbsp;· Équilibrer | 163 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 339 |
+| &nbsp;&nbsp;· Éditer les données | 378 |
+| &nbsp;&nbsp;· Interface et rendu | 411 |
+| &nbsp;&nbsp;· Le son | 497 |
+| &nbsp;&nbsp;· Refactoriser | 576 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 617 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 619 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 662 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 705 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 724 |
 
 ---
 
@@ -199,6 +199,19 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   chacun seul le posait autour de 15. Près du seuil, un point de dégât bascule
   des courses déjà serrées. Régler **un** levier, remesurer, et seulement
   ensuite en toucher un autre.
+
+  **L'inverse existe aussi : un levier plat seul peut en débloquer un autre.**
+  Rééquilibrage du Golem (voir `docs/FICHES.md`) : `movement.speed` balayé
+  seul (370 → 420 → 500) restait plat, 12 → 13 → 14 victoires sur 50, coincé à
+  0/10 contre les deux tireurs rapides du roster à chaque palier — la vitesse
+  le fait rattraper sa cible, mais sans plus de dégât au contact elle ne le
+  fait pas gagner une fois arrivé. `weapon.melee.damage` seul, en revanche,
+  suit une pente connue (4 → 20/50 à 6, cf. le banc de damage plus bas dans
+  cette section) : 12 → 20/50. Les deux **combinés** (420 + 6) donnent
+  24/50 — plus que la somme de leurs gains isolés (respectivement +1 et +8
+  sur la base de 12, soit +9 attendu, contre +12 mesuré). Un levier qui ne
+  bouge rien seul n'est pas forcément à écarter : il peut être la condition
+  qui manque à un autre pour agir.
 
 - **La matrice ne joue chaque paire qu'une fois, donc elle exagère les écarts.**
   Chacun y est toujours du même côté, et le camp A pèse lourd (invariant 3).

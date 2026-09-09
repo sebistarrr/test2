@@ -208,7 +208,16 @@ export const BLADESMAN = fiche({
        *  de touche n'ait bougé. Ramenée à **1 s (un seul tic)**, il gagne 2/6 :
        *  un vrai gain sur son relevé d'origine, sans en faire le plus fort du
        *  roster réduit. Voir aussi `special.aura.tickDamage`, qui n'a quasiment
-       *  pas pesé dans ce banc — le levier est ici, pas là-bas. */
+       *  pas pesé dans ce banc — le levier est ici, pas là-bas.
+       *
+       *  **1 → 1,5, rééquilibrage Ronin/Golem.** Rebalayé au banc à dix duels
+       *  par adversaire (cinq par camp) : base à 5/50 (Hoplite 5/10, tout le
+       *  reste à 0), 1,5 s → 8/50 (Hoplite 7/10, Druide 1/10), 2 s → 8/50
+       *  aussi — le levier plafonne dès 1,5 s, inutile d'aller plus loin.
+       *  Le Pistolero, le Shinobi et le Golem restent à 0/10 à chaque palier :
+       *  écart structurel (rapides et/ou à distance, contre un duelliste au
+       *  contact) connu et non corrigé, comme celui du Golem face au même
+       *  Pistolero et au même Shinobi ci-dessus. */
       onHit: {
         stackGain: 0.15,
         stackMax: 3,
@@ -216,7 +225,7 @@ export const BLADESMAN = fiche({
           // divisé par deux, demandé : même Spin Speed, moitié moins de brûlure
           damage: (self) => Math.max(0.5, Math.round(self.stacks * 0.5)),
           interval: 1,
-          duration: 1,
+          duration: 1.5,
           ring: '#e8621b',
           tint: { color: '#e8621b', alpha: 0.65 },
         },

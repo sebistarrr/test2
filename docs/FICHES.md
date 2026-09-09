@@ -34,10 +34,11 @@ les recale en une commande.
 | La norme passe à 200 PV, le Golem à 400 (historique) | 2687 |
 | Neon Shadow supprimé, la norme redescend à 100 PV | 2742 |
 | Les dégâts de tous les combattants, divisés par deux | 2810 |
-| Le son de chacun | 2920 |
-| Équilibrage du roster | 2973 |
-| Règles communes (moteur) | 3071 |
-| Comment les mesures ont été prises | 3095 |
+| Rééquilibrage confiné au Golem et au Ronin | 2920 |
+| Le son de chacun | 3007 |
+| Équilibrage du roster | 3060 |
+| Règles communes (moteur) | 3158 |
+| Comment les mesures ont été prises | 3182 |
 
 ## Comment lire une valeur
 
@@ -2916,6 +2917,93 @@ moitié de son DPS contre le Mannequin, parce que le DPS mesure une production
 débit plafonné, perd le plus en valeur absolue mais dans un rapport proche de
 la moitié attendue ; le Shinobi, dont la production compose avec le temps,
 perd le moins — la fenêtre plus longue compense une bonne part de la division.
+
+## Rééquilibrage confiné au Golem et au Ronin
+
+Demandé après la division des dégâts par deux ci-dessus : les deux plus
+faibles du roster réduit à six actifs (Golem 8/18, Ronin 4/18) restaient les
+deux plus faibles. Confiné aux deux, sur un banc dédié — dix duels par
+adversaire, cinq avec la cible au camp A et cinq au camp B, pour retirer le
+biais de camp déjà documenté plus haut — plutôt que sur la matrice officielle
+à 3 seeds, trop grossière pour un réglage fin.
+
+### Golem : la vitesse ne suffit pas seule, le dégât si — et les deux combinés font mieux que leur somme
+
+`movement.speed` était le premier levier nommé dans le commentaire de la
+fiche elle-même : « le premier chiffre à remonter si le banc montre qu'il ne
+touche jamais un tireur ». Balayé seul, contre les cinq autres actifs :
+
+| `movement.speed` | Total /50 | vs Pistolero | vs Shinobi |
+| --- | --- | --- | --- |
+| 370 (avant) | 12 | 0/10 | 0/10 |
+| 420 | 13 | 0/10 | 0/10 |
+| 500 | 14 | 0/10 | 0/10 |
+
+Plat — piège déjà nommé, « un banc qui plafonne dit que le levier n'est pas
+le bon ». Remonter la vitesse le fait rattraper ses cibles, mais ne le fait
+pas gagner une fois arrivé : sans plus de dégât au contact, il perd quand même
+la course aux PV. `weapon.melee.damage`, en revanche, reprend exactement la
+pente documentée avant la division par deux (~11 victoires/100 par point) :
+
+| `weapon.melee.damage` | Total /50 |
+| --- | --- |
+| 4 (avant) | 12 |
+| 5 | 15 |
+| 6 | 20 |
+| 7 | 26 |
+| 8 | 27 |
+
+Rendements décroissants passé 7 : le Ronin et l'Hoplite sont déjà proches du
+plafond (10/10 et 9/10 à ce palier) — pousser à 8 ne fait plus que les
+écraser un peu plus, sans faire bouger le Pistolero ni le Shinobi. Arrêté à
+**7**.
+
+Les deux leviers combinés (`speed: 420`, `damage: 7`) donnent **26/50**,
+contre 20/50 pour le dégât seul à vitesse inchangée — la vitesse, plate quand
+elle est testée seule, redevient utile une fois que le Golem a de quoi
+punir le rattrapage. Piège inverse de celui qu'elle semblait montrer seule :
+« deux leviers qui marchent chacun ne s'additionnent pas » vaut aussi à
+l'envers, un levier qui ne marche pas seul peut en débloquer un autre.
+
+Le Pistolero (2/10) et le Shinobi (1/10) restent hors de portée à tous les
+paliers testés — rapides, armés à distance, contre le plus lent et le plus
+court du roster : écart structurel, connu et non corrigé.
+
+### Ronin : la brûlure, encore, mais elle plafonne vite
+
+Même lecture qu'à l'introduction de la brûlure elle-même (`onHit.dot`,
+section RONIN) : `duration` est le seul levier de ce mécanisme qui n'ait
+jamais servi qu'à caler la cadence, pas la puissance brute. Balayé contre les
+cinq autres actifs, Golem inclus dans sa version rééquilibrée ci-dessus :
+
+| `dot.duration` | Total /50 | vs Hoplite | vs Druide |
+| --- | --- | --- | --- |
+| 1 (avant) | 5 | 5/10 | 0/10 |
+| 1,5 | 8 | 7/10 | 1/10 |
+| 2 | 8 | 7/10 | 1/10 |
+
+Plafonne dès 1,5 : au-delà, un tic de plus ne change rien parce que la
+brûlure a déjà eu le temps de courir jusqu'à son terme avant la touche
+suivante. Arrêté à **1,5**. Le Pistolero, le Shinobi et le Golem restent à
+0/10 à chaque palier — les deux premiers pour la même raison que ci-dessus
+(rapides, à distance), le troisième parce qu'un duelliste au contact n'a
+justement plus d'avantage de portée sur un adversaire qui vient d'être
+rapproché.
+
+### Ce que ça change sur la matrice officielle, et ce que ça ne change pas
+
+Régénérée à 3 seeds (`tools/matrix.mjs`), stable sur un second passage, le
+diff ne touche que les lignes où le Golem ou le Ronin apparaissent —
+invariant 3 respecté. Mais le résultat en victoires **ne suit pas le banc à
+10 seeds à la lettre** : le Golem reste à 8/18 (il gagne un affrontement de
+plus au Hoplite, en perd un au Pistolero — net nul sur ces trois seeds-là), et
+le Ronin reste à 4/18 (le gain qu'il montre au banc, entièrement contre
+l'Hoplite et le Druide, ne tombe simplement pas dans les trois seeds que joue
+`matrix.mjs`). Ce n'est pas une contradiction : c'est la limite déjà nommée
+plus haut dans ce document — une matrice à seed unique par paire peut cacher
+un écart aussi bien qu'elle peut l'exagérer. Le banc à 10 seeds × deux camps
+reste la mesure la plus fiable de l'effet réel ; la matrice officielle reste
+le garde-fou de non-régression, pas l'instrument de réglage fin.
 
 ## Le son de chacun
 
