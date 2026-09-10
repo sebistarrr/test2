@@ -24,19 +24,25 @@ import { formatSeconds } from '../format.js';
  *      Comme pour le Golem, la taille est un vrai coût — un corps plus large
  *      est plus facile à toucher — et c'est la barre de vie qui le paie.
  *   2. **Huit rayons au lieu d'une arme.** `weapon.spokes: 8` : la même arme
- *      répétée tous les 45°, donc une couronne tranchante qui ne laisse aucun
- *      angle mort. C'est ce qui remplace, chez lui, le fait de savoir viser.
- *   3. **Il est lent** (300 px/s, le plus lent du roster), et c'est la
- *      contrepartie. Il ne rattrape personne ; c'est à l'adversaire de venir,
- *      ou de se faire chercher par le Rayon solaire.
+ *      répétée tous les 45°, donc une couronne qui ne laisse aucun angle mort.
+ *      **Elle ne blesse plus** (`melee.damage: 0`, demandé) : elle est
+ *      aujourd'hui sa silhouette et son bruit, plus son arme.
+ *   3. **Il est lent** (230 px/s, le plus lent du roster et de très loin), et
+ *      c'est la contrepartie. Il ne rattrape personne — et n'aurait rien à en
+ *      faire s'il y arrivait.
  *
- *  **Le piège de conception à ne pas rouvrir.** Une couronne de huit rayons
- *  touche dans toutes les directions : c'est exactement l'« arme braquée qui
- *  touche en permanence » que le dépôt documente, en pire. Son garde-fou est
- *  `weapon.melee.cooldown` — `weaponHit` teste le verrou **une fois pour
- *  toutes** avant d'essayer les branches, donc huit rayons ne font pas huit
- *  touches par pas. Baisser ce verrou est le levier le plus dangereux de la
- *  fiche.
+ *  **Le renversement à connaître avant d'y toucher.** À sa création, la
+ *  couronne portait **67,3 %** de ses dégâts et le Rayon solaire 18,9 % ; il
+ *  était un colosse de contact dont l'ultime était le bouquet. Supprimer les
+ *  dégâts de mêlée l'a retourné : il est désormais **entièrement porté par son
+ *  ultime**, et tout le reste de la fiche a suivi — horloge d'ultime deux fois
+ *  plus rapide (13 s → 7), annonce presque deux fois plus longue (1,1 s → 2),
+ *  faisceau deux fois et demie plus long et près de deux fois plus large.
+ *
+ *  Conséquence de jeu, et c'est le personnage aujourd'hui : **le coller ne
+ *  coûte plus rien**, et c'est justement de près que le faisceau est
+ *  inesquivable. Le duel contre lui ne se joue plus sur la distance mais sur
+ *  **le moment** — les deux secondes d'annonce sont toute la fenêtre.
  * ========================================================================== */
 export const SUN = fiche({
   id: 'sun',
@@ -138,7 +144,21 @@ export const SUN = fiche({
   sound: {
     pitch: 0.78,
     shot: null, // il n'a aucun projectile
-    /** Le rayon qui **marque** au lieu de trancher : une brûlure, pas un choc. */
+    /**
+     * **Le son du faisceau, et non celui de la couronne.**
+     *
+     * Le créneau `hit` est celui de la touche d'arme, et son arme ne blesse
+     * plus (`melee.damage: 0`) — il serait donc mort si son module ne le
+     * réclamait pas explicitement : le Rayon solaire passe `sound: 'hit'` dans
+     * `game.damage`, le mécanisme prévu pour une arme que le moteur ne
+     * reconnaît pas comme telle. Sans ça, chaque tic du rayon sonnait comme un
+     * projectile perdu, et `sound-check` criait à la recette morte.
+     *
+     * `scorch` est une **brûlure** et non un choc : le grésillement tient six
+     * fois plus longtemps qu'un `pierce`, et l'éclair passe-haut l'ouvre. C'est
+     * ce qu'on entend quand ça prend, pas quand ça cogne — ce qui décrit
+     * exactement le faisceau, à raison d'un tic toutes les 0,15 s.
+     */
     hit: 'scorch',
     impact: 'impact',
     bounce: 'thud',
@@ -160,16 +180,20 @@ export const SUN = fiche({
   },
 
   /**
-   * **Le plus lent du roster, et de loin** : 300 px/s contre 420 (Golem, le
-   * précédent détenteur), 430 (Hoplite et Mannequin), 500 (Shinobi), 560
-   * (Ronin), 624 (Druide) et 655 (Pistolero).
+   * **Le plus lent du roster, et de très loin** : 230 px/s contre 420 (Golem,
+   * le précédent détenteur), 430 (Hoplite et Mannequin), 500 (Shinobi), 560
+   * (Ronin), 624 (Druide) et 655 (Pistolero). Il va **moitié moins vite que la
+   * moyenne du roster**, et presque trois fois moins vite que le Pistolero.
    *
-   * C'est **la** contrepartie de tout le reste, et elle est volontairement
-   * raide : il ne rattrape personne. `turnRate: 1` est également le plus bas du
-   * roster (1,3 pour le Golem) — un astre ne pivote pas, il dérive. `seek`
-   * moyen : il va vers sa cible sans jamais la coincer.
+   * **300 → 230, demandé**, en même temps que la suppression de ses dégâts de
+   * mêlée. Les deux vont ensemble et disent le même personnage : il ne
+   * poursuit plus rien, et il n'aurait rien à en faire s'il rattrapait
+   * quelqu'un. Un astre ne court pas après ses cibles, il les cuit.
+   *
+   * `turnRate: 1` est également le plus bas du roster (1,3 pour le Golem) — un
+   * astre ne pivote pas, il dérive.
    */
-  movement: { speed: 300, turnRate: 1, seek: 0.32 },
+  movement: { speed: 230, turnRate: 1, seek: 0.32 },
 
   weapon: {
     name: 'Couronne de rayons',
@@ -240,40 +264,44 @@ export const SUN = fiche({
     hitbox: { from: 0.5125, radius: 15 },
     melee: {
       /**
-       * **Dégâts fixes**, comme le Golem : un astre ne s'échauffe pas au fil du
-       * duel. 5 par touche, calé entre le poing du Golem (7, mais qui ne porte
-       * que sur 100 px et dans une seule direction) et la lame du Ronin
-       * (1 à 3).
+       * **Zéro — la couronne ne blesse plus, demandé.**
+       *
+       * Elle valait 5, et elle portait **67,3 %** des dégâts du personnage
+       * (ablation par `opts.kind`, 70 duels). La supprimer ne retire donc pas
+       * un détail : elle retire **les deux tiers de sa production**, et fait de
+       * lui un combattant **entièrement porté par son ultime**. C'est ce qui a
+       * commandé tout le reste du changement — faisceau plus large, plus long,
+       * charge plus longue — et surtout `ultimate.chargeRate`, qu'il a fallu
+       * doubler pour qu'il reste le boss qu'il est censé être.
+       *
+       * **La couronne reste, et c'est voulu** : c'est la silhouette du
+       * personnage, elle tourne, elle siffle (`sound.swing`), et elle dit à
+       * l'écran qu'on a affaire à un astre. Elle ne fait simplement plus mal.
+       * Le contact n'est plus une punition mais un non-événement — ce qui
+       * renverse complètement la façon de l'aborder : on peut désormais le
+       * coller sans risque, et c'est précisément de près que le faisceau,
+       * impossible à esquiver, devient mortel.
+       *
+       * **Ce que ça retire aussi, sans le dire** : `Match.damage` sort avant
+       * tout effet quand le montant arrondi vaut zéro, donc plus de recul, plus
+       * de son de touche, plus de gerbe. Les deux clés ci-dessous ne sont donc
+       * plus lues par personne — gardées parce que le moteur les lit à la
+       * construction du `Fighter`, mais elles ne décrivent plus rien. C'est
+       * exactement le cas de figure de l'invariant 9 (« une clé que plus
+       * personne ne lit ne crie pas »), assumé et écrit ici pour qu'il ne se
+       * découvre pas au prochain réglage.
        */
-      damage: 5,
+      damage: 0,
       /**
-       * **Le garde-fou du personnage, et le levier le plus dangereux de la
-       * fiche.**
-       *
-       * `weaponHit` teste `meleeCd` **une fois pour toutes** avant d'essayer les
-       * huit branches : le verrou est donc ce qui empêche une couronne complète
-       * de blesser en permanence — huit rayons ne font pas huit touches par pas,
-       * ils font une touche toutes les 0,8 s au mieux. C'est le pendant de la
-       * dispersion pour une arme braquée, piège documenté du dépôt.
-       *
-       * 0,8 s : plus court que le Golem (1,6) parce qu'il frappe moins fort,
-       * plus long que le Ronin et le Shinobi (1) parce que lui n'a jamais
-       * besoin de se placer.
+       * Jamais consommé (aucun dégât ne passe), mais lu à la construction du
+       * `Fighter`. C'était **le garde-fou du personnage** tant que la couronne
+       * blessait : `weaponHit` teste `meleeCd` une fois pour toutes avant
+       * d'essayer les huit branches, donc huit rayons ne faisaient pas huit
+       * touches par pas. Le jour où elle reblesserait, c'est ce chiffre qu'il
+       * faudrait regarder en premier.
        */
       cooldown: 0.8,
-      /**
-       * Fort (400) sans atteindre le Golem (500) : un rayon **repousse**, il ne
-       * projette pas. C'est aussi ce qui l'empêche d'enchaîner deux touches sur
-       * la même cible sans qu'elle ait eu l'occasion de s'écarter.
-       */
       knockback: 400,
-      /**
-       * **Presque nul (30), et c'est là que pèse sa masse.** Même asymétrie que
-       * le Golem (60 contre 500) : le moteur n'a aucune notion de masse —
-       * `Fighter.push` applique la même impulsion à tout le monde — donc le
-       * poids se dit **par ce rapport-là**, sans toucher une ligne de physique.
-       * Un astre ne recule pas quand on le frôle.
-       */
       selfRecoil: 30,
     },
   },
@@ -320,17 +348,26 @@ export const SUN = fiche({
 
   /* ---------- ULTIME — Rayon solaire ---------- */
   /**
-   * **Il se charge à vue, puis il libère — demandé.**
+   * **Il se charge à vue, puis il libère — demandé, puis rallongé et élargi.**
    *
    * Le seul pouvoir du dépôt qui **s'annonce avant de frapper**, et c'est tout
    * son intérêt : pendant `windup` secondes, une bille de lumière grossit
-   * devant lui et le rayon est **déjà visé**, mais rien ne part encore.
-   * L'adversaire voit exactement ce qui arrive et d'où — il a une seconde pour
-   * sortir de l'axe. C'est la seule fenêtre du duel où *lui* est prévisible.
+   * devant lui, des anneaux se referment dessus et le rayon est **déjà visé**,
+   * mais rien ne part encore. L'adversaire voit exactement ce qui arrive et
+   * d'où — il a deux secondes pour sortir de l'axe. C'est la seule fenêtre du
+   * duel où *lui* est prévisible.
+   *
+   * **Depuis que la couronne ne blesse plus, c'est son seul vrai moyen de
+   * tuer.** Il ne pèse plus 19 % de sa production mais l'essentiel, et tous les
+   * chiffres ci-dessous ont bougé pour ça : charge deux fois plus fréquente,
+   * annonce presque deux fois plus longue, faisceau deux fois et demie plus
+   * long à l'écran et près de deux fois plus large.
    *
    * **Il s'immobilise pendant toute la manœuvre** (`channelSpeed`), et c'est la
    * contrepartie : un personnage qui pourrait charger en marchant n'aurait
-   * aucune raison de ne pas le faire en permanence.
+   * aucune raison de ne pas le faire en permanence. À 4,5 s de manœuvre contre
+   * 2,1 auparavant, c'est devenu une immobilisation **longue** — il passe
+   * désormais une bonne moitié du duel presque arrêté.
    *
    * **La visée se fige au tir**, pas au déclenchement : pendant la charge, le
    * rayon suit sa cible à `trackRate` rad/s — assez pour qu'esquiver demande un
@@ -344,33 +381,61 @@ export const SUN = fiche({
     barLabelFr: 'RAYON SOLAIRE',
     barFill: '#f97316',
     barText: '#fff7cc',
-    /** Horloge de 13 s : entre le Golem (12) et rien d'autre — il ne tombe que
-     *  deux fois dans un duel, donc chaque tir doit peser. */
-    chargeRate: 100 / 13,
+    /**
+     * **13 s → 7 s, et ce n'est pas un confort.** C'était l'horloge la plus
+     * lente du roster derrière le Golem, du temps où la couronne portait les
+     * deux tiers des dégâts. La couronne ne blessant plus, un ultime toutes les
+     * 13 s laissait le Soleil sans **aucun** moyen de tuer pendant onze
+     * secondes sur treize : il perdait tous ses duels. À 7 s, il enchaîne
+     * charge et tir presque sans interruption — c'est le personnage que
+     * demandent les autres changements, pas un réglage de confort.
+     */
+    chargeRate: 100 / 7,
     chargeOnHit: 3,
-    /** Charge **puis** tir : 1,1 s d'annonce, 1 s de rayon. `duration` porte le
-     *  total, comme partout, et le module lit `windup` pour savoir où il en est. */
-    windup: 1.1,
-    duration: 2.1,
+    /**
+     * Charge **puis** tir : **2 s d'annonce, 2,5 s de rayon** (1,1 et 1
+     * auparavant, tous deux rallongés sur demande). `duration` porte le total,
+     * comme partout, et le module lit `windup` pour savoir où il en est.
+     *
+     * **`windup` est accordé à la recette `flare` de `data/sound.js`**, dont la
+     * dernière couche part en retard de `windup` pour sonner le départ du
+     * faisceau. Les deux doivent bouger ensemble — c'est le seul endroit du
+     * dépôt où une valeur de fiche et un son sont liés à la milliseconde.
+     */
+    windup: 2,
+    duration: 4.5,
     /** Il tombe à 25 % de sa vitesse pendant toute la manœuvre. Pas zéro : un
      *  combattant totalement figé se lit comme un bug, pas comme une incantation. */
     channelSpeed: 0.25,
-    /** Vitesse de suivi pendant la charge, en rad/s. Calé : à 1,2 il ne rate
-     *  jamais personne, à 0,4 il ne touche que les lents. */
-    trackRate: 0.8,
+    /**
+     * Vitesse de suivi pendant la charge, en rad/s. **0,8 → 0,55** : à `windup`
+     * inchangé, 0,8 était le bon compromis ; sur une charge presque deux fois
+     * plus longue, il rattrapait **1,6 rad** de cap et ne ratait plus personne.
+     * Rallonger l'annonce sans ralentir le suivi aurait donc *supprimé*
+     * l'esquive au lieu de lui laisser plus de temps — exactement l'inverse de
+     * ce qu'une annonce plus longue est censée offrir.
+     */
+    trackRate: 0.55,
     beam: {
       /** Assez long pour traverser l'arène en diagonale (628 × √2 ≈ 888) depuis
        *  n'importe quel point : le rayon ne s'arrête jamais avant le mur. */
       length: 900,
-      /** Demi-largeur. 34 px de part et d'autre, soit un faisceau de 68 —
-       *  presque la largeur d'un combattant de la norme (82). */
-      halfWidth: 34,
       /**
-       * **6 par tic, un tic toutes les 0,15 s** : jusqu'à 42 PV si l'adversaire
-       * reste dans l'axe pendant toute la seconde de tir, soit **plus de deux
-       * fois** le pic de dégâts du roster (le Séisme du Golem, 5). C'est
-       * l'attaque la plus lourde du dépôt, et c'est assumé — elle s'annonce
-       * 1,1 s à l'avance et elle ne part que deux fois par duel.
+       * **34 → 62, demandé.** Le faisceau fait donc **124 px de large**, soit
+       * une fois et demie le diamètre d'un combattant de la norme (82) et les
+       * trois quarts du Soleil lui-même. Il ne se contourne plus au pas : il
+       * faut vraiment sortir de l'axe.
+       */
+      halfWidth: 62,
+      /**
+       * **6 par tic, un tic toutes les 0,15 s** — inchangés, c'est la *durée*
+       * qui a doublé. Sur 2,5 s de tir, cela fait jusqu'à **96 PV** contre 42
+       * auparavant : de quoi tuer net un combattant de la norme qui resterait
+       * dans l'axe du début à la fin. C'est de très loin l'attaque la plus
+       * lourde du dépôt (le Séisme du Golem, le précédent pic, vaut 5), et
+       * c'est assumé : elle s'annonce **2 s** à l'avance, elle cloue son
+       * lanceur sur place pendant 4,5 s, et elle est désormais sa **seule**
+       * façon de faire mal.
        */
       damage: 6,
       interval: 0.15,

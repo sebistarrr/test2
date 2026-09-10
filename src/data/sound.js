@@ -380,18 +380,28 @@ export const SOUNDS = deepFreeze({
    * **L'astre qui aspire, puis lâche** — Rayon solaire.
    *
    * La seule recette du banc **calée sur la durée d'un pouvoir** : elle est
-   * jouée au déclenchement, et le tir ne part qu'après `ultimate.windup`
-   * (1,1 s). Les trois premières couches tiennent exactement cette
-   * annonce — scie qui monte, air aspiré, sub immobile — et la quatrième, en
-   * retard de 1,05 s, **est** le départ du faisceau. Si `windup` change dans la
-   * fiche, ce `delay` doit changer avec : c'est le seul endroit du dépôt où une
-   * recette et une valeur de fiche sont accordées à la milliseconde.
+   * jouée au déclenchement, et le tir ne part qu'après `ultimate.windup`.
+   * Les trois premières couches tiennent exactement cette annonce — scie qui
+   * monte, air aspiré, sub immobile — et la quatrième, en retard de `windup`
+   * moins un souffle, **est** le départ du faisceau.
+   *
+   * **`windup` a été porté de 1,1 s à 2 s ; ces durées ont suivi**, et c'est
+   * la démonstration que ce couplage est réel : laissées à 1,1 s, les trois
+   * premières couches se seraient éteintes **presque une seconde avant** que
+   * le rayon ne parte, et le `delay` de 1,05 aurait sonné le départ en plein
+   * milieu de la charge. Rien n'aurait planté, rien ne se serait vu — le son
+   * aurait simplement cessé de dire ce que fait l'image. C'est le seul endroit
+   * du dépôt où une recette et une valeur de fiche sont accordées à la
+   * milliseconde, et il est écrit des deux côtés pour cette raison.
    */
   flare: [
-    { wave: 'sawtooth', f0: 120, f1: 900, dur: 1.1, gain: 0.24, attack: 0.1 },
-    { wave: 'noise', filter: 'bandpass', cut0: 300, cut1: 5200, q: 1.6, dur: 1.15, gain: 0.26, attack: 0.12 },
-    { wave: 'sine', f0: 60, f1: 58, dur: 1.2, gain: 0.2, attack: 0.2 },
-    { wave: 'triangle', f0: 1320, f1: 2640, dur: 0.5, gain: 0.12, delay: 1.05, attack: 0.03 },
+    { wave: 'sawtooth', f0: 120, f1: 900, dur: 2, gain: 0.24, attack: 0.1 },
+    { wave: 'noise', filter: 'bandpass', cut0: 300, cut1: 5200, q: 1.6, dur: 2.05, gain: 0.26, attack: 0.12 },
+    { wave: 'sine', f0: 60, f1: 58, dur: 2.1, gain: 0.2, attack: 0.2 },
+    /** Le départ du faisceau. `dur` 0,9 et non 0,5 : le tir dure maintenant
+     *  2,5 s, une queue trop courte le faisait sonner comme un claquement isolé
+     *  au milieu d'un rayon qui, lui, continuait. */
+    { wave: 'triangle', f0: 1320, f1: 2640, dur: 0.9, gain: 0.12, delay: 1.95, attack: 0.03 },
   ],
   /** Foudre : une décharge qui s'écrase en un cinquième de seconde. */
   zap: [

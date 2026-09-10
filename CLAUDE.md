@@ -87,7 +87,7 @@ défauts d'équilibrage à corriger. Les six autres se jugent entre eux.
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** quand tout le monde en a 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
-| `sun` **SOLEIL** / SUN | **inventé, et le seul boss.** Demandé pour **gagner contre tous les autres en 1 contre 1**, et il le fait (21/21 sur la matrice, 84/84 sur un banc à 6 seeds × les deux camps). **Deux fois plus grand que la norme** (rayon 82 contre 41), **500 PV**, et **le plus lent du roster** (300 px/s) — c'est là toute sa contrepartie. Mécanique de base : **huit rayons** en couronne (`weapon.spokes: 8`, aucun angle mort), qui portent **67 %** de ses dégâts. **Rayon solaire** (ultime) : 1,1 s de charge annoncée à l'écran puis 1 s de faisceau, 19 %. **Réchauffement solaire** (pouvoir) : brûle tout ennemi dans 240 px, 14 % |
+| `sun` **SOLEIL** / SUN | **inventé, et le seul boss.** Demandé pour **gagner contre tous les autres en 1 contre 1**, et il le fait (21/21 sur la matrice, 84/84 sur un banc à 6 seeds × les deux camps). **Deux fois plus grand que la norme** (rayon 82 contre 41), **500 PV**, et **le plus lent du roster de très loin** (230 px/s) — c'est là toute sa contrepartie. **Huit rayons** en couronne (`weapon.spokes: 8`, aucun angle mort) qui **ne blessent pas** (`melee.damage: 0`, demandé) : c'est sa silhouette et son bruit, plus son arme. Tout passe donc par le **Rayon solaire** (ultime, **79 %** de ses dégâts) : horloge de 7 s, **2 s de charge annoncée à l'écran** — anneaux qui se referment, éclats qui convergent, foyer qui bat — puis **2,5 s** d'un faisceau de 124 px de large, jusqu'à 96 PV. Il est cloué sur place 4,5 s à chaque tir. **Réchauffement solaire** (pouvoir) : brûle tout ennemi dans 240 px, 21 % |
 | `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, et les PV de la norme. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 15 PV
@@ -573,6 +573,11 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   branches — sinon huit rayons font huit touches par pas.
 - **Un boss n'est pas un déséquilibre à corriger** : il est hors barème par
   définition, et sa ligne de matrice n'entre pas dans la bande des autres.
+- **Retirer la source principale d'un combattant le retourne, elle ne le
+  diminue pas** : le levier qui l'a rattrapé n'était pas la taille de ce qui
+  restait, mais sa **fréquence** (Soleil, horloge d'ultime 13 s → 7).
+- **Rallonger une annonce sans ralentir le suivi *supprime* l'esquive** au lieu
+  de lui laisser plus de temps : les deux se règlent ensemble.
 
 **Déterminisme et ordre d'exécution**
 
@@ -692,6 +697,13 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Un pouvoir qui emprunte le son d'un accident devient un accident** : l'onde
   sismique du Golem jouait le bruit de ses propres rebonds sur le mur. Regarder
   ce que le combattant joue **déjà** avant d'attribuer une recette.
+- **Une recette meurt quand le créneau qui la nommait cesse d'être joué**, pas
+  quand on l'efface : annuler les dégâts de mêlée du Soleil a tué `scorch` sans
+  qu'une ligne de son ait bougé. `opts.sound` l'a rebranchée sur son faisceau,
+  qui sonnait jusque-là comme un projectile perdu.
+- **Une recette accordée à une valeur de fiche doit bouger avec elle** : le
+  `delay` de `flare` suit `ultimate.windup`, et rien ne crie si on l'oublie —
+  le son cesse simplement de dire ce que fait l'image.
 
 **Refactoriser**
 

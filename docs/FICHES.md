@@ -35,16 +35,16 @@ les recale en une commande.
 | ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1118 |
 | 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1375 |
 | 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1940 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2431 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2645 |
-| ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2731 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 2838 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 2893 |
-| Les dégâts de tous les combattants, divisés par deux | 2961 |
-| Rééquilibrage confiné au Golem et au Ronin | 3071 |
-| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3158 |
-| Le son de chacun | 3208 |
-| Équilibrage du roster | 3307 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2432 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2646 |
+| ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2732 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 2898 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 2953 |
+| Les dégâts de tous les combattants, divisés par deux | 3021 |
+| Rééquilibrage confiné au Golem et au Ronin | 3131 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3218 |
+| Le son de chacun | 3268 |
+| Équilibrage du roster | 3380 |
 | Règles communes (moteur) | 3242 |
 | Comment les mesures ont été prises | 3266 |
 
@@ -2754,17 +2754,74 @@ deux bouts : le Mannequin ne peut pas gagner, le Soleil ne peut pas perdre.
 | Corps | rayon **82** — exactement le double de la norme (41), et le plus gros du roster devant le Golem (50) | calé (demandé) |
 | Points de vie | **500**, cinq fois la norme et deux fois et demie le Golem. Aucune réduction de dégâts : un seul chiffre porte toute sa résistance | calé (demandé) |
 | Couleur | `#fbbf24`, jaune solaire — **le piège du corps clair sur arène blanche**, assumé plutôt qu'esquivé : contour à 6 px, chiffre de PV en encre brûlée `#7c2d12`, aura permanente. Seule la quatrième compensation du Mannequin (rougir au lieu de blanchir) est inutile, le jaune saturé passant très visiblement au blanc | calé |
-| Déplacement | **300 px/s, le plus lent du roster** (420 Golem, 430 Hoplite, 655 Pistolero) et `turnRate` 1, le plus bas aussi. C'est **la** contrepartie de tout le reste : il ne rattrape personne | calé (demandé) |
+| Déplacement | **230 px/s, le plus lent du roster et de très loin** (420 Golem, 430 Hoplite, 655 Pistolero) et `turnRate` 1, le plus bas aussi. Il va **moitié moins vite que la moyenne**. C'est **la** contrepartie de tout le reste : il ne rattrape personne — et n'aurait rien à en faire s'il y arrivait | calé (demandé) |
 | **Arme** | *Couronne de rayons* — portée 160 px : talon 82 (le rayon du corps, donc les rayons partent du **bord** de la bille) + largeur dessinée 78 (`13 × 6`). Chaque rayon ne dépasse que de 78 px du corps | déduit |
-| **Huit branches** | `weapon.spokes: 8` — la même arme répétée tous les 45°. **Aucun angle mort** : contourner est la parade normale contre une arme qui tourne, une couronne la supprime. C'est ce qui remplace, chez un personnage lent et sans visée, le fait de savoir placer un coup | calé (demandé) |
-| Rotation | `SPIN × 0,55` (3,17 rad/s), entre le Golem (0,45) et le reste (1,0). Calé bas : *une arme qui balaie vite touche souvent*, et ici huit branches balaient huit fois le même tour | calé |
-| Corps à corps | **5 dégâts fixes**, verrou de **0,8 s**. Le verrou est le garde-fou du personnage : `weaponHit` le teste **une fois pour toutes** avant d'essayer les branches, donc huit rayons ne font pas huit touches par pas | calé |
-| Recul | 400 infligé, **30 subi**. Même asymétrie que le Golem (500/60) : le moteur n'a aucune notion de masse, le poids se dit par ce rapport | calé |
+| **Huit branches** | `weapon.spokes: 8` — la même arme répétée tous les 45°, sans aucun angle mort. **Elle ne blesse plus** (voir ci-dessous) : c'est aujourd'hui sa silhouette et son bruit, plus son arme | calé (demandé) |
+| Rotation | `SPIN × 0,55` (3,17 rad/s), entre le Golem (0,45) et le reste (1,0) | calé |
+| **Corps à corps** | **0 — annulé, demandé.** La couronne portait 67,3 % de ses dégâts ; elle n'en porte plus aucun. `Match.damage` sortant avant tout effet à montant nul, il n'y a plus non plus de recul, de son de touche ni de gerbe : `melee.knockback` et `melee.selfRecoil` ne sont plus lus par personne (invariant 9, assumé et écrit dans la fiche) | calé (demandé) |
 | **Pouvoir** | *Réchauffement solaire* — horloge de 5 s, rayon **240 px** (plus du tiers de l'arène), 2 de dégât puis **brûlure de 2/s pendant 4 s**, rafraîchie à chaque cycle. La brûlure est le vrai contenu : le pouvoir ne tue pas, il **impose de bouger** | calé |
-| **Ultime** | *Rayon solaire* — horloge de 13 s, **1,1 s de charge annoncée à l'écran** puis 1 s de faisceau (900 px de long, 68 de large), 6 dégâts toutes les 0,15 s | calé |
-| Visée de l'ultime | Elle **suit** la cible pendant la charge (0,8 rad/s) puis **se fige au tir**. Figer dès le déclenchement rendait l'esquive triviale, suivre jusqu'au bout la rendait impossible | calé |
-| Bridage | Il tombe à **25 % de sa vitesse** pendant toute la manœuvre (`f.boost` / `f.boostFactor`, les compteurs génériques du `Fighter`). Pas zéro : un combattant totalement figé se lit comme un bug | calé |
+| **Ultime** | *Rayon solaire* — horloge de **7 s**, **2 s de charge annoncée à l'écran** puis **2,5 s** de faisceau (900 px de long, **124 de large**), 6 dégâts toutes les 0,15 s, soit jusqu'à **96 PV** par tir. De très loin l'attaque la plus lourde du dépôt — le précédent pic était le Séisme du Golem, à 5 | calé (demandé) |
+| Animation de charge | Trois anneaux qui **se referment** sur le foyer (un anneau qui s'ouvre dirait qu'une onde part, pas qu'on ramasse de l'énergie), huit éclats qui convergent — un par rayon de la couronne, pour raccrocher l'effet au personnage — et un foyer dont le battement **accélère** avec la charge. Aucun tirage : tout est fonction du temps et de l'index | calé (demandé) |
+| Visée de l'ultime | Elle **suit** la cible pendant la charge (**0,55 rad/s**) puis **se fige au tir**. Figer dès le déclenchement rendait l'esquive triviale, suivre jusqu'au bout la rendait impossible | calé |
+| Bridage | Il tombe à **25 % de sa vitesse** pendant les **4,5 s** de manœuvre (`f.boost` / `f.boostFactor`, les compteurs génériques du `Fighter`). Il passe désormais une bonne moitié du duel presque arrêté. Pas zéro : un combattant totalement figé se lit comme un bug | calé |
 | HUD | l'horloge du Réchauffement et l'état du Rayon (`charging` / `FIRING` / le pourcentage). Aucune stat évolutive : ses dégâts sont fixes | — |
+
+### Le boss retourné — la couronne cesse de blesser
+
+**Demandé**, après coup : « ralentir le déplacement ; le laser plus gros et plus
+long, avec une animation de chargement, et un chargement plus long aussi ;
+annuler les dégâts au corps à corps ».
+
+Le troisième point est le seul qui compte vraiment : la couronne portait
+**67,3 %** de sa production. La supprimer ne l'a pas diminué, elle l'a
+**retourné** — deux personnages différents avec la même fiche à un chiffre près.
+
+| | Avant | Après |
+| --- | --- | --- |
+| Couronne | 5 dégâts, **67,3 %** de sa production | **0**, 0 % |
+| Rayon solaire | 18,9 % | **78,7 %** |
+| Réchauffement | 13,7 % | 21,3 % |
+| Déplacement | 300 px/s | **230** |
+| Horloge d'ultime | 13 s | **7 s** |
+| Charge | 1,1 s | **2 s** |
+| Tir | 1 s | **2,5 s** |
+| Largeur du faisceau | 68 px | **124** |
+| Dégâts max d'un tir | 42 PV | **96** |
+| Suivi pendant la charge | 0,8 rad/s | **0,55** |
+
+**Le levier qui l'a rattrapé n'est pas celui qu'on croit.** Élargir et rallonger
+le faisceau ne suffisait pas : à une horloge de 13 s, il passait onze secondes
+sur treize sans **aucun** moyen de tuer. C'est `chargeRate` (13 s → 7) qui l'a
+remis debout — la **fréquence**, pas la taille. C'est le piège « un banc qui
+plafonne dit que le levier n'est pas le bon » dans sa version la plus fine :
+l'ablation désignait bien l'ultime, elle ne disait pas quelle poignée tourner.
+
+**Rallonger l'annonce sans ralentir le suivi aurait supprimé l'esquive.** À
+0,8 rad/s sur 1,1 s, le rayon rattrapait 0,9 rad de cap — un compromis. Sur 2 s
+de charge, il en rattrapait **1,6** et ne ratait plus personne : une annonce
+plus longue, censée laisser plus de temps pour sortir de l'axe, l'aurait rendue
+*inesquivable*. D'où 0,55, qui ramène le cap rattrapé à 1,1 rad.
+
+**Ce que ça change au jeu, et c'est le personnage aujourd'hui** : le coller ne
+coûte plus rien, et c'est précisément de près que le faisceau est inesquivable.
+Le duel contre lui ne se joue plus sur la distance mais sur **le moment** — les
+deux secondes d'annonce sont toute la fenêtre.
+
+**Deux effets de bord, tous deux signalés par les garde-fous :**
+
+- `scorch`, son son de touche d'arme, est devenu une **recette morte** sans
+  qu'une ligne de `data/sound.js` ait bougé — `Match.damage` sort avant
+  `hitSound` quand le montant vaut zéro. `sound-check` l'a vue. La correction
+  n'était pas de la supprimer mais de la **rebrancher** : le faisceau passe
+  `sound: 'hit'` dans `game.damage`, et il sonnait jusque-là comme un projectile
+  perdu alors qu'il est devenu le geste principal du personnage. Une panne
+  signalée a livré une amélioration. Prix mesuré : sons perdus au plafond de 6 à
+  9 sur quinze duels (0,1 % → 0,2 %), le faisceau jouant `scorch` dix-sept fois
+  par tir. Sous le coude, plafond inchangé.
+- `ultimate.windup` passant de 1,1 s à 2 s, les durées de la recette `flare` et
+  le `delay` de sa dernière couche (1,05 → 1,95) ont dû suivre. C'est le seul
+  couplage son ↔ fiche du dépôt, documenté des deux côtés — et il vient de se
+  payer, ce qui prouve qu'il était réel.
 
 ### D'où viennent ses dégâts
 
@@ -2773,35 +2830,37 @@ Ablation par `opts.kind` dans `Match.damage`, 70 duels (chaque adversaire,
 
 | Source | PV | Part |
 | --- | --- | --- |
-| Couronne de 8 rayons | 5 474 | **67,3 %** |
-| Rayon solaire | 1 540 | 18,9 % |
-| Réchauffement — brûlure | 807 | 9,9 % |
-| Réchauffement — coup | 312 | 3,8 % |
+| Rayon solaire | 6 522 | **78,7 %** |
+| Réchauffement — brûlure | 1 287 | 15,5 % |
+| Réchauffement — coup | 480 | 5,8 % |
+| Couronne de 8 rayons | 0 | 0 % |
 
-**La mécanique de base porte le personnage**, les deux pouvoirs sont des
-appoints. C'est l'intention, mais ça ne se savait pas avant la mesure — le
-Séisme du Golem avait démenti la même intuition en sens inverse, et le piège
-« mesurer d'où vient le dégât avant de conclure » est justement là pour ça.
+**Il est entièrement porté par son ultime.** À sa création c'était l'inverse
+exact (couronne 67,3 %, rayon 18,9 %) — voir la section précédente. Le piège
+« mesurer d'où vient le dégât avant de conclure » a servi deux fois sur ce seul
+combattant, et dans les deux sens.
 
 ### Le banc
 
 6 seeds × **les deux camps** (le camp A pèse lourd, piège documenté du Golem —
 une mesure sur un seul camp ne dirait rien) :
 
-| Adversaire | Victoires | Durée moyenne |
-| --- | --- | --- |
-| Pistolero | 12/12 | 25,4 s |
-| Ronin | 12/12 | 24,2 s |
-| Hoplite | 12/12 | 25,7 s |
-| Shinobi | 12/12 | 27,6 s |
-| Druide | 12/12 | 23,7 s |
-| Golem | 12/12 | 42,1 s |
-| Mannequin | 12/12 | 27,3 s |
-| **Total** | **84/84** | |
+| Adversaire | Victoires | Durée moyenne | (avant le retournement) |
+| --- | --- | --- | --- |
+| Pistolero | 12/12 | 35,2 s | 25,4 s |
+| Ronin | 12/12 | 31,5 s | 24,2 s |
+| Hoplite | 12/12 | 48,3 s | 25,7 s |
+| Shinobi | 12/12 | 40,2 s | 27,6 s |
+| Druide | 12/12 | 38,7 s | 23,7 s |
+| Golem | 12/12 | 62,2 s | 42,1 s |
+| Mannequin | 12/12 | 42,1 s | 27,3 s |
+| **Total** | **84/84** | | |
 
-Les durées restent dans la bande du roster (24 à 42 s contre 26 à 58 s entre
-les autres) : il gagne toujours, mais les duels **se jouent** — un boss qui
-expédierait ses adversaires en huit secondes n'aurait rien à regarder.
+**Il gagne toujours tout, mais les duels durent ~50 % plus longtemps** : des
+dégâts continus sont devenus des fenêtres de rafale, et entre deux tirs il ne
+produit plus que la brûlure. C'est visible aussi dans la matrice officielle, où
+seules ses lignes ont bougé — un changement confiné à un combattant ne doit
+déplacer que **ses** affrontements (invariant 3), et c'est vérifié.
 
 ### Ce que son ajout a demandé au moteur
 
@@ -3225,7 +3284,7 @@ synthèse, **aucun fichier audio** — et le mécanisme est décrit dans la sect
 | Druide | 1,05 | `orb` | `bough` | — (passif) | — | `bloom` | `thorns` |
 | Golem | **0,72** | `pebble` | `crunch` | `tremor` | `grind` 0,5 → 4 rad/s | `crunch` | `quake` |
 | Mannequin | 0,85 | — | — | — | — | — | — |
-| Soleil | 0,78 | — | `scorch` | `blaze` | `furnace` 0,5 → 5 | — | `flare` |
+| Soleil | 0,78 | — | `scorch` **(le faisceau)** | `blaze` | `furnace` 0,5 → 5 | — | `flare` |
 
 **Plus aucun créneau n'est partagé** entre deux combattants, sauf `bounce`
 (`thud` — le mur n'appartient à personne) et `impact` (le projectile générique,
@@ -3268,11 +3327,17 @@ Six choix qui ne se devinent pas :
   son n'aurait pas pu dire les deux.
 - **Le Soleil est le seul dont une recette soit accordée à une valeur de
   fiche.** `flare` est jouée au déclenchement de l'ultime, mais le faisceau ne
-  part qu'après `ultimate.windup` (1,1 s) : ses trois premières couches tiennent
-  exactement cette annonce, et la quatrième, **en retard de 1,05 s**, *est* le
-  départ du rayon. Changer `windup` sans changer ce `delay` désaccorderait le
-  son de l'image, sans que rien ne crie — c'est le seul endroit du dépôt où les
-  deux sont liés à la milliseconde.
+  part qu'après `ultimate.windup` (2 s) : ses trois premières couches tiennent
+  exactement cette annonce, et la quatrième, **en retard de 1,95 s**, *est* le
+  départ du rayon. Le couplage s'est déjà payé une fois — `windup` est passé de
+  1,1 s à 2 s et tout a dû suivre. Changer l'un sans l'autre désaccorde le son
+  de l'image sans que rien ne crie.
+- **Le Soleil est aussi le seul dont le créneau `hit` ne serve pas son arme.**
+  Sa couronne ne blesse plus, donc `Match.damage` sort avant `hitSound` et
+  `scorch` serait morte ; c'est son **faisceau** qui la réclame, via
+  `sound: 'hit'` dans `game.damage` — le mécanisme prévu pour une arme que le
+  moteur ne reconnaît pas comme telle. Sans ça, le geste principal du
+  personnage sonnait comme un projectile perdu.
 - **`blaze` est `fire` à l'envers, et c'est tout ce qui les sépare.** La braise
   du Ronin referme son passe-bas (1500 → 380 Hz), le Réchauffement du Soleil
   l'ouvre (400 → 2600). Deux souffles de feu, deux **gestes** opposés : une

@@ -24,12 +24,12 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Éditer les données | 391 |
 | &nbsp;&nbsp;· Interface et rendu | 424 |
 | &nbsp;&nbsp;· Le son | 510 |
-| &nbsp;&nbsp;· Refactoriser | 765 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 806 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 808 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 851 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 894 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 913 |
+| &nbsp;&nbsp;· Refactoriser | 812 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 853 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 855 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 898 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 941 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 960 |
 
 ---
 
@@ -756,11 +756,58 @@ aucun des sept autres :
   ce qui est l'intention, mais qui ne se savait pas avant la mesure : le
   Séisme du Golem avait déjà démenti la même intuition en sens inverse.
 - **Un pouvoir qui s'annonce doit s'annoncer *assez tôt et assez fort*.** Le
-  Rayon solaire est le seul pouvoir du dépôt qui prévienne avant de frapper
-  (1,1 s), et c'est ce qui autorise ses 42 PV potentiels — plus de huit fois le
-  pic de dégâts du reste du roster. La visée **suit** la cible pendant la charge
-  puis **se fige au tir** : figer dès le déclenchement rendait l'esquive
-  triviale, suivre jusqu'au bout la rendait impossible.
+  Rayon solaire est le seul pouvoir du dépôt qui prévienne avant de frapper, et
+  c'est ce qui autorise ses dégâts hors norme. La visée **suit** la cible
+  pendant la charge puis **se fige au tir** : figer dès le déclenchement rendait
+  l'esquive triviale, suivre jusqu'au bout la rendait impossible.
+
+**Retirer la source principale d'un combattant** — ce qu'a appris la suppression
+des dégâts de mêlée du Soleil, demandée après coup :
+
+- **Ça retourne le personnage, ça ne le diminue pas.** La couronne portait
+  **67,3 %** de sa production ; après suppression, le Rayon solaire en porte
+  **78,7 %** et le Réchauffement 21,3 %. Il est passé de « colosse de contact
+  dont l'ultime est le bouquet » à « personnage entièrement porté par son
+  ultime » — deux personnages différents avec la même fiche à un chiffre près.
+  Le renversement de jeu compte autant que celui des chiffres : **le coller ne
+  coûte plus rien**, et c'est précisément de près que le faisceau est
+  inesquivable. Le duel contre lui ne se joue plus sur la distance mais sur le
+  moment.
+- **Le levier qui rattrape n'est pas la taille de ce qui reste, c'est sa
+  fréquence.** Élargir le faisceau (34 → 62 de demi-largeur) et le rallonger
+  (1 s → 2,5 s de tir) ne suffisait pas : à une horloge de 13 s, le Soleil
+  passait onze secondes sur treize sans **aucun** moyen de tuer, et perdait ses
+  duels. C'est `chargeRate` (13 s → 7) qui l'a remis debout. Corollaire du
+  piège déjà nommé — *un banc qui plafonne dit que le levier n'est pas le
+  bon* — dans sa version « quelle poignée tourner » : la source du dégât disait
+  bien de regarder l'ultime, elle ne disait pas qu'il fallait le rendre plus
+  **fréquent** plutôt que plus **gros**.
+- **Rallonger une annonce sans ralentir le suivi *supprime* l'esquive.**
+  `trackRate` valait 0,8 rad/s pour une charge de 1,1 s, soit 0,9 rad de cap
+  rattrapé — un compromis. Porté à 2 s de charge sans y toucher, il rattrapait
+  **1,6 rad** et ne ratait plus personne : allonger l'annonce, censé donner plus
+  de temps pour sortir de l'axe, l'aurait rendue *inesquivable*. Descendu à
+  0,55, le cap rattrapé revient à 1,1 rad. Les deux valeurs se règlent
+  ensemble, toujours.
+- **Une recette meurt quand le créneau qui la nommait cesse d'être joué**, pas
+  quand on l'efface. `scorch` était le son de touche d'arme du Soleil ; l'arme
+  ne blessant plus, `Match.damage` sort avant `hitSound` et la recette n'est
+  plus jamais jouée — sans qu'une ligne de `data/sound.js` ait bougé.
+  `sound-check` l'a vue, et la correction n'était pas de la supprimer mais de
+  la **rebrancher** : le faisceau passe `sound: 'hit'` dans `game.damage`, le
+  mécanisme prévu pour une arme que le moteur ne reconnaît pas comme telle. Il
+  sonnait jusque-là comme un projectile perdu, alors qu'il est devenu le geste
+  principal du personnage. Une panne signalée a livré une amélioration.
+  Prix mesuré : les sons perdus au plafond passent de 6 à 9 sur quinze duels
+  (0,1 % → 0,2 % à `maxVoices: 20`) — le faisceau joue `scorch` dix-sept fois
+  par tir. Sous le coude, plafond inchangé.
+- **Le couplage son ↔ fiche s'est payé, et c'est la preuve qu'il était réel.**
+  `ultimate.windup` est passé de 1,1 s à 2 s ; les durées de `flare` ont dû
+  suivre, ainsi que le `delay` de sa dernière couche (1,05 → 1,95). Laissées en
+  place, les trois premières couches se seraient éteintes presque une seconde
+  avant le départ du rayon et le « départ » aurait sonné en pleine charge.
+  **Rien n'aurait planté, rien ne se serait vu** — le son aurait simplement
+  cessé de dire ce que fait l'image.
 
 ### Refactoriser
 

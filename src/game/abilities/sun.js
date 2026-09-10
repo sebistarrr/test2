@@ -198,7 +198,22 @@ export const sunAbilities = {
       // de bord à bord, comme toutes les zones du dépôt : une bille posée juste
       // au bord du faisceau ne doit pas passer pour dehors
       if (d > b.halfWidth + g.radius) continue;
-      game.damage(g, b.damage, f, { kind: 'beam', nx: c, ny: s, knockback: b.knockback });
+      /**
+       * **`sound: 'hit'` — le faisceau dit qu'il est une arme.**
+       *
+       * Le moteur ne reconnaît une touche d'arme qu'à `kind: 'melee'` ; sans ce
+       * mot, chaque tic du rayon sonnerait comme un projectile perdu
+       * (`impact`), alors que c'est **le geste principal du personnage** depuis
+       * que la couronne ne blesse plus. C'est le mécanisme exactement prévu
+       * pour ça, et le seul usage du dépôt : un module l'écrit, le moteur s'en
+       * sert, et il ne sait pas pourquoi.
+       *
+       * Effet de bord voulu : le créneau `hit` de sa fiche (`scorch`, une
+       * brûlure) reste vivant alors que son arme ne blesse plus. Sans ce
+       * branchement, `sound-check` criait « recette morte » — et il avait
+       * raison.
+       */
+      game.damage(g, b.damage, f, { kind: 'beam', sound: 'hit', nx: c, ny: s, knockback: b.knockback });
     }
   },
 
@@ -275,12 +290,12 @@ export const sunAbilities = {
    * adversaire ici ne le rend pas illisible — piège documenté, et c'est ce qui
    * autorise un faisceau aussi large.
    */
-  drawOver(ctx, f) {
+  drawOver(ctx, f, game, now) {
     if (f.ult.active <= 0 || !f.onStage) return;
     const ult = f.el.ultimate;
     const ecoule = ult.duration - f.ult.active;
     if (f.state.firing) this.drawBeam(ctx, f, ult);
-    else this.drawWindup(ctx, f, ult, Math.max(0, Math.min(1, ecoule / ult.windup)));
+    else this.drawWindup(ctx, f, ult, Math.max(0, Math.min(1, ecoule / ult.windup)), now);
   },
 
   /**
@@ -291,7 +306,7 @@ export const sunAbilities = {
    * s'affirme avec la charge (`t²`), donc il est discret au début et
    * franchement lisible à la fin.
    */
-  drawWindup(ctx, f, ult, t) {
+  drawWindup(ctx, f, ult, t, now) {
     const c = Math.cos(f.state.beamAngle);
     const s = Math.sin(f.state.beamAngle);
     const b = ult.beam;
@@ -322,20 +337,103 @@ export const sunAbilities = {
     ctx.lineTo(x1, y1);
     ctx.stroke();
 
-    // la bille, posée juste devant lui, qui grossit jusqu'à la demi-largeur du
-    // faisceau : on lit son diamètre final avant qu'il ne parte
-    const d = f.radius + 26;
-    const r = 6 + (b.halfWidth - 6) * t;
+    /**
+     * **Le foyer**, posé juste devant lui : c'est autour de ce point que se
+     * joue toute l'animation de charge, et c'est de là que le faisceau
+     * partira. Le poser à `halfWidth × 0,55` du bord le fait grossir *vers
+     * l'extérieur* — au centre du corps, la charge aurait eu l'air d'être
+     * avalée au lieu d'être crachée.
+     */
+    const d = f.radius + b.halfWidth * 0.55;
+    const fx = f.x + c * d;
+    const fy = f.y + s * d;
+    // la bille grossit jusqu'à la demi-largeur du faisceau : on lit son
+    // diamètre final avant qu'il ne parte
+    const r = 8 + (b.halfWidth - 8) * t;
+
+    this.drawChargeRings(ctx, fx, fy, r, t, now);
+    this.drawChargeShards(ctx, fx, fy, r, t, now);
+
+    /**
+     * **Le battement**, et il accélère : `8 + 26 t` rad/s, soit un peu plus de
+     * une pulsation par seconde au début et quatre à la fin. C'est ce qui dit
+     * que la charge *monte* — un cœur à battement constant se lit comme un
+     * objet posé, pas comme quelque chose qui se remplit.
+     */
+    const pulse = 1 + 0.07 * Math.sin(now * (8 + 26 * t));
     ctx.globalAlpha = 1;
-    const g = ctx.createRadialGradient(f.x + c * d, f.y + s * d, 0, f.x + c * d, f.y + s * d, r);
-    g.addColorStop(0, 'rgba(255,255,255,0.95)');
-    g.addColorStop(0.45, 'rgba(251,191,36,0.85)');
+    const g = ctx.createRadialGradient(fx, fy, 0, fx, fy, r * pulse);
+    g.addColorStop(0, 'rgba(255,255,255,0.98)');
+    g.addColorStop(0.32, 'rgba(255,247,204,0.92)');
+    g.addColorStop(0.6, 'rgba(251,191,36,0.8)');
     g.addColorStop(1, 'rgba(249,115,22,0)');
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(f.x + c * d, f.y + s * d, r, 0, TAU);
+    ctx.arc(fx, fy, r * pulse, 0, TAU);
     ctx.fill();
     ctx.restore();
+  },
+
+  /**
+   * **Trois anneaux qui se referment sur le foyer.**
+   *
+   * C'est la moitié de l'animation de charge, et le sens de marche est tout :
+   * un anneau qui *s'ouvre* dit qu'une onde part, un anneau qui *se referme*
+   * dit qu'on ramasse de l'énergie. Ils sont déphasés d'un tiers de cycle pour
+   * qu'il y en ait toujours un en route, et leur cadence suit la charge
+   * (`1,1 + 1,6 t` cycles par seconde) — de plus en plus pressés à mesure que
+   * le tir approche.
+   *
+   * **Aucun tirage** : la phase est une fonction du temps, l'angle une
+   * constante. Une décoration qui consommerait un flux d'aléa déplacerait la
+   * matrice entière (invariant 2), et ce module n'en touche aucun.
+   */
+  drawChargeRings(ctx, fx, fy, r, t, now) {
+    const cadence = 1.1 + 1.6 * t;
+    for (let i = 0; i < 3; i++) {
+      const p = (now * cadence + i / 3) % 1; // 0 → 1, l'anneau se referme
+      const rr = r * (3.4 - 2.4 * p);
+      // il s'affirme en arrivant puis s'éteint net sur le foyer
+      const a = Math.min(1, p * 3) * (1 - p) * (0.35 + 0.5 * t);
+      if (a <= 0.01) continue;
+      ctx.globalAlpha = a;
+      ctx.strokeStyle = 'rgba(255,247,204,0.9)';
+      ctx.lineWidth = 2 + 5 * p * t;
+      ctx.beginPath();
+      ctx.arc(fx, fy, rr, 0, TAU);
+      ctx.stroke();
+    }
+  },
+
+  /**
+   * **Huit éclats qui tombent vers le foyer**, un par rayon de la couronne —
+   * c'est ce qui raccroche l'animation au personnage plutôt que d'être un
+   * effet posé devant lui : la charge a l'air d'être aspirée *de ses propres
+   * rayons*.
+   *
+   * Leur trajet est le même que celui des anneaux mais deux fois plus rapide,
+   * décalé par index. Purement déduit du temps et de l'index, donc sans aléa.
+   */
+  drawChargeShards(ctx, fx, fy, r, t, now) {
+    const n = 8;
+    ctx.strokeStyle = 'rgba(251,191,36,0.95)';
+    ctx.lineCap = 'round';
+    for (let i = 0; i < n; i++) {
+      const p = (now * (0.9 + 1.3 * t) + i / n) % 1;
+      const from = r * (4.2 - 3.2 * p);
+      const to = from - r * 0.55;
+      const a = Math.min(1, p * 2.5) * (1 - p) * (0.5 + 0.5 * t);
+      if (a <= 0.01 || to <= 0) continue;
+      const ang = (TAU * i) / n;
+      const ca = Math.cos(ang);
+      const sa = Math.sin(ang);
+      ctx.globalAlpha = a;
+      ctx.lineWidth = 2 + 3 * t;
+      ctx.beginPath();
+      ctx.moveTo(fx + ca * from, fy + sa * from);
+      ctx.lineTo(fx + ca * to, fy + sa * to);
+      ctx.stroke();
+    }
   },
 
   /**
