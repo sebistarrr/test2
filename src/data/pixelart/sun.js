@@ -16,43 +16,54 @@
 import { deepFreeze } from '../freeze.js';
 
 /**
- * **Un rayon**, et le combattant en porte huit (`weapon.spokes`).
+ * **Un rayon** — repli texte du vrai PNG, et le combattant en porte huit
+ * (`weapon.spokes`).
  *
- * L'axe d'une arme est **l'horizontale** dans ce moteur, la pointe vers la
- * droite : le rayon est donc large au talon (contre le corps) et se referme en
- * pointe vers l'extérieur. C'est l'inverse du sabre du Ronin, fuselé mais de
- * largeur à peu près constante — un rayon doit se **dissiper**, sinon il se lit
- * comme une lame.
+ * Le rayon est servi par `assets/sprites/sun-ray.png`, une maquette de flamme
+ * fournie (voir `manifest.json` et l'écart assumé à « aucun binaire » décrit
+ * dans `pixelmaps.js`). Cette carte-ci ne se dessine donc **que** si le PNG ne
+ * charge pas — mais elle n'est pas décorative pour autant, et de deux façons :
  *
- * Le dégradé va du cœur vers le bord et non du talon vers la pointe : blanc
- * incandescent au centre, jaune, orange, encre brûlée en contour. Un rayon qui
- * s'assombrirait vers la pointe ressemblerait à une braise qui meurt ; celui-ci
- * doit rester chaud jusqu'au bout, et ne perdre que son épaisseur.
+ *  • **`h` sert au calcul de la taille dessinée même avec l'override** :
+ *    `drawSpriteLeft` prend la hauteur ici (9) et le rapport d'aspect sur
+ *    l'image. En changer la valeur déplacerait la pointe de l'arme, donc
+ *    `weapon.head.scale` avec ;
+ *  • **`w` fixe le rapport du repli**, et il est calé sur celui du PNG
+ *    (22 / 9 = 2,444, contre 1171 / 479 = 2,4447) : si le PNG manque, la
+ *    couronne garde exactement la même envergure au lieu de se rétracter.
  *
- * **13 × 9, et les deux chiffres comptent** : la largeur dessinée vaut
- * `w × head.scale` = 13 × 6 = 78, qui s'ajoute au talon de 82 pour retomber
- * exactement sur `reach: 160`. Changer `w` déplacerait la pointe sans rien dire
- * — c'est le piège documenté sur la lance de l'Hoplite.
+ * Le dessin est volontairement grossier — c'est un repli, pas une
+ * transcription. Il dit la bonne chose (une flamme élancée qui se dissipe en
+ * pointe) sans prétendre reproduire la maquette : la reproduire à la main
+ * serait exactement le geste que le dépôt s'interdit.
+ *
+ * Le dégradé va du cœur vers le bord **et** du talon vers la pointe, parce que
+ * c'est ce que fait la maquette : la flamme est la plus claire là où elle sort
+ * du corps, et il ne lui reste que son contour à l'extrémité.
  */
 export const SUN_RAY = deepFreeze({
-  w: 13,
+  w: 22,
   h: 9,
+  /** Les cinq teintes sont **relevées sur le PNG**, par bandes de luminance :
+   *  c'est ce qui garantit que le repli et la maquette ne divergent pas — et
+   *  ce sont les mêmes cinq que le bloc `look` de la fiche. */
   palette: {
-    K: '#7c2d12', // encre brûlée : le contour, comme partout dans le roster
-    o: '#f97316', // orange de bord
-    y: '#fbbf24', // jaune
-    w: '#fff7cc', // cœur incandescent
+    K: '#6f1e12', // contour
+    d: '#b43f22', // ombre
+    o: '#de7f3a', // corps
+    y: '#ebbd5b', // clair
+    w: '#fcf697', // cœur
   },
   rows: [
-    'KK...........',
-    'oooKK........',
-    'ooooooKK.....',
-    'yyyyyooooKK..',
-    'wwwwwwyyyyooK',
-    'yyyyyooooKK..',
-    'ooooooKK.....',
-    'oooKK........',
-    'KK...........',
+    'KKK...................',
+    'dooooKKK..............',
+    'doooyyyooodKKK........',
+    'doyyywwwyyyoooddKKK...',
+    'dywwwwwwwwyyyoooddKKKK',
+    'doyyywwwyyyoooddKKK...',
+    'doooyyyooodKKK........',
+    'dooooKKK..............',
+    'KKK...................',
   ],
 });
 
@@ -69,10 +80,10 @@ export const ICON_SUN = deepFreeze({
   w: 16,
   h: 16,
   palette: {
-    K: '#7c2d12',
-    o: '#f97316',
-    y: '#fbbf24',
-    w: '#fff7cc',
+    K: '#6f1e12',
+    o: '#de7f3a',
+    y: '#ebbd5b',
+    w: '#fcf697',
   },
   rows: [
     '.......KK.......',

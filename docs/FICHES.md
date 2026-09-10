@@ -2753,9 +2753,11 @@ deux bouts : le Mannequin ne peut pas gagner, le Soleil ne peut pas perdre.
 | --- | --- | --- |
 | Corps | rayon **82** — exactement le double de la norme (41), et le plus gros du roster devant le Golem (50) | calé (demandé) |
 | Points de vie | **500**, cinq fois la norme et deux fois et demie le Golem. Aucune réduction de dégâts : un seul chiffre porte toute sa résistance | calé (demandé) |
-| Couleur | `#fbbf24`, jaune solaire — **le piège du corps clair sur arène blanche**, assumé plutôt qu'esquivé : contour à 6 px, chiffre de PV en encre brûlée `#7c2d12`, aura permanente. Seule la quatrième compensation du Mannequin (rougir au lieu de blanchir) est inutile, le jaune saturé passant très visiblement au blanc | calé |
+| Couleur | `#de7f3a` — **le fond de ses propres rayons, demandé**, échantillonné dans le PNG (bande médiane de luminance). Le corps et la couronne sont la même matière, seul moyen que huit rayons plantés sur une bille se lisent comme *un* objet. Contour `#6f1e12` (celui du sprite), chiffre de PV dans la même encre (contraste **4,15**, au-dessus du Ronin qui est la référence lisible du dépôt à 3,03), aura permanente. Il **flambe** au lieu de blanchir quand il est touché : `bodyHit` vaut `#fcf697`, le cœur de sa propre flamme | calé (demandé) |
+| Palette | Les cinq teintes du sprite, relevées par bandes de luminance et utilisées partout dans `look` — contour `#6f1e12` · ombre `#b43f22` · corps `#de7f3a` · clair `#ebbd5b` · cœur `#fcf697`. Il était jaune vif (`#fbbf24`) jusqu'à ce que la maquette de flamme arrive | relevé sur la maquette |
 | Déplacement | **230 px/s, le plus lent du roster et de très loin** (420 Golem, 430 Hoplite, 655 Pistolero) et `turnRate` 1, le plus bas aussi. Il va **moitié moins vite que la moyenne**. C'est **la** contrepartie de tout le reste : il ne rattrape personne — et n'aurait rien à en faire s'il y arrivait | calé (demandé) |
-| **Arme** | *Couronne de rayons* — portée 160 px : talon 82 (le rayon du corps, donc les rayons partent du **bord** de la bille) + largeur dessinée 78 (`13 × 6`). Chaque rayon ne dépasse que de 78 px du corps | déduit |
+| **Arme** | *Couronne de rayons* — portée 160 px : talon 82 (le rayon du corps, donc les rayons partent du **bord** de la bille) + largeur dessinée 78. Chaque rayon ne dépasse que de 78 px du corps | déduit |
+| Sprite du rayon | **Un vrai PNG** (`assets/sprites/sun-ray.png`) : maquette de flamme fournie, détourée de son fond blanc et recadrée sur la flamme principale — les éclats détachés sont gardés, mais seulement ceux qui tiennent dans son cadre, sinon la pointe du sprite ne serait plus la pointe de l'arme. `scale = 78 / (9 × 2,4446764) = 3,545118` : sous override PNG la largeur vient du **rapport d'aspect de l'image**, pas de `map.w` — piège déjà payé sur la lance de l'Hoplite puis sur l'arme du Golem. La flamme est plus élancée que la carte texte qu'elle remplace (2,44 contre 1,44), donc à largeur égale le rayon est plus fin : 31,9 px d'épaisseur contre 54 | déduit |
 | **Huit branches** | `weapon.spokes: 8` — la même arme répétée tous les 45°, sans aucun angle mort. **Elle ne blesse plus** (voir ci-dessous) : c'est aujourd'hui sa silhouette et son bruit, plus son arme | calé (demandé) |
 | Rotation | `SPIN × 0,55` (3,17 rad/s), entre le Golem (0,45) et le reste (1,0) | calé |
 | **Corps à corps** | **0 — annulé, demandé.** La couronne portait 67,3 % de ses dégâts ; elle n'en porte plus aucun. `Match.damage` sortant avant tout effet à montant nul, il n'y a plus non plus de recul, de son de touche ni de gerbe : `melee.knockback` et `melee.selfRecoil` ne sont plus lus par personne (invariant 9, assumé et écrit dans la fiche) | calé (demandé) |
@@ -2882,7 +2884,7 @@ Le diff de `tools/matrix-reference.txt` après l'ajout ne contient **que des
 ajouts** (invariant 3), et les six autres combattants gardent leur compte
 **absolu** de victoires au chiffre près — 13, 13, 12, 11, 10, 4.
 
-### Deux choix de rendu qui ne se devinent pas
+### Trois choix de rendu qui ne se devinent pas
 
 - **Aucun ruban de pointe d'arme.** `flair.js` trace le ruban sur
   `f.bladeSegment()`, qui rend **une** branche. Sur une couronne de huit, il
@@ -2892,8 +2894,14 @@ ajouts** (invariant 3), et les six autres combattants gardent leur compte
   crème fin. En crème simple, il était à peine visible sur la capture de
   contrôle — c'est la leçon du corps clair sur fond clair, appliquée à une
   ligne. Et c'est la seule information dont l'adversaire dispose pour esquiver
-  ce qui est, de loin, l'attaque la plus lourde du dépôt (42 PV potentiels,
-  contre 5 pour le Séisme du Golem).
+  ce qui est, de loin, l'attaque la plus lourde du dépôt.
+- **La balle porte le fond de ses rayons, et ce n'est pas qu'une coquetterie.**
+  Quand la couronne est passée à la flamme de la maquette, le corps était encore
+  jaune vif : l'ensemble se lisait comme une bille **plus** huit décorations,
+  pas comme un astre. Reprendre la teinte du sprite — échantillonnée, pas
+  choisie à côté — est ce qui les refait tenir en un objet. Toute la palette du
+  personnage vient de là, repli texte et icône compris, ce qui les empêche de
+  diverger de l'arme.
 
 ## La norme passe à 200 PV, le Golem à 400 (historique)
 

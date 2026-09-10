@@ -84,36 +84,59 @@ export const SUN = fiche({
      */
     radius: 82,
     /**
-     * **Jaune solaire, et c'est frontalement le piège du corps clair sur arène
-     * blanche** — celui que le Mannequin a payé en premier. Le personnage étant
-     * *le soleil*, l'éviter en le rendant orange sombre l'aurait dénaturé : il
-     * est donc jaune, et les compensations documentées sont appliquées, une par
-     * une :
-     *  • **contour à 6 px** d'encre brûlée (5 partout ailleurs) ;
-     *  • **chiffre de PV en encre sombre**, jamais en crème ;
-     *  • **aura permanente**, comme le Mannequin.
-     * Il reste franchement distinct des sept autres corps, y compris de
-     * l'orange du Ronin (`#e8621b`), qui est rouge là où celui-ci est jaune.
+     * **La balle porte le fond de ses propres rayons — demandé.**
+     *
+     * Toutes les teintes de ce bloc sont **échantillonnées dans
+     * `assets/sprites/sun-ray.png`**, la maquette de flamme fournie, et non
+     * choisies à côté : `#de7f3a` est la bande médiane de sa luminance, celle
+     * qui remplit le corps de la flamme. Le corps et la couronne sont donc
+     * littéralement la même matière, ce qui est le seul moyen que huit rayons
+     * plantés sur une bille se lisent comme **un** objet et non comme un objet
+     * plus huit décorations.
+     *
+     * Les cinq teintes relevées, du plus sombre au plus clair, servent partout
+     * ailleurs dans ce bloc :
+     * contour `#6f1e12` · ombre `#b43f22` · corps `#de7f3a` · clair `#ebbd5b` ·
+     * cœur `#fcf697`.
+     *
+     * **Il était jaune vif (`#fbbf24`)**, et le piège du corps clair sur arène
+     * blanche demandait alors trois compensations. Cet orange est plus sombre,
+     * donc le piège se relâche — mais les compensations restent, parce qu'il
+     * reste clair : contour épaissi, chiffre de PV en encre, aura permanente.
+     *
+     * Le voisinage du Ronin (`#e8621b`) a été vérifié et assumé : celui-ci est
+     * plus doré (canal vert 127 contre 98) et surtout dix fois plus gros, cerné
+     * de huit flammes. On ne les confond pas à l'écran.
      */
-    body: '#fbbf24',
-    /** Il **blanchit** comme le reste du roster : sur un corps jaune saturé, le
-     *  passage au blanc se voit — c'était l'inverse chez le Mannequin, déjà
-     *  blanc, qui a dû rougir. */
-    bodyHit: '#ffffff',
-    outline: '#7c2d12',
+    body: '#de7f3a',
+    /**
+     * **Il flambe au lieu de blanchir.** Le reste du roster passe au blanc
+     * quand il est touché ; celui-ci passe au **cœur de sa propre flamme**
+     * (`#fcf697`, la teinte la plus claire du sprite). C'est aussi lisible
+     * qu'un blanc sur un corps orange, et ça dit la bonne chose : un astre
+     * frappé ne pâlit pas, il s'embrase.
+     */
+    bodyHit: '#fcf697',
+    /** Le contour **du sprite lui-même** : la bille est cernée du même trait
+     *  que les flammes qui en sortent. */
+    outline: '#6f1e12',
     /** 6 au lieu des 5 universels : sur un corps clair, c'est le trait qui
      *  dessine la silhouette. Même dérogation que le Mannequin. */
     outlineWidth: 6,
-    /** Encre brûlée : le crème du reste du roster disparaîtrait sur le jaune —
-     *  correction déjà faite en sens inverse sur le cuivre clair de l'Hoplite. */
-    hpColor: '#7c2d12',
+    /**
+     * La même encre que le contour, donc le chiffre se lit comme **brûlé dans**
+     * l'astre. Contraste mesuré : **4,15** sur `#de7f3a` — au-dessus du Ronin
+     * (crème sur orange, 3,03), qui est la référence lisible du dépôt. Le crème
+     * du reste du roster tomberait ici à 2,6.
+     */
+    hpColor: '#6f1e12',
     /**
      * **Halo permanent**, deuxième cas du roster après le Mannequin et pour une
      * raison inverse : lui *a* des pouvoirs, mais un astre sans halo n'est pas
      * un astre. `radius: 1.25` seulement — sur un corps de 82 px de rayon, un
      * halo à 1,5 comme celui du Golem mangerait un quart de l'arène.
      */
-    aura: { color: 'rgba(251,191,36,0.4)', radius: 1.25, pulse: 0.7, showWhen: 'always' },
+    aura: { color: 'rgba(235,189,91,0.42)', radius: 1.25, pulse: 0.7, showWhen: 'always' },
     /**
      * **Pas de ruban de pointe d'arme, et c'est un choix, pas un oubli.**
      * `flair.js` trace le ruban sur `f.bladeSegment()`, qui rend **une** branche
@@ -123,15 +146,17 @@ export const SUN = fiche({
      *
      * Restent les braises qui **montent** (`rise` négatif, l'inverse de la
      * poussière du Golem qui retombe) : c'est de la chaleur, ça ne pèse rien.
+     * Leurs trois teintes sont celles du sprite — cœur, clair, ombre : ce qui
+     * s'échappe de lui est fait de la même flamme que lui.
      */
     flair: {
-      motes: { rate: 14, size: 9, drift: 22, rise: -26, colors: ['#fff7cc', '#fbbf24', '#f97316'] },
-      impact: ['#fff7cc', '#ffffff', '#f97316'],
+      motes: { rate: 14, size: 9, drift: 22, rise: -26, colors: ['#fcf697', '#ebbd5b', '#b43f22'] },
+      impact: ['#fcf697', '#ffffff', '#b43f22'],
       shape: 'spark',
-      castFlash: 'rgba(255,214,120,0.55)',
+      castFlash: 'rgba(252,246,151,0.55)',
     },
-    trail: { color: 'rgba(251,191,36,0.26)', every: 0.05, life: 0.36 },
-    accent: '#fff7cc',
+    trail: { color: 'rgba(222,127,58,0.26)', every: 0.05, life: 0.36 },
+    accent: '#fcf697',
   },
 
   /**
@@ -244,8 +269,33 @@ export const SUN = fiche({
      * rayon **part du bord de la bille** et pas de son centre : sans ça, la
      * moitié de chaque rayon serait peinte à l'intérieur du disque.
      */
-    handle: { length: 82, width: 0, color: '#f97316', dark: '#c2410c', outline: '#7c2d12', gem: null },
-    head: { sprite: 'sunRay', scale: 6 },
+    handle: { length: 82, width: 0, color: '#de7f3a', dark: '#b43f22', outline: '#6f1e12', gem: null },
+    /**
+     * **Le rayon est un vrai PNG** (`assets/sprites/sun-ray.png`, déclaré dans
+     * `manifest.json`) : une maquette de flamme fournie, détourée de son fond
+     * blanc et recadrée **sur la flamme principale** — les éclats détachés sont
+     * gardés, mais seulement ceux qui tiennent dans son cadre, sinon la pointe
+     * du sprite ne serait plus la pointe de l'arme.
+     *
+     * **L'échelle ne se lit plus sur la carte texte, et c'est le piège déjà
+     * payé sur la lance de l'Hoplite puis sur l'arme du Golem** :
+     * `drawSpriteLeft` dimensionne par la **hauteur** (`map.h × scale`, prise
+     * sur la carte texte, donc 9) puis applique le **rapport d'aspect du PNG**
+     * (1171 × 479, soit 2,4446764). La largeur dessinée vaut donc
+     * `9 × scale × 2,4446764`, et **non** `map.w × scale`.
+     *
+     * D'où `scale = 78 / (9 × 2,4446764) = 3,545118`, qui rend exactement les
+     * 78 px de large attendus — donc une pointe à 82 + 78 = 160, la portée
+     * inchangée. **C'est ce qui fait de ce changement d'arme un changement
+     * purement visuel** : ni `reach`, ni `hitbox`, ni la moindre valeur lue par
+     * `bladeSegment()` ne bouge.
+     *
+     * Effet de bord assumé : la flamme est bien plus élancée que la carte
+     * texte qu'elle remplace (2,44 contre 1,44), donc à largeur égale le rayon
+     * est **plus fin** — 31,9 px d'épaisseur contre 54. Vérifié à l'écran : la
+     * couronne y gagne, huit flammes fines se lisent mieux que huit coins.
+     */
+    head: { sprite: 'sunRay', scale: 3.545118 },
     /** Les rayons passent **par-dessus** la bille — ils en sortent, ils ne s'y
      *  cachent pas. Purement visuel : `bladeSegment()` ne lit pas ce drapeau. */
     overBody: true,
@@ -468,6 +518,8 @@ export const SUN = fiche({
       (f) => `Réchauffement : ${formatSeconds(Math.max(0, f.ability.timer))}`,
       (f) => `Rayon : ${f.ult.active > 0 ? (f.state.firing ? 'TIR' : 'charge') : `${Math.floor(f.ult.charge)} %`}`,
     ],
-    color: '#fbbf24',
+    /** Le clair du sprite : la ligne de stat est posée sur l'encre sombre du
+     *  bandeau, elle doit donc rester dans le haut de la palette. */
+    color: '#ebbd5b',
   },
 });

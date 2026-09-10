@@ -24,12 +24,12 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Éditer les données | 391 |
 | &nbsp;&nbsp;· Interface et rendu | 424 |
 | &nbsp;&nbsp;· Le son | 510 |
-| &nbsp;&nbsp;· Refactoriser | 812 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 853 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 855 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 898 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 941 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 960 |
+| &nbsp;&nbsp;· Refactoriser | 852 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 893 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 895 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 938 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 981 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1000 |
 
 ---
 
@@ -738,12 +738,13 @@ aucun des sept autres :
   une couronne, ils désigneraient un rayon au hasard et feraient croire que les
   sept autres ne comptent pas. Le Soleil n'en déclare donc aucun — ce n'est pas
   un manque, c'est le seul choix juste, et la couronne se lit très bien seule.
-- **Un corps jaune demande trois des quatre compensations du corps blanc.**
-  L'arène est blanche ; le personnage *est* le soleil, donc le rendre orange
-  sombre pour esquiver le problème l'aurait dénaturé. Contour à 6 px, chiffre de
-  PV en encre brûlée, aura permanente — seule la quatrième (le `bodyHit` qui
-  rougit au lieu de blanchir) est inutile ici, le jaune saturé passant très
-  visiblement au blanc.
+- **Un corps clair demande trois des quatre compensations du corps blanc.**
+  L'arène est blanche ; le personnage *est* le soleil, donc le rendre sombre
+  pour esquiver le problème l'aurait dénaturé. Contour à 6 px, chiffre de PV en
+  encre brûlée, aura permanente — seule la quatrième (le `bodyHit` qui rougit au
+  lieu de blanchir) est inutile ici. Il a été jaune vif (`#fbbf24`) jusqu'à ce
+  qu'une maquette de flamme arrive ; l'orange qui l'a remplacé (`#de7f3a`)
+  relâche le piège sans le supprimer, et les trois compensations restent.
 - **Un trait clair seul n'existe pas sur fond blanc.** L'axe d'annonce du Rayon
   solaire est la seule information dont l'adversaire dispose pour esquiver : en
   crème simple, il était à peine visible sur la capture de contrôle. Il est
@@ -760,6 +761,45 @@ aucun des sept autres :
   c'est ce qui autorise ses dégâts hors norme. La visée **suit** la cible
   pendant la charge puis **se fige au tir** : figer dès le déclenchement rendait
   l'esquive triviale, suivre jusqu'au bout la rendait impossible.
+
+**Habiller un combattant d'une maquette fournie** — ce qu'a appris le passage
+des rayons du Soleil au PNG :
+
+- **Un corps et son arme doivent être de la même matière pour se lire comme un
+  objet.** La balle était jaune vif quand la couronne est passée à la flamme
+  orange de la maquette : le résultat se lisait comme une bille **plus** huit
+  décorations, pas comme un astre. La demande — « je veux que la balle utilise
+  le même fond que les rayons » — est donc aussi la bonne réponse graphique, et
+  elle ne s'obtient pas en choisissant un orange à côté : elle s'obtient en
+  **échantillonnant le PNG**.
+- **Une maquette fournie décide de la palette du personnage, pas l'inverse.**
+  Cinq bandes de luminance sur les pixels opaques du PNG (3ᵉ, 20ᵉ, 50ᵉ, 80ᵉ et
+  97ᵉ centile) donnent contour / ombre / corps / clair / cœur, et ces cinq
+  teintes remplissent **tout** le bloc `look` — corps, contour, chiffre de PV,
+  aura, motes, impacts, sillage, accent — plus le repli texte et l'icône. C'est
+  ce qui empêche l'icône de diverger de son arme, piège déjà payé sur le
+  Lancier, et ça évite d'avoir à trancher teinte par teinte.
+- **Le contraste du chiffre de PV se calcule, il ne s'estime pas.** Sur
+  `#de7f3a`, l'encre du sprite donne **4,15**, le crème du reste du roster
+  **2,6**. La référence utile n'est pas une norme d'accessibilité mais le
+  **Ronin**, dont le crème sur orange tient à 3,03 et se lit très bien en jeu :
+  au-dessus de lui, c'est bon.
+- **Détourer un JPEG demande de jeter le halo, pas seulement le blanc.** Le
+  fond n'est pas pur (les coins relèvent `#fbfcf7`, `#f0e4e6`) et la compression
+  laisse une frange pâle autour de la flamme. Le seuil de détourage est donc
+  plus mordant que celui de l'échantillonnage — sans quoi la frange survit en
+  alpha et dessine un liseré blanc autour de chaque rayon, sur une arène déjà
+  blanche.
+- **Recadrer sur la composante principale, pas sur tout ce qui est opaque.** La
+  maquette porte des éclats détachés. Ceux qui tiennent dans le cadre de la
+  flamme sont gardés (ils font partie du dessin) ; un éclat qui dépasserait la
+  pointe la remplacerait comme bord droit du sprite, et **le sprite mentirait
+  alors sur la portée de l'arme**.
+- **Le repli texte doit garder le rapport du PNG.** `h` sert au calcul de la
+  taille dessinée même sous override, donc il ne bouge pas (9) ; mais `w` a été
+  porté de 13 à 22 pour retomber sur le rapport de l'image (2,444 contre
+  2,4447). Sans ça, le jour où le PNG manque, la couronne se rétracte de moitié
+  sans que rien ne le signale.
 
 **Retirer la source principale d'un combattant** — ce qu'a appris la suppression
 des dégâts de mêlée du Soleil, demandée après coup :

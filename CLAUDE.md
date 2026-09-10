@@ -628,7 +628,14 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   à l'écran (`tools/shot.mjs`) après tout changement de `look.body`.
 - **Un corps blanc sur l'arène blanche demande quatre compensations** — contour,
   chiffre de PV, aura permanente, et un `bodyHit` qui **rougit** au lieu de
-  blanchir (Mannequin). Un corps **jaune** en demande trois des quatre (Soleil).
+  blanchir (Mannequin). Un corps **clair** en demande trois des quatre (Soleil).
+- **Un corps et son arme doivent être de la même matière pour se lire comme un
+  objet** : la balle du Soleil porte le fond échantillonné dans le PNG de ses
+  rayons, sinon huit flammes plantées sur une bille se lisent comme une bille
+  **plus** huit décorations.
+- **Une maquette fournie décide de la palette du personnage**, pas l'inverse :
+  l'échantillonner par bandes de luminance donne les cinq teintes de tout son
+  bloc `look`, et empêche le repli texte et l'icône d'en diverger.
 - **Un trait clair seul n'existe pas sur l'arène blanche** : doubler d'un liseré
   large et saturé sous le cœur clair (l'axe d'annonce du Rayon solaire).
 - **Un ruban de pointe d'arme ne suit qu'une branche** (`flair.js` lit

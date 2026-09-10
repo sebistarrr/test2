@@ -6,6 +6,12 @@ compilés en canvas au démarrage.
 
 Tu peux remplacer n'importe lequel par un PNG, sans toucher au code du moteur.
 
+> **La source de vérité, c'est [`manifest.json`](manifest.json)**, pas le
+> tableau ci-dessous — celui-ci date d'un roster précédent et nomme des clés
+> qui n'existent plus. Les overrides en place aujourd'hui : la lame du Ronin,
+> le shuriken du Shinobi, l'amas du Golem et **le rayon du Soleil**. Les règles
+> de la section suivante, elles, valent toujours.
+
 ## 1. Préparer le PNG
 
 | Clé                | Rôle                                    | Taille conseillée | Orientation               |
