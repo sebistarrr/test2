@@ -42,28 +42,39 @@ import { deepFreeze } from '../freeze.js';
  * du corps, et il ne lui reste que son contour à l'extrémité.
  */
 export const SUN_RAY = deepFreeze({
-  w: 22,
+  w: 4,
   h: 9,
-  /** Les cinq teintes sont **relevées sur le PNG**, par bandes de luminance :
-   *  c'est ce qui garantit que le repli et la maquette ne divergent pas — et
-   *  ce sont les mêmes cinq que le bloc `look` de la fiche. */
+  /** Les cinq teintes de `look.palette`, relevées sur la maquette : c'est ce
+   *  qui garantit que le repli, le sprite et le reste du personnage ne
+   *  divergent pas. */
   palette: {
-    K: '#6f1e12', // contour
-    d: '#b43f22', // ombre
-    o: '#de7f3a', // corps
-    y: '#ebbd5b', // clair
-    w: '#fcf697', // cœur
+    K: '#5d0100', // contour
+    d: '#c00803', // ombre
+    o: '#f9993c', // corps
+    y: '#fbcf55', // clair
+    w: '#fdf17f', // cœur
   },
+  /**
+   * **4 × 9, et c'est le rapport qui compte, pas les chiffres.** `h` sert au
+   * calcul de la taille dessinée même sous override (donc il ne bouge pas), et
+   * `w` est calé sur le rapport du PNG : 4/9 = 0,444 contre 77/169 = 0,456.
+   * L'écart de 2,5 % est assumé — une carte plus fine ne serait plus
+   * dessinable. Si le PNG manque, la couronne garde donc son envergure à 2,5 %
+   * près au lieu de se déformer.
+   *
+   * La pointe est **large au talon et effilée vers la droite**, comme sur la
+   * maquette : c'est une flamme qui sort du disque, pas une lame.
+   */
   rows: [
-    'KKK...................',
-    'dooooKKK..............',
-    'doooyyyooodKKK........',
-    'doyyywwwyyyoooddKKK...',
-    'dywwwwwwwwyyyoooddKKKK',
-    'doyyywwwyyyoooddKKK...',
-    'doooyyyooodKKK........',
-    'dooooKKK..............',
-    'KKK...................',
+    'K...',
+    'dK..',
+    'doK.',
+    'doyK',
+    'dywK',
+    'doyK',
+    'doK.',
+    'dK..',
+    'K...',
   ],
 });
 

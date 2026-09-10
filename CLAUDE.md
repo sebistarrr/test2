@@ -571,6 +571,10 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Une arme à plusieurs branches touche dans toutes les directions** : son
   garde-fou est le verrou de mêlée, testé **une fois pour toutes** avant les
   branches — sinon huit rayons font huit touches par pas.
+- **`melee.damage: 0` ne rend pas une arme inerte** : `resolveMelee` applique le
+  **recul propre** et le **décollement des corps** *hors* de `damage`, donc sa
+  géométrie reste du gameplay. Changer la portée du Soleil a déplacé toutes les
+  durées de ses affrontements (les vainqueurs, non).
 - **Un boss n'est pas un déséquilibre à corriger** : il est hors barème par
   définition, et sa ligne de matrice n'entre pas dans la bande des autres.
 - **Retirer la source principale d'un combattant le retourne, elle ne le

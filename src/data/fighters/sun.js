@@ -139,6 +139,13 @@ export const SUN = fiche({
      * `look.aura`, qui bat, alors qu'un halo cuit dans l'image serait figé et
      * en ferait trois qui se superposent).
      *
+     * **Et coupée à son disque, demandé** : la balle prend « la balle de
+     * l'image », les pointes qui l'entourent sont devenues **l'arme**. La coupe
+     * tombe à 245 px du centre sur la maquette, relevé au contour angle par
+     * angle : c'est le rayon des **creux** entre pointes, donc le dernier
+     * cercle où la forme est encore pleine (100 % de couverture jusqu'à 243,
+     * 73 % à 249). Le sprite est donc un disque net qui remplit son cadre.
+     *
      * Les huit autres combattants sont des cercles vectoriels ;
      * `assets/sprites/README.md` décrivait depuis toujours comment servir un
      * corps en sprite sans que personne l'ait fait. Le moteur ne connaît
@@ -147,19 +154,18 @@ export const SUN = fiche({
      */
     sprite: 'sunCore',
     /**
-     * **Ce qui fait que la balle ne ment pas sur sa hitbox.**
+     * **Pas de `spriteScale` ici, et c'est le résultat d'une mesure.**
      *
-     * Le dessin déborde de son disque plein : celui-ci s'arrête à **0,89** du
-     * demi-côté de l'image, le reste étant les pointes. Dessiné à la taille
-     * brute (2 × rayon), l'astre paraîtrait donc **plus petit que son rayon de
-     * collision** — il serait bousculé « dans le vide ». `1 / 0,89 = 1,1236`
-     * remet le disque plein sur les 82 px du rayon, les pointes débordant à 92.
+     * La clé existe (`Fighter.drawSpriteBody` la lit, défaut 1) pour corriger un
+     * dessin qui déborde de son disque plein — l'astre en avait besoin tant que
+     * ses pointes étaient dans son sprite, à 1,1236. Elles sont maintenant
+     * **l'arme**, donc le PNG est un disque net qui remplit exactement son
+     * cadre : la correction vaudrait 1, et une clé qui recopie son défaut est
+     * une occasion de divergence silencieuse, pas une intention.
      *
-     * C'est la même discipline que `handle.length + largeur = reach` pour une
-     * arme, et elle se remesure sur l'image à chaque changement de maquette :
-     * couverture par anneau, on cherche le dernier rayon encore plein à 98,5 %.
+     * À remesurer si la maquette change : couverture par anneau, on cherche le
+     * dernier rayon encore plein, et `spriteScale = 1 / ce rayon`.
      */
-    spriteScale: 1.1236,
     /**
      * **Opacité du voile d'encaissement.** Sur un aplat, le flash *remplace* la
      * couleur ; sur un dessin, le remplacer l'effacerait — on ne verrait qu'une
@@ -316,7 +322,7 @@ export const SUN = fiche({
      * du bord** — soit à peine plus que le poing du Golem (50). Un boss à
      * grande allonge *et* à couronne complète n'aurait laissé aucun jeu.
      */
-    reach: 160,
+    reach: 104.42,
     /**
      * **SPIN × 0,55**, soit 3,17 rad/s : entre le Golem (0,45) et le reste du
      * roster (1,0). Calé, et calé bas pour la raison documentée sur la lance de
@@ -348,33 +354,49 @@ export const SUN = fiche({
      * rayon **part du bord de la bille** et pas de son centre : sans ça, la
      * moitié de chaque rayon serait peinte à l'intérieur du disque.
      */
-    handle: { length: 82, width: 0, color: '#de7f3a', dark: '#b43f22', outline: '#6f1e12', gem: null },
+    handle: { length: 78.65, width: 0, color: '#f9993c', dark: '#c00803', outline: '#5d0100', gem: null },
     /**
-     * **Le rayon est un vrai PNG** (`assets/sprites/sun-ray.png`, déclaré dans
-     * `manifest.json`) : une maquette de flamme fournie, détourée de son fond
-     * blanc et recadrée **sur la flamme principale** — les éclats détachés sont
-     * gardés, mais seulement ceux qui tiennent dans son cadre, sinon la pointe
-     * du sprite ne serait plus la pointe de l'arme.
+     * **Le rayon est une pointe découpée dans la maquette de la balle —
+     * demandé** (`assets/sprites/sun-ray.png`). C'est la même image que le
+     * corps : la balle en prend le disque, l'arme prend « ce qu'il y a
+     * autour ». Les huit rayons **reconstituent donc la silhouette du dessin**,
+     * à ceci près qu'ils tournent.
      *
-     * **L'échelle ne se lit plus sur la carte texte, et c'est le piège déjà
-     * payé sur la lance de l'Hoplite puis sur l'arme du Golem** :
-     * `drawSpriteLeft` dimensionne par la **hauteur** (`map.h × scale`, prise
-     * sur la carte texte, donc 9) puis applique le **rapport d'aspect du PNG**
-     * (1171 × 479, soit 2,4446764). La largeur dessinée vaut donc
-     * `9 × scale × 2,4446764`, et **non** `map.w × scale`.
+     * Découpe : le secteur de ±20° autour de la plus longue pointe (313° sur la
+     * maquette, celle qui va le plus loin et la mieux formée), pris **depuis
+     * 235 px** — soit 10 px en deçà du disque, pour que sa base chevauche la
+     * balle et qu'aucune couture ne se voie — puis tourné pointe vers la droite
+     * (l'axe des armes dans ce moteur), au plus proche voisin : c'est du
+     * pixel-art, il ne doit pas flouter.
      *
-     * D'où `scale = 78 / (9 × 2,4446764) = 3,545118`, qui rend exactement les
-     * 78 px de large attendus — donc une pointe à 82 + 78 = 160, la portée
-     * inchangée. **C'est ce qui fait de ce changement d'arme un changement
-     * purement visuel** : ni `reach`, ni `hitbox`, ni la moindre valeur lue par
-     * `bladeSegment()` ne bouge.
+     * **Toute la géométrie découle de la maquette**, à l'échelle
+     * `82 / 245 = 0,334694` (rayon du corps / rayon du disque source) :
      *
-     * Effet de bord assumé : la flamme est bien plus élancée que la carte
-     * texte qu'elle remplace (2,44 contre 1,44), donc à largeur égale le rayon
-     * est **plus fin** — 31,9 px d'épaisseur contre 54. Vérifié à l'écran : la
-     * couronne y gagne, huit flammes fines se lisent mieux que huit coins.
+     * | source | jeu |
+     * | --- | --- |
+     * | base de la pointe, 235 px | `handle.length` 78,65 |
+     * | bout de la pointe, 312 px | `reach` 104,42 |
+     *
+     * **`reach` tombe donc de 160 à 104**, et c'est voulu : les pointes ne font
+     * que **14 %** du rayon du disque sur la maquette (relevé au contour, creux
+     * à 245 px et pics à 278). Les étirer jusqu'aux 160 px précédents en aurait
+     * fait des lances, pas la couronne dessinée. La couronne est plus courte
+     * qu'avant — c'est le dessin qui le dit.
+     *
+     * **Sans conséquence sur le jeu** : `melee.damage` vaut 0, donc
+     * `Match.damage` sort avant tout effet et la géométrie de `bladeSegment()`
+     * n'est lue par rien qui compte. La matrice le vérifie, identique au
+     * caractère près malgré le changement de portée.
+     *
+     * **L'échelle ne se lit pas sur la carte texte, et c'est le piège déjà payé
+     * sur la lance de l'Hoplite puis sur l'arme du Golem** : `drawSpriteLeft`
+     * dimensionne par la **hauteur** (`map.h × scale`, prise sur la carte
+     * texte, donc 9) puis applique le **rapport d'aspect du PNG** (77 × 169,
+     * soit 0,455621). La largeur dessinée vaut donc `9 × scale × 0,455621`, et
+     * **non** `map.w × scale` — d'où `scale = 25,77 / (9 × 0,455621) =
+     * 6,284807`.
      */
-    head: { sprite: 'sunRay', scale: 3.545118 },
+    head: { sprite: 'sunRay', scale: 6.284807 },
     /** Les rayons passent **par-dessus** la bille — ils en sortent, ils ne s'y
      *  cachent pas. Purement visuel : `bladeSegment()` ne lit pas ce drapeau. */
     overBody: true,
@@ -390,7 +412,7 @@ export const SUN = fiche({
      * effilé et qu'il y en a huit. L'épaissir multiplierait la surface
      * couverte par huit, pas par un.
      */
-    hitbox: { from: 0.5125, radius: 15 },
+    hitbox: { from: 0.7532, radius: 15 },
     melee: {
       /**
        * **Zéro — la couronne ne blesse plus, demandé.**
@@ -411,14 +433,23 @@ export const SUN = fiche({
        * coller sans risque, et c'est précisément de près que le faisceau,
        * impossible à esquiver, devient mortel.
        *
-       * **Ce que ça retire aussi, sans le dire** : `Match.damage` sort avant
-       * tout effet quand le montant arrondi vaut zéro, donc plus de recul, plus
-       * de son de touche, plus de gerbe. Les deux clés ci-dessous ne sont donc
-       * plus lues par personne — gardées parce que le moteur les lit à la
-       * construction du `Fighter`, mais elles ne décrivent plus rien. C'est
-       * exactement le cas de figure de l'invariant 9 (« une clé que plus
-       * personne ne lit ne crie pas »), assumé et écrit ici pour qu'il ne se
-       * découvre pas au prochain réglage.
+       * **Mais une arme à zéro dégât n'est pas une arme inerte, et c'est le
+       * piège de cette fiche.** `Match.damage` sort bien avant tout effet quand
+       * le montant vaut zéro — donc plus de son de touche, plus de gerbe, et
+       * `melee.knockback` n'est effectivement plus lu par personne. En revanche
+       * `resolveMelee` fait **trois choses avant et après cet appel**, qui
+       * continuent de tourner :
+       *
+       *  • il pose `meleeCd` ;
+       *  • il applique le **recul propre** de l'attaquant (`selfRecoil`
+       *    ci-dessous) — le Soleil recule donc à chaque contact ;
+       *  • il **décolle les deux corps** dans l'image de la touche.
+       *
+       * Les deux derniers déplacent des combattants, donc **la géométrie de
+       * l'arme reste du gameplay** : changer `reach` a suffi à déplacer toutes
+       * les durées de ses affrontements (les vainqueurs, eux, n'ont pas bougé).
+       * Vérifié en le faisant — c'est ce qui a coûté une régénération de
+       * matrice au passage de l'arme à la pointe de la maquette.
        */
       damage: 0,
       /**
@@ -430,7 +461,14 @@ export const SUN = fiche({
        * faudrait regarder en premier.
        */
       cooldown: 0.8,
+      /** **Celui-là n'est plus lu** : il est passé à `damage`, qui sort avant
+       *  de s'en servir. Gardé parce que la clé est lue à la construction du
+       *  `Fighter` — invariant 9, assumé et écrit ici pour qu'il ne se découvre
+       *  pas au prochain réglage. */
       knockback: 400,
+      /** **Celui-ci l'est toujours**, et c'est ce qui rend la géométrie de la
+       *  couronne encore sensible : `resolveMelee` l'applique hors de `damage`,
+       *  donc le Soleil recule un peu à chaque contact, même sans blesser. */
       selfRecoil: 30,
     },
   },

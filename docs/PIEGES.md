@@ -24,12 +24,12 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Éditer les données | 391 |
 | &nbsp;&nbsp;· Interface et rendu | 424 |
 | &nbsp;&nbsp;· Le son | 510 |
-| &nbsp;&nbsp;· Refactoriser | 918 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 959 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 961 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1004 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1047 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1066 |
+| &nbsp;&nbsp;· Refactoriser | 939 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 980 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 982 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1025 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1068 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1087 |
 
 ---
 
@@ -803,6 +803,27 @@ replis étaient de fidèles transcriptions ; elle est devenue criante avec le
 corps du Soleil, dont le repli est volontairement grossier. Corrigée avec un
 garde `hasSprite` — la vignette peut être tracée **avant** `loadSprites()`,
 l'écran étant construit au chargement du module et la banque remplie au `boot()`.
+
+**`melee.damage: 0` ne rend pas une arme inerte**, et la fiche du Soleil a
+affirmé le contraire pendant deux commits. `Match.damage` sort bien avant tout
+effet quand le montant vaut zéro — plus de son de touche, plus de gerbe, et
+`melee.knockback` n'est effectivement plus lu. Mais `resolveMelee` fait trois
+choses **autour** de cet appel, qui continuent de tourner :
+
+1. il pose `meleeCd` ;
+2. il applique le **recul propre** de l'attaquant (`selfRecoil`) ;
+3. il **décolle les deux corps** dans l'image même de la touche.
+
+Les deux dernières déplacent des combattants. **La géométrie d'une arme sans
+dégâts reste donc du gameplay** : découper le rayon du Soleil dans la maquette a
+fait tomber sa portée de 160 à 104, et ça a suffi à déplacer **toutes les durées
+de ses affrontements**. Les vainqueurs n'ont pas bougé (21/21, et les six autres
+à leur compte au chiffre près), seules ses lignes ont bougé — mais un changement
+annoncé comme purement visuel a dû être régénéré et justifié.
+
+La leçon générale : **ce qui sort tôt d'une fonction ne dit rien de ce que fait
+son appelant**. Lire `damage` et conclure « rien ne se passe » était une lecture
+d'un cran trop profonde ; c'est `resolveMelee` qu'il fallait lire.
 
 **Un module qui code ses couleurs en dur les fait dériver.** Le dépôt documentait
 déjà le cas d'une **clé de sprite** en dur (`plant.js` et ses corolles roses),

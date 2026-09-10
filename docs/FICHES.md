@@ -38,13 +38,13 @@ les recale en une commande.
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2432 |
 | 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2646 |
 | ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2732 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 2898 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 2953 |
-| Les dégâts de tous les combattants, divisés par deux | 3021 |
-| Rééquilibrage confiné au Golem et au Ronin | 3131 |
-| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3218 |
-| Le son de chacun | 3268 |
-| Équilibrage du roster | 3380 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 2915 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 2970 |
+| Les dégâts de tous les combattants, divisés par deux | 3038 |
+| Rééquilibrage confiné au Golem et au Ronin | 3148 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3235 |
+| Le son de chacun | 3285 |
+| Équilibrage du roster | 3403 |
 | Règles communes (moteur) | 3242 |
 | Comment les mesures ont été prises | 3266 |
 
@@ -2759,8 +2759,11 @@ deux bouts : le Mannequin ne peut pas gagner, le Soleil ne peut pas perdre.
 | Palette | `look.palette` — les cinq teintes de la maquette d'astre, relevées par bandes de luminance : `edge` `#5d0100` · `shadow` `#c00803` · `body` `#f9993c` · `light` `#fbcf55` · `core` `#fdf17f`. **Source unique de tout ce qui est orange chez lui** : le bloc `look`, mais aussi le module, qui codait ses propres orange en dur — d'où la dérive du Rayon solaire. Il a été jaune vif (`#fbbf24`), puis orange plat (`#de7f3a`, échantillonné sur les rayons) avant d'être un dessin | relevé sur la maquette |
 | Faisceau | **Fait de la même matière que l'astre — demandé.** `ultimate.beam.bands` : cinq bandes concentriques qui reprennent `look.palette` **dans l'ordre du dessin**, donc la structure de la maquette étirée le long d'un axe. Ce qui manquait et change tout, c'est le **liseré d'encre brûlée** : le faisceau allait d'orange à blanc, sans bord — or c'est ce trait qui signe le dessin, et sans lui le rayon se dissolvait en plus sur l'arène blanche | calé (demandé) |
 | Déplacement | **230 px/s, le plus lent du roster et de très loin** (420 Golem, 430 Hoplite, 655 Pistolero) et `turnRate` 1, le plus bas aussi. Il va **moitié moins vite que la moyenne**. C'est **la** contrepartie de tout le reste : il ne rattrape personne — et n'aurait rien à en faire s'il y arrivait | calé (demandé) |
-| **Arme** | *Couronne de rayons* — portée 160 px : talon 82 (le rayon du corps, donc les rayons partent du **bord** de la bille) + largeur dessinée 78. Chaque rayon ne dépasse que de 78 px du corps | déduit |
-| Sprite du rayon | **Un vrai PNG** (`assets/sprites/sun-ray.png`) : maquette de flamme fournie, détourée de son fond blanc et recadrée sur la flamme principale — les éclats détachés sont gardés, mais seulement ceux qui tiennent dans son cadre, sinon la pointe du sprite ne serait plus la pointe de l'arme. `scale = 78 / (9 × 2,4446764) = 3,545118` : sous override PNG la largeur vient du **rapport d'aspect de l'image**, pas de `map.w` — piège déjà payé sur la lance de l'Hoplite puis sur l'arme du Golem. La flamme est plus élancée que la carte texte qu'elle remplace (2,44 contre 1,44), donc à largeur égale le rayon est plus fin : 31,9 px d'épaisseur contre 54 | déduit |
+| **Arme** | *Couronne de rayons* — **une pointe découpée dans la maquette de la balle, demandé** : la balle en prend le disque, l'arme prend « ce qu'il y a autour ». Les huit rayons reconstituent donc la silhouette du dessin, à ceci près qu'ils tournent | calé (demandé) |
+| Découpe du rayon | Le secteur de ±20° autour de la plus longue pointe (313° sur la maquette), pris **depuis 235 px** — 10 px en deçà du disque, pour que sa base chevauche la balle et qu'aucune couture ne se voie — puis tourné pointe vers la droite au plus proche voisin (c'est du pixel-art, il ne doit pas flouter) | relevé sur la maquette |
+| Portée | **160 → 104,42**, et c'est le dessin qui le dit : les pointes ne font que **14 %** du rayon du disque (relevé au contour angle par angle, creux à 245 px et pics à 278). Les étirer jusqu'aux 160 px précédents en aurait fait des lances, pas la couronne dessinée. Toute la géométrie découle de l'échelle `82 / 245 = 0,334694` : base 235 px → `handle.length` 78,65 ; bout 312 px → `reach` 104,42 | déduit |
+| Échelle du sprite | `scale = 25,77 / (9 × 0,455621) = 6,284807` : sous override PNG la largeur vient du **rapport d'aspect de l'image** (77 × 169), pas de `map.w` — piège déjà payé sur la lance de l'Hoplite puis sur l'arme du Golem | déduit |
+| ⚠ Ce que ça a coûté | **Changer la portée a déplacé la matrice**, alors que l'arme ne fait aucun dégât. `resolveMelee` applique le **recul propre** et le **décollement des corps** hors de `damage` : la géométrie d'une arme sans dégâts reste du gameplay. Vainqueurs inchangés (21/21, les six autres au chiffre près), seules les **durées** de ses affrontements ont bougé | mesuré |
 | **Huit branches** | `weapon.spokes: 8` — la même arme répétée tous les 45°, sans aucun angle mort. **Elle ne blesse plus** (voir ci-dessous) : c'est aujourd'hui sa silhouette et son bruit, plus son arme | calé (demandé) |
 | Rotation | `SPIN × 0,55` (3,17 rad/s), entre le Golem (0,45) et le reste (1,0) | calé |
 | **Corps à corps** | **0 — annulé, demandé.** La couronne portait 67,3 % de ses dégâts ; elle n'en porte plus aucun. `Match.damage` sortant avant tout effet à montant nul, il n'y a plus non plus de recul, de son de touche ni de gerbe : `melee.knockback` et `melee.selfRecoil` ne sont plus lus par personne (invariant 9, assumé et écrit dans la fiche) | calé (demandé) |
