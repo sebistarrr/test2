@@ -1,15 +1,19 @@
-# Elemental Duel — sept combattants, trois formats
+# Elemental Duel — huit combattants, trois formats
 
-Duels **à deux, en 2 contre 2 ou en bataille royale** (jusqu'à sept, chacun pour
-soi), avec cinq combattants repris de la chaîne **« ballthingsim »** et deux
+Duels **à deux, en 2 contre 2 ou en bataille royale** (jusqu'à huit, chacun pour
+soi), avec cinq combattants repris de la chaîne **« ballthingsim »** et trois
 inventés, en **HTML + CSS + JavaScript** avec un rendu **Canvas 2D**.
 Aucune dépendance, aucun build : le dépôt se publie tel quel sur GitHub Pages.
 
 Les cinq premiers sont relevés image par image sur leur vidéo — couleurs à la
 pipette, portées au pixel, cadences chronométrées. Ce qui n'a pas pu être
-mesuré est calé au banc d'essai, et le dit. Les deux derniers — le **Golem** et
-le **Mannequin** — n'ont pas de vidéo : **tout chez eux est calé**, et leurs
-fiches ne portent pas un seul `mesuré`.
+mesuré est calé au banc d'essai, et le dit. Les trois derniers — le **Golem**,
+le **Mannequin** et le **Soleil** — n'ont pas de vidéo : **tout chez eux est
+calé**, et leurs fiches ne portent pas un seul `mesuré`.
+
+Deux d'entre eux sont **hors barème, aux deux bouts** : le Mannequin ne peut pas
+gagner (c'est une cible d'entraînement), le Soleil ne peut pas perdre (c'est un
+boss). L'équilibrage se lit sur les six autres.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
@@ -19,6 +23,7 @@ fiches ne portent pas un seul `mesuré`.
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
 | **Druide** | Bâton de ronce (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Orage de ronces / THORN STORM |
 | **Golem** (inventé) | Amas de roche (maquette servie par un vrai PNG, **par-dessus la bille**) — **la portée la plus courte du jeu** (100 px), et la rotation d'arme la plus lente | **le plus lent** (420 px/s), **le plus gros** (rayon 50 contre 41) et **200 PV** quand tout le monde en a 100 : il encaisse chaque coup en entier, il en encaisse simplement deux fois plus. Onde sismique sur horloge, éclats de roche pour qui reste au loin | Séisme / EARTHQUAKE (secousse sur 260 px, puis +35 % de vitesse) |
+| **Soleil** (inventé, **boss**) | Couronne de rayons — **huit rayons à la fois**, un tous les 45°, donc **aucun angle mort** | **fait pour gagner contre tous les autres en 1 contre 1**, et il le fait (21/21). **Deux fois plus grand** que la norme (rayon 82 contre 41), **500 PV**, et **le plus lent du jeu** (300 px/s) — c'est toute sa contrepartie. Réchauffement solaire : brûle qui reste dans 240 px | Rayon solaire / SOLAR BEAM — **1,1 s de charge annoncée à l'écran**, puis un faisceau qui traverse l'arène |
 | **Mannequin** (inventé) | **aucune** — le seul du jeu | **cible d'entraînement** : il ne fait aucun dégât, n'a aucun pouvoir, et porte les PV de la norme, en blanc. On le choisit pour **regarder l'autre combattant** : sa ligne de HUD compte les dégâts qu'il a subis, donc ce que l'adversaire produit vraiment | aucun (jauge vide, « NO ULTIMATE ») |
 
 ### Trois formats
@@ -27,7 +32,7 @@ fiches ne portent pas un seul `mesuré`.
 | --- | --- |
 | **Duel** | un contre un, le format d'origine — c'est lui, et lui seul, dont l'équilibrage est relevé |
 | **2 contre 2** | deux équipes de deux. Les armes ne touchent que le camp adverse, mais les **corps se bousculent entre tous** : un coéquipier reste un obstacle |
-| **Bataille royale** | 3 à 7 combattants, chacun pour soi, dernier debout |
+| **Bataille royale** | **3 à 5** combattants à l'écran de sélection, chacun pour soi, dernier debout. Le moteur, lui, en accepte autant qu'il y a de combattants — le plafond est un choix de lisibilité, pas une limite technique |
 
 Le moteur ne connaît aucun de ces trois noms : il reçoit une liste de
 combattants et **un camp pour chacun**. « 2 contre 2 » et « chacun pour soi »
@@ -76,7 +81,7 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 
 <sup>Les nouveaux formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [une bataille royale à cinq](docs/capture-royale.png) · [la parade à deux vainqueurs](docs/capture-fin-2v2.png).</sup>
 
-<sup>L’Hoplite (charge, Dôme de drain) contre le Ronin (surchauffe, Aura de braise). Voir aussi [l'écran de sélection](docs/capture-selection.png), [le Pistolero sous DEAD MAN’S HAND](docs/capture-horsloi.png), [la ruée du Ronin](docs/capture-bretteur.png), [la Foudre tombante de l’Hoplite](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
+<sup>L’Hoplite (charge, Dôme de drain) contre le Ronin (surchauffe, Aura de braise). Voir aussi [l'écran de sélection](docs/capture-selection.png), [le Pistolero sous DEAD MAN’S HAND](docs/capture-horsloi.png), [la ruée du Ronin](docs/capture-bretteur.png), [la Foudre tombante de l’Hoplite](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png). Le boss : [le Rayon solaire du Soleil](docs/capture-soleil.png), huit rayons en couronne et un faisceau qui traverse l'arène.</sup>
 
 ---
 

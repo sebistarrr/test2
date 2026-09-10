@@ -377,11 +377,41 @@ export class Fighter {
     return (w.handle.length + w.reach) / 2;
   }
 
-  /** Segment tranchant [a,b] en coordonnées monde + rayon. */
-  bladeSegment() {
+  /**
+   * **Nombre de branches de l'arme**, 1 pour tout le monde sauf le Soleil (8).
+   *
+   * Une arme à plusieurs branches est le même objet répété à intervalle
+   * régulier sur le tour : `bladeSegment(k)` rend la k-ième, `weaponHit` les
+   * essaie toutes et `drawWeapon` les peint toutes. Le moteur ne connaît
+   * toujours aucun combattant (invariant 12) — la forme se dit **entièrement
+   * dans la fiche**, et un autre combattant en hériterait sans une ligne d'ici.
+   *
+   * Absente, la clé vaut 1 : le chemin repris ci-dessous est alors **exactement
+   * celui d'avant**, expression par expression.
+   */
+  get spokes() {
+    return this.el.weapon.spokes ?? 1;
+  }
+
+  /**
+   * Segment tranchant [a,b] en coordonnées monde + rayon.
+   *
+   * @param {number} [spoke] branche à rendre, de 0 à `spokes - 1`.
+   */
+  bladeSegment(spoke = 0) {
     const { reach, hitbox } = this.el.weapon;
-    const c = Math.cos(this.weaponAngle);
-    const s = Math.sin(this.weaponAngle);
+    /**
+     * **À `spoke` nul, l'angle est `this.weaponAngle` lui-même**, sans la
+     * moindre opération — pas `this.weaponAngle + 0`. C'est la même discipline
+     * que la branche sans vrille ci-dessous et que le chemin du duel dans
+     * `match.js` : une addition flottante neutre en apparence suffit à
+     * déplacer un dernier bit, donc une collision limite, donc un vainqueur.
+     * Les sept combattants à une seule branche doivent repasser par le chemin
+     * exact d'avant, et la matrice le vérifie.
+     */
+    const ang = spoke ? this.weaponAngle + (TAU * spoke) / this.spokes : this.weaponAngle;
+    const c = Math.cos(ang);
+    const s = Math.sin(ang);
     const o = this.weaponPivot();
 
     /**
@@ -567,12 +597,21 @@ export class Fighter {
      */
     if (!map) return;
     const headH = map.h * w.head.scale;
+    const pivot = this.weaponPivot();
+    /**
+     * **Une passe par branche**, et `bladeSegment(k)` tourne du même angle : le
+     * dessin ne doit jamais mentir sur l'endroit où l'arme porte, c'est la même
+     * discipline que `weaponPivot()` et que `weaponTwirl`.
+     */
+    for (let k = 0; k < this.spokes; k++) this._paintSpoke(ctx, w, map, headH, pivot, k);
+  }
 
+  /** Une branche de l'arme, à l'angle `weaponAngle + k × TAU / spokes`. */
+  _paintSpoke(ctx, w, map, headH, pivot, k) {
     ctx.save();
     // le pivot, pas le centre du corps : voir `weaponPivot()`
-    const pivot = this.weaponPivot();
     ctx.translate(pivot.x, pivot.y);
-    ctx.rotate(this.weaponAngle);
+    ctx.rotate(k ? this.weaponAngle + (TAU * k) / this.spokes : this.weaponAngle);
 
     // vrille : l'arme tourne sur elle-même, autour du milieu de sa carte, sans
     // quitter sa place. `bladeSegment()` applique exactement la même rotation.

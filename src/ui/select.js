@@ -321,10 +321,19 @@ function drawElementBadge(canvas, el) {
   const drawnW = map.w * w.head.scale;
   const drawnH = map.h * w.head.scale;
 
+  /**
+   * **Une arme à plusieurs branches occupe un disque, pas un rectangle.** La
+   * pointe est à la même distance dans toutes les directions, donc l'
+   * encombrement est carré et centré sur la bille — sans ça, la couronne du
+   * Soleil déborderait en haut et en bas du cadre. Lu de la fiche
+   * (`weapon.spokes`), comme le reste : rien n'est codé par combattant.
+   */
+  const spokes = w.spokes ?? 1;
+  const crown = Math.max(el.look.radius, w.handle.length + drawnW);
   // encombrement en unités de jeu, corps et arme réunis
-  const left = Math.min(-el.look.radius, w.handle.length);
-  const right = Math.max(el.look.radius, w.handle.length + drawnW);
-  const halfH = Math.max(el.look.radius, drawnH / 2);
+  const left = spokes > 1 ? -crown : Math.min(-el.look.radius, w.handle.length);
+  const right = spokes > 1 ? crown : Math.max(el.look.radius, w.handle.length + drawnW);
+  const halfH = spokes > 1 ? crown : Math.max(el.look.radius, drawnH / 2);
   const k = Math.min((canvas.width * 0.94) / (right - left), (canvas.height * 0.94) / (halfH * 2));
 
   // le tout est centré sur l'encombrement, pas sur la bille : une arme longue
@@ -343,7 +352,15 @@ function drawElementBadge(canvas, el) {
   };
   const weapon = () => {
     const sprite = compilePixelMap(map, 3);
-    ctx.drawImage(sprite, ox + w.handle.length * k, oy - (drawnH / 2) * k, drawnW * k, drawnH * k);
+    // une passe par branche, tournée du même angle qu'en jeu : à `spokes`
+    // absent la boucle fait un tour sans rotation, donc le tracé d'avant
+    for (let i = 0; i < spokes; i++) {
+      ctx.save();
+      ctx.translate(ox, oy);
+      if (i) ctx.rotate((TAU * i) / spokes);
+      ctx.drawImage(sprite, w.handle.length * k, -(drawnH / 2) * k, drawnW * k, drawnH * k);
+      ctx.restore();
+    }
   };
 
   if (w.overBody) { ball(); weapon(); } else { weapon(); ball(); }

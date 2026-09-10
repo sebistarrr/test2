@@ -1,12 +1,18 @@
 # Fiches des combattants
 
-**Sept combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
+**Huit combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
 et **Ronin** du duel *Outlaw vs Bladesman*, **Hoplite** de *Dragoon vs Outlaw*,
 **Druide** construit sur la mécanique de Magia dans *Dragoon vs Magia*, et
-**Shinobi**, reskin du Vent des vidéos *Elemental Armory League*. Le sixième,
-le **Golem**, est **inventé** : il n'a pas de vidéo, donc pas un seul `mesuré`.
-Le **Mannequin** l'est aussi : une **cible d'entraînement** sans arme ni
-dégâts, faite pour qu'on regarde les mécaniques des six autres.
+**Shinobi**, reskin du Vent des vidéos *Elemental Armory League*. Les trois
+autres sont **inventés** : pas de vidéo, donc pas un seul `mesuré`. Le
+**Golem** encaisse là où personne n'encaissait ; le **Mannequin** est une
+**cible d'entraînement** sans arme ni dégâts, faite pour qu'on regarde les
+mécaniques des autres ; le **Soleil** est un **boss**, demandé pour gagner
+contre tous les autres en 1 contre 1.
+
+**Deux d'entre eux sont hors barème, aux deux bouts** : le Mannequin ne peut pas
+gagner, le Soleil ne peut pas perdre. Les écarts d'équilibrage se lisent sur les
+six autres.
 
 Ces fiches sont la **transcription lisible** de `src/data/fighters/`. Le code
 est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
@@ -22,22 +28,23 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 44 |
-| 📦 Archive — les huit éléments supprimés | 93 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 167 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 957 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1108 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1365 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1930 |
-| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2421 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2635 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 2721 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 2776 |
-| Les dégâts de tous les combattants, divisés par deux | 2844 |
-| Rééquilibrage confiné au Golem et au Ronin | 2954 |
-| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3041 |
-| Le son de chacun | 3091 |
-| Équilibrage du roster | 3144 |
+| Comment lire une valeur | 50 |
+| 📦 Archive — les huit éléments supprimés | 99 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 173 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 963 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1118 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1375 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1940 |
+| 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2431 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2645 |
+| ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2731 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 2838 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 2893 |
+| Les dégâts de tous les combattants, divisés par deux | 2961 |
+| Rééquilibrage confiné au Golem et au Ronin | 3071 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3158 |
+| Le son de chacun | 3208 |
+| Équilibrage du roster | 3307 |
 | Règles communes (moteur) | 3242 |
 | Comment les mesures ont été prises | 3266 |
 
@@ -2722,6 +2729,113 @@ ne montre aussi directement :
 Le Golem produit **2,2 fois moins** que le Shinobi — l'exact contrepoids de ses
 200 PV, et la confirmation chiffrée du compromis décrit dans sa propre section.
 
+## ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous)
+
+> Astre-roi — huit rayons, cinq cents points de vie, et tout son temps.
+
+**Demandé** : « un personnage soleil de type boss, deux fois plus grand qu'un
+personnage classique, plus de PV, en 1v1 il est censé gagner contre tous les
+personnages actuels ; se déplace lentement ; mécanique de base : 8 rayons de
+soleil autour ; un pouvoir qui charge puis libère un rayon solaire vers une
+direction ; un deuxième pouvoir : réchauffement solaire, brûle les ennemis dans
+son périmètre ».
+
+Troisième combattant **inventé** du dépôt après le Golem et le Mannequin :
+aucune vidéo, donc **pas un seul `mesuré`** — tout est `calé` ou `déduit`.
+
+**Il est hors barème, et c'est la spécification.** Les sept autres sont taillés
+pour s'affronter entre eux, dans une bande de 4 à 13 victoires sur 21 ; lui est
+demandé pour les battre tous. Sa ligne de matrice à **21/21** n'est donc pas un
+défaut d'équilibrage. Le dépôt a maintenant deux combattants hors barème, aux
+deux bouts : le Mannequin ne peut pas gagner, le Soleil ne peut pas perdre.
+
+| Bloc | Valeur | Source |
+| --- | --- | --- |
+| Corps | rayon **82** — exactement le double de la norme (41), et le plus gros du roster devant le Golem (50) | calé (demandé) |
+| Points de vie | **500**, cinq fois la norme et deux fois et demie le Golem. Aucune réduction de dégâts : un seul chiffre porte toute sa résistance | calé (demandé) |
+| Couleur | `#fbbf24`, jaune solaire — **le piège du corps clair sur arène blanche**, assumé plutôt qu'esquivé : contour à 6 px, chiffre de PV en encre brûlée `#7c2d12`, aura permanente. Seule la quatrième compensation du Mannequin (rougir au lieu de blanchir) est inutile, le jaune saturé passant très visiblement au blanc | calé |
+| Déplacement | **300 px/s, le plus lent du roster** (420 Golem, 430 Hoplite, 655 Pistolero) et `turnRate` 1, le plus bas aussi. C'est **la** contrepartie de tout le reste : il ne rattrape personne | calé (demandé) |
+| **Arme** | *Couronne de rayons* — portée 160 px : talon 82 (le rayon du corps, donc les rayons partent du **bord** de la bille) + largeur dessinée 78 (`13 × 6`). Chaque rayon ne dépasse que de 78 px du corps | déduit |
+| **Huit branches** | `weapon.spokes: 8` — la même arme répétée tous les 45°. **Aucun angle mort** : contourner est la parade normale contre une arme qui tourne, une couronne la supprime. C'est ce qui remplace, chez un personnage lent et sans visée, le fait de savoir placer un coup | calé (demandé) |
+| Rotation | `SPIN × 0,55` (3,17 rad/s), entre le Golem (0,45) et le reste (1,0). Calé bas : *une arme qui balaie vite touche souvent*, et ici huit branches balaient huit fois le même tour | calé |
+| Corps à corps | **5 dégâts fixes**, verrou de **0,8 s**. Le verrou est le garde-fou du personnage : `weaponHit` le teste **une fois pour toutes** avant d'essayer les branches, donc huit rayons ne font pas huit touches par pas | calé |
+| Recul | 400 infligé, **30 subi**. Même asymétrie que le Golem (500/60) : le moteur n'a aucune notion de masse, le poids se dit par ce rapport | calé |
+| **Pouvoir** | *Réchauffement solaire* — horloge de 5 s, rayon **240 px** (plus du tiers de l'arène), 2 de dégât puis **brûlure de 2/s pendant 4 s**, rafraîchie à chaque cycle. La brûlure est le vrai contenu : le pouvoir ne tue pas, il **impose de bouger** | calé |
+| **Ultime** | *Rayon solaire* — horloge de 13 s, **1,1 s de charge annoncée à l'écran** puis 1 s de faisceau (900 px de long, 68 de large), 6 dégâts toutes les 0,15 s | calé |
+| Visée de l'ultime | Elle **suit** la cible pendant la charge (0,8 rad/s) puis **se fige au tir**. Figer dès le déclenchement rendait l'esquive triviale, suivre jusqu'au bout la rendait impossible | calé |
+| Bridage | Il tombe à **25 % de sa vitesse** pendant toute la manœuvre (`f.boost` / `f.boostFactor`, les compteurs génériques du `Fighter`). Pas zéro : un combattant totalement figé se lit comme un bug | calé |
+| HUD | l'horloge du Réchauffement et l'état du Rayon (`charging` / `FIRING` / le pourcentage). Aucune stat évolutive : ses dégâts sont fixes | — |
+
+### D'où viennent ses dégâts
+
+Ablation par `opts.kind` dans `Match.damage`, 70 duels (chaque adversaire,
+5 seeds × les deux camps) :
+
+| Source | PV | Part |
+| --- | --- | --- |
+| Couronne de 8 rayons | 5 474 | **67,3 %** |
+| Rayon solaire | 1 540 | 18,9 % |
+| Réchauffement — brûlure | 807 | 9,9 % |
+| Réchauffement — coup | 312 | 3,8 % |
+
+**La mécanique de base porte le personnage**, les deux pouvoirs sont des
+appoints. C'est l'intention, mais ça ne se savait pas avant la mesure — le
+Séisme du Golem avait démenti la même intuition en sens inverse, et le piège
+« mesurer d'où vient le dégât avant de conclure » est justement là pour ça.
+
+### Le banc
+
+6 seeds × **les deux camps** (le camp A pèse lourd, piège documenté du Golem —
+une mesure sur un seul camp ne dirait rien) :
+
+| Adversaire | Victoires | Durée moyenne |
+| --- | --- | --- |
+| Pistolero | 12/12 | 25,4 s |
+| Ronin | 12/12 | 24,2 s |
+| Hoplite | 12/12 | 25,7 s |
+| Shinobi | 12/12 | 27,6 s |
+| Druide | 12/12 | 23,7 s |
+| Golem | 12/12 | 42,1 s |
+| Mannequin | 12/12 | 27,3 s |
+| **Total** | **84/84** | |
+
+Les durées restent dans la bande du roster (24 à 42 s contre 26 à 58 s entre
+les autres) : il gagne toujours, mais les duels **se jouent** — un boss qui
+expédierait ses adversaires en huit secondes n'aurait rien à regarder.
+
+### Ce que son ajout a demandé au moteur
+
+**Une clé, et la preuve qu'elle ne change rien.** `weapon.spokes` est lu par
+`Fighter.bladeSegment(k)`, `weaponHit` et `drawWeapon` — donc une retouche au
+cœur du calcul de collision, celui-là même dont `bladeSegment` documente qu'un
+regroupement différent des mêmes produits a déjà déplacé deux affrontements.
+
+Le geste s'est fait **en deux temps**, et c'est la leçon : poser la clé, la
+laisser absente de toutes les fiches, exiger la **matrice identique au caractère
+près** — puis seulement ajouter le combattant qui s'en sert. En un seul temps,
+un vainqueur déplacé se serait imputé au Soleil et aurait été « corrigé » sur sa
+fiche, là où le défaut n'était pas.
+
+Ce qui rend le chemin à une branche exactement l'ancien : `bladeSegment(0)`
+n'écrit **pas** `weaponAngle + 0` mais `weaponAngle` lui-même.
+
+Le diff de `tools/matrix-reference.txt` après l'ajout ne contient **que des
+ajouts** (invariant 3), et les six autres combattants gardent leur compte
+**absolu** de victoires au chiffre près — 13, 13, 12, 11, 10, 4.
+
+### Deux choix de rendu qui ne se devinent pas
+
+- **Aucun ruban de pointe d'arme.** `flair.js` trace le ruban sur
+  `f.bladeSegment()`, qui rend **une** branche. Sur une couronne de huit, il
+  désignerait un rayon au hasard et ferait croire que les sept autres ne
+  comptent pas. La couronne se lit d'elle-même.
+- **L'axe d'annonce du Rayon est doublé** : un liseré orange large sous un cœur
+  crème fin. En crème simple, il était à peine visible sur la capture de
+  contrôle — c'est la leçon du corps clair sur fond clair, appliquée à une
+  ligne. Et c'est la seule information dont l'adversaire dispose pour esquiver
+  ce qui est, de loin, l'attaque la plus lourde du dépôt (42 PV potentiels,
+  contre 5 pour le Séisme du Golem).
+
 ## La norme passe à 200 PV, le Golem à 400 (historique)
 
 **Demandé, à l'époque — voir la section suivante pour l'état courant.**
@@ -3111,6 +3225,7 @@ synthèse, **aucun fichier audio** — et le mécanisme est décrit dans la sect
 | Druide | 1,05 | `orb` | `bough` | — (passif) | — | `bloom` | `thorns` |
 | Golem | **0,72** | `pebble` | `crunch` | `tremor` | `grind` 0,5 → 4 rad/s | `crunch` | `quake` |
 | Mannequin | 0,85 | — | — | — | — | — | — |
+| Soleil | 0,78 | — | `scorch` | `blaze` | `furnace` 0,5 → 5 | — | `flare` |
 
 **Plus aucun créneau n'est partagé** entre deux combattants, sauf `bounce`
 (`thud` — le mur n'appartient à personne) et `impact` (le projectile générique,
@@ -3151,6 +3266,18 @@ Six choix qui ne se devinent pas :
   décollage, `zap` à la chute), par un créneau `strike` que son seul module lit.
   La Foudre tombante a deux instants séparés par une seconde et demie ; un seul
   son n'aurait pas pu dire les deux.
+- **Le Soleil est le seul dont une recette soit accordée à une valeur de
+  fiche.** `flare` est jouée au déclenchement de l'ultime, mais le faisceau ne
+  part qu'après `ultimate.windup` (1,1 s) : ses trois premières couches tiennent
+  exactement cette annonce, et la quatrième, **en retard de 1,05 s**, *est* le
+  départ du rayon. Changer `windup` sans changer ce `delay` désaccorderait le
+  son de l'image, sans que rien ne crie — c'est le seul endroit du dépôt où les
+  deux sont liés à la milliseconde.
+- **`blaze` est `fire` à l'envers, et c'est tout ce qui les sépare.** La braise
+  du Ronin referme son passe-bas (1500 → 380 Hz), le Réchauffement du Soleil
+  l'ouvre (400 → 2600). Deux souffles de feu, deux **gestes** opposés : une
+  braise se consume, un astre monte en température. Le banc se lit en gestes,
+  pas seulement en matières.
 - **Deux ultimes sont la grande sœur d'un pouvoir du même combattant** :
   `cyclone` de `gust` chez le Shinobi, `thorns` de `bloom` chez le Druide, et
   `quake` de `tremor` chez le Golem. Un ultime se lit mieux quand il est la

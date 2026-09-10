@@ -1,10 +1,11 @@
 # CLAUDE.md — mémoire du projet
 
-Duels **à deux, en 2 contre 2 ou en bataille royale**, avec sept combattants :
+Duels **à deux, en 2 contre 2 ou en bataille royale**, avec huit combattants :
 cinq repris de la chaîne « ballthingsim » — le Pistolero, le Ronin, l’Hoplite,
-le Shinobi et le Druide — et **deux inventés**, le Golem et le Mannequin (une
-cible d'entraînement qui ne frappe pas), sur un moteur écrit d'après les vidéos
-de référence.
+le Shinobi et le Druide — et **trois inventés**, le Golem, le Mannequin (une
+cible d'entraînement qui ne frappe pas) et le Soleil (un **boss**, fait pour
+gagner contre tous les autres), sur un moteur écrit d'après les vidéos de
+référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -68,11 +69,15 @@ de navigation, pas un besoin.
 
 ## Roster
 
-**Sept combattants, tous jouables.** Cinq sont relevés sur trois vidéos
+**Huit combattants, tous jouables.** Cinq sont relevés sur trois vidéos
 « ballthingsim » en 576 × 1024, 30 fps (*Outlaw vs Bladesman*, *Dragoon vs
-Outlaw*, *Dragoon vs Magia*) ; **les deux derniers — le Golem et le Mannequin —
-sont inventés**, aucune de leurs valeurs ne peut donc porter `mesuré`, tout y
-est `calé` ou `déduit`.
+Outlaw*, *Dragoon vs Magia*) ; **les trois derniers — le Golem, le Mannequin et
+le Soleil — sont inventés**, aucune de leurs valeurs ne peut donc porter
+`mesuré`, tout y est `calé` ou `déduit`.
+
+**Deux combattants sont hors barème, aux deux bouts.** Le Mannequin ne peut pas
+gagner, le Soleil ne peut pas perdre : ce sont des **spécifications**, pas des
+défauts d'équilibrage à corriger. Les six autres se jugent entre eux.
 
 | Personnage | Signature |
 | --- | --- |
@@ -82,6 +87,7 @@ est `calé` ou `déduit`.
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** quand tout le monde en a 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
+| `sun` **SOLEIL** / SUN | **inventé, et le seul boss.** Demandé pour **gagner contre tous les autres en 1 contre 1**, et il le fait (21/21 sur la matrice, 84/84 sur un banc à 6 seeds × les deux camps). **Deux fois plus grand que la norme** (rayon 82 contre 41), **500 PV**, et **le plus lent du roster** (300 px/s) — c'est là toute sa contrepartie. Mécanique de base : **huit rayons** en couronne (`weapon.spokes: 8`, aucun angle mort), qui portent **67 %** de ses dégâts. **Rayon solaire** (ultime) : 1,1 s de charge annoncée à l'écran puis 1 s de faisceau, 19 %. **Réchauffement solaire** (pouvoir) : brûle tout ennemi dans 240 px, 14 % |
 | `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, et les PV de la norme. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 15 PV
@@ -116,9 +122,18 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 `pixelart/outlaw.js`). Un commentaire qui cite un élément disparu parle d'une
 **provenance**, pas d'un fichier à ouvrir.
 
-**Relevé de matrice courant** (`tools/matrix-reference.txt`), 18 duels hors
-miroir chacun : **Pistolero 13**, Druide 13, Shinobi 12, Hoplite 11, Golem 10,
-**Ronin 4**, Mannequin 0 (il ne peut pas gagner, c'est sa définition).
+**Relevé de matrice courant** (`tools/matrix-reference.txt`), 21 duels hors
+miroir chacun : **Soleil 21** (c'est sa définition), **Pistolero 13**,
+Druide 13, Shinobi 12, Hoplite 11, Golem 10, **Ronin 4**, Mannequin 0 (c'est
+aussi la sienne).
+
+**L'arrivée du Soleil n'a rien déplacé, et la preuve est dans le diff** : il
+est en queue de `ROSTER`, donc le diff de la matrice ne contient **que des
+ajouts** (invariant 3), et les six autres gardent leur compte **absolu** de
+victoires au chiffre près — 13, 13, 12, 11, 10, 4, exactement comme avant. Ils
+sont simplement jugés sur 21 duels au lieu de 18, les trois nouveaux étant
+perdus par tous.
+
 Quatre changements successifs y sont empilés : **Neon Shadow a été supprimé**
 (invariant 3 : il était en queue de `ROSTER`, sa suppression ne déplace donc
 aucune autre ligne), puis **les dégâts de tous les combattants ont été divisés
@@ -161,13 +176,14 @@ un duel deux fois plus long lui laisse le temps de doubler sa population deux
 fois plus souvent. Le **Ronin s'effondre de 10 à 4** — ses dégâts plafonnent
 (`Damage = Spin`, avec surchauffe), donc un duel plus long ne lui donne rien de
 plus, seulement plus de temps pour se faire rattraper.
-**Les six lignes `… vs dummy` sont un banc de DPS**, pas un relevé
-d'équilibrage — et il **ne suit pas simplement la division**, cette fois non
-plus : Pistolero 3,3, Ronin 3,1, Shinobi 3,1, Hoplite 3,0, Druide 2,8,
-Golem 2,6 PV/s. La ligne `dummy vs dummy` finit en **`timeout`** : deux
-combattants sans dégâts ne se départagent jamais, le moteur n'ayant aucune
-limite de temps.
-Écart **4 à 16** entre les six qui frappent, connu et non corrigé. **La matrice ne joue chaque paire qu'une fois, et
+**Les lignes `… vs dummy` sont un banc de DPS**, pas un relevé d'équilibrage —
+et il **ne suit pas simplement la division** : Pistolero 3,3, Ronin 3,1,
+Shinobi 3,1, Hoplite 3,0, Druide 2,8, Golem 2,6 PV/s, et le **Soleil 4,6**, de
+loin le premier — ce que sa définition demande. La ligne `dummy vs dummy` finit
+en **`timeout`** : deux combattants sans dégâts ne se départagent jamais, le
+moteur n'ayant aucune limite de temps.
+Écart **4 à 13** entre les six qui se jugent entre eux, connu et non corrigé
+(le Soleil et le Mannequin sont hors barème, voir plus haut). **La matrice ne joue chaque paire qu'une fois, et
 toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
 un.** Le Golem le montre en grand — 5/15 dans un relevé antérieur, mais
 **54/100** sur un banc à 10 seeds × les deux camps, parce qu'il est en queue de
@@ -188,11 +204,16 @@ peut blesser qui.
 | --- | --- | --- |
 | Duel | 2 identifiants | omis → `[0, 1]` |
 | 2 contre 2 | 4 identifiants | `[0, 0, 1, 1]` |
-| Bataille royale | 3 à 7 identifiants | omis → chacun le sien |
+| Bataille royale | 3 à *n* identifiants | omis → chacun le sien |
 
 `ui/select.js` porte la table des formats et fabrique les camps ; `main.js` les
 lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format ne demande
 **qu'une entrée dans cette table** — pas une ligne de moteur.
+
+**L'écran de sélection plafonne la bataille royale à 5** (`Math.min(5,
+ROSTER.length)`), pas au roster entier : c'est un choix de lisibilité — le HUD
+n'a que deux bandeaux — et non une limite du moteur, qui en accepte *n*.
+Agrandir le roster ne déplace donc pas ce plafond.
 
 - **Les points de vie ne se règlent pas** — demandé. Il n'y a plus d'option de
   partie : le champ, ses bornes et le paramètre du moteur ont été **retirés**
@@ -407,11 +428,15 @@ timbre qui se **transpose par combattant**.
 
 12. **Le moteur ne connaît aucun combattant.** `fighter.js`, `physics.js` et
     `projectiles.js` lisent la fiche, jamais un `if (id === …)`. La hitbox en
-    disque du Shinobi et le guidage des orbes du Druide l'ont éprouvé : **la
-    forme se dit entièrement dans la fiche**, un autre combattant en hériterait
-    sans une ligne de moteur, et la branche n'existe pas pour ceux qui ne la
-    déclarent pas. Corollaire : un module qui code en dur une clé de sprite se
-    ferme à sa propre réutilisation (`plant.js` et ses corolles roses).
+    disque du Shinobi, le guidage des orbes du Druide et **la couronne de huit
+    rayons du Soleil** (`weapon.spokes`, lu par `bladeSegment(k)`, `weaponHit`
+    et `drawWeapon`) l'ont éprouvé : **la forme se dit entièrement dans la
+    fiche**, un autre combattant en hériterait sans une ligne de moteur, et la
+    branche n'existe pas pour ceux qui ne la déclarent pas — à `spokes` absent,
+    le chemin est **celui d'avant, expression par expression**, et la matrice
+    l'a vérifié au caractère près avant que le Soleil n'existe. Corollaire : un
+    module qui code en dur une clé de sprite se ferme à sa propre réutilisation
+    (`plant.js` et ses corolles roses).
 
 13. **Le moteur accepte *n* combattants répartis en camps**, et leur nombre peut
     changer **en cours de partie** — et le duel passe toujours par ses propres
@@ -543,6 +568,11 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Regrouper autrement les mêmes produits change le résultat** (flottant non
   associatif) : le garde-fou n'est pas la relecture mais la matrice.
 - Rééquilibrer un combattant : ne toucher que ses `calé` ou `déduit`.
+- **Une arme à plusieurs branches touche dans toutes les directions** : son
+  garde-fou est le verrou de mêlée, testé **une fois pour toutes** avant les
+  branches — sinon huit rayons font huit touches par pas.
+- **Un boss n'est pas un déséquilibre à corriger** : il est hors barème par
+  définition, et sa ligne de matrice n'entre pas dans la bande des autres.
 
 **Déterminisme et ordre d'exécution**
 
@@ -593,7 +623,11 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   à l'écran (`tools/shot.mjs`) après tout changement de `look.body`.
 - **Un corps blanc sur l'arène blanche demande quatre compensations** — contour,
   chiffre de PV, aura permanente, et un `bodyHit` qui **rougit** au lieu de
-  blanchir (Mannequin).
+  blanchir (Mannequin). Un corps **jaune** en demande trois des quatre (Soleil).
+- **Un trait clair seul n'existe pas sur l'arène blanche** : doubler d'un liseré
+  large et saturé sous le cœur clair (l'axe d'annonce du Rayon solaire).
+- **Un ruban de pointe d'arme ne suit qu'une branche** (`flair.js` lit
+  `bladeSegment()` sans argument) : une arme à couronne n'en déclare pas.
 - **Une passe de couleur incomplète n'est pas une passe de couleur** : faire le
   tour du bloc `look` **en entier**, `flair` compris.
 - Une ruée a **un seul point de sortie** (`endRush()`, `endDash()`) : vitesse,
@@ -673,6 +707,11 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Prouver une réorganisation demande son propre garde-fou** : la matrice
   serait restée verte avec des fiches corrompues sur des valeurs qu'aucun duel
   ne lit. C'est `fiche-snapshot` qui les couvre.
+- **Généraliser une expression du moteur se prouve *avant* d'en avoir besoin** :
+  poser la clé, la laisser absente partout, exiger la matrice identique au
+  caractère près — **puis** seulement ajouter le combattant qui s'en sert. Fait
+  en deux temps pour `weapon.spokes` ; en un seul, un vainqueur déplacé se
+  serait imputé au nouveau venu.
 
 ---
 

@@ -97,6 +97,16 @@ Deux clés facultatives, qui ne servent qu'à qui y déroge :
 - **`look.radius`** — rayon du corps, 41 par défaut, 50 chez le Golem. Un corps
   plus large est **plus facile à toucher** : c'est un réglage d'équilibrage
   autant qu'un choix de dessin.
+- **`weapon.spokes`** — nombre de **branches** de l'arme, 1 par défaut, 8 chez
+  le Soleil. C'est la même arme répétée tous les `TAU / spokes` radians :
+  `bladeSegment(k)` rend la k-ième, `weaponHit` les essaie toutes et
+  `drawWeapon` les peint toutes. Deux choses à savoir avant d'en déclarer :
+  **une couronne n'a aucun angle mort**, donc `weapon.melee.cooldown` devient le
+  seul garde-fou du personnage (`weaponHit` teste le verrou **une fois pour
+  toutes** avant les branches, sinon huit branches feraient huit touches par
+  pas) ; et **`flair.js` ne sait suivre qu'une branche** — il lit
+  `bladeSegment()` sans argument — donc un `look.flair.ribbon` ou une aura
+  d'arme désigneraient un rayon au hasard. Ne pas en déclarer.
 - **`sound.swing`** — une **voix tenue** pour une arme qui tourne, à ne déclarer
   que si `weapon.spin` n'est pas nul : `{ loop, from, to, gain }`, où `loop`
   nomme une recette de `LOOPS` (`data/sound.js`) et où `from`/`to` sont les

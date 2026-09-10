@@ -56,12 +56,28 @@ export function weaponHit(attacker, target) {
   if (attacker.meleeCd > 0 || !attacker.onStage || !target.onStage) return null;
   if (target.invulnerable > 0) return null;
 
-  const b = attacker.bladeSegment();
-  const { d, x, y } = segmentPointDistance(b.ax, b.ay, b.bx, b.by, target.x, target.y);
-  if (d > target.radius + b.r) return null;
+  /**
+   * **Une arme peut avoir plusieurs branches** (les huit rayons du Soleil) :
+   * on les essaie dans l'ordre et la **première** qui porte gagne. Le verrou
+   * `meleeCd` étant testé une fois pour toutes ci-dessus, huit branches ne font
+   * pas huit touches par pas — c'est le garde-fou qui empêche une arme qui
+   * couvre les 360° de blesser en permanence, exactement comme la dispersion
+   * en est un pour une arme braquée.
+   *
+   * À une seule branche — les sept autres combattants — la boucle fait un tour
+   * avec `spoke = 0`, donc le chemin exact d'avant : `bladeSegment(0)` ne
+   * touche pas à l'angle (voir sa note).
+   */
+  const n = attacker.spokes;
+  for (let k = 0; k < n; k++) {
+    const b = attacker.bladeSegment(k);
+    const { d, x, y } = segmentPointDistance(b.ax, b.ay, b.bx, b.by, target.x, target.y);
+    if (d > target.radius + b.r) continue;
 
-  const dx = target.x - x;
-  const dy = target.y - y;
-  const len = Math.hypot(dx, dy) || 1;
-  return { x, y, nx: dx / len, ny: dy / len };
+    const dx = target.x - x;
+    const dy = target.y - y;
+    const len = Math.hypot(dx, dy) || 1;
+    return { x, y, nx: dx / len, ny: dy / len };
+  }
+  return null;
 }

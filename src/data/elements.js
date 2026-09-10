@@ -44,6 +44,7 @@ import { LANCER } from './fighters/lancer.js';
 import { MAGE } from './fighters/mage.js';
 import { GOLEM } from './fighters/golem.js';
 import { DUMMY } from './fighters/dummy.js';
+import { SUN } from './fighters/sun.js';
 
 export const ELEMENTS = deepFreeze({
   wind: WIND,
@@ -53,6 +54,7 @@ export const ELEMENTS = deepFreeze({
   mage: MAGE,
   golem: GOLEM,
   dummy: DUMMY,
+  sun: SUN,
 });
 
 /**
@@ -83,6 +85,15 @@ export const ROSTER = deepFreeze([
   // la seule du fichier à finir en `timeout` : deux combattants sans dégâts ne
   // se départagent jamais.
   'dummy',
+  /**
+   * **Le Soleil ferme la marche, et il la fermera toujours.** C'est un *boss* :
+   * il est fait pour gagner contre les sept autres, donc ses lignes de matrice
+   * sont structurellement à sens unique — comme celles du Mannequin, mais dans
+   * l'autre sens. L'ajouter en queue est la règle générale (le diff de la
+   * matrice ne doit contenir que des ajouts) ; ici c'est en plus la seule
+   * position qui garde les sept autres exactement où ils étaient.
+   */
+  'sun',
 ]);
 
 /** @param {string} id */

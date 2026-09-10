@@ -24,12 +24,12 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Éditer les données | 391 |
 | &nbsp;&nbsp;· Interface et rendu | 424 |
 | &nbsp;&nbsp;· Le son | 510 |
-| &nbsp;&nbsp;· Refactoriser | 704 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 745 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 747 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 790 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 833 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 852 |
+| &nbsp;&nbsp;· Refactoriser | 765 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 806 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 808 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 851 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 894 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 913 |
 
 ---
 
@@ -700,6 +700,67 @@ dont la Tornade jouait `whoosh`, le son de son propre lancer de shuriken. Avant
 d'attribuer une recette à un créneau, **regarder ce que le combattant joue
 déjà** : partager avec un autre personnage est un choix, partager avec son
 propre bruit de fond en est rarement un.
+
+**Ajouter un boss** — ce que l'arrivée du Soleil a appris, et qui ne valait pour
+aucun des sept autres :
+
+- **Un boss n'est pas un déséquilibre, c'est une spécification.** Les sept
+  premiers combattants sont taillés pour s'affronter entre eux, et chaque
+  rééquilibrage cherche à resserrer leur bande (4 à 13 victoires sur 21
+  aujourd'hui). Le Soleil est demandé pour **gagner contre tous**, ce qui est
+  l'intention inverse : sa ligne de matrice à 21/21 n'est pas à corriger. Le
+  dépôt a maintenant **deux combattants hors barème, aux deux bouts** — le
+  Mannequin ne peut pas gagner, le Soleil ne peut pas perdre — et il faut les
+  écarter tous les deux avant de lire un écart entre les autres.
+- **Généraliser une expression du moteur se prouve *avant* d'en avoir besoin.**
+  Les huit rayons ont demandé une clé nouvelle (`weapon.spokes`) lue par
+  `bladeSegment`, `weaponHit` et `drawWeapon` — donc une retouche au cœur du
+  calcul de collision, celui-là même dont `bladeSegment` documente qu'un
+  regroupement différent des mêmes produits a déjà déplacé deux affrontements.
+  Le geste juste tient en deux temps : **poser la clé, la laisser absente de
+  toutes les fiches, et exiger la matrice identique au caractère près** ; puis
+  seulement ajouter le combattant qui s'en sert. En un seul temps, un vainqueur
+  déplacé se serait imputé au nouveau venu et aurait été « corrigé » sur sa
+  fiche, où le défaut n'était pas.
+  Ce qui rend le chemin à une branche exactement l'ancien : `bladeSegment(0)`
+  n'écrit **pas** `weaponAngle + 0` mais `weaponAngle` lui-même. Une addition
+  flottante neutre en apparence suffit à changer un dernier bit.
+- **Une arme à plusieurs branches touche dans toutes les directions**, et c'est
+  l'« arme braquée qui touche en permanence » du dépôt, en pire : contourner un
+  combattant est la parade normale contre une arme qui tourne, une couronne la
+  supprime. Son garde-fou n'est pas la dispersion (elle ne vise pas) mais le
+  **verrou de mêlée**, et il ne tient que parce que `weaponHit` le teste **une
+  fois pour toutes, avant** d'essayer les branches. Le déplacer à l'intérieur de
+  la boucle donnerait huit touches par pas sans qu'aucune valeur de fiche n'ait
+  bougé.
+- **`flair.js` ne sait suivre qu'une branche.** Le ruban de pointe d'arme et
+  l'aura d'arme lisent `f.bladeSegment()` sans argument, donc la première. Sur
+  une couronne, ils désigneraient un rayon au hasard et feraient croire que les
+  sept autres ne comptent pas. Le Soleil n'en déclare donc aucun — ce n'est pas
+  un manque, c'est le seul choix juste, et la couronne se lit très bien seule.
+- **Un corps jaune demande trois des quatre compensations du corps blanc.**
+  L'arène est blanche ; le personnage *est* le soleil, donc le rendre orange
+  sombre pour esquiver le problème l'aurait dénaturé. Contour à 6 px, chiffre de
+  PV en encre brûlée, aura permanente — seule la quatrième (le `bodyHit` qui
+  rougit au lieu de blanchir) est inutile ici, le jaune saturé passant très
+  visiblement au blanc.
+- **Un trait clair seul n'existe pas sur fond blanc.** L'axe d'annonce du Rayon
+  solaire est la seule information dont l'adversaire dispose pour esquiver : en
+  crème simple, il était à peine visible sur la capture de contrôle. Il est
+  doublé — un liseré orange large sous un cœur crème fin. C'est la leçon du
+  corps clair, appliquée à une ligne.
+- **Mesurer d'où vient le dégât, même quand on croit savoir.** Ablation par
+  `opts.kind` sur 70 duels : couronne **67,3 %**, Rayon solaire 18,9 %,
+  Réchauffement 13,7 % (dont 9,9 % de brûlure et 3,8 % de coup). La mécanique de
+  base porte donc bien le personnage et les deux pouvoirs sont des appoints —
+  ce qui est l'intention, mais qui ne se savait pas avant la mesure : le
+  Séisme du Golem avait déjà démenti la même intuition en sens inverse.
+- **Un pouvoir qui s'annonce doit s'annoncer *assez tôt et assez fort*.** Le
+  Rayon solaire est le seul pouvoir du dépôt qui prévienne avant de frapper
+  (1,1 s), et c'est ce qui autorise ses 42 PV potentiels — plus de huit fois le
+  pic de dégâts du reste du roster. La visée **suit** la cible pendant la charge
+  puis **se fige au tir** : figer dès le déclenchement rendait l'esquive
+  triviale, suivre jusqu'au bout la rendait impossible.
 
 ### Refactoriser
 

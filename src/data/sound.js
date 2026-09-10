@@ -286,6 +286,21 @@ export const SOUNDS = deepFreeze({
     { wave: 'square', f0: 220, f1: 90, dur: 0.1, gain: 0.3 },
     { wave: 'noise', filter: 'highpass', cut0: 2400, cut1: 1200, q: 1, dur: 0.05, gain: 0.2 },
   ],
+  /**
+   * **Le rayon qui marque au lieu de trancher.**
+   *
+   * Les cinq recettes de touche du banc sont des **chocs** : quelque chose de
+   * dur rencontre quelque chose de dur, et le corps de la recette *descend*
+   * parce qu'un choc perd son énergie. Un rayon de soleil ne cogne pas, il
+   * **brûle** — d'où le grésillement passe-bande qui tient six fois plus
+   * longtemps qu'un `pierce`, et l'éclair passe-haut qui l'ouvre : ce qu'on
+   * entend d'une brûlure, c'est l'instant où ça prend, pas l'impact.
+   */
+  scorch: [
+    { wave: 'noise', filter: 'highpass', cut0: 5000, cut1: 2000, q: 0.8, dur: 0.06, gain: 0.25, attack: 0.001 },
+    { wave: 'noise', filter: 'bandpass', cut0: 3000, cut1: 900, q: 1.2, dur: 0.16, gain: 0.55 },
+    { wave: 'sine', f0: 420, f1: 150, dur: 0.1, gain: 0.3 },
+  ],
   /** Tic d'un dégât sur la durée (brûlure, givre) : presque un souffle. */
   ember: [
     { wave: 'noise', filter: 'bandpass', cut0: 1400, cut1: 700, q: 1.6, dur: 0.16, gain: 0.16, attack: 0.04 },
@@ -344,6 +359,39 @@ export const SOUNDS = deepFreeze({
   /** Braise : un souffle grave et lent, l'inverse exact du givre. */
   fire: [
     { wave: 'noise', filter: 'lowpass', cut0: 1500, cut1: 380, q: 1, dur: 0.55, gain: 0.3, attack: 0.09 },
+  ],
+  /**
+   * **La chaleur qui enfle** — Réchauffement solaire.
+   *
+   * Même famille que `fire`, la braise du Ronin, et **l'inverse dans le
+   * sens** : `fire` referme son passe-bas (1500 → 380 Hz), celui-ci l'ouvre
+   * (400 → 2600). Une braise se consume, un astre monte en température. C'est
+   * ce seul renversement qui les sépare à l'oreille, alors que les deux sont du
+   * feu — et c'est la démonstration que le banc doit se lire en **gestes**, pas
+   * en matières : deux souffles de feu ne sont pas le même son si l'un s'éteint
+   * et l'autre grandit.
+   */
+  blaze: [
+    { wave: 'noise', filter: 'lowpass', cut0: 400, cut1: 2600, q: 1, dur: 0.7, gain: 0.34, attack: 0.14 },
+    { wave: 'sine', f0: 90, f1: 220, dur: 0.65, gain: 0.22, attack: 0.12 },
+    { wave: 'noise', filter: 'bandpass', cut0: 1200, cut1: 3000, q: 2, dur: 0.5, gain: 0.14, attack: 0.18, delay: 0.1 },
+  ],
+  /**
+   * **L'astre qui aspire, puis lâche** — Rayon solaire.
+   *
+   * La seule recette du banc **calée sur la durée d'un pouvoir** : elle est
+   * jouée au déclenchement, et le tir ne part qu'après `ultimate.windup`
+   * (1,1 s). Les trois premières couches tiennent exactement cette
+   * annonce — scie qui monte, air aspiré, sub immobile — et la quatrième, en
+   * retard de 1,05 s, **est** le départ du faisceau. Si `windup` change dans la
+   * fiche, ce `delay` doit changer avec : c'est le seul endroit du dépôt où une
+   * recette et une valeur de fiche sont accordées à la milliseconde.
+   */
+  flare: [
+    { wave: 'sawtooth', f0: 120, f1: 900, dur: 1.1, gain: 0.24, attack: 0.1 },
+    { wave: 'noise', filter: 'bandpass', cut0: 300, cut1: 5200, q: 1.6, dur: 1.15, gain: 0.26, attack: 0.12 },
+    { wave: 'sine', f0: 60, f1: 58, dur: 1.2, gain: 0.2, attack: 0.2 },
+    { wave: 'triangle', f0: 1320, f1: 2640, dur: 0.5, gain: 0.12, delay: 1.05, attack: 0.03 },
   ],
   /** Foudre : une décharge qui s'écrase en un cinquième de seconde. */
   zap: [
@@ -568,5 +616,20 @@ export const LOOPS = deepFreeze({
   grind: [
     { wave: 'noise', filter: 'lowpass', cut0: 180, cut1: 900, q: 1.2, gain0: 0, gain1: 0.26 },
     { wave: 'sawtooth', f0: 40, f1: 95, gain0: 0, gain1: 0.1 },
+  ],
+  /**
+   * **Le ronflement d'une fournaise** — la couronne de huit rayons du Soleil.
+   *
+   * Ni `swish` (une lame fend l'air, bande étroite qui monte) ni `grind` (une
+   * masse racle, passe-bas et scie) : ce qui tourne ici, ce n'est pas un objet,
+   * c'est de la **combustion**. D'où un passe-bas très grave qui porte le
+   * ronflement, et une bande médium étroite (`q` 2,4) qui donne le battement —
+   * huit rayons qui passent, c'est un souffle **pulsé**, et c'est cette
+   * résonance-là qui le suggère sans qu'on ait à moduler quoi que ce soit à la
+   * fréquence de passage.
+   */
+  furnace: [
+    { wave: 'noise', filter: 'lowpass', cut0: 120, cut1: 700, q: 1, gain0: 0, gain1: 0.28 },
+    { wave: 'noise', filter: 'bandpass', cut0: 400, cut1: 1600, q: 2.4, gain0: 0, gain1: 0.14 },
   ],
 });
