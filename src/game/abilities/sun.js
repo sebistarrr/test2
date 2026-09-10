@@ -37,6 +37,20 @@
 
 import { TAU, rotateToward, segmentPointDistance } from '../../core/math.js';
 
+/**
+ * `#rrggbb` de la fiche + opacité → `rgba(...)`.
+ *
+ * **Ce module ne contient plus une seule couleur littérale**, et c'est le
+ * point : il en portait onze, ce qui a suffi à faire dériver le Rayon solaire
+ * du dessin de l'astre qui le tire. Tout vient désormais de `look.palette`, les
+ * cinq teintes relevées sur la maquette — repalettiser le personnage se fait
+ * dans sa fiche, et le faisceau suit sans qu'on y pense.
+ */
+function teinte(hex, alpha = 1) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+}
+
 export const sunAbilities = {
   id: 'sun',
 
@@ -101,7 +115,7 @@ export const sunAbilities = {
       // un mort ne brûle pas : `applyDot` sur un cadavre laisserait un tic
       // orphelin que `tickDots` écarterait ensuite en silence
       if (!g.alive) continue;
-      g.applyDot({ ...a.burn, source: f, tint: { color: '#f97316', alpha: 0.6 } }, now);
+      g.applyDot({ ...a.burn, source: f, tint: { color: f.el.look.palette.body, alpha: 0.6 } }, now);
     }
   },
 
@@ -273,8 +287,9 @@ export const sunAbilities = {
     ctx.save();
     ctx.globalAlpha = 0.1 + 0.28 * t * t;
     const g = ctx.createRadialGradient(f.x, f.y, f.radius, f.x, f.y, a.radius);
-    g.addColorStop(0, 'rgba(251,191,36,0.55)');
-    g.addColorStop(1, 'rgba(249,115,22,0)');
+    const p = f.el.look.palette;
+    g.addColorStop(0, teinte(p.light, 0.55));
+    g.addColorStop(1, teinte(p.body, 0));
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(f.x, f.y, a.radius, 0, TAU);
@@ -318,19 +333,20 @@ export const sunAbilities = {
      * piège du corps clair sur fond clair, appliqué à une ligne. L'orange porte
      * la lisibilité, le crème dit que c'est de la lumière.
      */
+    const p = f.el.look.palette;
     ctx.globalAlpha = 0.2 + 0.55 * t * t;
     const x0 = f.x + c * f.radius;
     const y0 = f.y + s * f.radius;
     const x1 = f.x + c * b.length;
     const y1 = f.y + s * b.length;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = 'rgba(249,115,22,0.85)';
+    ctx.strokeStyle = teinte(p.shadow, 0.85);
     ctx.lineWidth = 5 + 12 * t;
     ctx.beginPath();
     ctx.moveTo(x0, y0);
     ctx.lineTo(x1, y1);
     ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,247,204,0.95)';
+    ctx.strokeStyle = teinte(p.core, 0.95);
     ctx.lineWidth = 2 + 4 * t;
     ctx.beginPath();
     ctx.moveTo(x0, y0);
@@ -351,8 +367,8 @@ export const sunAbilities = {
     // diamètre final avant qu'il ne parte
     const r = 8 + (b.halfWidth - 8) * t;
 
-    this.drawChargeRings(ctx, fx, fy, r, t, now);
-    this.drawChargeShards(ctx, fx, fy, r, t, now);
+    this.drawChargeRings(ctx, fx, fy, r, t, now, p);
+    this.drawChargeShards(ctx, fx, fy, r, t, now, p);
 
     /**
      * **Le battement**, et il accélère : `8 + 26 t` rad/s, soit un peu plus de
@@ -363,10 +379,13 @@ export const sunAbilities = {
     const pulse = 1 + 0.07 * Math.sin(now * (8 + 26 * t));
     ctx.globalAlpha = 1;
     const g = ctx.createRadialGradient(fx, fy, 0, fx, fy, r * pulse);
-    g.addColorStop(0, 'rgba(255,255,255,0.98)');
-    g.addColorStop(0.32, 'rgba(255,247,204,0.92)');
-    g.addColorStop(0.6, 'rgba(251,191,36,0.8)');
-    g.addColorStop(1, 'rgba(249,115,22,0)');
+    /** Pas de blanc : le cœur du foyer est celui de la maquette. Un blanc pur
+     *  serait la seule couleur du personnage à ne pas venir du dessin, et c'est
+     *  exactement par ce genre d'exception que le faisceau avait dérivé. */
+    g.addColorStop(0, teinte(p.core, 0.98));
+    g.addColorStop(0.32, teinte(p.core, 0.92));
+    g.addColorStop(0.6, teinte(p.light, 0.8));
+    g.addColorStop(1, teinte(p.body, 0));
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(fx, fy, r * pulse, 0, TAU);
@@ -388,17 +407,17 @@ export const sunAbilities = {
    * constante. Une décoration qui consommerait un flux d'aléa déplacerait la
    * matrice entière (invariant 2), et ce module n'en touche aucun.
    */
-  drawChargeRings(ctx, fx, fy, r, t, now) {
+  drawChargeRings(ctx, fx, fy, r, t, now, pal) {
     const cadence = 1.1 + 1.6 * t;
+    ctx.strokeStyle = teinte(pal.core, 0.9);
     for (let i = 0; i < 3; i++) {
-      const p = (now * cadence + i / 3) % 1; // 0 → 1, l'anneau se referme
-      const rr = r * (3.4 - 2.4 * p);
+      const phase = (now * cadence + i / 3) % 1; // 0 → 1, l'anneau se referme
+      const rr = r * (3.4 - 2.4 * phase);
       // il s'affirme en arrivant puis s'éteint net sur le foyer
-      const a = Math.min(1, p * 3) * (1 - p) * (0.35 + 0.5 * t);
+      const a = Math.min(1, phase * 3) * (1 - phase) * (0.35 + 0.5 * t);
       if (a <= 0.01) continue;
       ctx.globalAlpha = a;
-      ctx.strokeStyle = 'rgba(255,247,204,0.9)';
-      ctx.lineWidth = 2 + 5 * p * t;
+      ctx.lineWidth = 2 + 5 * phase * t;
       ctx.beginPath();
       ctx.arc(fx, fy, rr, 0, TAU);
       ctx.stroke();
@@ -414,15 +433,15 @@ export const sunAbilities = {
    * Leur trajet est le même que celui des anneaux mais deux fois plus rapide,
    * décalé par index. Purement déduit du temps et de l'index, donc sans aléa.
    */
-  drawChargeShards(ctx, fx, fy, r, t, now) {
+  drawChargeShards(ctx, fx, fy, r, t, now, pal) {
     const n = 8;
-    ctx.strokeStyle = 'rgba(251,191,36,0.95)';
+    ctx.strokeStyle = teinte(pal.light, 0.95);
     ctx.lineCap = 'round';
     for (let i = 0; i < n; i++) {
-      const p = (now * (0.9 + 1.3 * t) + i / n) % 1;
-      const from = r * (4.2 - 3.2 * p);
+      const phase = (now * (0.9 + 1.3 * t) + i / n) % 1;
+      const from = r * (4.2 - 3.2 * phase);
       const to = from - r * 0.55;
-      const a = Math.min(1, p * 2.5) * (1 - p) * (0.5 + 0.5 * t);
+      const a = Math.min(1, phase * 2.5) * (1 - phase) * (0.5 + 0.5 * t);
       if (a <= 0.01 || to <= 0) continue;
       const ang = (TAU * i) / n;
       const ca = Math.cos(ang);
@@ -437,7 +456,18 @@ export const sunAbilities = {
   },
 
   /**
-   * **Le faisceau** : trois bandes concentriques, de l'orange au blanc.
+   * **Le faisceau, fait de la même matière que l'astre — demandé.**
+   *
+   * Les bandes ne sont plus écrites ici mais dans la fiche
+   * (`ultimate.beam.bands`), et leurs teintes nomment `look.palette`, les cinq
+   * couleurs relevées sur la maquette du corps. Le rayon reprend donc la
+   * **structure du dessin** — liseré d'encre brûlée, rouge profond, orange de
+   * corps, clair, incandescent — étirée le long d'un axe.
+   *
+   * Ce qui manquait avant, et qui change tout : le **liseré sombre**. Le
+   * faisceau allait d'orange à blanc, sans bord ; c'est le trait brûlé qui
+   * signe le dessin de l'astre, et sans lui le rayon se dissolvait en plus sur
+   * l'arène blanche.
    *
    * Le dégradé est transversal (perpendiculaire à l'axe) et non longitudinal :
    * un rayon qui pâlirait vers la pointe se lirait comme un rayon qui *s'arrête*
@@ -446,6 +476,7 @@ export const sunAbilities = {
    */
   drawBeam(ctx, f, ult) {
     const b = ult.beam;
+    const pal = f.el.look.palette;
     // dernier quart de seconde : le faisceau s'éteint au lieu de disparaître
     const fade = Math.min(1, f.ult.active / 0.25);
 
@@ -454,20 +485,17 @@ export const sunAbilities = {
     ctx.rotate(f.state.beamAngle);
     ctx.globalAlpha = fade;
 
-    const bandes = [
-      [b.halfWidth, 'rgba(249,115,22,0.55)'],
-      [b.halfWidth * 0.62, 'rgba(251,191,36,0.85)'],
-      [b.halfWidth * 0.26, 'rgba(255,255,255,0.95)'],
-    ];
-    for (const [demi, couleur] of bandes) {
-      ctx.fillStyle = couleur;
+    // de la plus large à la plus étroite : l'ordre de la liste de la fiche
+    for (const bande of b.bands) {
+      const demi = b.halfWidth * bande.at;
+      ctx.fillStyle = teinte(pal[bande.tint], bande.alpha);
       ctx.fillRect(0, -demi, b.length, demi * 2);
     }
 
     // le point de départ, plus intense : le rayon sort de lui, il n'apparaît pas
     const g = ctx.createRadialGradient(0, 0, 0, 0, 0, b.halfWidth * 2);
-    g.addColorStop(0, 'rgba(255,255,255,0.9)');
-    g.addColorStop(1, 'rgba(255,214,120,0)');
+    g.addColorStop(0, teinte(pal.core, 0.9));
+    g.addColorStop(1, teinte(pal.light, 0));
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(0, 0, b.halfWidth * 2, 0, TAU);

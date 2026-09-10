@@ -639,9 +639,14 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   opt-in) : sous les digits du Soleil, 53 % des pixels sont clairs et 40 %
   sombres — aucun aplat ne tient (2,28 au mieux dans son pire cas). Sur un
   corps uni, une seule encre suffit toujours.
-- **Un corps et son arme doivent être de la même matière pour se lire comme un
-  objet** : sinon huit flammes plantées sur une bille se lisent comme une bille
-  **plus** huit décorations.
+- **Un corps, son arme et ses pouvoirs doivent être de la même matière pour se
+  lire comme un objet** : sinon huit flammes plantées sur une bille se lisent
+  comme une bille **plus** huit décorations.
+- **Un module qui code ses couleurs en dur les fait dériver** du dessin qu'elles
+  sont censées prolonger — même piège que la clé de sprite en dur de `plant.js`,
+  mais le prix est la dérive et non la réutilisation. Le Soleil porte donc
+  `look.palette`, cinq teintes relevées sur sa maquette, et son module n'a plus
+  **aucun littéral de couleur**.
 - **La vignette de sélection doit lire le sprite, pas la carte texte** : elle
   compilait `PIXEL_MAPS` et ignorait donc les overrides PNG. Invisible tant que
   les replis étaient de fidèles transcriptions, criant dès qu'un repli est

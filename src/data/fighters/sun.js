@@ -109,6 +109,29 @@ export const SUN = fiche({
      * de huit flammes. On ne les confond pas à l'écran.
      */
     /**
+     * **Les cinq teintes de la maquette, et la source unique de tout ce qui est
+     * orange chez lui.**
+     *
+     * Relevées sur `sun-core.png` par bandes de luminance (3ᵉ, 20ᵉ, 50ᵉ, 80ᵉ et
+     * 97ᵉ centile des pixels opaques). Elles remplissaient déjà tout le bloc
+     * `look` ; elles sont désormais **nommées ici et lues par le module**, qui
+     * codait ses propres orange en dur — c'est ainsi que le Rayon solaire avait
+     * fini par ne plus avoir la même matière que l'astre qui le tire.
+     *
+     * Le dépôt documente ce piège dans l'autre sens (« un module qui code en
+     * dur une clé de sprite se ferme à sa propre réutilisation ») : ici ce sont
+     * des couleurs, et le prix n'est pas la réutilisation mais la **dérive**.
+     * Repalettiser le personnage demande maintenant de toucher ces cinq lignes,
+     * et rien d'autre.
+     */
+    palette: {
+      edge: '#5d0100', // contour, l'encre brûlée du dessin
+      shadow: '#c00803', // le rouge profond
+      body: '#f9993c', // orange de corps
+      light: '#fbcf55', // clair
+      core: '#fdf17f', // cœur incandescent
+    },
+    /**
      * **Le corps est un sprite — le seul du roster.**
      *
      * `assets/sprites/sun-core.png` : la maquette d'astre fournie, détourée de
@@ -533,6 +556,34 @@ export const SUN = fiche({
        * faut vraiment sortir de l'axe.
        */
       halfWidth: 62,
+      /**
+       * **Le faisceau est fait de la même matière que l'astre — demandé.**
+       *
+       * Cinq bandes concentriques, de l'extérieur vers le cœur, qui reprennent
+       * `look.palette` **dans l'ordre du dessin** : le liseré d'encre brûlée,
+       * le rouge profond, l'orange de corps, le clair, l'incandescent. C'est la
+       * structure de la maquette du corps, étirée le long d'un axe.
+       *
+       * Le liseré sombre est ce qui compte le plus, et c'est ce qui manquait :
+       * le faisceau allait d'orange à blanc, sans bord. Or c'est le trait brûlé
+       * qui signe le dessin de l'astre — sans lui, le rayon ressemblait à
+       * n'importe quel laser, et surtout il **se dissolvait sur l'arène
+       * blanche** faute de bord.
+       *
+       * Le dégradé est transversal et non longitudinal : un rayon qui pâlirait
+       * vers la pointe se lirait comme un rayon qui *s'arrête*, or celui-ci va
+       * jusqu'au mur.
+       *
+       * `at` est une fraction de `halfWidth` — les bandes se peignent de la
+       * plus large à la plus étroite, donc l'ordre de cette liste compte.
+       */
+      bands: [
+        { at: 1, tint: 'edge', alpha: 0.9 },
+        { at: 0.9, tint: 'shadow', alpha: 0.92 },
+        { at: 0.68, tint: 'body', alpha: 0.95 },
+        { at: 0.42, tint: 'light', alpha: 0.97 },
+        { at: 0.18, tint: 'core', alpha: 1 },
+      ],
       /**
        * **6 par tic, un tic toutes les 0,15 s** — inchangés, c'est la *durée*
        * qui a doublé. Sur 2,5 s de tir, cela fait jusqu'à **96 PV** contre 42

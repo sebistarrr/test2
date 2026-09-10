@@ -24,12 +24,12 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Éditer les données | 391 |
 | &nbsp;&nbsp;· Interface et rendu | 424 |
 | &nbsp;&nbsp;· Le son | 510 |
-| &nbsp;&nbsp;· Refactoriser | 894 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 935 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 937 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 980 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1023 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1042 |
+| &nbsp;&nbsp;· Refactoriser | 918 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 959 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 961 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1004 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1047 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1066 |
 
 ---
 
@@ -803,6 +803,30 @@ replis étaient de fidèles transcriptions ; elle est devenue criante avec le
 corps du Soleil, dont le repli est volontairement grossier. Corrigée avec un
 garde `hasSprite` — la vignette peut être tracée **avant** `loadSprites()`,
 l'écran étant construit au chargement du module et la banque remplie au `boot()`.
+
+**Un module qui code ses couleurs en dur les fait dériver.** Le dépôt documentait
+déjà le cas d'une **clé de sprite** en dur (`plant.js` et ses corolles roses),
+dont le prix est de se fermer à sa propre réutilisation. Pour des **couleurs**,
+le prix est autre et plus insidieux : la **dérive**. Le module du Soleil portait
+onze littéraux `rgba(...)`, écrits quand le personnage était jaune vif ; le
+corps est passé à l'orange des rayons, puis à sa propre maquette, et le Rayon
+solaire est resté sur ses vieux orange — il ne se lisait plus comme sortant de
+l'astre qui le tire. Rien n'avait planté, rien n'avait crié.
+
+La correction n'est pas de recolorier le module mais de **lui retirer le droit
+de choisir** : `look.palette` porte les cinq teintes relevées sur la maquette,
+`ultimate.beam.bands` décrit le faisceau en les nommant, et le module n'a plus
+**aucun** littéral de couleur — pas même un blanc pur au cœur du foyer, qui
+aurait été la seule couleur du personnage à ne pas venir du dessin, donc la
+prochaine à diverger. Repalettiser le Soleil, c'est maintenant toucher cinq
+lignes de sa fiche.
+
+Ce que ça a fait apparaître au passage : le faisceau n'avait **pas de bord**. Il
+allait d'orange à blanc, alors que tout le dessin de l'astre est signé par son
+liseré d'encre brûlée — et un rayon sans bord se dissout en plus sur l'arène
+blanche. Reprendre la structure du dessin (liseré, rouge profond, corps, clair,
+cœur) l'a réglé sans qu'on ait eu à le chercher : c'est le bénéfice d'une source
+unique, elle corrige des choses qu'on n'avait pas nommées.
 
 **Habiller un combattant d'une maquette fournie** — ce qu'a appris le passage
 des rayons du Soleil au PNG :
