@@ -12,7 +12,7 @@
 import { ARENA, MATCH, PHYSICS } from '../data/tuning.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { TAU, clamp, rotateToward, wrapAngle } from '../core/math.js';
-import { drawSpriteLeft } from '../render/sprites.js';
+import { drawSpriteCentered, drawSpriteLeft } from '../render/sprites.js';
 
 export class Fighter {
   /**
@@ -496,22 +496,33 @@ export class Fighter {
     const overBody = this.el.weapon.overBody === true;
     if (!overBody) this.paintWeapon(ctx);
 
-    // corps — le flash blanc d'encaissement prime sur tout, puis la teinte
-    // d'un contrôle adverse se pose (ou se mélange) sur la couleur d'élément
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, TAU);
-    ctx.fillStyle = this.flash > 0 ? look.bodyHit : look.body;
-    ctx.fill();
     const dotTint = this.statusTint(now);
-    if (this.flash <= 0 && (this.tint || dotTint)) {
-      ctx.globalAlpha = this.tint ? this.tintAlpha : dotTint.alpha;
-      ctx.fillStyle = this.tint ?? dotTint.color;
+    /**
+     * **Le corps peut être un sprite au lieu d'un cercle vectoriel.**
+     *
+     * `look.sprite` est une clé de `PIXEL_MAPS` comme une autre, donc elle
+     * accepte aussi un override PNG. Absente — les sept autres combattants —
+     * on repasse par le tracé d'origine, mot pour mot : le moteur ne connaît
+     * toujours aucun combattant (invariant 12), il lit.
+     */
+    if (look.sprite) this.drawSpriteBody(ctx, look, dotTint);
+    else {
+      // corps — le flash blanc d'encaissement prime sur tout, puis la teinte
+      // d'un contrôle adverse se pose (ou se mélange) sur la couleur d'élément
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, TAU);
+      ctx.fillStyle = this.flash > 0 ? look.bodyHit : look.body;
       ctx.fill();
-      ctx.globalAlpha = 1;
+      if (this.flash <= 0 && (this.tint || dotTint)) {
+        ctx.globalAlpha = this.tint ? this.tintAlpha : dotTint.alpha;
+        ctx.fillStyle = this.tint ?? dotTint.color;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      ctx.lineWidth = look.outlineWidth;
+      ctx.strokeStyle = look.outline;
+      ctx.stroke();
     }
-    ctx.lineWidth = look.outlineWidth;
-    ctx.strokeStyle = look.outline;
-    ctx.stroke();
 
     // anneau d'état (brûlure : cerclage orange autour de la victime)
     const ring = this.statusRing(now);
@@ -552,6 +563,48 @@ export class Fighter {
   }
 
   /**
+   * **Corps servi par un sprite.** Trois écarts au cercle vectoriel, chacun
+   * imposé par le fait qu'un dessin n'est pas un aplat :
+   *
+   *  1. **Il est dimensionné sur le rayon, pas sur la carte.**
+   *     `drawSpriteCentered` impose la hauteur ; on lui donne le diamètre du
+   *     corps, corrigé par `look.spriteScale`. Cette correction existe parce
+   *     qu'un dessin déborde souvent de son disque plein (les pointes du
+   *     Soleil) : sans elle, la balle **paraîtrait plus petite que sa
+   *     hitbox**. C'est la même discipline que `handle.length + largeur =
+   *     reach` pour une arme — le dessin ne doit pas mentir sur la géométrie.
+   *  2. **Le contour n'est pas tracé.** Un cercle net autour d'un dessin
+   *     découpé (pointes, éclats) se lit comme un carcan, et le sprite porte
+   *     déjà son propre bord sombre. `look.outline` reste lu ailleurs (la
+   *     carte de sélection), ce n'est donc pas une clé morte.
+   *  3. **Le flash et les teintes se posent en disque par-dessus, jamais en
+   *     remplacement.** Sur un aplat, le flash *remplace* la couleur ; sur un
+   *     dessin, le remplacer l'effacerait — on ne verrait plus qu'une pastille
+   *     unie à chaque coup encaissé. `look.spriteFlash` règle l'opacité de ce
+   *     voile : assez pour que le coup se voie, assez peu pour que l'astre
+   *     reste lisible dessous.
+   */
+  drawSpriteBody(ctx, look, dotTint) {
+    drawSpriteCentered(ctx, look.sprite, this.x, this.y, this.radius * 2 * (look.spriteScale ?? 1));
+
+    const voile = this.flash > 0
+      ? { color: look.bodyHit, alpha: look.spriteFlash ?? 0.6 }
+      : this.tint
+        ? { color: this.tint, alpha: this.tintAlpha }
+        : dotTint
+          ? { color: dotTint.color, alpha: dotTint.alpha }
+          : null;
+    if (!voile) return;
+
+    ctx.globalAlpha = voile.alpha;
+    ctx.fillStyle = voile.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, TAU);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  /**
    * Le chiffre de PV, seul — factorisé pour être **repassé** par-dessus tout
    * ce qui a pu le recouvrir après `draw()` (un pouvoir dessiné dans
    * `drawOver`, par ex. la Tempête de sève du Mage sur sa cible). Voir l'appel
@@ -563,8 +616,33 @@ export class Fighter {
     ctx.font = look.hpFont;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
+    const texte = String(Math.max(0, Math.ceil(this.hp)));
+    /**
+     * **`look.hpStroke` : un contour sous le chiffre, et il a fallu l'ouvrir.**
+     *
+     * Le dépôt notait que « le chiffre de PV n'a pas de contour dans ce moteur,
+     * les nombres de dégâts en ont un » — vrai tant qu'un corps est un **aplat**
+     * : une seule couleur d'encre suffit à passer dessus. Sur un corps servi par
+     * un **dessin**, ça ne marche plus : sous les digits du Soleil, 53 % des
+     * pixels sont clairs et 40 % sombres, et le meilleur aplat possible tombe à
+     * **2,28** de contraste dans son pire cas (une encre claire, à 1,08). Il n'y
+     * a pas de bonne couleur — il y a un contour à ajouter.
+     *
+     * Même traitement que `Flair.drawPops` pour les nombres de dégâts, à la même
+     * épaisseur : c'est la convention du dépôt pour un nombre posé sur un fond
+     * qu'on ne maîtrise pas, et deux traitements différents pour deux nombres
+     * de même taille se verraient.
+     *
+     * Opt-in : absent — les sept autres — le tracé est celui d'avant.
+     */
+    if (look.hpStroke) {
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 7;
+      ctx.strokeStyle = look.hpStroke;
+      ctx.strokeText(texte, this.x, this.y + look.hpOffsetY);
+    }
     ctx.fillStyle = look.hpColor;
-    ctx.fillText(String(Math.max(0, Math.ceil(this.hp))), this.x, this.y + look.hpOffsetY);
+    ctx.fillText(texte, this.x, this.y + look.hpOffsetY);
   }
 
   auraVisible() {

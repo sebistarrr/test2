@@ -629,10 +629,23 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Un corps blanc sur l'arène blanche demande quatre compensations** — contour,
   chiffre de PV, aura permanente, et un `bodyHit` qui **rougit** au lieu de
   blanchir (Mannequin). Un corps **clair** en demande trois des quatre (Soleil).
+- **Un corps peut être un sprite** (`look.sprite`, + `spriteScale` et
+  `spriteFlash`) : le Soleil est le seul, les sept autres restent des cercles
+  vectoriels et repassent par le tracé d'avant. Trois écarts imposés par le
+  fait qu'un dessin n'est pas un aplat — il se dimensionne sur son **disque
+  plein** (sinon il paraît plus petit que sa hitbox), il ne se cerne pas, et le
+  flash se **pose par-dessus** au lieu de remplacer la couleur.
+- **Un chiffre de PV posé sur un dessin demande un contour** (`look.hpStroke`,
+  opt-in) : sous les digits du Soleil, 53 % des pixels sont clairs et 40 %
+  sombres — aucun aplat ne tient (2,28 au mieux dans son pire cas). Sur un
+  corps uni, une seule encre suffit toujours.
 - **Un corps et son arme doivent être de la même matière pour se lire comme un
-  objet** : la balle du Soleil porte le fond échantillonné dans le PNG de ses
-  rayons, sinon huit flammes plantées sur une bille se lisent comme une bille
+  objet** : sinon huit flammes plantées sur une bille se lisent comme une bille
   **plus** huit décorations.
+- **La vignette de sélection doit lire le sprite, pas la carte texte** : elle
+  compilait `PIXEL_MAPS` et ignorait donc les overrides PNG. Invisible tant que
+  les replis étaient de fidèles transcriptions, criant dès qu'un repli est
+  volontairement grossier.
 - **Une maquette fournie décide de la palette du personnage**, pas l'inverse :
   l'échantillonner par bandes de luminance donne les cinq teintes de tout son
   bloc `look`, et empêche le repli texte et l'icône d'en diverger.

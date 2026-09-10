@@ -108,7 +108,49 @@ export const SUN = fiche({
      * plus doré (canal vert 127 contre 98) et surtout dix fois plus gros, cerné
      * de huit flammes. On ne les confond pas à l'écran.
      */
-    body: '#de7f3a',
+    /**
+     * **Le corps est un sprite — le seul du roster.**
+     *
+     * `assets/sprites/sun-core.png` : la maquette d'astre fournie, détourée de
+     * son fond blanc **et de son halo pêche** (le halo est déjà fait en jeu par
+     * `look.aura`, qui bat, alors qu'un halo cuit dans l'image serait figé et
+     * en ferait trois qui se superposent).
+     *
+     * Les huit autres combattants sont des cercles vectoriels ;
+     * `assets/sprites/README.md` décrivait depuis toujours comment servir un
+     * corps en sprite sans que personne l'ait fait. Le moteur ne connaît
+     * toujours aucun combattant : `Fighter.draw()` lit `look.sprite`, et son
+     * absence renvoie au tracé d'origine mot pour mot.
+     */
+    sprite: 'sunCore',
+    /**
+     * **Ce qui fait que la balle ne ment pas sur sa hitbox.**
+     *
+     * Le dessin déborde de son disque plein : celui-ci s'arrête à **0,89** du
+     * demi-côté de l'image, le reste étant les pointes. Dessiné à la taille
+     * brute (2 × rayon), l'astre paraîtrait donc **plus petit que son rayon de
+     * collision** — il serait bousculé « dans le vide ». `1 / 0,89 = 1,1236`
+     * remet le disque plein sur les 82 px du rayon, les pointes débordant à 92.
+     *
+     * C'est la même discipline que `handle.length + largeur = reach` pour une
+     * arme, et elle se remesure sur l'image à chaque changement de maquette :
+     * couverture par anneau, on cherche le dernier rayon encore plein à 98,5 %.
+     */
+    spriteScale: 1.1236,
+    /**
+     * **Opacité du voile d'encaissement.** Sur un aplat, le flash *remplace* la
+     * couleur ; sur un dessin, le remplacer l'effacerait — on ne verrait qu'une
+     * pastille unie à chaque coup. 0,6 : le coup se voit franchement, l'astre
+     * reste lisible dessous.
+     */
+    spriteFlash: 0.6,
+    /**
+     * **Plus peinte, mais toujours lue** : la carte de sélection en cerne sa
+     * vignette et `Match.damage` en tire la couleur des gerbes. C'est le
+     * `corps` de la maquette d'astre (bande médiane de luminance), donc ces
+     * deux usages restent d'accord avec ce qu'on voit à l'écran.
+     */
+    body: '#f9993c',
     /**
      * **Il flambe au lieu de blanchir.** Le reste du roster passe au blanc
      * quand il est touché ; celui-ci passe au **cœur de sa propre flamme**
@@ -116,10 +158,12 @@ export const SUN = fiche({
      * qu'un blanc sur un corps orange, et ça dit la bonne chose : un astre
      * frappé ne pâlit pas, il s'embrase.
      */
-    bodyHit: '#fcf697',
-    /** Le contour **du sprite lui-même** : la bille est cernée du même trait
-     *  que les flammes qui en sortent. */
-    outline: '#6f1e12',
+    bodyHit: '#fdf17f',
+    /** **Plus tracé sur le corps** — un cercle net autour d'un astre hérissé se
+     *  lirait comme un carcan, et le sprite porte son propre bord. La clé reste
+     *  lue par la carte de sélection, ce n'est donc pas une clé morte
+     *  (invariant 9). C'est le contour de la maquette. */
+    outline: '#5d0100',
     /** 6 au lieu des 5 universels : sur un corps clair, c'est le trait qui
      *  dessine la silhouette. Même dérogation que le Mannequin. */
     outlineWidth: 6,
@@ -129,14 +173,26 @@ export const SUN = fiche({
      * (crème sur orange, 3,03), qui est la référence lisible du dépôt. Le crème
      * du reste du roster tomberait ici à 2,6.
      */
-    hpColor: '#6f1e12',
+    /**
+     * **Crème cerné d'encre, et c'est une mesure qui l'impose.**
+     *
+     * Le corps n'est plus un aplat mais un dessin, et sous l'empreinte exacte
+     * des digits **53 % des pixels sont clairs, 40 % sombres**. Aucun aplat ne
+     * tient : la meilleure encre sombre tombe à 2,28 de contraste dans son pire
+     * cas, la meilleure encre claire à 1,08. D'où le contour (`hpStroke`), qui
+     * isole le chiffre de ce qu'il y a dessous au lieu d'essayer de composer
+     * avec — le moteur le faisait déjà pour les nombres de dégâts, il a fallu
+     * l'ouvrir au chiffre de PV.
+     */
+    hpColor: '#fff4d0',
+    hpStroke: '#3a0b05',
     /**
      * **Halo permanent**, deuxième cas du roster après le Mannequin et pour une
      * raison inverse : lui *a* des pouvoirs, mais un astre sans halo n'est pas
      * un astre. `radius: 1.25` seulement — sur un corps de 82 px de rayon, un
      * halo à 1,5 comme celui du Golem mangerait un quart de l'arène.
      */
-    aura: { color: 'rgba(235,189,91,0.42)', radius: 1.25, pulse: 0.7, showWhen: 'always' },
+    aura: { color: 'rgba(251,207,85,0.42)', radius: 1.25, pulse: 0.7, showWhen: 'always' },
     /**
      * **Pas de ruban de pointe d'arme, et c'est un choix, pas un oubli.**
      * `flair.js` trace le ruban sur `f.bladeSegment()`, qui rend **une** branche
@@ -150,13 +206,13 @@ export const SUN = fiche({
      * s'échappe de lui est fait de la même flamme que lui.
      */
     flair: {
-      motes: { rate: 14, size: 9, drift: 22, rise: -26, colors: ['#fcf697', '#ebbd5b', '#b43f22'] },
-      impact: ['#fcf697', '#ffffff', '#b43f22'],
+      motes: { rate: 14, size: 9, drift: 22, rise: -26, colors: ['#fdf17f', '#fbcf55', '#c00803'] },
+      impact: ['#fdf17f', '#ffffff', '#c00803'],
       shape: 'spark',
-      castFlash: 'rgba(252,246,151,0.55)',
+      castFlash: 'rgba(253,241,127,0.55)',
     },
-    trail: { color: 'rgba(222,127,58,0.26)', every: 0.05, life: 0.36 },
-    accent: '#fcf697',
+    trail: { color: 'rgba(249,153,60,0.26)', every: 0.05, life: 0.36 },
+    accent: '#fdf17f',
   },
 
   /**
@@ -520,6 +576,6 @@ export const SUN = fiche({
     ],
     /** Le clair du sprite : la ligne de stat est posée sur l'encre sombre du
      *  bandeau, elle doit donc rester dans le haut de la palette. */
-    color: '#ebbd5b',
+    color: '#fbcf55',
   },
 });

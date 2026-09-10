@@ -24,12 +24,12 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Éditer les données | 391 |
 | &nbsp;&nbsp;· Interface et rendu | 424 |
 | &nbsp;&nbsp;· Le son | 510 |
-| &nbsp;&nbsp;· Refactoriser | 852 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 893 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 895 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 938 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 981 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1000 |
+| &nbsp;&nbsp;· Refactoriser | 894 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 935 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 937 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 980 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1023 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1042 |
 
 ---
 
@@ -761,6 +761,48 @@ aucun des sept autres :
   c'est ce qui autorise ses dégâts hors norme. La visée **suit** la cible
   pendant la charge puis **se fige au tir** : figer dès le déclenchement rendait
   l'esquive triviale, suivre jusqu'au bout la rendait impossible.
+
+**Un corps servi par un sprite** — le Soleil est le premier du dépôt, et
+`assets/sprites/README.md` §6 décrivait le mécanisme depuis toujours sans que
+personne l'ait fait. Trois écarts au cercle vectoriel, chacun imposé par le fait
+qu'un dessin n'est pas un aplat :
+
+- **Il se dimensionne sur son disque plein, pas sur son cadre.** Le dessin
+  déborde (les pointes de l'astre) : son disque plein s'arrête à **0,89** du
+  demi-côté de l'image. Dessiné à la taille brute, il paraîtrait donc **plus
+  petit que son rayon de collision** — il serait bousculé « dans le vide ».
+  D'où `look.spriteScale` (1/0,89 = 1,1236), qui remet le disque sur le rayon
+  et laisse les pointes déborder. C'est la même discipline que
+  `handle.length + largeur = reach` pour une arme : le dessin ne ment pas sur
+  la géométrie. Elle se **remesure** à chaque changement de maquette —
+  couverture par anneau, dernier rayon encore plein à 98,5 %.
+- **On ne le cerne pas.** Un cercle net autour d'un dessin découpé se lit comme
+  un carcan, et le sprite porte déjà son bord. `look.outline` reste lu par la
+  carte de sélection, ce n'est donc pas une clé morte.
+- **Le flash et les teintes se posent par-dessus, jamais en remplacement.** Sur
+  un aplat, le flash d'encaissement *remplace* la couleur ; sur un dessin, le
+  remplacer l'effacerait — on ne verrait qu'une pastille unie à chaque coup.
+  `look.spriteFlash` règle l'opacité du voile (0,6 : le coup se voit, l'astre
+  reste lisible dessous).
+
+**Et un chiffre de PV posé sur un dessin demande un contour.** Le dépôt notait
+que « le chiffre de PV n'a pas de contour dans ce moteur, les nombres de dégâts
+en ont un » — vrai tant qu'un corps est un aplat, faux dès qu'il ne l'est plus.
+Mesuré sous l'empreinte exacte des digits du Soleil : **53 % de pixels clairs,
+40 % de sombres**. Aucun aplat ne tient — la meilleure encre sombre tombe à
+**2,28** de contraste dans son pire cas, la meilleure encre claire à **1,08**.
+Il n'y a pas de bonne couleur à trouver, il y a un contour à ajouter :
+`look.hpStroke`, opt-in, au même traitement que `Flair.drawPops` (deux
+traitements différents pour deux nombres de même taille se verraient).
+
+**La vignette de sélection lisait la carte texte, pas le sprite.** Elle
+compilait `PIXEL_MAPS` directement au lieu de passer par `getSprite`, donc elle
+ignorait `manifest.json` : quatre armes s'affichaient en repli sur l'écran de
+sélection et en PNG dans le duel. La divergence était invisible tant que les
+replis étaient de fidèles transcriptions ; elle est devenue criante avec le
+corps du Soleil, dont le repli est volontairement grossier. Corrigée avec un
+garde `hasSprite` — la vignette peut être tracée **avant** `loadSprites()`,
+l'écran étant construit au chargement du module et la banque remplie au `boot()`.
 
 **Habiller un combattant d'une maquette fournie** — ce qu'a appris le passage
 des rayons du Soleil au PNG :

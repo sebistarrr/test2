@@ -97,6 +97,16 @@ Deux clés facultatives, qui ne servent qu'à qui y déroge :
 - **`look.radius`** — rayon du corps, 41 par défaut, 50 chez le Golem. Un corps
   plus large est **plus facile à toucher** : c'est un réglage d'équilibrage
   autant qu'un choix de dessin.
+- **`look.sprite`** (+ `spriteScale`, `spriteFlash`) — un **corps dessiné** au
+  lieu du cercle vectoriel, comme le Soleil. `sprite` est une clé de
+  `PIXEL_MAPS` (donc override PNG possible) ; `spriteScale` fait retomber le
+  **disque plein** du dessin sur `look.radius`, sinon la balle paraît plus
+  petite que sa hitbox ; `spriteFlash` est l'opacité du voile d'encaissement,
+  qui se pose par-dessus au lieu de remplacer la couleur. Le contour n'est alors
+  plus tracé. Détails et méthode de mesure : `assets/sprites/README.md` §6.
+- **`look.hpStroke`** — un contour sous le chiffre de PV. À ne déclarer que si
+  le corps est un **dessin contrasté** : sur un aplat, une seule encre suffit
+  toujours, et le dépôt s'en tient là pour les huit autres.
 - **`weapon.spokes`** — nombre de **branches** de l'arme, 1 par défaut, 8 chez
   le Soleil. C'est la même arme répétée tous les `TAU / spokes` radians :
   `bladeSegment(k)` rend la k-ième, `weaponHit` les essaie toutes et

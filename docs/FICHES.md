@@ -2753,8 +2753,10 @@ deux bouts : le Mannequin ne peut pas gagner, le Soleil ne peut pas perdre.
 | --- | --- | --- |
 | Corps | rayon **82** — exactement le double de la norme (41), et le plus gros du roster devant le Golem (50) | calé (demandé) |
 | Points de vie | **500**, cinq fois la norme et deux fois et demie le Golem. Aucune réduction de dégâts : un seul chiffre porte toute sa résistance | calé (demandé) |
-| Couleur | `#de7f3a` — **le fond de ses propres rayons, demandé**, échantillonné dans le PNG (bande médiane de luminance). Le corps et la couronne sont la même matière, seul moyen que huit rayons plantés sur une bille se lisent comme *un* objet. Contour `#6f1e12` (celui du sprite), chiffre de PV dans la même encre (contraste **4,15**, au-dessus du Ronin qui est la référence lisible du dépôt à 3,03), aura permanente. Il **flambe** au lieu de blanchir quand il est touché : `bodyHit` vaut `#fcf697`, le cœur de sa propre flamme | calé (demandé) |
-| Palette | Les cinq teintes du sprite, relevées par bandes de luminance et utilisées partout dans `look` — contour `#6f1e12` · ombre `#b43f22` · corps `#de7f3a` · clair `#ebbd5b` · cœur `#fcf697`. Il était jaune vif (`#fbbf24`) jusqu'à ce que la maquette de flamme arrive | relevé sur la maquette |
+| **Corps** | **Un sprite, le seul du roster — demandé** (`assets/sprites/sun-core.png`, maquette d'astre fournie). Les huit autres sont des cercles vectoriels ; `assets/sprites/README.md` §6 décrivait le mécanisme depuis toujours sans que personne l'ait fait. Détouré de son fond blanc **et de son halo pêche** — le halo est déjà fait en jeu par `look.aura`, qui bat, alors qu'un halo cuit dans l'image serait figé et en ferait trois superposés | calé (demandé) |
+| `spriteScale` | **1,1236**, et ce n'est pas cosmétique : le dessin déborde de son disque plein, qui s'arrête à 0,89 du demi-côté. À la taille brute, l'astre paraîtrait **plus petit que son rayon de collision**. La correction remet le disque sur les 82 px, les pointes débordant à 92 — même discipline que `handle.length + largeur = reach` pour une arme | déduit |
+| Chiffre de PV | **Crème `#fff4d0` cerné d'encre `#3a0b05`** — le premier du dépôt à porter un contour. Sous l'empreinte exacte des digits, 53 % des pixels sont clairs et 40 % sombres : aucun aplat ne tient (2,28 au mieux dans son pire cas, 1,08 pour une encre claire). Le contour isole le chiffre au lieu d'essayer de composer | mesuré sur la maquette |
+| Palette | Les cinq teintes de la maquette d'astre, relevées par bandes de luminance et utilisées partout dans `look` — contour `#5d0100` · ombre `#c00803` · corps `#f9993c` · clair `#fbcf55` · cœur `#fdf17f`. Il a été jaune vif (`#fbbf24`), puis orange plat (`#de7f3a`, échantillonné sur les rayons) avant d'être un dessin | relevé sur la maquette |
 | Déplacement | **230 px/s, le plus lent du roster et de très loin** (420 Golem, 430 Hoplite, 655 Pistolero) et `turnRate` 1, le plus bas aussi. Il va **moitié moins vite que la moyenne**. C'est **la** contrepartie de tout le reste : il ne rattrape personne — et n'aurait rien à en faire s'il y arrivait | calé (demandé) |
 | **Arme** | *Couronne de rayons* — portée 160 px : talon 82 (le rayon du corps, donc les rayons partent du **bord** de la bille) + largeur dessinée 78. Chaque rayon ne dépasse que de 78 px du corps | déduit |
 | Sprite du rayon | **Un vrai PNG** (`assets/sprites/sun-ray.png`) : maquette de flamme fournie, détourée de son fond blanc et recadrée sur la flamme principale — les éclats détachés sont gardés, mais seulement ceux qui tiennent dans son cadre, sinon la pointe du sprite ne serait plus la pointe de l'arme. `scale = 78 / (9 × 2,4446764) = 3,545118` : sous override PNG la largeur vient du **rapport d'aspect de l'image**, pas de `map.w` — piège déjà payé sur la lance de l'Hoplite puis sur l'arme du Golem. La flamme est plus élancée que la carte texte qu'elle remplace (2,44 contre 1,44), donc à largeur égale le rayon est plus fin : 31,9 px d'épaisseur contre 54 | déduit |
@@ -2895,13 +2897,16 @@ ajouts** (invariant 3), et les six autres combattants gardent leur compte
   contrôle — c'est la leçon du corps clair sur fond clair, appliquée à une
   ligne. Et c'est la seule information dont l'adversaire dispose pour esquiver
   ce qui est, de loin, l'attaque la plus lourde du dépôt.
-- **La balle porte le fond de ses rayons, et ce n'est pas qu'une coquetterie.**
-  Quand la couronne est passée à la flamme de la maquette, le corps était encore
-  jaune vif : l'ensemble se lisait comme une bille **plus** huit décorations,
-  pas comme un astre. Reprendre la teinte du sprite — échantillonnée, pas
-  choisie à côté — est ce qui les refait tenir en un objet. Toute la palette du
-  personnage vient de là, repli texte et icône compris, ce qui les empêche de
-  diverger de l'arme.
+- **La balle est un dessin, pas un aplat — le premier corps en sprite du
+  dépôt.** Elle a d'abord été jaune vif, puis repeinte de l'orange échantillonné
+  sur les rayons (parce qu'une bille unie au milieu de huit flammes se lisait
+  comme une bille *plus* huit décorations), puis remplacée par sa propre
+  maquette. Trois conséquences que le cercle vectoriel n'avait pas : elle se
+  dimensionne sur son **disque plein** pour ne pas mentir sur sa hitbox, elle ne
+  se cerne pas, et son flash d'encaissement se **pose par-dessus** au lieu de
+  remplacer sa couleur — le remplacer effacerait le dessin à chaque coup.
+  Toute la palette du personnage est relevée sur cette maquette, repli texte et
+  icône compris, ce qui les empêche de diverger.
 
 ## La norme passe à 200 PV, le Golem à 400 (historique)
 

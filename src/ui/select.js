@@ -12,6 +12,7 @@ import { ELEMENTS, ROSTER } from '../data/elements.js';
 import { UI, label } from './lang.js';
 import { PIXEL_MAPS } from '../data/pixelmaps.js';
 import { compilePixelMap } from '../render/pixelart.js';
+import { getSprite, hasSprite } from '../render/sprites.js';
 import { TAU } from '../core/math.js';
 
 export function createSelectScreen({ root, onStart, lang = 'ref' }) {
@@ -311,6 +312,24 @@ function projectileLine(el, t, lang) {
  * centre du corps, et `weapon.overBody` décide s'il passe devant ou derrière.
  * Rien n'est codé par combattant — un futur venu s'affichera juste.
  */
+/**
+ * **Le sprite tel que l'arène le montre, override PNG compris.**
+ *
+ * La vignette compilait jusqu'ici la carte **texte** (`compilePixelMap`), donc
+ * elle ignorait `assets/sprites/manifest.json` : quatre armes du roster
+ * s'affichaient en repli sur l'écran de sélection et en PNG dans le duel. La
+ * divergence passait inaperçue tant que les replis étaient de fidèles
+ * transcriptions ; elle est devenue visible avec le **corps** du Soleil, dont
+ * le repli est volontairement grossier.
+ *
+ * `hasSprite` d'abord, parce que la vignette peut être tracée **avant**
+ * `loadSprites()` : l'écran de sélection est construit au chargement du module,
+ * la banque n'est remplie qu'au `boot()`. Sans ce garde, `getSprite` lèverait.
+ */
+function vignette(key) {
+  return hasSprite(key) ? getSprite(key) : compilePixelMap(PIXEL_MAPS[key], 3);
+}
+
 function drawElementBadge(canvas, el) {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
@@ -341,7 +360,24 @@ function drawElementBadge(canvas, el) {
   const ox = canvas.width / 2 - ((left + right) / 2) * k;
   const oy = canvas.height / 2;
 
+  /**
+   * **Le corps peut être un sprite** (`look.sprite`), comme en jeu — la
+   * vignette lit la même clé et le même `spriteScale`, sinon elle montrerait
+   * un aplat là où l'arène montre un dessin. Absente, on retombe sur le cercle
+   * vectoriel, qui reste le cas des sept autres.
+   */
+  /**
+   * **Le corps peut être un sprite** (`look.sprite`), comme en jeu — la
+   * vignette lit la même clé et le même `spriteScale`, sinon elle montrerait un
+   * aplat là où l'arène montre un dessin. Absente, on retombe sur le cercle
+   * vectoriel, qui reste le cas des sept autres.
+   */
   const ball = () => {
+    if (el.look.sprite) {
+      const d = el.look.radius * 2 * (el.look.spriteScale ?? 1) * k;
+      ctx.drawImage(vignette(el.look.sprite), ox - d / 2, oy - d / 2, d, d);
+      return;
+    }
     ctx.beginPath();
     ctx.arc(ox, oy, el.look.radius * k, 0, TAU);
     ctx.fillStyle = el.look.body;
@@ -351,7 +387,7 @@ function drawElementBadge(canvas, el) {
     ctx.stroke();
   };
   const weapon = () => {
-    const sprite = compilePixelMap(map, 3);
+    const sprite = vignette(key);
     // une passe par branche, tournée du même angle qu'en jeu : à `spokes`
     // absent la boucle fait un tour sans rotation, donc le tracé d'avant
     for (let i = 0; i < spokes; i++) {

@@ -34,7 +34,7 @@ import { LANCER_SPEAR, ICON_LANCE } from './pixelart/lancer.js';
 import { MAGE_STAFF, MAGE_ORB, MAGE_FLOWER, ICON_STAFF } from './pixelart/mage.js';
 import { GOLEM_ROCK, GOLEM_SHARD, ICON_GOLEM } from './pixelart/golem.js';
 import { ICON_DUMMY } from './pixelart/dummy.js';
-import { SUN_RAY, ICON_SUN } from './pixelart/sun.js';
+import { SUN_RAY, SUN_CORE, ICON_SUN } from './pixelart/sun.js';
 
 export const PIXEL_MAPS = deepFreeze({
   // Hors-la-loi
@@ -63,7 +63,10 @@ export const PIXEL_MAPS = deepFreeze({
   iconGolem: ICON_GOLEM,
   // Mannequin — une seule carte : il n'a ni arme ni projectile
   iconDummy: ICON_DUMMY,
-  // Soleil — une seule carte d'arme, **répétée huit fois** par `weapon.spokes`
+  // Soleil — une carte d'arme **répétée huit fois** par `weapon.spokes`, et
+  // `sunCore` qui est le **corps** : le seul du roster à être un sprite plutôt
+  // qu'un cercle vectoriel (`look.sprite`)
   sunRay: SUN_RAY,
+  sunCore: SUN_CORE,
   iconSun: ICON_SUN,
 });

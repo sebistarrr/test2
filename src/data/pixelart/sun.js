@@ -68,6 +68,53 @@ export const SUN_RAY = deepFreeze({
 });
 
 /**
+ * **Le corps du Soleil** — repli texte du vrai PNG, et **le premier corps du
+ * dépôt qui soit un sprite**.
+ *
+ * Les huit autres combattants sont des cercles vectoriels (couleur, contour,
+ * rayon) ; `assets/sprites/README.md` décrivait depuis toujours comment servir
+ * un corps en sprite sans que personne l'ait fait. C'est `look.sprite` qui
+ * l'ouvre, lu par `Fighter.drawSpriteBody()`.
+ *
+ * **Carré, et il doit le rester** : `drawSpriteCentered` impose la hauteur et
+ * déduit la largeur du rapport d'aspect. Un repli rectangulaire donnerait un
+ * astre ovale le jour où le PNG manque, sans que rien ne le signale.
+ *
+ * Grossier par construction — c'est un repli, pas une transcription. Il dit la
+ * bonne chose (un disque incandescent hérissé de pointes) dans les teintes
+ * relevées sur la maquette.
+ */
+export const SUN_CORE = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: {
+    K: '#5d0100', // contour
+    d: '#c00803', // ombre, le rouge profond du dessin
+    o: '#f9993c', // corps
+    y: '#fbcf55', // clair
+    w: '#fdf17f', // cœur
+  },
+  rows: [
+    '.......KK.......',
+    '..K....dd....K..',
+    '...Kd.KooK.dK...',
+    '....KdoyyodK....',
+    '..KdoyywwyyodK..',
+    '.KdoywwwwwwyodK.',
+    '.KdoywwwwwwyodK.',
+    'KddoywwwwwwyoddK',
+    'KddoywwwwwwyoddK',
+    '.KdoywwwwwwyodK.',
+    '.KdoywwwwwwyodK.',
+    '..KdoyywwyyodK..',
+    '....KdoyyodK....',
+    '...Kd.KooK.dK...',
+    '..K....dd....K..',
+    '.......KK.......',
+  ],
+});
+
+/**
  * Icône de sélection : le disque et ses huit rayons, **dans les positions
  * exactes du personnage** — un rayon tous les 45°, quatre dans les axes et
  * quatre dans les diagonales.

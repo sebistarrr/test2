@@ -100,7 +100,34 @@ exposant un `drawWeapon(ctx, f)`.
 
 ## 6. Corps des combattants
 
-Les boules ne sont pas des sprites : ce sont des cercles vectoriels (couleur,
-contour, rayon) définis dans `look` de chaque fiche. Pour un corps en sprite,
-remplace l'appel `ctx.arc(...)` de `Fighter.draw()` par un `drawSpriteCentered`
-— tout le reste (PV, halo, flash) continue de fonctionner.
+Par défaut les boules sont des **cercles vectoriels** (couleur, contour, rayon)
+définis dans `look`. Mais un corps peut aussi être un sprite : **le Soleil est
+le premier**, et ça se déclare dans sa fiche, sans toucher au moteur.
+
+```js
+look: {
+  sprite: 'sunCore',     // clé de PIXEL_MAPS, donc override PNG possible
+  spriteScale: 1.1236,   // voir plus bas — ce n'est pas un réglage de goût
+  spriteFlash: 0.6,      // opacité du voile d'encaissement
+}
+```
+
+Trois choses changent, et chacune est imposée par le fait qu'un dessin n'est pas
+un aplat :
+
+- **`spriteScale` fait retomber le dessin sur sa hitbox.** Le sprite est
+  dimensionné sur le **diamètre du corps**, mais un dessin déborde souvent de
+  son disque plein (les pointes du Soleil s'arrêtent bien après lui). Sans
+  correction, la balle paraît **plus petite que son rayon de collision**. Mesure
+  à refaire à chaque maquette : le dernier rayon encore plein à ~98,5 %, puis
+  `spriteScale = 1 / ce rayon`. C'est l'équivalent, pour un corps, de la règle
+  `handle.length + largeur dessinée = reach` des armes ;
+- **le contour n'est pas tracé** — un cercle net autour d'un dessin découpé se
+  lit comme un carcan, et le sprite porte déjà son bord. `look.outline` reste
+  lu par la carte de sélection ;
+- **le flash et les teintes se posent par-dessus**, en disque, au lieu de
+  remplacer la couleur : les remplacer effacerait le dessin à chaque coup.
+
+Et si le dessin est contrasté, le **chiffre de PV** n'a plus de bonne couleur
+plate : `look.hpStroke` lui donne un contour, comme en ont déjà les nombres de
+dégâts.
