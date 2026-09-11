@@ -1,8 +1,9 @@
-# Elemental Duel — huit combattants, quatre formats
+# Elemental Duel — neuf combattants, quatre formats
 
 Duels **à deux, en 2 contre 2, en 1 contre X ou en bataille royale** (jusqu'à
-huit, chacun pour soi), avec cinq combattants repris de la chaîne **« ballthingsim »** et trois
-inventés, en **HTML + CSS + JavaScript** avec un rendu **Canvas 2D**.
+huit, chacun pour soi), avec cinq combattants repris de la chaîne
+**« ballthingsim »** et quatre inventés — dont **deux boss**, le Soleil et la
+Lune —, en **HTML + CSS + JavaScript** avec un rendu **Canvas 2D**.
 Aucune dépendance, aucun build : le dépôt se publie tel quel sur GitHub Pages.
 
 Les cinq premiers sont relevés image par image sur leur vidéo — couleurs à la
@@ -81,6 +82,8 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 <sup>[Le Champ de givre du Pistolero](docs/capture-blizzard.png) · [le Dôme de drain de l’Hoplite](docs/capture-lien.png) · [le Clone d'ombre du Shinobi](docs/capture-clone.png) · [les orbes guidées du Druide](docs/capture-mage.png) · [son Orage de ronces](docs/capture-mage-tempete.png) · [son Tir enraciné](docs/capture-mage-enracine.png).</sup>
 
 ![L’Hoplite contre le Ronin](docs/capture-duel.png)
+
+<sup>Les deux boss : [**LUNE à 91 % de phase**](docs/capture-lune.png), presque pleine — rayon 96, contact 7, la plus lente ; et [**le duel des deux**](docs/capture-boss.png), le Soleil chargeant son faisceau sur une lune à 0 %, minuscule et à l'autre bout de l'arène.</sup>
 
 <sup>Les autres formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [**un 1 contre 4**](docs/capture-1vx.png), le Soleil seul contre quatre — il gagne 1 duel sur 3 dans cette configuration, là où il en gagne 20 sur 21 en 1 contre 1 · [une bataille royale à cinq](docs/capture-royale.png) · [la parade à deux vainqueurs](docs/capture-fin-2v2.png).</sup>
 

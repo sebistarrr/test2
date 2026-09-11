@@ -20,16 +20,16 @@ relevé, puis les pièges eux-mêmes.
 | **Pièges déjà rencontrés** | 139 |
 | &nbsp;&nbsp;· Mesurer | 141 |
 | &nbsp;&nbsp;· Équilibrer | 176 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 366 |
-| &nbsp;&nbsp;· Éditer les données | 405 |
-| &nbsp;&nbsp;· Interface et rendu | 511 |
-| &nbsp;&nbsp;· Le son | 607 |
-| &nbsp;&nbsp;· Refactoriser | 1043 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 1084 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1086 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1129 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1172 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1191 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 387 |
+| &nbsp;&nbsp;· Éditer les données | 426 |
+| &nbsp;&nbsp;· Interface et rendu | 552 |
+| &nbsp;&nbsp;· Le son | 648 |
+| &nbsp;&nbsp;· Refactoriser | 1084 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1125 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1127 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1170 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1213 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1232 |
 
 ---
 
@@ -363,6 +363,27 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   le repousse franchement dans le dos de sa cible, et la balle garde toute sa
   dispersion — c'est elle qui porte la précision relevée.
 
+- **Deux boss ne se tuent pas en temps normal : leur duel se joue dans la rampe
+  de mort subite.** `MATCH.suddenDeath` vaut `{ after: 55, ramp: 18, max: 4 }` —
+  passé 55 s, `damageScale()` multiplie **tous** les dégâts, jusqu'à ×4. Un duel
+  Soleil / LUNE dure 92 à 104 s : il passe donc **la moitié de son temps dans la
+  rampe**, et c'est là qu'il se décide.
+
+  Ce que ça change, et ce n'était pas prévisible depuis la fiche :
+  - **l'esquive cesse de défendre.** Une géométrie qui rend petit et rapide vaut
+    beaucoup à ×1 et ne vaut presque rien à ×4, où la moindre touche emporte un
+    dixième de barre. LUNE avait 360 PV *parce que* sa défense était
+    géométrique ; le banc l'a démentie à 3/24 ;
+  - **le levier d'un duel de boss est la barre de vie, pas les dégâts.** Balayage
+    de `maxHp` sur 24 duels : 360 → 3, 420 → 3, **480 → 12**, 540 → 13, 600 → 16.
+    **Monotone**, donc un vrai levier — à comparer aux trois balayages non
+    monotones de la couronne du Soleil, où aucun paramètre n'équilibrait rien ;
+  - **et ça ne déplace qu'une ligne.** À 480, LUNE reste à 20/20 contre les sept
+    autres : la valeur ne touche que l'affrontement qu'on cherchait à régler.
+
+  Avant de conclure qu'un combattant très résistant « manque de dégâts »,
+  regarder **combien de temps son duel passe après 55 s**.
+
 ### Déterminisme et ordre d'exécution
 
 - **Une décoration qui tire dans `game.rng` transforme un levier en bruit.** Un
@@ -507,6 +528,26 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   la sphère** quand la plus longue langue du dessin est à 1,629 et la médiane à
   1,292. Personne ne l'a vu, parce que chaque langue *était* fidèle — c'est leur
   assemblée qui ne l'était pas. Un secteur, lui, porte ce qu'il porte.
+
+- **Un test de chevauchement de deux corps est *toujours faux*, et il ne crie
+  pas.** La Marée de LUNE écrasait « ceux que l'onde trouve **dans** le corps »,
+  écrit `d <= f.radius + g.radius`. Relevé : la condition n'a été vraie **aucune
+  fois sur 45 pulsations**, et le pouvoir a infligé **0 PV sur 24 duels** sans
+  qu'un garde-fou bronche — `sound-check` ne voit que les recettes, `fiche-check`
+  que le câblage, et la matrice ne sait pas qu'un pouvoir devait faire quelque
+  chose.
+
+  La raison est structurelle : **deux corps ne se chevauchent jamais ici.**
+  `resolveBodies` les sépare à chaque pas, et `resolveMelee` les décolle *en
+  plus* à la touche (c'est même écrit dans son commentaire). Au mieux la
+  distance vaut exactement la somme des rayons, et le flottant la met
+  généralement juste au-dessus. Toute zone d'effet « au contact » doit donc
+  porter une **marge explicite** — chez LUNE, `ability.crushMargin`, 40 px.
+
+  Corollaire de méthode : un pouvoir neuf se vérifie par **ablation**
+  (`opts.kind` dans `game.damage`), pas à l'œil. Trois lignes de banc ont
+  montré `tide 0,0 %` là où la capture d'écran montrait une belle onde violette
+  qui partait à chaque cycle.
 
 ### Interface et rendu
 

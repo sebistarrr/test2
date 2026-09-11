@@ -1,12 +1,12 @@
 # CLAUDE.md — mémoire du projet
 
-Duels **à deux, en 2 contre 2, en 1 contre X ou en bataille royale**, avec huit
+Duels **à deux, en 2 contre 2, en 1 contre X ou en bataille royale**, avec neuf
 combattants :
 cinq repris de la chaîne « ballthingsim » — le Pistolero, le Ronin, l’Hoplite,
-le Shinobi et le Druide — et **trois inventés**, le Golem, le Mannequin (une
-cible d'entraînement qui ne frappe pas) et le Soleil (un **boss**, fait pour
-gagner contre tous les autres), sur un moteur écrit d'après les vidéos de
-référence.
+le Shinobi et le Druide — et **quatre inventés**, le Golem, le Mannequin (une
+cible d'entraînement qui ne frappe pas) et **deux boss**, le Soleil et la Lune,
+qui gagnent contre tous les autres et ne se départagent qu'entre eux, sur un
+moteur écrit d'après les vidéos de référence.
 HTML + CSS + JS ES modules, Canvas 2D, **aucune dépendance, aucun build**.
 Publié sur GitHub Pages à chaque push sur `main` → <https://sebistarrr.github.io/test2/>
 
@@ -49,6 +49,7 @@ recale.
 | Registre du roster (`ELEMENTS`, `ROSTER`) | `src/data/elements.js` |
 | Sprites pixel-art (texte) | `src/data/pixelart/<id>.js`, recensés dans `src/data/pixelmaps.js` |
 | Overrides de sprites en vrai PNG (écart assumé à « aucun binaire ») | `assets/sprites/` + `manifest.json` |
+| **Corps composé de deux sprites** (LUNE seule) | `look.sprite` = la face d'ombre, le module peint la face claire au terminateur |
 | Géométrie de scène, phases, export vidéo | `src/data/tuning.js` |
 | Déroulé du duel, dégâts, rendu global | `src/game/match.js` |
 | Entité combattant (état + dessin) | `src/game/fighter.js` |
@@ -70,17 +71,19 @@ de navigation, pas un besoin.
 
 ## Roster
 
-**Huit combattants, tous jouables.** Cinq sont relevés sur trois vidéos
+**Neuf combattants, tous jouables.** Cinq sont relevés sur trois vidéos
 « ballthingsim » en 576 × 1024, 30 fps (*Outlaw vs Bladesman*, *Dragoon vs
-Outlaw*, *Dragoon vs Magia*) ; **les trois derniers — le Golem, le Mannequin et
-le Soleil — sont inventés**, aucune de leurs valeurs ne peut donc porter
-`mesuré`, tout y est `calé` ou `déduit`.
+Outlaw*, *Dragoon vs Magia*) ; **les quatre derniers — le Golem, le Mannequin,
+le Soleil et la Lune — sont inventés**, aucune de leurs valeurs ne peut donc
+porter `mesuré`, tout y est `calé` ou `déduit`.
 
-**Deux combattants sont hors barème, aux deux bouts.** Le Mannequin ne peut pas
-gagner, le Soleil n'est pas censé perdre : ce sont des **spécifications**, pas
-des défauts d'équilibrage à corriger. Les six autres se jugent entre eux.
-**Le Soleil perd aujourd'hui une graine sur 21** — voir le relevé de matrice
-plus bas, et `docs/FICHES.md` pour la mesure et pourquoi rien n'a été calé.
+**Trois combattants sont hors barème.** Le Mannequin ne peut pas gagner ; les
+**deux boss** battent les six autres et **ne se départagent qu'entre eux** — ce
+sont des **spécifications**, pas des défauts d'équilibrage à corriger. Les six
+du milieu se jugent entre eux.
+**Le Soleil perd une graine sur trois contre l'Hoplite** — voir le relevé de
+matrice plus bas, et `docs/FICHES.md` pour la mesure et pourquoi rien n'a été
+calé pour la masquer.
 
 | Personnage | Signature |
 | --- | --- |
@@ -91,6 +94,7 @@ plus bas, et `docs/FICHES.md` pour la mesure et pourquoi rien n'a été calé.
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** quand tout le monde en a 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
 | `sun` **SOLEIL** / SUN | **inventé, et le seul boss.** Demandé pour **gagner contre tous les autres en 1 contre 1**, et il le fait à une graine près (20/21 sur la matrice, **139/140** sur un banc à 10 seeds × les deux camps — la seule perdue est un duel de 80 s contre l'Hoplite). **Deux fois plus grand que la norme** (rayon 82 contre 41), **500 PV**, et **le plus lent du roster de très loin** (230 px/s) — c'est là toute sa contrepartie. **Huit rayons** en couronne (`weapon.spokes: 8`, aucun angle mort) qui **ne blessent pas** (`melee.damage: 0`, demandé) : c'est sa silhouette et son bruit, plus son arme. Tout passe donc par le **Rayon solaire** (ultime, **79 %** de ses dégâts) : horloge de 7 s, **2 s de charge annoncée à l'écran** — anneaux qui se referment, éclats qui convergent, foyer qui bat — puis **2,5 s** d'un faisceau de 124 px de large, jusqu'à 96 PV. Il est cloué sur place 4,5 s à chaque tir. **Réchauffement solaire** (pouvoir) : brûle tout ennemi dans 240 px, 21 % |
+| `lunar` **LUNE** / MOON | **inventée, et le second boss.** L'inverse du Soleil : lui est *un* événement qu'on apprend à éviter (2 s d'annonce, un faisceau) ; elle n'annonce rien, mais **n'est jamais la même deux secondes de suite**. Un seul nombre la porte, l'**illumination**, qui va de 0 à 1 et revient sur **12 s**, sans aucun tirage — et tout en découle : rayon **44 → 96**, vitesse **600 → 250 px/s**, contact **1 → 7**. Elle traverse toute l'amplitude du jeu à elle seule. **480 PV. Marée** (pouvoir) : toutes les 2,2 s, une onde **attire** tout le monde vers elle, d'une force qui suit la phase — ce n'est plus l'adversaire qui choisit la distance. **Éclipse** (ultime, horloge 9 s) : le seul ultime du dépôt **sans temps de chargement**, 4 s de nouvelle lune forcée — minuscule, la plus rapide du jeu, et son contact devient un **drain** |
 | `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, et les PV de la norme. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 15 PV
@@ -125,9 +129,17 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 `pixelart/outlaw.js`). Un commentaire qui cite un élément disparu parle d'une
 **provenance**, pas d'un fichier à ouvrir.
 
-**Relevé de matrice courant** (`tools/matrix-reference.txt`), 21 duels hors
-miroir chacun : **Soleil 20**, **Pistolero 13**, Druide 13, **Hoplite 12**,
-Shinobi 12, Golem 10, **Ronin 4**, Mannequin 0 (c'est sa définition).
+**Relevé de matrice courant** (`tools/matrix-reference.txt`), 24 duels hors
+miroir chacun : **Soleil 22 et Lune 22** — un sommet à deux têtes, exactement à
+égalité —, puis Druide 13, **Pistolero 13**, Hoplite 12, Shinobi 12, Golem 10,
+**Ronin 4**, Mannequin 0 (c'est sa définition).
+
+**Les deux boss sont à égalité et chacun a sa faille**, ce qui est la
+spécification demandée : le Soleil perd une graine à l'Hoplite, LUNE en perd une
+au Soleil. Leur duel est un vrai partage — **22/50** pour LUNE sur 25 graines ×
+les deux camps. **L'arrivée de LUNE n'a rien déplacé** : elle est en queue de
+`ROSTER`, le diff de la matrice contient **zéro suppression et neuf ajouts**
+(invariant 3), et les six du milieu gardent leur compte absolu au chiffre près.
 
 **Le Soleil n'est plus à 21, et c'est mesuré, pas subi.** Rendre sa couronne
 fidèle au dessin l'a raccourcie (145,41 → 123,15), et il perd une graine sur
@@ -617,6 +629,10 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   durées de ses affrontements (les vainqueurs, non).
 - **Un boss n'est pas un déséquilibre à corriger** : il est hors barème par
   définition, et sa ligne de matrice n'entre pas dans la bande des autres.
+- **Deux boss ne se tuent pas en temps normal : leur duel se joue dans la rampe
+  de mort subite** (×4 après 55 s). L'esquive cesse d'y défendre, et le levier
+  devient la **barre de vie** — balayage monotone, contrairement à tout ce qu'on
+  peut tourner ailleurs.
 - **Retirer la source principale d'un combattant le retourne, elle ne le
   diminue pas** : le levier qui l'a rattrapé n'était pas la taille de ce qui
   restait, mais sa **fréquence** (Soleil, horloge d'ultime 13 s → 7).
@@ -707,6 +723,10 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   mais le prix est la dérive et non la réutilisation. Le Soleil porte donc
   `look.palette`, cinq teintes relevées sur sa maquette, et son module n'a plus
   **aucun littéral de couleur**.
+- **Un test de chevauchement de deux corps est toujours faux, et il ne crie
+  pas** : `resolveBodies` les sépare à chaque pas. Toute zone d'effet « au
+  contact » doit porter une **marge explicite** — la Marée de LUNE a infligé 0 PV
+  sur 24 duels avant qu'on la mesure par ablation.
 - **Un format dont un seul camp est nombreux casse une mise en page qui tenait
   pour tous les autres** : mesurer le débordement contre la **fenêtre**, pas
   contre le parent — les emplacements tenaient dans leur bloc, c'est le bloc qui

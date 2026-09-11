@@ -28,25 +28,26 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 51 |
-| 📦 Archive — les huit éléments supprimés | 100 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 174 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 964 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1119 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1376 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1941 |
+| Comment lire une valeur | 52 |
+| 📦 Archive — les huit éléments supprimés | 101 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 175 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 965 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1120 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1377 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1942 |
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2432 |
 | 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2646 |
-| ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2732 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 3065 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 3120 |
-| Les dégâts de tous les combattants, divisés par deux | 3188 |
-| Rééquilibrage confiné au Golem et au Ronin | 3298 |
-| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3385 |
-| Le son de chacun | 3435 |
-| Équilibrage du roster | 3553 |
-| Règles communes (moteur) | 3651 |
-| Comment les mesures ont été prises | 3675 |
+| ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2733 |
+| 🌙 LUNE — `lunar` (le second boss : il est fait pour matcher le Soleil) | 3066 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 3170 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 3225 |
+| Les dégâts de tous les combattants, divisés par deux | 3293 |
+| Rééquilibrage confiné au Golem et au Ronin | 3403 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3490 |
+| Le son de chacun | 3540 |
+| Équilibrage du roster | 3658 |
+| Règles communes (moteur) | 3756 |
+| Comment les mesures ont été prises | 3780 |
 
 ## Comment lire une valeur
 
@@ -3061,6 +3062,110 @@ absolue, le levier n'est pas la couronne — c'est **l'horloge de l'ultime**, ce
 qui porte 79 % de ses dégâts et dont l'effet, lui, est monotone et documenté
 (13 s → 7 à sa création). Ce serait un changement d'équilibrage à part entière, et
 il n'a pas été fait ici.
+
+## 🌙 LUNE — `lunar` (le second boss : il est fait pour matcher le Soleil)
+
+> Astre changeant — elle attire, elle écrase, et elle n'annonce rien.
+
+**Demandé** : « imagine un nouveau boss LUNAR », puis « second boss invaincu qui
+peut match avec sun », puis deux maquettes à départager.
+
+Quatrième combattant **inventé** du dépôt. Aucune vidéo, donc **pas un seul
+`mesuré`** — tout est `calé` ou `déduit`.
+
+### Ce qu'elle est : l'inverse du Soleil, pas sa copie
+
+Le Soleil est *un* événement qu'on apprend à éviter — deux secondes d'annonce,
+un faisceau, et le duel se joue sur le moment. LUNE n'annonce rien, mais **n'est
+jamais la même deux secondes de suite**.
+
+Un seul nombre la porte, `f.state.ill`, qui va de 0 à 1 et revient sur **12 s**,
+**sans aucun tirage** (fonction pure du temps de duel, comme l'animation de
+charge du Soleil). Tout en découle :
+
+| | 🌑 nouvelle (0) | 🌓 (0,5) | 🌕 pleine (1) |
+| --- | --- | --- | --- |
+| rayon du corps | **44** | 70 | **96** |
+| vitesse | **600 px/s** | 425 | **250 px/s** |
+| dégâts de contact | 1 | 4 | **7** |
+| force de Marée | 0 | 100 | **200** |
+
+Le roster va de 230 à 655 px/s et de 41 à 96 de rayon : **elle traverse toute
+l'amplitude du jeu à elle seule, en douze secondes.**
+
+**Pourquoi 12 et pas 10.** Le Soleil tire toutes les 7 s. 7 et 12 sont premiers
+entre eux, donc les deux horloges ne retombent en phase que toutes les **84 s**,
+plus long qu'un duel : l'instant du faisceau se promène dans le cycle lunaire, et
+deux duels des mêmes boss ne se ressemblent jamais. Un cycle de 14 (= 2 × 7)
+aurait figé le couple.
+
+### Les valeurs
+
+| Valeur | Détail | Source |
+| --- | --- | --- |
+| Points de vie | **480** — le seul chiffre de la fiche **calé au banc** plutôt que posé, voir plus bas | calé |
+| Corps | **Deux sprites**, une première : `lunarDark` est déclarée en `look.sprite`, le module peint `lunarLit` par-dessus au terminateur. C'est la face **sombre** qui est le corps, par mode de panne — si l'overlay tombait, on verrait un disque lisible plutôt qu'une lune pâle invisible | calé |
+| Taille | `f.sizeFactor` 0,629 → 1,371 sur `look.radius` 70, soit **44 → 96**. Premier usage du compteur générique posé et prouvé neutre au commit précédent | déduit |
+| Vitesse | `movement.speed` 250 est son **plancher** (pleine lune) ; `f.boostFactor` la remonte à 600 à la nouvelle. Aucune clé de moteur ajoutée | calé |
+| Palette | Relevée sur **les deux** maquettes par bandes de luminance — les trois sombres sur l'éclipse, les deux claires sur la pleine lune : `edge #0d0a1d` · `shadow #1e1837` · `body #604f9c` · `light #b5d5e4` · `core #e7fdff`. Le violet est en `body` : c'est la signature, personne d'autre n'en a | relevé sur les maquettes |
+| Chiffre de PV | **Cerné, et c'est la seule solution** : sous les digits, la proportion clair/sombre traverse tout le cycle — 6/91 % à la nouvelle, **44/44 % à mi-course**, 89/0 % à la pleine. Aucune encre unique ne tient, pire que le Soleil (53/40) | mesuré sur les maquettes |
+| **Arme** | *Puits de gravité* — **invisible** : pas de `head.sprite`, donc `drawWeapon` ne peint rien (le garde posé pour le Mannequin). Six branches (`spokes: 6`) ferment les angles morts d'une coquille que personne ne voit. Ce qu'on voit d'elle, c'est son corps qui enfle | calé |
+| Dégâts de contact | **`1 + 6 × illumination`** — la seule valeur du dépôt qui *respire*. Le Ronin a déjà des dégâts en fonction, mais ils suivent une stat qu'il fait monter ; ici ils suivent une horloge que **personne ne pilote** | calé |
+| **Pouvoir** | *Marée* — toutes les 2,2 s, une onde **attire** chaque ennemi vers elle (`push`, donc une impulsion : l'adversaire garde son pilotage), d'une force qui suit la phase. Ceux qu'elle trouve dans le puits sont écrasés. Ce n'est plus l'adversaire qui choisit la distance | calé |
+| **Ultime** | *Éclipse* — horloge 9 s, **`windup: 0`** : le seul ultime du dépôt **sans temps de chargement**. 4 s de nouvelle lune forcée, et le contact devient un **drain** (elle rend ce qu'elle prend). Le Soleil paie sa puissance en visibilité, LUNE la paie en fréquence | calé |
+
+### Le banc, et les deux choses qu'il a démenties
+
+**La Marée infligeait 0 PV.** Écrite « écrase ceux que l'onde trouve *dans* le
+corps » (`d <= f.radius + g.radius`), la condition n'a été vraie **aucune fois
+sur 45 pulsations** : deux corps ne se chevauchent jamais ici, `resolveBodies`
+les sépare à chaque pas. Le pouvoir était mort sur 24 duels sans qu'un garde-fou
+bronche — c'est l'**ablation par `opts.kind`** qui l'a montré, pas la capture
+d'écran, où l'onde violette partait pourtant à chaque cycle. Corrigé par une
+marge explicite (`crushMargin: 40`), la Marée pèse 3,1 %.
+
+**Et surtout : 360 PV ne tenaient pas.** Le raisonnement de départ paraissait
+bon — sa défense est géométrique (4,7 fois moins de surface à la nouvelle lune),
+donc lui donner *aussi* la barre du Soleil cumulerait deux défenses. Le banc l'a
+démenti à **3/24**, et la raison ne se devinait pas depuis la fiche : le duel des
+deux boss dure **92 à 104 s**, or `MATCH.suddenDeath` multiplie les dégâts par 4
+à partir de 55 s. Il se joue donc **entièrement dans la rampe**, où la moindre
+touche emporte un dixième de barre et où esquiver longtemps ne rapporte plus
+rien. **En mort subite, la géométrie ne défend pas — la barre, si.**
+
+Balayage de `maxHp` sur 24 duels, et il est **monotone**, donc c'est un vrai
+levier (à comparer aux trois balayages non monotones de la couronne du Soleil,
+où aucun paramètre n'équilibrait quoi que ce soit) :
+
+| `maxHp` | 360 | 420 | **480** | 540 | 600 |
+| --- | --- | --- | --- | --- | --- |
+| LUNE gagne | 3/24 | 3/24 | **12/24** | 13/24 | 16/24 |
+
+À 480, le duel des boss est à **22/50** sur 25 graines × les deux camps — un
+vrai partage — et LUNE reste à **20/20 contre les sept autres**. La valeur ne
+déplace que la ligne qu'on cherchait à régler.
+
+### Le choix des maquettes : ni l'une ni l'autre, les deux
+
+Deux images ont été fournies : une pleine lune pâle et cernée de cyan, une
+éclipse sombre à liseré violet. Mesuré sur le **disque seul**, halo écarté (le
+piège du halo pêche du Soleil, qui avait déjà faussé un relevé) :
+
+| disque seul | contraste médian sur arène blanche | pixels quasi invisibles | sous le chiffre de PV |
+| --- | --- | --- | --- |
+| pleine lune | **1,54** | **48 %** | 90 % clairs / 0 % sombres |
+| éclipse | **6,51** | 16 % | 5 % clairs / 92 % sombres |
+
+Prise seule, la pleine lune perd la moitié de son corps sur l'arène. Mais le
+choix était **forcé dans l'autre sens** : on peut assombrir une lune éclairée, on
+ne peut pas rallumer une lune éteinte — le disque éclipsé est quasi noir
+(`#0d0a1d`), l'éclaircir rendrait du bruit JPEG et pas des cratères. **Aucune des
+deux seule ne peut jouer le cycle.** D'où la composition : la claire est la face
+éclairée, la sombre est la face d'ombre, et le terminateur les fond.
+
+Bonne surprise du relevé : le contraste suit le cycle (6,49 à la nouvelle lune,
+1,55 à la pleine), donc le point faible est **exactement le moment où le corps
+fait 96 px de rayon**. La taille compense la pâleur toute seule.
 
 ## La norme passe à 200 PV, le Golem à 400 (historique)
 

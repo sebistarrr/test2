@@ -45,6 +45,7 @@ import { MAGE } from './fighters/mage.js';
 import { GOLEM } from './fighters/golem.js';
 import { DUMMY } from './fighters/dummy.js';
 import { SUN } from './fighters/sun.js';
+import { LUNAR } from './fighters/lunar.js';
 
 export const ELEMENTS = deepFreeze({
   wind: WIND,
@@ -55,6 +56,7 @@ export const ELEMENTS = deepFreeze({
   golem: GOLEM,
   dummy: DUMMY,
   sun: SUN,
+  lunar: LUNAR,
 });
 
 /**
@@ -94,6 +96,19 @@ export const ROSTER = deepFreeze([
    * position qui garde les sept autres exactement où ils étaient.
    */
   'sun',
+  /**
+   * **LUNE ferme la marche à son tour**, et pour la même raison que le Soleil :
+   * un boss a des lignes de matrice structurellement à sens unique, et la queue
+   * de `ROSTER` est la seule position qui laisse les huit autres exactement où
+   * ils étaient — le diff de la matrice ne contient alors **que des ajouts**
+   * (invariant 3), ce qui se vérifie d'un coup d'œil.
+   *
+   * Elle passe **après** le Soleil, donc le Soleil est camp A dans leur duel.
+   * Le camp A pèse lourd (piège documenté du Golem) : leur ligne unique est
+   * donc à lire comme un indice, pas comme un verdict. Le banc les rejoue sur
+   * les deux camps.
+   */
+  'lunar',
 ]);
 
 /** @param {string} id */

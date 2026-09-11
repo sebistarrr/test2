@@ -35,6 +35,7 @@ import { MAGE_STAFF, MAGE_ORB, MAGE_FLOWER, ICON_STAFF } from './pixelart/mage.j
 import { GOLEM_ROCK, GOLEM_SHARD, ICON_GOLEM } from './pixelart/golem.js';
 import { ICON_DUMMY } from './pixelart/dummy.js';
 import { SUN_RAY, SUN_CORE, ICON_SUN } from './pixelart/sun.js';
+import { LUNAR_DARK, LUNAR_LIT, ICON_LUNAR } from './pixelart/lunar.js';
 
 export const PIXEL_MAPS = deepFreeze({
   // Hors-la-loi
@@ -69,4 +70,10 @@ export const PIXEL_MAPS = deepFreeze({
   sunRay: SUN_RAY,
   sunCore: SUN_CORE,
   iconSun: ICON_SUN,
+  // Lune — **deux corps**, et c'est le seul du dépôt : `lunarDark` est le
+  // sprite déclaré par la fiche, `lunarLit` est peint par-dessus par le module,
+  // découpé au terminateur. On ajoute en queue, on ne réordonne pas.
+  lunarDark: LUNAR_DARK,
+  lunarLit: LUNAR_LIT,
+  iconLunar: ICON_LUNAR,
 });

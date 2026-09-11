@@ -282,14 +282,26 @@ class Audio {
    * (invariant 12). Le Golem tonne et le Shinobi siffle sans une ligne de code
    * qui les distingue.
    *
+   * **`opts.pitch` transpose *en plus* de la fiche**, il ne la remplace pas :
+   * le combattant garde son timbre, et le module ne fait que le déplacer. C'est
+   * ce qui permet à un pouvoir de dire un **état continu** avec une recette
+   * d'événement — la Marée de LUNE monte d'une octave entre nouvelle et pleine
+   * lune — sans qu'il faille une voix tenue ni que le module nomme une recette
+   * (il nomme toujours un créneau, invariant 12). Absent, le facteur vaut 1 et
+   * le chemin est celui d'avant.
+   *
    * @param {{el:object, x:number}} f combattant émetteur
    * @param {string} slot
-   * @param {{gain?:number, x?:number}} [opts]
+   * @param {{gain?:number, x?:number, pitch?:number}} [opts]
    */
   cast(f, slot, opts = {}) {
     const spec = f?.el?.sound;
     if (!spec) return;
-    this.play(spec[slot], { x: opts.x ?? f.x, pitch: spec.pitch ?? 1, gain: opts.gain });
+    this.play(spec[slot], {
+      x: opts.x ?? f.x,
+      pitch: (spec.pitch ?? 1) * (opts.pitch ?? 1),
+      gain: opts.gain,
+    });
   }
 
   /* ------------------------------------------------------------------ */

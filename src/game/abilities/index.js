@@ -24,6 +24,7 @@ import { mageAbilities } from './mage.js';
 import { golemAbilities } from './golem.js';
 import { dummyAbilities } from './dummy.js';
 import { sunAbilities } from './sun.js';
+import { lunarAbilities } from './lunar.js';
 
 const REGISTRY = {
   wind: windAbilities,
@@ -34,6 +35,7 @@ const REGISTRY = {
   golem: golemAbilities,
   dummy: dummyAbilities,
   sun: sunAbilities,
+  lunar: lunarAbilities,
 };
 
 /** Module neutre : sert de repli pour un élément sans pouvoirs dédiés. */

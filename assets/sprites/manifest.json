@@ -5,6 +5,8 @@
     "windShuriken": "shinobi-shuriken-dark.png",
     "golemRock": "golem-rock.png",
     "sunRay": "sun-ray.png",
-    "sunCore": "sun-core.png"
+    "sunCore": "sun-core.png",
+    "lunarLit": "lunar-lit.png",
+    "lunarDark": "lunar-dark.png"
   }
 }
