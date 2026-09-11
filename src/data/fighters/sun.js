@@ -541,6 +541,32 @@ export const SUN = fiche({
     burn: { damage: 2, interval: 1, duration: 4 },
     /** Anneau de chaleur au sol, tracé par `Effects.ring`. */
     ring: { to: 240, time: 0.55, color: 'rgba(251,191,36,0.85)', width: 9 },
+    /**
+     * **L'arène chauffe à mesure que le Réchauffement approche — demandé.**
+     *
+     * Jusqu'ici, le seul signe de l'horloge était une ligne de HUD et un halo
+     * de 240 px sous le Soleil. Le pouvoir arrivait donc *sur* l'adversaire
+     * sans que rien, dans l'image, n'ait dit qu'il montait. Ces deux valeurs
+     * font monter **le décor lui-même** : plus `ability.timer` tombe, plus
+     * l'arène vire au brûlant, et la décharge la rend d'un coup au blanc.
+     *
+     * Deux couches, et le choix des deux est contraint par la règle de
+     * composition de `flair.js` — *rien entre le spectateur et les combattants,
+     * on remplit par le fond, les bords ou l'arrière* :
+     *  • `tint` — un lavis chaud sur **tout le sol**, dessiné dans `drawUnder`,
+     *    donc sous les combattants ;
+     *  • `vignette` — une braise qui monte **des quatre bords** vers le centre.
+     *
+     * Aucune nuée flottante, aucun voile par-dessus les billes : à pleine
+     * chaleur on voit toujours les deux combattants et les deux chiffres de PV
+     * exactement comme à froid.
+     *
+     * Les valeurs sont les **opacités maximales**, atteintes à `timer = 0`. La
+     * montée est en **carré** (`t²`) et non linéaire : une rampe droite se lit
+     * comme un fondu d'écran, un carré reste froid longtemps puis bascule sur
+     * la dernière seconde — ce qui est l'information utile.
+     */
+    ambience: { tint: 0.38, vignette: 0.64 },
   },
 
   /* ---------- ULTIME — Rayon solaire ---------- */
@@ -645,13 +671,69 @@ export const SUN = fiche({
        * `at` est une fraction de `halfWidth` — les bandes se peignent de la
        * plus large à la plus étroite, donc l'ordre de cette liste compte.
        */
+      /**
+       * **Relevées au profil transversal de la maquette**, et non choisies :
+       * moyenne des colonnes sur la moitié droite de l'image (loin de
+       * l'émetteur), puis lecture des ruptures de teinte. Les positions sont
+       * normalisées sur le **bord extérieur de l'encre brûlée**, qui est aussi
+       * `halfWidth` — donc sur ce que le faisceau blesse.
+       *
+       * | rayon relevé | teinte mesurée | bande |
+       * | --- | --- | --- |
+       * | 0 → 0,11 | `#fefcd4` crème | `core` |
+       * | 0,11 → 0,27 | `#fbf37d` jaune | `light` |
+       * | 0,27 → 0,62 | `#f0ad40` or | `body` |
+       * | 0,62 → 0,83 | `#db4f28` orange-rouge | `shadow` |
+       * | 0,83 → 1,00 | `#9e281b` encre brûlée | `edge` |
+       * | 1,00 → 1,31 | `#fcf66e` **jaune vif** | glow extérieur |
+       *
+       * **Ce que l'ancien faisceau n'avait pas, et c'est tout le changement :
+       * un liseré clair *à l'extérieur* de l'encre.** Les cinq bandes
+       * allaient du sombre au clair de façon monotone, donc le rayon se
+       * terminait sur son trait le plus sombre et se posait comme une barre
+       * peinte. La maquette fait l'inverse : elle **rallume** au-delà du
+       * contour, et c'est ce halo qui le fait rayonner au lieu d'être posé.
+       *
+       * Les deux bandes au-delà de 1 sont **du décor, pas de la géométrie** :
+       * `halfWidth` borne les dégâts, donc **l'encre brûlée marque exactement
+       * le bord de ce qui blesse**, et la lueur qui déborde ne touche
+       * personne. Le dessin ne ment pas sur la géométrie — il la souligne.
+       */
       bands: [
-        { at: 1, tint: 'edge', alpha: 0.9 },
-        { at: 0.9, tint: 'shadow', alpha: 0.92 },
-        { at: 0.68, tint: 'body', alpha: 0.95 },
-        { at: 0.42, tint: 'light', alpha: 0.97 },
-        { at: 0.18, tint: 'core', alpha: 1 },
+        { at: 1.42, tint: 'light', alpha: 0.2 },
+        { at: 1.18, tint: 'core', alpha: 0.5 },
+        { at: 1, tint: 'edge', alpha: 0.95 },
+        { at: 0.83, tint: 'shadow', alpha: 0.95 },
+        { at: 0.62, tint: 'body', alpha: 0.96 },
+        { at: 0.27, tint: 'light', alpha: 0.98 },
+        { at: 0.11, tint: 'core', alpha: 1 },
       ],
+      /**
+       * **Les filaments** — les zigzags clairs qui courent dans le faisceau sur
+       * la maquette, et la seule chose qui dise qu'il *coule* plutôt qu'il
+       * n'est allumé. Sans eux, un rayon de 2,5 s est une image fixe.
+       *
+       * Longueurs en multiples de `halfWidth`, pour que tout suive si on
+       * élargit le faisceau. **Aucun tirage** : les sommets sont posés à
+       * intervalle régulier et l'ensemble glisse avec le temps, comme
+       * l'animation de charge — deux duels à la même graine montrent les mêmes
+       * filaments aux mêmes instants.
+       */
+      filaments: {
+        count: 2,
+        amplitude: 0.34, // ±34 % de la demi-largeur, relevé sur la maquette
+        wavelength: 2.4, // une dent tous les 2,4 × halfWidth
+        speed: 0.55, // longueurs d'onde par seconde
+        width: 3,
+        alpha: 0.85,
+      },
+      /**
+       * **Les braises** de la maquette, qui partent de l'émetteur et remontent
+       * le faisceau. Purement décoratives — elles ne blessent pas, elles disent
+       * le sens de l'écoulement. Déterministes elles aussi : position déduite du
+       * temps et de l'index, jamais d'un tirage.
+       */
+      embers: { count: 5, radius: 0.14, span: 0.3, speed: 0.45 },
       /**
        * **6 par tic, un tic toutes les 0,15 s** — inchangés, c'est la *durée*
        * qui a doublé. Sur 2,5 s de tir, cela fait jusqu'à **96 PV** contre 42

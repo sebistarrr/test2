@@ -23,13 +23,13 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 387 |
 | &nbsp;&nbsp;· Éditer les données | 426 |
 | &nbsp;&nbsp;· Interface et rendu | 552 |
-| &nbsp;&nbsp;· Le son | 648 |
-| &nbsp;&nbsp;· Refactoriser | 1084 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 1125 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1127 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1170 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1213 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1232 |
+| &nbsp;&nbsp;· Le son | 687 |
+| &nbsp;&nbsp;· Refactoriser | 1123 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1164 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1166 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1209 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1252 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1271 |
 
 ---
 
@@ -644,6 +644,45 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   pas contre le parent. Correction : le bloc de camp passe à la ligne comme la
   rangée de camps le faisait déjà, et les emplacements se resserrent à cinq. La
   bataille royale à cinq y gagne au passage — elle débordait aussi.
+
+- **Une ambiance d'arène se règle sur les *bords*, pas sur le centre.** Demandé
+  que le décor chauffe à mesure que le Réchauffement du Soleil approche de zéro.
+  Deux couches, et leurs opacités ne se règlent pas ensemble : le **lavis au
+  sol** traverse toute l'aire de jeu, donc chaque dixième coûte de la lisibilité
+  sur les combattants ; la **braise des quatre bords** ne coûte rien, parce que
+  c'est précisément là que rien ne se passe. Poussées ensemble à 0,45, l'arène
+  lisait « tiède » ; poussée la vignette seule à **0,64** contre 0,38 au lavis,
+  elle lit « brûlant » — et les deux billes et leurs deux chiffres de PV restent
+  aussi lisibles qu'à froid.
+
+  Deux contraintes qui ont décidé de la forme :
+  - **`flair.js` interdit la nuée flottante** (« rien entre le spectateur et les
+    combattants — remplir par le fond, les bords ou l'arrière »). D'où deux
+    remplissages dans `drawUnder`, sous les billes, et rien par-dessus ;
+  - **le décor ne bouge pas** (invariant 4) : il reste rasterisé une fois et
+    blitté en un `drawImage`. On peint **par-dessus**, ce qui se retire en
+    changeant deux nombres de la fiche.
+
+  Et la montée est en **carré**, pas linéaire : une rampe droite se lit comme un
+  fondu d'écran, `t²` reste froid longtemps puis bascule sur la dernière seconde
+  — ce qui est l'information utile.
+
+- **Mesurer une couleur sur une capture, c'est mesurer un instant qu'on n'a pas
+  choisi.** Après avoir relevé le nouveau faisceau du Soleil, son profil rendu
+  ne ressemblait pas du tout aux bandes de la fiche : centre `#edba60` au lieu de
+  `#fdf17f`, encre brûlée rendue en mauve. Deux heures de suspects — palette,
+  ordre des bandes, compositing, l'ambiance elle-même — avant de comprendre que
+  **la capture était tombée dans les 0,25 s de fondu du faisceau**, où il est
+  translucide et laisse voir le sol au travers. Les bandes étaient justes depuis
+  le début : recomposées hors jeu sur un canvas isolé, elles rendent exactement
+  les valeurs prévues (`edge` → `#650e09`).
+
+  La règle qui en sort : **lire l'état au moment de la capture**, pas seulement
+  l'image. `shot.mjs` attend en temps de montre et le jeu tourne sur `rAF` : deux
+  exécutions ne tombent pas sur le même pas de simulation, et un effet qui varie
+  dans le temps (fondu, phase, charge) sera échantillonné au hasard. Le banc de
+  capture de ce chantier interroge donc `__match` — `ult.active`, `firing`,
+  `ability.timer` — et **attend la fenêtre voulue** avant de déclencher.
 
 ### Le son
 

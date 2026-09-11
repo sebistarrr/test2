@@ -36,6 +36,7 @@
  */
 
 import { TAU, rotateToward, segmentPointDistance } from '../../core/math.js';
+import { ARENA } from '../../data/tuning.js';
 
 /**
  * `#rrggbb` de la fiche + opacité → `rgba(...)`.
@@ -284,6 +285,7 @@ export const sunAbilities = {
     if (!f.onStage) return;
     const a = f.el.ability;
     const t = 1 - Math.max(0, Math.min(1, f.ability.timer / a.cooldown)); // 0 → 1
+    this.drawAmbiance(ctx, a, t, f.el.look.palette);
     ctx.save();
     ctx.globalAlpha = 0.1 + 0.28 * t * t;
     const g = ctx.createRadialGradient(f.x, f.y, f.radius, f.x, f.y, a.radius);
@@ -309,7 +311,7 @@ export const sunAbilities = {
     if (f.ult.active <= 0 || !f.onStage) return;
     const ult = f.el.ultimate;
     const ecoule = ult.duration - f.ult.active;
-    if (f.state.firing) this.drawBeam(ctx, f, ult);
+    if (f.state.firing) this.drawBeam(ctx, f, ult, now);
     else this.drawWindup(ctx, f, ult, Math.max(0, Math.min(1, ecoule / ult.windup)), now);
   },
 
@@ -474,7 +476,7 @@ export const sunAbilities = {
    * — or celui-ci va jusqu'au mur. Ce qui varie sur la longueur, c'est
    * l'opacité d'ensemble, et seulement à l'extinction.
    */
-  drawBeam(ctx, f, ult) {
+  drawBeam(ctx, f, ult, now) {
     const b = ult.beam;
     const pal = f.el.look.palette;
     // dernier quart de seconde : le faisceau s'éteint au lieu de disparaître
@@ -492,6 +494,9 @@ export const sunAbilities = {
       ctx.fillRect(0, -demi, b.length, demi * 2);
     }
 
+    this.drawFilaments(ctx, b, pal, now);
+    this.drawEmbers(ctx, b, pal, now);
+
     // le point de départ, plus intense : le rayon sort de lui, il n'apparaît pas
     const g = ctx.createRadialGradient(0, 0, 0, 0, 0, b.halfWidth * 2);
     g.addColorStop(0, teinte(pal.core, 0.9));
@@ -500,6 +505,140 @@ export const sunAbilities = {
     ctx.beginPath();
     ctx.arc(0, 0, b.halfWidth * 2, 0, TAU);
     ctx.fill();
+    ctx.restore();
+  },
+
+  /**
+   * **L'arène chauffe à mesure que le Réchauffement approche — demandé.**
+   *
+   * Le seul signe de l'horloge était jusqu'ici une ligne de HUD et le halo de
+   * 240 px sous l'astre. Le pouvoir arrivait donc *sur* l'adversaire sans que
+   * rien, dans l'image, n'ait dit qu'il montait.
+   *
+   * **Deux couches, et le choix des deux est contraint.** La règle de
+   * composition de `flair.js` est explicite : *rien entre le spectateur et les
+   * combattants — remplir le cadre par le fond, les bords ou l'arrière du
+   * combattant, jamais par une nuée flottante.* D'où un **lavis au sol** et une
+   * **braise qui monte des quatre bords**, les deux dans `drawUnder`, donc sous
+   * les billes. À pleine chaleur, on voit toujours les deux combattants et les
+   * deux chiffres de PV exactement comme à froid.
+   *
+   * **La montée est en carré**, pas linéaire : une rampe droite se lit comme un
+   * fondu d'écran, `t²` reste froid longtemps puis bascule sur la dernière
+   * seconde — ce qui est l'information utile. Et la décharge remet à zéro d'un
+   * coup, ce qui donne au pouvoir la respiration qu'il n'avait pas.
+   *
+   * **Le décor, lui, n'a pas bougé** (invariant 4) : il reste rasterisé une
+   * fois dans `scene.js` et blitté en un `drawImage`. On peint **par-dessus**,
+   * ce qui ne coûte que deux remplissages et se retire en changeant deux
+   * nombres de la fiche.
+   *
+   * En miroir (deux Soleils), les deux ambiances s'additionnent : l'arène est
+   * deux fois plus chaude, ce qui est exactement ce qu'on veut voir, et les
+   * opacités sont assez basses pour que la somme ne sature pas.
+   *
+   * Les trois teintes viennent de `look.palette`, comme tout le reste du
+   * module : **aucun littéral de couleur ici non plus**. C'est ce qui fait
+   * que repalettiser le Soleil repeint aussi sa chaleur d'ambiance, au lieu de
+   * la laisser dériver du personnage qu'elle annonce.
+   */
+  drawAmbiance(ctx, a, t, pal) {
+    const amb = a.ambience;
+    if (!amb) return;
+    const k = t * t; // voir ci-dessus : carré, pas rampe
+    const i = ARENA.inner;
+    const w = i.right - i.left;
+    const h = i.bottom - i.top;
+
+    ctx.save();
+    // 1. le lavis au sol
+    ctx.globalAlpha = amb.tint * k;
+    ctx.fillStyle = teinte(pal.body, 1);
+    ctx.fillRect(i.left, i.top, w, h);
+
+    // 2. la braise qui monte des bords — un dégradé radial inversé, centré sur
+    //    l'arène : transparent au milieu, saturé aux quatre bords
+    ctx.globalAlpha = amb.vignette * k;
+    const cx = i.left + w / 2;
+    const cy = i.top + h / 2;
+    const g = ctx.createRadialGradient(cx, cy, Math.min(w, h) * 0.18, cx, cy, Math.max(w, h) * 0.72);
+    g.addColorStop(0, teinte(pal.shadow, 0));
+    g.addColorStop(0.55, teinte(pal.shadow, 0.25));
+    g.addColorStop(1, teinte(pal.edge, 0.95));
+    ctx.fillStyle = g;
+    ctx.fillRect(i.left, i.top, w, h);
+    ctx.restore();
+  },
+
+  /**
+   * **Les filaments** — les zigzags de la maquette, et ce qui fait que le
+   * faisceau *coule* au lieu d'être allumé.
+   *
+   * **Les sommets sont posés aux pointes, pas échantillonnés.** Évaluer une
+   * onde triangulaire à pas régulier donnerait des dents dont l'amplitude
+   * *respire* au lieu de défiler — l'échantillonnage bat avec la phase. On pose
+   * donc un sommet toutes les demi-longueurs d'onde, alternativement en haut et
+   * en bas, et on **décale toute la ligne** : la dent garde sa forme exacte et
+   * remonte le faisceau.
+   *
+   * Le tracé est écrêté au faisceau : sans ça, les pointes dépasseraient à la
+   * bouche, là où le rayon est censé sortir du corps.
+   */
+  drawFilaments(ctx, b, pal, now) {
+    const fl = b.filaments;
+    if (!fl) return;
+    const onde = b.halfWidth * fl.wavelength;
+    const amp = b.halfWidth * fl.amplitude;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, -b.halfWidth, b.length, b.halfWidth * 2);
+    ctx.clip();
+    ctx.lineWidth = fl.width;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = teinte(pal.core, fl.alpha);
+
+    for (let k = 0; k < fl.count; k++) {
+      // chaque filament part d'une phase différente et du côté opposé : deux
+      // dents en miroir, comme sur la maquette
+      const sens = k % 2 ? -1 : 1;
+      const decal = ((now * fl.speed + k / fl.count) % 1) * onde;
+      ctx.beginPath();
+      let premier = true;
+      for (let i = -1; i * (onde / 2) - decal <= b.length + onde; i++) {
+        const x = i * (onde / 2) - decal;
+        const y = sens * amp * (i % 2 ? 1 : -1);
+        if (premier) { ctx.moveTo(x, y); premier = false; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  },
+
+  /**
+   * **Les braises**, qui remontent le faisceau depuis l'émetteur et pâlissent
+   * en s'éloignant. Elles disent le **sens de l'écoulement** — sans elles, un
+   * faisceau symétrique ne dit pas d'où il part.
+   *
+   * Déterministes comme tout le reste du personnage : position et taille sont
+   * des fonctions du temps et de l'index, jamais d'un tirage. Une décoration
+   * qui puiserait dans `game.rng` déplacerait les vainqueurs (invariant 2).
+   */
+  drawEmbers(ctx, b, pal, now) {
+    const em = b.embers;
+    if (!em) return;
+    ctx.save();
+    for (let k = 0; k < em.count; k++) {
+      const u = (now * em.speed + k / em.count) % 1;
+      const x = u * b.length;
+      const y = Math.sin(k * 2.39 + now * 1.7) * b.halfWidth * em.span;
+      const r = b.halfWidth * em.radius * (1 - u * 0.6);
+      ctx.globalAlpha = (1 - u) * 0.85;
+      ctx.fillStyle = teinte(pal.core, 1);
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(0.5, r), 0, TAU);
+      ctx.fill();
+    }
     ctx.restore();
   },
 

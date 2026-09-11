@@ -738,6 +738,14 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Une maquette fournie décide de la palette du personnage**, pas l'inverse :
   l'échantillonner par bandes de luminance donne les cinq teintes de tout son
   bloc `look`, et empêche le repli texte et l'icône d'en diverger.
+- **Une ambiance d'arène se règle sur les bords, pas sur le centre** : la
+  vignette peut aller bien plus loin que le lavis au sol sans coûter de
+  lisibilité, puisque les combattants vivent au milieu (Soleil, 0,64 contre
+  0,38). Montée en **carré**, jamais linéaire.
+- **Mesurer une couleur sur une capture, c'est mesurer un instant qu'on n'a pas
+  choisi** : `shot.mjs` attend en temps de montre, le jeu tourne sur `rAF`.
+  Interroger `__match` et **attendre la fenêtre voulue** — un faisceau relevé
+  pendant son fondu donne les couleurs du sol, pas les siennes.
 - **Un trait clair seul n'existe pas sur l'arène blanche** : doubler d'un liseré
   large et saturé sous le cœur clair (l'axe d'annonce du Rayon solaire).
 - **Un ruban de pointe d'arme ne suit qu'une branche** (`flair.js` lit
