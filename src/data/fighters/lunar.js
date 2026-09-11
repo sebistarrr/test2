@@ -2,54 +2,56 @@ import { fiche, SPIN } from '../defaults.js';
 import { formatSeconds } from '../format.js';
 
 /* ==========================================================================
- *  LUNE  (MOON) — le **second boss**, et l'inverse du premier
+ *  LUNE  (MOON) — le **second boss**, entièrement redessiné
  *
  *  Quatrième combattant **inventé** du dépôt. Aucune vidéo de référence, donc
  *  **aucune valeur ne peut porter `mesuré`** : tout y est `calé` ou `déduit`.
  *
- *  **Ce qu'elle est.** Le Soleil est *un* événement qu'il faut savoir éviter :
- *  deux secondes d'annonce, un faisceau, et le duel se joue sur le moment.
- *  LUNE est l'inverse — **aucune annonce, mais un personnage qui n'est jamais
- *  le même deux secondes de suite.** Le Soleil te punit si tu es au mauvais
- *  endroit au mauvais instant ; LUNE te force à réapprendre le combat en
- *  permanence.
+ *  ------------------------------------------------------------------------
+ *  **Ce qu'elle était, et pourquoi plus rien n'en reste.** La première version
+ *  tenait tout entière dans un nombre invisible : l'illumination, qui montait et
+ *  redescendait sur 12 s et réécrivait son rayon (44 → 96), sa vitesse
+ *  (600 → 250) et son contact (1 → 7). Sur le papier c'était le contraire du
+ *  Soleil ; à l'écran c'était **un personnage sans silhouette** — une arme
+ *  invisible (`head.sprite: null`), deux pouvoirs qui ne dessinaient qu'un
+ *  anneau, et un corps composé de deux images dont la claire recouvrait la
+ *  sombre exactement là où la maquette était la plus belle. Redemandée en
+ *  entier (« j'aime pas trop moon, peux-tu le revoir complètement, conserve sa
+ *  taille »), elle est refaite sur un principe inverse : **tout ce qui la fait
+ *  gagner doit se voir**.
  *
- *  **Un seul nombre porte tout le personnage.** `f.state.ill`, l'illumination,
- *  va de 0 à 1 et revient, sur un cycle de 12 s. Il est **continu et sans
- *  aucun tirage** — donc déterministe, comme l'animation de charge du Soleil.
- *  Tout en découle, et rien d'autre ne le décide :
+ *  **Ce qu'elle est maintenant : un astre criblé, et son anneau.** Un corps
+ *  presque noir de **rayon 88, fixe**, la face d'éclipse de la maquette avec son
+ *  limbe qui brûle ; autour, **trois satellites** de 44 px en orbite lente, qui
+ *  sont son arme (`weapon.spokes: 3`, et ils sont *dessinés*, eux). Tout le
+ *  personnage est cette image-là, et ses deux pouvoirs n'en sortent pas :
  *
- *  | | 🌑 nouvelle (0) | 🌓 (0,5) | 🌕 pleine (1) |
- *  | --- | --- | --- | --- |
- *  | rayon du corps | **44** | 70 | **96** |
- *  | vitesse | **600 px/s** | 425 | **250 px/s** |
- *  | dégâts de contact | 1 | 4 | **7** |
- *  | force de Marée | 0 | 100 | **200** |
+ *   • **Météores** — trois cailloux quittent l'anneau et tombent sur la cible,
+ *     annoncés au sol pendant leur chute. C'est sa portée, celle qu'elle n'avait
+ *     pas du tout ;
+ *   • **Éclipse** — elle enfle jusqu'à 116 de rayon, l'arène passe à la nuit, et
+ *     son anneau devient mortel pendant 3,5 s.
  *
- *  Le roster va de 230 (Soleil) à 655 px/s (Pistolero) et de 41 à 96 de rayon :
- *  **LUNE traverse toute l'amplitude du jeu à elle seule, en douze secondes.**
+ *  **Le partage avec le Soleil, qui est la raison d'être des deux.** Lui est
+ *  planté (230 px/s) et ne produit que par *un* événement annoncé deux secondes
+ *  à l'avance, sur une ligne qu'on peut quitter. Elle est **mobile** (430 px/s,
+ *  presque le double), elle produit **en continu par le contact**, et son
+ *  annonce à elle n'est pas une ligne mais **une zone au sol**. On fuit le
+ *  Soleil sur le côté ; on ne fuit pas la Lune, on choisit seulement où être
+ *  quand elle arrive.
  *
- *  **Sa défense n'est pas une réduction de dégâts** — le dépôt n'en a jamais
- *  mis et le répète. Elle est **géométrique** : à la nouvelle lune elle est 4,7
- *  fois plus petite en surface et 2,4 fois plus rapide. On ne la touche pas
- *  parce qu'elle est minuscule et vive, pas parce qu'un chiffre annule les
- *  dégâts.
- *
- *  **Le couple à connaître avant d'y toucher.** Toute la production du Soleil
- *  passe par un faisceau dont l'axe **se fige au tir**, et son horloge fait
- *  **7 s** quand le cycle de LUNE en fait **12**. Les deux ne retombent en
- *  phase que toutes les 84 s : l'instant du tir se promène donc dans le cycle
- *  lunaire, et le duel des deux boss est une **course d'horloges** plutôt qu'un
- *  échange de dégâts. C'est voulu, et c'est la seule ligne de matrice que les
- *  deux boss se disputent.
+ *  **Les deux maquettes sont conservées, elles ont juste échangé leurs rôles** —
+ *  demandé. `lunar-dark.png` est le corps, seul et entier (le terminateur qui le
+ *  recouvrait a disparu avec le cycle) ; `lunar-lit.png` est le satellite, donc
+ *  aussi le météore. Chacune est enfin dessinée à la taille où elle se lit.
  * ========================================================================== */
 export const LUNAR = fiche({
   id: 'lunar',
   /** Archétype traduit, comme SOLEIL/SUN et DRUIDE/DRUID. */
   name: 'LUNE',
   nameRef: 'MOON',
-  tagline: 'Astre changeant — elle attire, elle écrase, et elle n’annonce rien',
-  taglineRef: 'Changing star — it pulls, it crushes, and it warns of nothing',
+  tagline: 'Astre criblé — son anneau tourne, et par moments il tombe',
+  taglineRef: 'Cratered star — its ring turns, and now and then it falls',
   icon: 'iconLunar',
   /** **Rangée de l'écran de sélection**, et rien d'autre.
    *  Boss, comme le Soleil, et regroupé avec lui à l'écran de sélection. Clé lue
@@ -57,85 +59,83 @@ export const LUNAR = fiche({
   tier: 'boss',
 
   /**
-   * **480 PV**, contre 500 au Soleil et 100 à la norme — et ce chiffre est
-   * **le seul de la fiche qui ait été calé au banc plutôt que posé**.
+   * **480 PV**, contre 500 au Soleil et 100 à la norme.
    *
-   * Il valait 360 à l'écriture, sur un raisonnement qui paraissait bon : une
-   * partie de la survie de LUNE est géométrique (4,7 fois moins de surface à
-   * toucher à la nouvelle lune), donc lui donner *aussi* la barre du Soleil
-   * cumulerait deux défenses. **Le banc l'a démenti, et pour une raison qui ne
-   * se devinait pas** : le duel des deux boss dure 92 à 104 s, or
-   * `MATCH.suddenDeath` multiplie les dégâts par 4 à partir de 55 s. Il se
-   * joue donc **entièrement dans la rampe**, où chaque touche est fatale et où
-   * esquiver longtemps ne sert plus à rien. En mort subite, la géométrie ne
-   * défend pas — la barre, si.
+   * Le chiffre survit au redessin, et il n'a pas été repris par habitude : il a
+   * été **rebalayé après coup**, parce que tout ce qui le justifiait a changé.
+   * Le raisonnement, lui, tient toujours — le duel des deux boss dure une
+   * minute et demie, or `MATCH.suddenDeath` multiplie les dégâts par 4 à partir
+   * de 55 s, donc il se joue **entièrement dans la rampe**, où esquiver
+   * longtemps ne sert plus à rien et où la barre est le seul levier qui reste.
    *
-   * Le balayage est **monotone**, donc c'est un vrai levier et non du bruit :
-   * 360 → 3/24, 420 → 3/24, 480 → **12/24**, 540 → 13/24, 600 → 16/24. À 480 le
-   * duel des boss est à **22/50** sur 25 graines × les deux camps, et LUNE
-   * reste à 20/20 contre les sept autres — la valeur ne touche qu'une ligne de
-   * la matrice, celle qu'on cherchait à équilibrer.
+   * Le balayage reste **monotone**, donc c'est un vrai levier et non du bruit —
+   * voir `docs/FICHES.md` pour le relevé après redessin.
    *
    * Aucune réduction de dégâts, comme tous les autres : un seul chiffre porte
    * sa résistance, donc le banc n'a qu'un levier à tourner.
    */
-  maxHp: 480,
+  maxHp: 460,
 
   look: {
     /**
-     * **Le rayon de *référence*, pas le rayon vu.** C'est le premier combattant
-     * du dépôt dont le corps change de taille : son module écrit
-     * `f.sizeFactor`, que `Fighter.radius` multiplie (compteur générique,
-     * invariant 7).
+     * **88, et c'est une vraie constante maintenant — demandé** (« conserve sa
+     * taille », précisé en « juste un gros corps, taille fixe »).
      *
-     * 70 est la **mi-course** : × 0,629 à la nouvelle lune (44, entre la norme
-     * 41 et le Golem 50), × 1,371 à la pleine (96, le plus gros corps du jeu,
-     * devant les 82 du Soleil). Poser ici la valeur médiane plutôt qu'un des
-     * deux bouts évite qu'un lecteur de la fiche croie voir la taille réelle.
+     * C'était le *rayon de référence* d'un corps qui respirait entre 44 et 96 ;
+     * c'est désormais le rayon, point. 88 est pris **au-dessus du Soleil** (82)
+     * et sous l'ancien maximum (96) : elle est le plus gros corps du jeu, ce qui
+     * est la moitié de sa présence à l'écran, et la seule chose qui l'agrandisse
+     * encore est son ultime.
      *
-     * Et **un seul getter fait tout suivre** : murs, séparation des corps,
-     * aura, contour, chiffre de PV et le sprite de corps lui-même. Elle grossit
-     * d'un bloc, sans une ligne de plus.
+     * `f.sizeFactor` (compteur générique, invariant 7) n'a pas disparu pour
+     * autant — l'Éclipse l'écrit pour porter le corps à 116 le temps de la
+     * totalité. Il a changé de nature : il était un **cycle**, il est devenu un
+     * **moment**.
      */
-    radius: 70,
+    radius: 88,
     /**
-     * **Cinq teintes relevées sur les *deux* maquettes** — le seul combattant
-     * dans ce cas, parce que son corps l'est aussi : les trois sombres viennent
-     * de la face d'éclipse, les deux claires de la face éclairée (bandes de
-     * luminance, 3ᵉ · 20ᵉ · 50ᵉ · 80ᵉ · 97ᵉ centile des pixels opaques).
+     * **Cinq teintes relevées sur *une* maquette**, et c'est un changement :
+     * elles venaient des deux, trois de l'éclipse et deux de la pleine lune, du
+     * temps où le corps était composé des deux images. La pleine lune n'est plus
+     * le corps — elle est un satellite de 44 px —, donc la laisser décider de la
+     * couleur du personnage reviendrait à colorier la lune d'après ses cailloux.
      *
-     * Le violet `#604f9c` est posé en `body` — donc c'est lui qui teinte la
-     * carte de sélection et les gerbes de dégâts — parce que c'est **la
-     * signature** : personne d'autre du roster n'a de violet depuis la
-     * suppression de Neon Shadow.
+     * Bandes de luminance sur les pixels opaques de `lunar-dark.png`, 3ᵉ · 20ᵉ ·
+     * 50ᵉ · 80ᵉ · 97ᵉ centile — la méthode du Soleil. Le déplacement est petit
+     * (`light` passe du cyan `#b5d5e4` au gris-lavande `#bfc0de`) mais il ferme
+     * la seule porte par laquelle la palette pouvait dériver du dessin.
+     *
+     * Le violet `#604ea1` reste en `body` — donc c'est lui qui teinte la carte
+     * de sélection et les gerbes de dégâts — parce que c'est **la signature** :
+     * c'est la couleur de la couronne d'éclipse, la chose la plus voyante du
+     * dessin, et personne d'autre du roster n'a de violet.
      *
      * Source unique, comme pour le Soleil : le module n'a **aucun littéral de
      * couleur**, et les trois cartes de `pixelart/lunar.js` recopient ces cinq
-     * lignes. C'est ce qui empêche le faisceau, l'icône et le repli de dériver
-     * du dessin qu'ils prolongent.
+     * lignes.
      */
     palette: {
-      edge: '#0d0a1d', // encre, le noir bleuté de l'éclipse
-      shadow: '#1e1837', // ombre
-      body: '#604f9c', // violet — la signature
-      light: '#b5d5e4', // gris-bleu des cratères éclairés
-      core: '#e7fdff', // blanc froid du limbe
+      edge: '#0d0a21', // encre, le noir bleuté du disque éteint
+      shadow: '#1d1738', // ombre
+      body: '#604ea1', // violet — la couronne d'éclipse, et la signature
+      light: '#bfc0de', // gris-lavande des poussières éclairées
+      core: '#f9fdfd', // blanc froid du limbe
     },
     /**
-     * **Le corps est un sprite, et c'est le second du roster** — mais le
-     * premier à en être **deux** : `lunarDark` est la face d'ombre, déclarée
-     * ici, et le module peint `lunarLit` par-dessus, découpée au terminateur.
+     * **Le corps est un sprite, et il est enfin *un seul*.**
      *
-     * **C'est la face sombre qui est déclarée, pas la claire**, et c'est un
-     * choix de mode de panne : si l'overlay ne se dessinait plus, on verrait un
-     * disque parfaitement lisible plutôt qu'une lune pâle à moitié invisible.
-     * Relevé sur les maquettes, contraste médian contre l'arène blanche :
-     * **6,5** pour la face d'ombre, **1,54** pour la face claire — dont 48 %
-     * des pixels sous le seuil de visibilité.
+     * Le module peignait `lunarLit` par-dessus, découpée au terminateur, selon
+     * la phase. C'est parti avec le cycle, et c'est le geste qui change le plus
+     * l'écran : le terminateur recouvrait exactement ce que la maquette a de
+     * meilleur — l'anneau de lumière rasante qui cerne le disque éteint — et à
+     * pleine lune il n'en restait rien. Contraste médian contre l'arène
+     * blanche : **6,5** pour ce dessin-ci, **1,54** pour celui qui le
+     * recouvrait, dont 48 % des pixels sous le seuil de visibilité. Le
+     * personnage passait donc la moitié de son temps à être presque invisible.
      *
-     * Pas de `spriteScale` : les deux PNG sont coupés à leur disque, ils
-     * remplissent exactement leur cadre, la correction vaudrait 1 — et une clé
-     * qui recopie son défaut est une occasion de divergence silencieuse.
+     * Pas de `spriteScale` : le PNG est coupé à son disque, il remplit
+     * exactement son cadre, la correction vaudrait 1 — et une clé qui recopie
+     * son défaut est une occasion de divergence silencieuse.
      */
     sprite: 'lunarDark',
     /** Le voile d'encaissement se **pose par-dessus** le dessin au lieu de le
@@ -143,184 +143,290 @@ export const LUNAR = fiche({
      *  que celui du Soleil : le corps est sombre, un voile clair y ressort
      *  davantage. */
     spriteFlash: 0.55,
-    body: '#604f9c',
+    body: '#604ea1',
     /** **Il éclaircit au lieu d'assombrir** — l'inverse du roster. Sur un corps
      *  presque noir, un flash sombre ne se verrait pas ; c'est la même
      *  compensation que le Mannequin, qui rougit au lieu de blanchir. */
-    bodyHit: '#e7fdff',
-    outline: '#0d0a1d',
+    bodyHit: '#f9fdfd',
+    outline: '#0d0a21',
     outlineWidth: 6,
     /**
-     * **Chiffre de PV cerné — et ici ce n'est pas un confort, c'est la seule
-     * solution.** Sous l'empreinte des digits, la proportion clair/sombre
-     * **traverse tout le cycle** : 6 % / 91 % à la nouvelle lune, **44 % / 44 %
-     * à mi-course**, 89 % / 0 % à la pleine. Aucune encre unique ne tient — pire
-     * que le Soleil (53/40), qui avait déjà forcé l'apparition de `hpStroke`.
-     * Le contour isole le chiffre au lieu d'essayer de composer.
+     * **Chiffre de PV cerné.** Le corps n'est plus qu'une image, mais c'est une
+     * image **contrastée** : sous l'empreinte des digits cohabitent l'encre du
+     * disque et le blanc du limbe. Aucune encre unique ne tient sur les deux —
+     * même situation que le Soleil (53 % clair / 40 % sombre), qui avait déjà
+     * forcé l'apparition de `hpStroke`. Le contour isole le chiffre au lieu
+     * d'essayer de composer.
      */
-    hpColor: '#f2f7ff',
-    hpStroke: '#0d0a1d',
+    hpColor: '#f9fdfd',
+    hpStroke: '#0d0a21',
     /**
      * **L'anneau de poussière de glace, rendu au jeu plutôt que cuit dans
-     * l'image.** Les maquettes en portent un ; il a été coupé au détourage,
-     * parce qu'un halo cuit serait figé alors que celui-ci **bat**. Même
-     * raisonnement que pour le halo pêche du Soleil.
+     * l'image.** La maquette en porte un ; il a été coupé au détourage, parce
+     * qu'un halo cuit serait figé alors que celui-ci **bat**. Même raisonnement
+     * que pour le halo pêche du Soleil. Resserré depuis le redessin (1,22 →
+     * 1,12) : le corps a grossi, et l'orbite des satellites occupe désormais
+     * l'espace que le halo prenait.
      */
-    aura: { color: 'rgba(96,79,156,0.40)', radius: 1.22, pulse: 0.55, showWhen: 'always' },
+    aura: { color: 'rgba(96,78,161,0.38)', radius: 1.12, pulse: 0.5, showWhen: 'always' },
     flair: {
-      motes: { rate: 12, size: 8, drift: 18, rise: -14, colors: ['#e7fdff', '#b5d5e4', '#604f9c'] },
-      impact: ['#e7fdff', '#ffffff', '#604f9c'],
+      motes: { rate: 12, size: 8, drift: 18, rise: -14, colors: ['#f9fdfd', '#bfc0de', '#604ea1'] },
+      impact: ['#f9fdfd', '#ffffff', '#604ea1'],
       shape: 'spark',
-      castFlash: 'rgba(231,253,255,0.5)',
+      castFlash: 'rgba(249,253,253,0.5)',
     },
-    trail: { color: 'rgba(96,79,156,0.24)', every: 0.05, life: 0.4 },
-    accent: '#b5d5e4',
+    trail: { color: 'rgba(96,78,161,0.24)', every: 0.05, life: 0.4 },
+    accent: '#bfc0de',
   },
 
   sound: {
     pitch: 0.62,
-    shot: null, // aucun projectile
+    shot: null, // aucun projectile : les météores sont tenus par son module
     hit: 'knell',
+    /** **Le fracas des météores qui touchent le sol.** Le créneau générique du
+     *  projectile perdu, rebranché sur l'atterrissage — elle n'a pas de
+     *  projectile, il serait mort sans ça (piège « une recette meurt quand le
+     *  créneau qui la nommait cesse d'être joué »). */
     impact: 'impact',
     bounce: 'thud',
-    ability: 'swell',
+    /** `hail` remplace `swell`, qui disait une houle qui enfle : la Marée n'existe
+     *  plus, et un caillou qui tombe ne monte pas. Voir `data/sound.js`. */
+    ability: 'hail',
     special: null,
     ultimate: 'umbra',
   },
 
   /**
-   * **250 px/s — et c'est son *plancher*, pas sa vitesse.**
+   * **430 px/s — et c'est le chiffre qui la sépare le plus du Soleil.**
    *
-   * `movement.speed` est la vitesse de **pleine lune**, la plus lente ; le
-   * module la remonte jusqu'à 600 à la nouvelle en écrivant `f.boostFactor`,
-   * le compteur générique qui existait déjà. Aucune clé de moteur n'a été
-   * ajoutée pour ça.
+   * Il valait 250 (plancher d'un cycle qui montait à 600). Le cycle parti, il
+   * fallait trancher, et le banc n'a pas eu à départager : le Soleil est
+   * **planté** (230, le plus lent du roster de très loin) parce que toute sa
+   * production passe par un faisceau qu'il tire à l'arrêt. Un second boss qui
+   * produirait par le **contact** ne peut pas être lent : il ne toucherait
+   * jamais. 430 la met au niveau du Golem et de l'Hoplite — au milieu du roster,
+   * avec le plus gros corps du jeu.
    *
-   * Le plancher est posé juste au-dessus du Soleil (230) : à la pleine lune
-   * elle est le deuxième combattant le plus lent du jeu, et c'est le moment où
-   * son corps est le plus gros. Les deux vont ensemble — un astre plein est une
-   * cible, et c'est ce qui paie sa Marée.
+   * `turnRate` 1,5 : au-dessus du Soleil (1,0), sous les tireurs (1,9 · 2,0).
+   * Elle vire mal pour un mobile, ce qui est la contrepartie de sa masse.
    */
-  movement: { speed: 250, turnRate: 1.4, seek: 0.36 },
+  movement: { speed: 430, turnRate: 1.5, seek: 0.38 },
 
   weapon: {
-    name: 'Puits de gravité',
-    nameRef: 'Gravity Well',
+    name: 'Anneau de débris',
+    nameRef: 'Debris Ring',
     /**
-     * **110 px, et l'arme est *invisible*** — pas de `head.sprite`, donc
-     * `drawWeapon` ne peint rien (le garde posé pour le Mannequin). Ce n'est
-     * pas un oubli : LUNE ne tient rien, elle **écrase par proximité**. Ce
-     * qu'on voit d'elle, c'est son corps qui enfle ; la coquille qui blesse se
-     * déduit de ce corps, elle n'a pas à être dessinée par-dessus.
+     * **176 px, et pour la première fois chez elle l'arme se *voit*.**
      *
-     * La discipline `handle.length + largeur dessinée = reach` ne s'applique
-     * donc pas : il n'y a pas de dessin à faire mentir. En revanche 110 est
-     * **déduit du corps** — à peine plus que les 96 de la pleine lune, pour que
-     * la coquille affleure la silhouette au lieu de piquer dans le vide.
+     * L'ancienne était invisible (`head.sprite: null`, comme le Mannequin) : une
+     * coquille de six branches qu'on ne pouvait ni lire ni anticiper. C'était le
+     * premier reproche, et c'est le premier corrigé — trois satellites dessinés,
+     * en orbite lente, à 154 px du centre.
+     *
+     * La discipline du dépôt s'applique de nouveau, puisqu'il y a un dessin :
+     * `handle.length` **132** + largeur dessinée **44** = `reach` **176**. Et
+     * comme la carte est carrée (472 × 472 pour le PNG, 16 × 16 pour le repli),
+     * la largeur dessinée vaut exactement `map.h × head.scale`, sans correction
+     * de rapport d'aspect.
+     *
+     * **Pourquoi 176 et pas moins.** L'Éclipse porte le corps à 116 de rayon.
+     * Deux corps ne se chevauchent jamais (`resolveBodies` les sépare à chaque
+     * pas), donc un adversaire de rayon 41 est alors à **157 px au minimum** :
+     * une orbite plus courte enfermerait les satellites *dans* le corps pendant
+     * la totalité, et l'arme deviendrait muette au moment précis où elle doit
+     * frapper le plus fort. La capsule porte de 91 à 217 px du centre, l'astre
+     * enflé tient dedans. C'est le même piège que la Marée d'avant, vu venir
+     * cette fois.
      */
-    reach: 110,
-    spin: SPIN * 0.4,
+    reach: 176,
+    /**
+     * **SPIN × 0,5**, soit 2,88 rad/s — une orbite en 2,2 s. Entre le Golem
+     * (0,45) et le Soleil (0,55), et calé bas pour la raison que le dépôt
+     * répète : *une arme qui balaie vite touche souvent*, ce qui vaut au cube
+     * avec trois branches. Et à l'œil, une orbite qui tourne vite ne se lit plus
+     * comme une orbite.
+     */
+    spin: SPIN * 0.5,
+    /** Rétrograde, contre le sens du Soleil : les deux boss ne tournent pas du
+     *  même côté, ce qui suffit à les distinguer d'un coup d'œil. */
     spinDir: -1,
     /**
-     * **Six branches, et aucune ne se voit.** Le même mécanisme que la couronne
-     * du Soleil (`weapon.spokes`, lu par `bladeSegment(k)`, `weaponHit` et
-     * `drawWeapon`), mais employé à l'envers : chez lui il *dessine* une
-     * couronne, ici il **ferme les angles morts d'une coquille** que personne
-     * ne voit. Six suffisent parce que `hitbox.radius` vaut 22 : six capsules
-     * de 22 px sur un cercle de 110 se recouvrent.
+     * **Trois satellites.** Même mécanisme que la couronne du Soleil
+     * (`weapon.spokes`, lu par `Fighter.bladeSegment(k)`, `weaponHit` et
+     * `drawWeapon`), mais employé pour ce qu'il montre et non pour ce qu'il
+     * ferme : six branches invisibles bouchaient des angles morts, trois
+     * cailloux dessinent une orbite.
+     *
+     * **Trois et pas plus**, parce qu'il en reste des trous : contourner l'astre
+     * redevient une parade, ce que la couronne à huit du Soleil interdit. Les
+     * deux boss ne se défendent donc pas de la même façon.
      *
      * Le verrou de mêlée est testé **une fois pour toutes** avant la boucle des
-     * branches — sinon six branches feraient six touches par pas.
+     * branches — sinon trois branches feraient trois touches par pas.
      */
-    spokes: 6,
-    handle: { length: 0, width: 0, color: '#604f9c', dark: '#1e1837', outline: '#0d0a1d', gem: null },
-    /** Aucune tête : c'est ce qui rend l'arme invisible, et `drawWeapon` sait
-     *  déjà s'en passer (le Mannequin). La chaîne de repli de l'écran de
-     *  sélection retombe alors sur l'icône. */
-    head: { sprite: null, scale: 1 },
-    overBody: false,
-    hpOverWeapon: false,
-    /** Le tranchant commence à 30 % de la portée, soit 33 px du centre : sous
-     *  le corps même à la nouvelle lune (44). La coquille part donc toujours de
-     *  l'intérieur de l'astre et sort avec lui. */
-    hitbox: { from: 0.3, radius: 22 },
+    spokes: 3,
+    /** `width: 0` : il n'y a pas de manche, les satellites flottent. `length`
+     *  ne sert qu'à les décaler jusqu'à leur orbite. */
+    handle: { length: 132, width: 0, color: '#604ea1', dark: '#1d1738', outline: '#0d0a21', gem: null },
+    /**
+     * **Le satellite est la maquette de pleine lune**, à 44 px.
+     *
+     * C'est le second emploi des deux images fournies, et le seul qui les rende
+     * toutes les deux lisibles : à 176 px sur l'arène blanche, `lunar-lit.png`
+     * ne tenait aucun contraste (1,54 relevé) ; à 44 px, cerclée par le lavis
+     * sombre que le module pose dessous, elle se lit comme un caillou criblé.
+     *
+     * `scale = 44 / 16 = 2,75` : `drawSpriteLeft` dimensionne par la **hauteur**
+     * (`map.h × scale`, prise sur la carte texte) puis applique le rapport
+     * d'aspect du PNG — qui vaut 1, l'image étant carrée. La largeur dessinée
+     * vaut donc 44, et `132 + 44 = 176` retombe sur `reach`.
+     */
+    head: { sprite: 'lunarLit', scale: 2.75 },
+    /** Les satellites passent **par-dessus** le corps quand leur orbite le
+     *  croise : ils tournent autour de l'astre, ils ne se cachent pas derrière.
+     *  Purement visuel — `bladeSegment()` ne lit pas ce drapeau. */
+    overBody: true,
+    /** Le chiffre de PV repasse après l'arme : une orbite qui traverse le centre
+     *  masquerait autrement les digits une fois par tour. */
+    hpOverWeapon: true,
+    /**
+     * **Un disque, pas un segment**, et c'est le satellite lui-même :
+     * `from = to = 154 / 176 = 0,875`, soit le centre du caillou, et
+     * `radius: 22` soit sa moitié. Le dessin ne ment donc pas d'un pixel sur
+     * l'endroit où l'arme porte — la même exigence que la lance de l'Hoplite,
+     * ici gratuite puisque la carte est ronde. C'est la forme du Shinobi
+     * (`from: 0, to: 0`) déplacée sur l'orbite.
+     */
+    hitbox: { from: 0.875, to: 0.875, radius: 22 },
     melee: {
       /**
-       * **`1 + 6 × illumination` — la seule valeur du dépôt qui respire.**
+       * **Le contact est redevenu sa source principale, et il est *constant*.**
        *
-       * Le Ronin a déjà des dégâts en fonction (`Damage = Spin`), mais ils
-       * suivent une stat que *lui* fait monter. Ici, ils suivent une horloge
-       * que **personne ne pilote** : ni LUNE, ni son adversaire. On ne choisit
-       * pas d'être fort, on attend de l'être.
+       * Il valait `1 + 6 × illumination` — la seule valeur du dépôt qui
+       * respirait, et aussi la seule que personne ne pouvait lire à l'écran :
+       * rien ne disait si le prochain coup ferait 1 ou 7. Il en reste deux
+       * régimes, et ils se voient tous les deux : **5** en temps normal,
+       * **11 pendant la totalité de l'Éclipse**, quand l'arène est noire et
+       * qu'elle a doublé de volume. On sait donc toujours ce qu'on encaisse.
        *
-       * 1 à la nouvelle lune (négligeable, c'est assumé — c'est la phase où
-       * elle esquive, pas où elle frappe) et **7 à la pleine**, le plus gros
-       * contact du roster devant le Golem (7 aussi, mais lui ne change jamais).
-       * Le `?? 0` couvre l'image de naissance, avant le premier `update`.
+       * Écrit en fonction, comme `Damage = Spin` du Ronin — mais lu sur un état
+       * que le module pose (`f.state.totality`), pas sur une stat du moteur.
+       * Les deux régimes sont nommés juste au-dessus pour qu'un balayage les
+       * trouve ; `?? false` couvre l'image de naissance, avant le premier
+       * `update`.
        */
-      damage: (f) => 1 + 6 * (f.state.ill ?? 0),
-      cooldown: 0.9,
-      knockback: 140,
+      base: 5,
+      totality: 11,
+      damage: (f) => (f.state.totality ?? false
+        ? f.el.weapon.melee.totality
+        : f.el.weapon.melee.base),
+      /** Calé : trois satellites, mais `weaponHit` teste le verrou **une fois**
+       *  avant la boucle des branches, donc c'est bien un coup toutes les
+       *  0,85 s au mieux — 5,9 PV/s au contact, 12,9 en totalité. */
+      cooldown: 0.85,
+      /** Elle repousse franchement : un adversaire collé ne doit pas rester
+       *  entre deux satellites, il doit être renvoyé sur le suivant. */
+      knockback: 150,
       /** **Presque nul, et c'est une intention** : les sept autres reculent en
        *  frappant, la Lune non. Elle pèse trop. `resolveMelee` l'applique hors
        *  de `damage`, donc la valeur est bien lue. */
-      selfRecoil: 10,
+      selfRecoil: 8,
     },
   },
 
-  /* ---------- POUVOIR — Marée ---------- */
+  /* ---------- POUVOIR — Météores ---------- */
   /**
-   * **Elle ne poursuit pas, elle *attire*.**
+   * **Trois cailloux quittent l'anneau et tombent sur la cible.**
    *
-   * Toutes les 2,2 s, une onde part du corps et **tire chaque ennemi vers
-   * elle**, d'une force qui suit l'illumination : nulle à la nouvelle lune,
-   * 200 à la pleine. Ceux que l'onde trouve **à l'intérieur du corps** sont
-   * écrasés au passage.
+   * C'est sa portée, et elle n'en avait **aucune** : l'ancienne Marée attirait
+   * l'adversaire au lieu de l'atteindre, ce qui punissait surtout les
+   * combattants lents et ne se voyait qu'à un anneau. Ici, trois ombres
+   * apparaissent au sol autour de l'adversaire, grossissent pendant 0,8 s, et
+   * trois pierres arrivent dessus.
    *
-   * Conséquence de jeu, et c'est tout le personnage : **ce n'est plus
-   * l'adversaire qui choisit la distance**, c'est l'horloge de LUNE. Et comme
-   * la Marée est maximale exactement quand le contact fait 7, elle ne se
-   * contente pas de rapprocher — elle livre l'adversaire au moment précis où
-   * être près coûte le plus cher.
+   * **Annoncé, et c'est la différence avec le Soleil.** Lui trace *une ligne* et
+   * fige son axe : on s'en sort en sortant de la ligne. Elle sème **des zones**
+   * autour d'une cible mobile : on s'en sort en continuant de bouger. Aucun des
+   * deux ne se dodge de la même façon, et c'est tout l'intérêt d'avoir deux boss.
+   *
+   * **Aucun tirage** — invariant 2. Le semis est déduit de `ability.uses` par
+   * l'angle d'or, donc deux salves ne se superposent jamais et deux duels à la
+   * même graine tombent au même endroit.
    */
   ability: {
-    id: 'tide',
-    name: 'Marée',
-    nameRef: 'Tide',
-    cooldown: 2.2,
-    /** Plus de la moitié de la largeur utile de l'arène (628 px) : on ne sort
-     *  pas de sa portée, on choisit seulement d'être tiré fort ou peu. */
-    radius: 330,
-    /** Force maximale, à la pleine lune. Multipliée par l'illumination, donc
-     *  nulle à la nouvelle : la Marée **respire avec le corps**. */
-    pull: 200,
-    /** Écrasement de ceux que l'onde trouve dans le puits. Suit l'illumination
-     *  comme le reste. */
-    crush: 4,
+    id: 'meteors',
+    name: 'Météores',
+    nameRef: 'Meteors',
+    /** Calé : à 3,2 s, la salve tombe 8 à 12 fois dans un duel de boss, et il
+     *  reste toujours plus de deux secondes de sol propre entre deux. */
+    cooldown: 3.2,
+    /** Trois, comme les trois satellites : ce sont eux qui tombent. */
+    count: 3,
+    /** Rayon du semis autour de la cible. Le premier caillou tombe **sur** elle,
+     *  les deux autres à 96 px — assez pour que reculer droit devant n'en évite
+     *  pas deux d'un coup. */
+    spread: 96,
+    /** Temps de chute, donc temps d'esquive. 0,8 s : un tiers de moins que
+     *  l'annonce du Soleil (1,1 s de charge), parce que la zone est petite et
+     *  qu'il suffit d'en sortir. */
+    fall: 0.8,
+    /** Décalage entre deux cailloux d'une même salve. Sans lui les trois
+     *  touchent **dans le même pas**, donc un seul fracas au lieu de trois
+     *  (`MIX.repeatGap`) et une gerbe unique : la salve se lisait comme un
+     *  unique gros coup. */
+    stagger: 0.16,
+    /** Hauteur apparente du départ, en px de scène : le caillou est dessiné
+     *  au-dessus de son ombre, et la comble en chute libre (`(1-u)²`). */
+    height: 300,
+    /** Diamètre dessiné du météore. Un peu moins que le satellite (44) : il
+     *  vient d'arriver de haut, il doit se lire comme plus petit que l'anneau. */
+    size: 40,
+    /** Par caillou. Trois par salve, mais on n'en prend normalement qu'un. */
+    damage: 6,
+    /** Rayon de l'explosion, mesuré **de bord à bord** comme toutes les zones du
+     *  dépôt. 58 px : à peine plus que le corps d'un combattant normal (41), donc
+     *  la zone annoncée au sol est bien celle qui blesse. */
+    blast: 58,
+    knockback: 170,
     /**
-     * **Marge du puits, en px au-delà du contact — et elle est obligatoire.**
-     *
-     * Écrite d'abord sans marge (« ceux qui sont *dans* le corps »), la
-     * condition n'a été vraie **aucune fois sur 45 pulsations** : deux corps ne
-     * se chevauchent jamais ici, `resolveBodies` les sépare à chaque pas. Le
-     * pouvoir infligeait 0 PV sur 24 duels, sans que rien ne crie.
+     * **Secousse d'impact, et elle est volontairement petite.** Trois cailloux
+     * décalés de 0,16 s font une secousse **continue** d'une demi-seconde, trois
+     * fois par salve ; or le décor ne tremble pas (invariant 4, voulu) alors que
+     * son contenu tremble sous le clip, donc une secousse franche découvre un
+     * liseré d'arène nue au bord — visible sur toute ambiance de plein cadre,
+     * celle du Soleil comprise. 2,2 la laisse sous le pixel, et la touche
+     * elle-même en ajoute déjà une (`Match.damage`, 2 hors mêlée).
      */
-    crushMargin: 40,
-    ring: { to: 330, time: 0.7, color: 'rgba(96,79,156,0.8)', width: 7 },
+    shake: 2.2,
+    /** Anneau d'impact, tracé par `Effects.ring`. */
+    ring: { time: 0.42, color: 'rgba(96,78,161,0.85)', width: 6 },
   },
 
   /* ---------- ULTIME — Éclipse ---------- */
   /**
-   * **Le contraire exact du Rayon solaire.**
+   * **Elle passe devant la lumière, et l'arène perd le jour.**
    *
-   * Le Soleil se **cloue sur place** 4,5 s pour tirer, après 2 s d'annonce
-   * lisible à l'écran. LUNE se **décloue** : l'Éclipse force son illumination à
-   * 0 et l'y tient 4 s — minuscule, la plus rapide du jeu, et **sans la moindre
-   * annonce**. Il n'y a rien à esquiver, il n'y a qu'à survivre.
+   * Le nom reste, le pouvoir ne partage plus rien avec l'ancien. Celui-là
+   * *rapetissait* — 4 s de nouvelle lune forcée, minuscule et rapide, avec un
+   * drain au contact — et n'avait **aucune annonce**, ce qui le rendait
+   * illisible : on encaissait sans avoir rien vu venir.
    *
-   * Et comme à illumination 0 son contact ne fait plus que 1, l'Éclipse le
-   * **remplace** par un drain : elle prend les PV qu'elle inflige. C'est la
-   * seule phase où elle se soigne, et la seule où elle peut coller quelqu'un.
+   * Il fait maintenant l'inverse, et il s'annonce :
+   *  • **0,9 s** pendant lesquelles l'arène s'assombrit et le corps enfle ;
+   *  • **3,5 s de totalité** : rayon 116 (le plus gros objet que le jeu ait
+   *    dessiné), nuit pleine, une onde de choc au moment du contact d'ombre, et
+   *    l'anneau de débris qui passe de 5 à 11 par coup.
+   *
+   * **Pourquoi une annonce alors que l'ancienne n'en avait pas.** Le Rayon
+   * solaire s'annonce parce qu'il est **imparable de près** ; l'Éclipse
+   * s'annonce parce qu'elle **déplace le décor**, et qu'un décor qui bascule
+   * sans prévenir se lit comme un bug d'affichage. C'est l'annonce qui en fait
+   * un événement plutôt qu'un accident.
+   *
+   * Elle est **ralentie** pendant toute la manœuvre (`channelSpeed`) : un astre
+   * deux fois plus gros qui garde sa vitesse serait impossible à quitter. C'est
+   * la contrepartie, et c'est la même que celle du Soleil, en moins brutale — il
+   * est cloué, elle rampe.
    */
   ultimate: {
     id: 'eclipse',
@@ -328,31 +434,55 @@ export const LUNAR = fiche({
     nameRef: 'ECLIPSE',
     barLabel: 'ECLIPSE',
     barLabelFr: 'ÉCLIPSE',
-    barFill: '#604f9c',
-    barText: '#e7fdff',
-    /** Horloge de 9 s, contre 7 au Soleil. Plus lente, parce que l'Éclipse n'a
-     *  **aucun temps d'annonce** : le Soleil paie sa puissance en visibilité,
-     *  LUNE la paie en fréquence. */
+    barFill: '#604ea1',
+    barText: '#f9fdfd',
+    /** Horloge de 9 s, contre 7 au Soleil. 7 et 9 sont premiers entre eux : les
+     *  deux ultimes ne retombent en phase que toutes les 63 s, donc deux duels
+     *  de boss ne se ressemblent jamais tout à fait. */
     chargeRate: 100 / 9,
     chargeOnHit: 2,
-    /** **Zéro — et c'est la signature du personnage.** Le seul ultime du dépôt
-     *  sans temps de chargement. Toute la tension du Soleil tient dans ses deux
-     *  secondes d'annonce ; celui-ci est déjà en cours quand on le voit. */
-    windup: 0,
-    duration: 4,
-    /** Elle n'est pas bridée pendant son ultime — au contraire. `channelSpeed`
-     *  reste à 1 et c'est `boostFactor` qui l'emporte à 600 px/s. */
-    channelSpeed: 1,
-    drain: {
-      /** Par touche, toutes les 0,4 s tant que le contact tient. */
-      damage: 5,
-      interval: 0.4,
-      /** Ce qu'elle récupère : **la totalité**. À contact parfait, 4 s rendent
-       *  50 PV — un septième de sa barre. Elle ne peut pas s'en sortir avec ça
-       *  seule, mais elle peut renverser une fin de duel. */
-      heal: 1,
-      reach: 26,
-    },
+    /** L'annonce. Voir plus haut : c'est le temps que met la nuit à tomber. */
+    windup: 0.9,
+    /** **Total, annonce comprise** — 0,9 + 3,5. Le module lit `windup` pour
+     *  savoir où il en est, exactement comme celui du Soleil. */
+    duration: 4.4,
+    /** Dernière fraction de la totalité pendant laquelle le corps **redescend**
+     *  à sa taille. Sans elle il se dégonflerait d'un pas à l'autre, ce qui se
+     *  lit comme une téléportation. */
+    settle: 0.5,
+    /** Elle rampe : 62 % de sa vitesse, soit 267 px/s — au niveau du Soleil, et
+     *  seulement pendant ces 4,4 s. */
+    channelSpeed: 0.62,
+    /** **Facteur de `sizeFactor` à la totalité** : 88 × 1,32 = 116,2 de rayon,
+     *  et 46 % de surface en plus. C'est le seul lecteur du compteur générique
+     *  depuis que le cycle a disparu — il est passé d'un cycle à un moment. */
+    swell: 1.32,
+    /** **L'onde de contact d'ombre**, au premier pas de la totalité : elle dit
+     *  que l'annonce est finie. Repousse franchement, ce qui est voulu — elle a
+     *  3,5 s pour les rattraper, et elle veut de l'élan, pas un corps collé
+     *  contre elle au moment où elle enfle. */
+    burst: { damage: 14, radius: 250, knockback: 200 },
+    /** Une fois par ultime, contre trois fois par salve pour les météores : elle
+     *  peut donc être franche. Sous le Rayon solaire (11) et le Séisme (16). */
+    shake: 9,
+    ring: { to: 250, time: 0.6, width: 10 },
+    /**
+     * **La nuit, et c'est la même mécanique que la chaleur du Soleil.**
+     *
+     * Deux couches dans `drawUnder`, donc **sous** les combattants : un lavis au
+     * sol et une nuit qui monte des quatre bords. La règle de composition de
+     * `flair.js` est explicite — *rien entre le spectateur et les combattants* —
+     * et une nuit d'arène est exactement le cas prévu : on remplit par le fond
+     * et par les bords.
+     *
+     * **Plus fort que l'ambiance solaire** (0,44 / 0,72 contre 0,38 / 0,64),
+     * parce qu'elle dure 4,4 s au lieu de monter lentement sur cinq secondes :
+     * elle doit être arrivée avant qu'on ait fini de la remarquer. Et parce
+     * qu'assombrir coûte moins de lisibilité qu'éclaircir sur une arène blanche
+     * — les deux combattants et leurs deux chiffres de PV restent lisibles à
+     * nuit pleine, le contour du chiffre s'en charge.
+     */
+    ambience: { tint: 0.44, vignette: 0.72 },
   },
 
   projectiles: {},
@@ -360,36 +490,16 @@ export const LUNAR = fiche({
 
   hud: {
     stats: [
-      /** La phase, et son **sens** : sans la flèche, 60 % ne dit pas si le
-       *  danger monte ou retombe — or c'est toute l'information utile. */
-      (f) => `Phase: ${Math.round((f.state.ill ?? 0) * 100)}% ${f.state.waxing ? '↑' : '↓'}`,
-      (f) => `Tide: ${formatSeconds(Math.max(0, f.ability.timer))}`,
+      (f) => `Meteors: ${formatSeconds(Math.max(0, f.ability.timer))}`,
+      /** **Les cailloux tombés**, pas les salves tirées : une salve qui n'a rien
+       *  touché a quand même creusé trois cratères, et c'est cette production-là
+       *  qu'on veut lire. Même esprit que la ligne du Mannequin. */
+      (f) => `Craters: ${f.state.impacts ?? 0}`,
     ],
     statsFr: [
-      (f) => `Phase : ${Math.round((f.state.ill ?? 0) * 100)} % ${f.state.waxing ? '↑' : '↓'}`,
-      (f) => `Marée : ${formatSeconds(Math.max(0, f.ability.timer))}`,
+      (f) => `Météores : ${formatSeconds(Math.max(0, f.ability.timer))}`,
+      (f) => `Cratères : ${f.state.impacts ?? 0}`,
     ],
-    color: '#b5d5e4',
-  },
-
-  /**
-   * **Le cycle, et c'est la seule horloge qui compte chez elle.**
-   *
-   * Bloc lu par le **seul module de LUNE** — le moteur ne le voit jamais, comme
-   * le créneau `strike` de l'Hoplite. 12 s : six de croissance, six de
-   * décroissance.
-   *
-   * **Pourquoi 12 et pas 10 ou 8.** Le Soleil tire toutes les 7 s. 7 et 12 sont
-   * premiers entre eux, donc les deux horloges ne retombent en phase que toutes
-   * les **84 s** — plus long qu'un duel. L'instant du faisceau se promène donc
-   * dans le cycle lunaire, et deux duels des mêmes boss ne se ressemblent
-   * jamais. Un cycle de 14 (= 2 × 7) aurait figé le couple.
-   */
-  moon: {
-    period: 12,
-    /** Bornes de `sizeFactor`, appliquées à `look.radius` (70) : 44 → 96. */
-    size: { min: 0.629, max: 1.371 },
-    /** Bornes de `boostFactor`, appliquées à `movement.speed` (250) : 600 → 250. */
-    speed: { min: 1, max: 2.4 },
+    color: '#bfc0de',
   },
 });

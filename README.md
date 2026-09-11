@@ -8,13 +8,14 @@ Aucune dépendance, aucun build : le dépôt se publie tel quel sur GitHub Pages
 
 Les cinq premiers sont relevés image par image sur leur vidéo — couleurs à la
 pipette, portées au pixel, cadences chronométrées. Ce qui n'a pas pu être
-mesuré est calé au banc d'essai, et le dit. Les trois derniers — le **Golem**,
-le **Mannequin** et le **Soleil** — n'ont pas de vidéo : **tout chez eux est
-calé**, et leurs fiches ne portent pas un seul `mesuré`.
+mesuré est calé au banc d'essai, et le dit. Les quatre derniers — le **Golem**,
+le **Mannequin**, le **Soleil** et la **Lune** — n'ont pas de vidéo : **tout
+chez eux est calé**, et leurs fiches ne portent pas un seul `mesuré`.
 
-Deux d'entre eux sont **hors barème, aux deux bouts** : le Mannequin ne peut pas
-gagner (c'est une cible d'entraînement), le Soleil ne peut pas perdre (c'est un
-boss). L'équilibrage se lit sur les six autres.
+Trois d'entre eux sont **hors barème, aux deux bouts** : le Mannequin ne peut
+pas gagner (c'est une cible d'entraînement), les **deux boss** battent tous les
+autres et ne se départagent qu'entre eux. L'équilibrage se lit sur les six
+autres.
 
 | Personnage | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
@@ -24,10 +25,11 @@ boss). L'équilibrage se lit sur les six autres.
 | **Shinobi** | Shuriken d'ombre — **la bille *est* l'arme**, sprite centré dessus | hitbox en **disque** de 75 px tout autour, le seul du roster ; palette sombre | Tornade de shurikens / SHURIKEN TORNADO |
 | **Druide** | Bâton de ronce (transcrit d'une maquette) — **braqué sur la cible, centré sur son pivot et dessiné par-dessus la bille** | **tireur** : des **orbes guidées** qui virent vers l'adversaire, à une **cadence qui monte toute seule** (+0,05 par orbe, de 1,00 à 4,00 par seconde) | Orage de ronces / THORN STORM |
 | **Golem** (inventé) | Amas de roche (maquette servie par un vrai PNG, **par-dessus la bille**) — **la portée la plus courte du jeu** (100 px), et la rotation d'arme la plus lente | **le plus lent** (420 px/s), **le plus gros** (rayon 50 contre 41) et **200 PV** quand tout le monde en a 100 : il encaisse chaque coup en entier, il en encaisse simplement deux fois plus. Onde sismique sur horloge, éclats de roche pour qui reste au loin | Séisme / EARTHQUAKE (secousse sur 260 px, puis +35 % de vitesse) |
-| **Soleil** (inventé, **boss**) | Couronne de rayons (maquette de flamme servie par un vrai PNG) — **huit rayons à la fois**, un tous les 45°, et **ils ne blessent pas** : c'est sa silhouette, plus son arme. La bille est elle-même une maquette servie en PNG — **le seul corps du jeu qui ne soit pas un cercle vectoriel** | **fait pour gagner contre tous les autres en 1 contre 1**, et il le fait (21/21). **Deux fois plus grand** que la norme (rayon 82 contre 41), **500 PV**, et **le plus lent du jeu de très loin** (230 px/s). Tout passe par son ultime : le coller ne coûte rien, mais c'est de près que le faisceau est inesquivable. Réchauffement solaire : brûle qui reste dans 240 px | Rayon solaire / SOLAR BEAM — **2 s de charge annoncée à l'écran** (anneaux qui se referment, foyer qui bat), puis **2,5 s** d'un faisceau de 124 px qui traverse l'arène, jusqu'à 96 PV |
+| **Soleil** (inventé, **boss**) | Couronne de rayons (maquette de flamme servie par un vrai PNG) — **huit rayons à la fois**, un tous les 45°, et **ils ne blessent pas** : c'est sa silhouette, plus son arme. La bille est elle-même une maquette servie en PNG — **le seul corps du jeu qui ne soit pas un cercle vectoriel** | **fait pour gagner contre tous les autres en 1 contre 1**, et il le fait à une graine près (22/24 : il perd une graine à l'Hoplite, et le duel de la Lune est un vrai partage). **Deux fois plus grand** que la norme (rayon 82 contre 41), **500 PV**, et **le plus lent du jeu de très loin** (230 px/s). Tout passe par son ultime : le coller ne coûte rien, mais c'est de près que le faisceau est inesquivable. Réchauffement solaire : brûle qui reste dans 240 px | Rayon solaire / SOLAR BEAM — **2 s de charge annoncée à l'écran** (anneaux qui se referment, foyer qui bat), puis **2,5 s** d'un faisceau de 124 px qui traverse l'arène, jusqu'à 96 PV |
+| **Lune** (inventée, **boss**) | Anneau de débris — **trois satellites dessinés** de 44 px en orbite à 154 px, servis par la seconde maquette fournie. Le corps est la première, une éclipse en PNG : **le second corps du jeu qui ne soit pas un cercle vectoriel** | **le second boss, et l'opposé du premier** : lui est planté (230 px/s) et produit par un faisceau annoncé sur *une ligne* ; elle est **mobile** (430 px/s), produit par le **contact** (60,5 %), et ce qu'elle annonce, ce sont **des zones au sol**. Rayon **88, fixe** — le plus gros corps du jeu — et **460 PV**. Elle bat les sept autres **140 fois sur 140** ; sa seule faille est le Soleil, avec qui le partage est de 26/50. Météores : trois cailloux quittent l'anneau toutes les 3,2 s et tombent sur la cible | Éclipse / ECLIPSE — 0,9 s pendant lesquelles **l'arène s'assombrit** et le corps enfle, puis **3,5 s de totalité** : rayon 116, nuit pleine, une onde de choc, et l'anneau qui passe de 5 à 11 par coup |
 | **Mannequin** (inventé) | **aucune** — le seul du jeu | **cible d'entraînement** : il ne fait aucun dégât, n'a aucun pouvoir, et porte les PV de la norme, en blanc. On le choisit pour **regarder l'autre combattant** : sa ligne de HUD compte les dégâts qu'il a subis, donc ce que l'adversaire produit vraiment | aucun (jauge vide, « NO ULTIMATE ») |
 
-### Trois formats
+### Quatre formats
 
 | Format | Ce que c'est |
 | --- | --- |
@@ -83,7 +85,7 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 
 ![L’Hoplite contre le Ronin](docs/capture-duel.png)
 
-<sup>Les deux boss : [**LUNE à 91 % de phase**](docs/capture-lune.png), presque pleine — rayon 96, contact 7, la plus lente ; et [**le duel des deux**](docs/capture-boss.png), le Soleil chargeant son faisceau sur une lune à 0 %, minuscule et à l'autre bout de l'arène.</sup>
+<sup>Les deux boss : [**LUNE et son anneau de débris**](docs/capture-lune.png) — trois satellites en orbite autour d'un disque éteint, et trois météores en chute annoncés au sol ; [**son Éclipse**](docs/capture-lune-eclipse.png), qui la porte à 116 de rayon et fait tomber la nuit sur l'arène ; et [**le duel des deux**](docs/capture-boss.png), le Soleil chargeant son faisceau à travers elle sur une arène déjà brûlante.</sup>
 
 <sup>Les autres formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [**un 1 contre 4**](docs/capture-1vx.png), le Soleil seul contre quatre — il gagne 1 duel sur 3 dans cette configuration, là où il en gagne 20 sur 21 en 1 contre 1 · [une bataille royale à cinq](docs/capture-royale.png) · [la parade à deux vainqueurs](docs/capture-fin-2v2.png).</sup>
 

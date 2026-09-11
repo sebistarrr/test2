@@ -49,7 +49,7 @@ recale.
 | Registre du roster (`ELEMENTS`, `ROSTER`) | `src/data/elements.js` |
 | Sprites pixel-art (texte) | `src/data/pixelart/<id>.js`, recensés dans `src/data/pixelmaps.js` |
 | Overrides de sprites en vrai PNG (écart assumé à « aucun binaire ») | `assets/sprites/` + `manifest.json` |
-| **Corps composé de deux sprites** (LUNE seule) | `look.sprite` = la face d'ombre, le module peint la face claire au terminateur |
+| **Deux maquettes pour un même combattant** (LUNE seule) | `look.sprite` = le corps, `weapon.head.sprite` = l'autre image en petit (ses satellites) |
 | Géométrie de scène, phases, export vidéo | `src/data/tuning.js` |
 | Déroulé du duel, dégâts, rendu global | `src/game/match.js` |
 | Entité combattant (état + dessin) | `src/game/fighter.js` |
@@ -95,7 +95,7 @@ calé pour la masquer.
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** quand tout le monde en a 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
 | `sun` **SOLEIL** / SUN | **inventé, et le seul boss.** Demandé pour **gagner contre tous les autres en 1 contre 1**, et il le fait à une graine près (20/21 sur la matrice, **139/140** sur un banc à 10 seeds × les deux camps — la seule perdue est un duel de 80 s contre l'Hoplite). **Deux fois plus grand que la norme** (rayon 82 contre 41), **500 PV**, et **le plus lent du roster de très loin** (230 px/s) — c'est là toute sa contrepartie. **Huit rayons** en couronne (`weapon.spokes: 8`, aucun angle mort) qui **ne blessent pas** (`melee.damage: 0`, demandé) : c'est sa silhouette et son bruit, plus son arme. Tout passe donc par le **Rayon solaire** (ultime, **79 %** de ses dégâts) : horloge de 7 s, **2 s de charge annoncée à l'écran** — anneaux qui se referment, éclats qui convergent, foyer qui bat — puis **2,5 s** d'un faisceau de 124 px de large, jusqu'à 96 PV. Il est cloué sur place 4,5 s à chaque tir. **Réchauffement solaire** (pouvoir) : brûle tout ennemi dans 240 px, 21 % |
-| `lunar` **LUNE** / MOON | **inventée, et le second boss.** L'inverse du Soleil : lui est *un* événement qu'on apprend à éviter (2 s d'annonce, un faisceau) ; elle n'annonce rien, mais **n'est jamais la même deux secondes de suite**. Un seul nombre la porte, l'**illumination**, qui va de 0 à 1 et revient sur **12 s**, sans aucun tirage — et tout en découle : rayon **44 → 96**, vitesse **600 → 250 px/s**, contact **1 → 7**. Elle traverse toute l'amplitude du jeu à elle seule. **480 PV. Marée** (pouvoir) : toutes les 2,2 s, une onde **attire** tout le monde vers elle, d'une force qui suit la phase — ce n'est plus l'adversaire qui choisit la distance. **Éclipse** (ultime, horloge 9 s) : le seul ultime du dépôt **sans temps de chargement**, 4 s de nouvelle lune forcée — minuscule, la plus rapide du jeu, et son contact devient un **drain** |
+| `lunar` **LUNE** / MOON | **inventée, et le second boss — refaite en entier** (demandé : « j'aime pas trop moon, revois-la complètement, conserve sa taille »). La première tenait dans un nombre invisible (un cycle de phases de 12 s) avec une **arme invisible** et deux pouvoirs qui ne dessinaient qu'un anneau : 22/24 à la matrice et rien à voir. Celle-ci est **une silhouette** — un corps presque noir de **rayon 88, fixe**, la face d'éclipse de la maquette et sa couronne, autour de laquelle tournent **trois satellites dessinés** de 44 px (`weapon.spokes: 3`, `head.sprite: 'lunarLit'`, orbite à 154) qui sont son arme. **460 PV**, **430 px/s** — presque le double du Soleil, parce qu'elle produit par le **contact** (60,5 % de ses dégâts) là où lui produit par un faisceau. **Météores** (pouvoir) : toutes les 3,2 s, trois cailloux quittent l'anneau et tombent sur la cible, annoncés 0,8 s au sol par une ombre qui grossit et un cercle qui se resserre sur le rayon d'explosion — 26,4 %. **Éclipse** (ultime, horloge 9 s) : 0,9 s d'annonce pendant laquelle l'arène s'assombrit et le corps enfle, puis **3,5 s de totalité** — rayon 116 (le plus gros objet du jeu), nuit pleine, une onde de choc à 14 et l'anneau qui passe de 5 à 11 par coup. **Elle bat les sept autres 140 fois sur 140** (10 graines × les deux camps), la seule du dépôt dans ce cas |
 | `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, et les PV de la norme. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 15 PV
@@ -137,10 +137,21 @@ miroir chacun : **Soleil 22 et Lune 22** — un sommet à deux têtes, exactemen
 
 **Les deux boss sont à égalité et chacun a sa faille**, ce qui est la
 spécification demandée : le Soleil perd une graine à l'Hoplite, LUNE en perd une
-au Soleil. Leur duel est un vrai partage — **22/50** pour LUNE sur 25 graines ×
-les deux camps. **L'arrivée de LUNE n'a rien déplacé** : elle est en queue de
-`ROSTER`, le diff de la matrice contient **zéro suppression et neuf ajouts**
-(invariant 3), et les six du milieu gardent leur compte absolu au chiffre près.
+au Soleil. Leur duel est un vrai partage — **26/50** pour LUNE sur 25 graines ×
+les deux camps, et sa faille n'est plus que là : elle bat les sept autres
+**140 fois sur 140** (10 graines × les deux camps), seul dossier parfait du
+dépôt. **L'arrivée de LUNE n'a rien déplacé** : elle est en queue de `ROSTER`,
+le diff de la matrice contenait **zéro suppression et neuf ajouts** (invariant
+3), et les six du milieu gardent leur compte absolu au chiffre près.
+
+**Et son redessin complet n'a rien déplacé non plus.** Corps, arme, deux
+pouvoirs, palette et icône refaits d'un bloc : le diff de la matrice contient
+**neuf lignes, toutes les siennes, et pas un vainqueur changé** — y compris le
+partage 2–1 du duel des boss. Seules ses **durées** bougent, et franchement
+(`golem vs lunar` 66/64/72 s → 38/38/50, le duel des boss 90/102/102 → 57/71/57).
+Elle tue deux fois plus vite pour le même nombre de victoires : c'est la
+signature d'une production **rendue visible** plutôt qu'augmentée. `maxHp` a
+suivi le redessin, 480 → **460**, par le même balayage monotone qu'à sa création.
 
 **Le Soleil n'est plus à 21, et c'est mesuré, pas subi.** Rendre sa couronne
 fidèle au dessin l'a raccourcie (145,41 → 123,15), et il perd une graine sur
@@ -205,8 +216,11 @@ fois plus souvent. Le **Ronin s'effondre de 10 à 4** — ses dégâts plafonnen
 plus, seulement plus de temps pour se faire rattraper.
 **Les lignes `… vs dummy` sont un banc de DPS**, pas un relevé d'équilibrage —
 et il **ne suit pas simplement la division** (100 PV ÷ la durée moyenne des
-trois seeds) : Ronin 3,3, Shinobi 3,1, Hoplite 3,0, Druide 2,8, Pistolero 2,5,
-Golem 1,8 PV/s. **Le Soleil est à 3,0, au milieu — et ça ne le contredit pas** :
+trois seeds) : **Lune 3,6**, Ronin 3,3, Shinobi 3,1, Hoplite 3,0, Druide 2,8,
+Pistolero 2,5, Golem 1,8 PV/s. **La Lune est en tête du banc et le Soleil au
+milieu, et les deux sont cohérents avec ce qu'ils sont** : son dégât à elle passe
+par le contact, donc par un débit ; le sien passe par une horloge d'ultime.
+**Le Soleil est à 3,0, au milieu — et ça ne le contredit pas** :
 il gagne quand même 20 de ses 21 duels, parce qu'il encaisse cinq fois plus
 qu'il ne frappe vite. Sa ligne est surtout **la plus dispersée du banc** (23,7 · 33,2 ·
 43,8 s) : tout ce qu'il produit passe par une horloge d'ultime de 7 s, donc sa
@@ -634,6 +648,13 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   de mort subite** (×4 après 55 s). L'esquive cesse d'y défendre, et le levier
   devient la **barre de vie** — balayage monotone, contrairement à tout ce qu'on
   peut tourner ailleurs.
+- **Un combattant peut satisfaire sa spécification au chiffre près et être
+  injouable à regarder** : aucun garde-fou du dépôt ne *regarde*. La première
+  LUNE était à 22/24, à égalité avec le Soleil, matrice verte — et sans
+  silhouette.
+- **Une orbite doit rester hors du corps quand le corps enfle**, sinon l'arme se
+  tait au pire moment : la séparation minimale des corps doit tomber dans la
+  portée de la capsule, **à la taille enflée**.
 - **Retirer la source principale d'un combattant le retourne, elle ne le
   diminue pas** : le levier qui l'a rattrapé n'était pas la taille de ce qui
   restait, mais sa **fréquence** (Soleil, horloge d'ultime 13 s → 7).
@@ -735,7 +756,17 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **La vignette de sélection doit lire le sprite, pas la carte texte** : elle
   compilait `PIXEL_MAPS` et ignorait donc les overrides PNG. Invisible tant que
   les replis étaient de fidèles transcriptions, criant dès qu'un repli est
-  volontairement grossier.
+  volontairement grossier. Et elle montre `look.sprite` + `weapon.head.sprite`,
+  **jamais `el.icon`** — qui ne sert qu'au bandeau de titre.
+- **Une icône doit remplir son cadre** : la vignette la dimensionne sur la
+  hauteur de sa carte, pas sur sa matière — un dessin centré sur dix pixels de
+  seize rend à 57 % de la taille de son voisin.
+- **Un dessin trop pâle pour être un corps peut être un excellent petit objet** :
+  c'est la **taille** qui décide de la lisibilité, pas l'image. La pleine lune de
+  LUNE tient 1,54 de contraste à 176 px et se lit parfaitement à 44.
+- **Une ambiance de plein cadre découvre un liseré d'arène nue quand ça
+  tremble** — le décor ne bouge pas (invariant 4), son contenu si. Un pouvoir qui
+  se répète vite ne se secoue pas comme un ultime.
 - **Une maquette fournie décide de la palette du personnage**, pas l'inverse :
   l'échantillonner par bandes de luminance donne les cinq teintes de tout son
   bloc `look`, et empêche le repli texte et l'icône d'en diverger.

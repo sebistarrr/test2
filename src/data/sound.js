@@ -513,6 +513,38 @@ export const SOUNDS = deepFreeze({
     { wave: 'noise', filter: 'highpass', cut0: 3400, cut1: 1200, q: 1, dur: 0.22, gain: 0.16, delay: 0.1 },
   ],
   /**
+   * **Les Météores** — trois cailloux qui s'arrachent d'une orbite et sifflent
+   * en tombant. Tout y **descend**, ce qui est le point : la recette qu'elle
+   * portait avant (`swell`, une houle qui enfle) disait une Marée qui attire, et
+   * elle a été supprimée avec le pouvoir — *une recette meurt quand le créneau
+   * qui la nommait cesse d'être joué*, et `sound-check` le dit.
+   *
+   * Trois couches, du haut vers le bas : le sifflement bande-étroite qui balaie
+   * de 2600 à 420 Hz (la chute), une dent de scie qui le double une octave plus
+   * bas (la masse), et un coup de grave qui arrive sous les deux. Elle sonne au
+   * **tir**, pas à l'arrivée : le fracas du sol est le créneau `impact`.
+   */
+  hail: [
+    { wave: 'noise', filter: 'bandpass', cut0: 2600, cut1: 420, q: 3.2, dur: 0.75, gain: 0.22, attack: 0.03 },
+    { wave: 'sawtooth', f0: 300, f1: 96, dur: 0.7, gain: 0.16, attack: 0.02 },
+    { wave: 'sine', f0: 140, f1: 58, dur: 0.55, gain: 0.18, attack: 0.01 },
+  ],
+  /**
+   * **L'Éclipse** — une chute, pas une montée : un balayage descendant, un coup
+   * de grave, et un sifflement qui s'éteint. L'inverse exact de `flare`, qui
+   * passe deux secondes à se charger avant que le faisceau ne parte.
+   *
+   * Elle accompagnait un ultime **sans annonce** et devait donc tout dire en
+   * arrivant. L'Éclipse s'annonce désormais pendant 0,9 s — la recette n'a pas
+   * bougé pour autant, et c'est voulu : c'est *elle* qui ouvre l'annonce, et une
+   * chute de 0,9 s de long tombe exactement sur la nuit qui s'installe.
+   */
+  umbra: [
+    { wave: 'sawtooth', f0: 420, f1: 60, dur: 0.7, gain: 0.26, attack: 0.005 },
+    { wave: 'sine', f0: 90, f1: 42, dur: 0.9, gain: 0.28, attack: 0.02 },
+    { wave: 'noise', filter: 'bandpass', cut0: 4200, cut1: 500, q: 2.2, dur: 0.75, gain: 0.18, attack: 0.01 },
+  ],
+  /**
    * **Le glas** : une cloche, son octave grave, et la rue qui se vide derrière.
    *
    * **La première du banc à avoir quitté `riser`**, et le patron des quatre
@@ -528,29 +560,6 @@ export const SOUNDS = deepFreeze({
    * deux notes — c'est la même raison qui fait que `play()` transpose toutes
    * les couches d'un coup par le même facteur.
    */
-  /**
-   * **La Marée** — une houle grave qui enfle. Deux couches seulement : une onde
-   * sinusoïdale très basse qui monte d'une quinte, et un souffle filtré qui
-   * s'ouvre avec elle. C'est le module qui la **transpose** selon la phase
-   * (`sfx.cast(..., { pitch })`), donc la même recette dit la nouvelle lune et
-   * la pleine — une octave les sépare.
-   */
-  swell: [
-    { wave: 'sine', f0: 52, f1: 78, dur: 0.85, gain: 0.3, attack: 0.08 },
-    { wave: 'noise', filter: 'lowpass', cut0: 260, cut1: 900, q: 1.1, dur: 0.9, gain: 0.2, attack: 0.12 },
-  ],
-  /**
-   * **L'Éclipse** — le seul ultime du dépôt sans annonce, donc le seul dont le
-   * bruitage doit tout dire **en même temps** qu'il arrive. Pas de montée : une
-   * chute. Un balayage descendant, un coup de grave, et un sifflement qui
-   * s'éteint — l'inverse exact de `flare`, qui passe deux secondes à se
-   * charger avant que le faisceau ne parte.
-   */
-  umbra: [
-    { wave: 'sawtooth', f0: 420, f1: 60, dur: 0.7, gain: 0.26, attack: 0.005 },
-    { wave: 'sine', f0: 90, f1: 42, dur: 0.9, gain: 0.28, attack: 0.02 },
-    { wave: 'noise', filter: 'bandpass', cut0: 4200, cut1: 500, q: 2.2, dur: 0.75, gain: 0.18, attack: 0.01 },
-  ],
   knell: [
     { wave: 'triangle', f0: 622, f1: 616, dur: 1.05, gain: 0.3, attack: 0.004 },
     { wave: 'sine', f0: 311, f1: 308, dur: 1.2, gain: 0.28, attack: 0.004 },

@@ -20,16 +20,16 @@ relevé, puis les pièges eux-mêmes.
 | **Pièges déjà rencontrés** | 139 |
 | &nbsp;&nbsp;· Mesurer | 141 |
 | &nbsp;&nbsp;· Équilibrer | 176 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 387 |
-| &nbsp;&nbsp;· Éditer les données | 426 |
-| &nbsp;&nbsp;· Interface et rendu | 552 |
-| &nbsp;&nbsp;· Le son | 717 |
-| &nbsp;&nbsp;· Refactoriser | 1153 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 1194 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1196 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1239 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1282 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1301 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 426 |
+| &nbsp;&nbsp;· Éditer les données | 465 |
+| &nbsp;&nbsp;· Interface et rendu | 594 |
+| &nbsp;&nbsp;· Le son | 759 |
+| &nbsp;&nbsp;· Refactoriser | 1234 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1275 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1277 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1320 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1363 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1382 |
 
 ---
 
@@ -366,8 +366,9 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 - **Deux boss ne se tuent pas en temps normal : leur duel se joue dans la rampe
   de mort subite.** `MATCH.suddenDeath` vaut `{ after: 55, ramp: 18, max: 4 }` —
   passé 55 s, `damageScale()` multiplie **tous** les dégâts, jusqu'à ×4. Un duel
-  Soleil / LUNE dure 92 à 104 s : il passe donc **la moitié de son temps dans la
-  rampe**, et c'est là qu'il se décide.
+  Soleil / LUNE dure **55 à 71 s** aujourd'hui (92 à 104 avant le redessin de
+  LUNE) : il *finit* dans la rampe, et à l'époque il y passait **la moitié de son
+  temps**.
 
   Ce que ça change, et ce n'était pas prévisible depuis la fiche :
   - **l'esquive cesse de défendre.** Une géométrie qui rend petit et rapide vaut
@@ -375,14 +376,52 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
     dixième de barre. LUNE avait 360 PV *parce que* sa défense était
     géométrique ; le banc l'a démentie à 3/24 ;
   - **le levier d'un duel de boss est la barre de vie, pas les dégâts.** Balayage
-    de `maxHp` sur 24 duels : 360 → 3, 420 → 3, **480 → 12**, 540 → 13, 600 → 16.
-    **Monotone**, donc un vrai levier — à comparer aux trois balayages non
-    monotones de la couronne du Soleil, où aucun paramètre n'équilibrait rien ;
-  - **et ça ne déplace qu'une ligne.** À 480, LUNE reste à 20/20 contre les sept
-    autres : la valeur ne touche que l'affrontement qu'on cherchait à régler.
+    de `maxHp` sur 24 duels, version d'alors : 360 → 3, 420 → 3, **480 → 12**,
+    540 → 13, 600 → 16. **Monotone**, donc un vrai levier — à comparer aux trois
+    balayages non monotones de la couronne du Soleil, où aucun paramètre
+    n'équilibrait rien. Rebalayé après le redessin, sur 25 graines × les deux
+    camps : 380 → 9, 420 → 17, 440 → 21, **460 → 26**, 480 → 29, 500 → 35,
+    540 → 43, 600 → 50. Toujours monotone, et **c'est le seul paramètre du dépôt
+    dont ce soit vrai deux personnages de suite** ;
+  - **et ça ne déplace qu'une ligne.** LUNE reste à 20/20 contre les sept autres
+    à chaque palier : la valeur ne touche que l'affrontement qu'on cherchait à
+    régler.
 
   Avant de conclure qu'un combattant très résistant « manque de dégâts »,
   regarder **combien de temps son duel passe après 55 s**.
+
+- **Un combattant peut satisfaire sa spécification au chiffre près et être
+  injouable à regarder — et rien dans le dépôt ne le mesure.** La première LUNE
+  était à 22/24, à égalité exacte avec le Soleil, matrice verte, tous les
+  garde-fous au vert. Elle a été refaite **en entier** sur un seul grief :
+  *« j'aime pas trop moon »*. Ce qui n'allait pas était entièrement du côté de
+  l'écran — arme invisible (`head.sprite: null`, le cas du **Mannequin**, qui est
+  une cible d'entraînement), pouvoirs qui ne dessinaient qu'un `fx.ring`, corps
+  dont la moitié claire recouvrait la couronne d'éclipse de la maquette, dégâts
+  qui variaient de 1 à 7 sans que rien ne le dise.
+
+  `matrix` mesure le comportement, `fiche-snapshot` les valeurs,
+  `sound-check` les recettes, `lang-check` les libellés. **Aucun ne regarde.**
+  Pour un personnage neuf, la question « qu'est-ce qu'on voit de lui, et à quoi
+  ça sert » est à poser avant le premier balayage, pas après.
+
+  Preuve par le résultat : le redessin complet (corps, arme, deux pouvoirs,
+  palette, icône) a déplacé **neuf lignes de matrice et pas un vainqueur**, en
+  divisant ses durées par deux. Ce qui avait changé n'était pas sa force, c'était
+  sa lisibilité.
+
+- **Une orbite doit rester hors du corps quand le corps enfle — sinon l'arme se
+  tait au pire moment.** L'anneau de LUNE porte à 154 px du centre ; son Éclipse
+  porte le corps de 88 à **116**. Or deux corps ne se chevauchent jamais
+  (`resolveBodies`), donc un adversaire de rayon 41 est alors à **157 px au
+  minimum** : une orbite plus courte enfermerait les trois satellites *dans* le
+  corps pendant la totalité, et l'arme deviendrait muette exactement quand elle
+  double ses dégâts. Rien ne crierait — c'est la même famille que la Marée
+  ci-dessous, vue venir cette fois.
+
+  La vérification tient en une ligne : **la capsule porte de
+  `orbite − r_capsule − r_ennemi` à `orbite + r_capsule + r_ennemi`, et la
+  séparation minimale doit tomber dedans**, à la taille *enflée*.
 
 ### Déterminisme et ordre d'exécution
 
@@ -542,7 +581,10 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   plus* à la touche (c'est même écrit dans son commentaire). Au mieux la
   distance vaut exactement la somme des rayons, et le flottant la met
   généralement juste au-dessus. Toute zone d'effet « au contact » doit donc
-  porter une **marge explicite** — chez LUNE, `ability.crushMargin`, 40 px.
+  porter une **marge explicite** — chez LUNE, c'était `ability.crushMargin`,
+  40 px. La Marée a disparu avec le redessin du personnage, donc la clé aussi ;
+  la règle, elle, vaut pour toute zone neuve, et elle a resservi immédiatement
+  (voir « une orbite doit rester hors du corps quand le corps enfle »).
 
   Corollaire de méthode : un pouvoir neuf se vérifie par **ablation**
   (`opts.kind` dans `game.damage`), pas à l'œil. Trois lignes de banc ont
@@ -1101,6 +1143,45 @@ des rayons du Soleil au PNG :
   porté de 13 à 22 pour retomber sur le rapport de l'image (2,444 contre
   2,4447). Sans ça, le jour où le PNG manque, la couronne se rétracte de moitié
   sans que rien ne le signale.
+
+- **Un dessin trop pâle pour être un corps peut être un excellent petit objet :
+  c'est la taille qui décide, pas l'image.** `lunar-lit.png`, la pleine lune
+  fournie, tient **1,54** de contraste médian sur l'arène blanche quand elle
+  sert de corps à 176 px de diamètre — 48 % de ses pixels sous le seuil de
+  visibilité. La première LUNE la peignait donc par-dessus la face d'éclipse,
+  découpée au terminateur, et perdait la moitié de son temps à être presque
+  invisible. Le redessin n'a pas retouché l'image : il l'a **rétrécie à 44 px**
+  pour en faire ses trois satellites, avec un lavis d'encre posé dessous par le
+  module. Même fichier, parfaitement lisible.
+
+  La règle est utile dans les deux sens : avant de rejeter une maquette sur un
+  relevé de contraste, se demander **à quelle taille** le relevé a été fait, et
+  quel autre emploi la même image pourrait avoir dans la même fiche.
+
+- **L'icône de sélection doit remplir son cadre, ou elle paraît deux fois plus
+  petite que sa voisine.** `drawElementBadge` dimensionne le sprite sur la
+  **hauteur de sa carte** (16 px), pas sur sa matière : une composition qui
+  n'occupe que dix pixels sur seize rend à **57 %** de la taille apparente du
+  Soleil, dont les rayons touchent les quatre bords. Mesuré sur la première
+  icône de LUNE (un disque centré et trois satellites minuscules) ; corrigé en
+  poussant les satellites jusqu'au bord.
+
+  Et pour la **carte** de sélection, ne pas confondre les deux dessins : la
+  vignette montre `look.sprite` + `weapon.head.sprite`, **pas** `el.icon` —
+  l'icône ne sert qu'au bandeau de titre. Changer l'une sans l'autre ne se voit
+  qu'en regardant les deux écrans.
+
+- **Une ambiance de plein cadre découvre un liseré d'arène nue quand ça
+  tremble.** Le décor ne bouge jamais (invariant 4, voulu) mais tout son contenu
+  est dessiné sous un `translate` de secousse **et** sous un clip qui tremble
+  avec lui : un lavis calé sur `ARENA.inner` se décale donc avec le reste, et
+  laisse voir le fond blanc d'un côté. C'est vrai de l'ambiance du Soleil autant
+  que de la nuit d'Éclipse ; ça ne se voyait pas parce qu'il secoue rarement.
+
+  Les météores de LUNE tombent **par trois, décalés de 0,16 s**, donc la
+  secousse devenait continue sur une demi-seconde, toutes les 3,2 s. Descendue
+  à `ability.shake: 2,2`, elle reste sous le pixel. Un pouvoir qui se répète
+  vite ne se secoue pas comme un ultime.
 
 **Retirer la source principale d'un combattant** — ce qu'a appris la suppression
 des dégâts de mêlée du Soleil, demandée après coup :
