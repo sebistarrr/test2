@@ -215,7 +215,7 @@ body {
 }
 
 /* Nombre de combattants, en bataille royale seulement. */
-.royale-size {
+.fighter-count {
   display: flex;
   align-items: center;
   gap: 1.6cqw;
@@ -224,7 +224,7 @@ body {
 /* `display: flex` l'emporte sur l'attribut `hidden`, qui ne pose qu'un
    `display: none` de feuille par défaut : sans cette ligne, le sélecteur de
    nombre restait visible en duel. */
-.royale-size[hidden] { display: none; }
+.fighter-count[hidden] { display: none; }
 
 .size-btn {
   appearance: none;
@@ -254,11 +254,18 @@ body {
 }
 
 /* Un camp = un bloc. C'est ce qui garde le « VS » entre les camps plutôt qu'au
-   fil du texte quand la ligne passe à la ligne. */
+   fil du texte quand la ligne passe à la ligne.
+
+   Il passe à la ligne **lui aussi** depuis le 1 contre X : c'est le premier
+   format où un seul camp porte quatre emplacements, et une rangée de quatre
+   débordait la page (440 px de large pour 405). Les autres formats n'en
+   mettent jamais plus de deux dans un camp, donc rien n'y change. */
 .slot-team {
   display: flex;
   align-items: flex-start;
   gap: 2cqw;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 /* Emplacement + son champ de points de vie. Le champ est à côté du bouton et
@@ -271,6 +278,9 @@ body {
 .slots:not([data-count="2"]) .slot-name { font-size: 2.4cqw; }
 .slots:not([data-count="2"]) .slot-tag { font-size: 1.5cqw; }
 .slots:not([data-count="2"]) .slot-vs { font-size: 3.4cqw; }
+/* À cinq, le camp le plus chargé en porte quatre (1 contre 4) : à 28cqw la
+   rangée fait 118cqw. On resserre juste assez pour qu'elle tienne. */
+.slots[data-count="5"] .slot { min-width: 21cqw; }
 
 .slot {
   appearance: none;

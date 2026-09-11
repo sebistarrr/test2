@@ -33,10 +33,13 @@ export const UI = {
     // --- formats de partie
     modeDuel: 'DUEL',
     modeTeams: '2 VS 2',
+    modeSolo: '1 VS X',
     modeRoyale: 'BATTLE ROYALE',
     teamA: 'TEAM A',
     teamB: 'TEAM B',
+    slotSolo: 'ALONE',
     slotN: (i) => `FIGHTER ${i}`,
+    startSolo: 'START THE HUNT',
     startRoyale: 'START THE BRAWL',
     standings: 'FINAL STANDINGS',
     // --- écran de fin (statique)
@@ -143,10 +146,13 @@ export const UI = {
     // --- formats de partie
     modeDuel: 'DUEL',
     modeTeams: '2 CONTRE 2',
+    modeSolo: '1 CONTRE X',
     modeRoyale: 'BATAILLE ROYALE',
     teamA: 'ÉQUIPE A',
     teamB: 'ÉQUIPE B',
+    slotSolo: 'SEUL',
     slotN: (i) => `COMBATTANT ${i}`,
+    startSolo: 'LANCER LA TRAQUE',
     startRoyale: 'LANCER LA MÊLÉE',
     standings: 'CLASSEMENT',
     start: 'LANCER LE DUEL',
@@ -239,6 +245,7 @@ export function applyStaticLabels(root, lang) {
   // reste ici que ce qui est écrit en dur dans `index.html`.
   set('[data-mode="duel"]', t.modeDuel);
   set('[data-mode="teams"]', t.modeTeams);
+  set('[data-mode="solo"]', t.modeSolo);
   set('[data-mode="royale"]', t.modeRoyale);
   set('.select-hint', t.selectHint);
   set('#btn-start', t.start);

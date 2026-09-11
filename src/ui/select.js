@@ -19,7 +19,7 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
   const t = UI[lang] ?? UI.ref;
   const slotsEl = root.querySelector('#slots');
   const modesEl = root.querySelector('#modes');
-  const sizeEl = root.querySelector('#royale-size');
+  const sizeEl = root.querySelector('#fighter-count');
   const sizeLabel = root.querySelector('#size-label');
   const rosterEl = root.querySelector('#roster');
   const sheetEl = root.querySelector('#element-sheet');
@@ -27,14 +27,58 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
 
   /**
    * **Formats.** `duel` est le duel d'origine ; `teams` forme deux camps de
-   * deux ; `royale` met 3 à 5 combattants chacun pour soi. Le nombre
-   * d'emplacements et leur groupement en découlent — c'est la seule chose que
-   * le format décide ici, le moteur ne connaissant, lui, que des camps.
+   * deux ; `solo` en met **un seul contre tous les autres** ; `royale` met 3 à
+   * 5 combattants chacun pour soi. Le nombre d'emplacements et leur groupement
+   * en découlent — c'est la seule chose que le format décide ici, le moteur ne
+   * connaissant, lui, que des camps.
+   *
+   * **Chaque format porte tout ce qui le distingue**, et c'est ce qui fait
+   * qu'en ajouter un ne coûte qu'une entrée :
+   *  • `taille` (et `min`/`max` s'il est réglable — c'est `min` qui décide
+   *    l'affichage du compteur, aucun nom de format n'est testé pour ça) ;
+   *  • `camps`, la seule chose que le moteur lise ;
+   *  • `tag`, le libellé d'un emplacement ;
+   *  • `bouton`, le libellé du bouton de départ.
+   *
+   * `solo` et `royale` ont le même compteur mais pas les mêmes camps : le
+   * premier fait **1 contre n−1**, le second **chacun pour soi**. C'est la
+   * seule différence entre eux, et elle tient dans `camps`.
    */
   const FORMATS = {
-    duel: { taille: 2, camps: () => [0, 1] },
-    teams: { taille: 4, camps: () => [0, 0, 1, 1] },
-    royale: { taille: 4, min: 3, max: Math.min(5, ROSTER.length), camps: (n) => ROSTER.slice(0, n).map((_, i) => i) },
+    duel: {
+      taille: 2,
+      camps: () => [0, 1],
+      tag: (i) => (i === 0 ? t.slotLeft : t.slotRight),
+      bouton: () => t.start,
+    },
+    teams: {
+      taille: 4,
+      camps: () => [0, 0, 1, 1],
+      tag: (i, camps) => (camps[i] === 0 ? t.teamA : t.teamB),
+      bouton: () => t.start,
+    },
+    solo: {
+      taille: 3,
+      /** **3 à 5 emplacements, donc 1 contre 2 à 1 contre 4** — demandé « 4
+       *  personnages max ». Le plancher est 3 et non 2 : à deux, ce serait le
+       *  duel, qui a déjà son format. */
+      min: 3,
+      max: Math.min(5, ROSTER.length),
+      camps: (n) => Array.from({ length: n }, (_, i) => (i === 0 ? 0 : 1)),
+      /** Le premier est nommé, les autres numérotés : ils sont **un seul
+       *  camp**, ce que le « VS » et le groupement disent déjà — les libeller
+       *  tous pareil ferait perdre lequel on est en train de remplir. */
+      tag: (i) => (i === 0 ? t.slotSolo : t.slotN(i)),
+      bouton: () => t.startSolo,
+    },
+    royale: {
+      taille: 4,
+      min: 3,
+      max: Math.min(5, ROSTER.length),
+      camps: (n) => ROSTER.slice(0, n).map((_, i) => i),
+      tag: (i) => t.slotN(i + 1),
+      bouton: () => t.startRoyale,
+    },
   };
   let mode = 'duel';
   let taille = FORMATS.duel.taille;
@@ -104,16 +148,19 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
     refresh();
   });
 
-  // --- nombre de combattants, en bataille royale seulement
+  // --- nombre de combattants, dans les formats qui le règlent (`min` posé)
   root.querySelector('#size-less').addEventListener('click', () => setSize(taille - 1));
   root.querySelector('#size-more').addEventListener('click', () => setSize(taille + 1));
 
   function setSize(n) {
-    const f = FORMATS.royale;
+    const f = FORMATS[mode];
+    // Un format à taille fixe n'a pas de `min` : les deux boutons restent
+    // câblés mais ne font rien, plutôt que d'exister en double selon le mode.
+    if (!f.min) return;
     const clamped = Math.max(f.min, Math.min(f.max, n));
     if (clamped === taille) return;
     taille = clamped;
-    f.taille = clamped; // retenu pour le prochain passage en bataille royale
+    f.taille = clamped; // retenu pour le prochain passage dans ce format
     if (active >= taille) active = taille - 1;
     buildSlots();
     refresh();
@@ -162,10 +209,7 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
 
       const tag = document.createElement('span');
       tag.className = 'slot-tag';
-      tag.textContent =
-        mode === 'duel' ? (i === 0 ? t.slotLeft : t.slotRight)
-          : mode === 'teams' ? (camps[i] === 0 ? t.teamA : t.teamB)
-            : t.slotN(i + 1);
+      tag.textContent = FORMATS[mode].tag(i, camps);
 
       const orb = document.createElement('span');
       orb.className = 'slot-orb';
@@ -178,7 +222,7 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
       groupe.append(btn);
       slotBtns.push({ btn, orb, name });
     }
-    sizeEl.hidden = mode !== 'royale';
+    sizeEl.hidden = !FORMATS[mode].min;
     sizeLabel.textContent = String(taille);
     for (const b of modesEl.querySelectorAll('[data-mode]')) {
       b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
@@ -235,7 +279,7 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
       orb.style.background = el ? el.look.body : '#e6e6e6';
       name.textContent = el ? label(el, lang) : '—';
     });
-    startBtn.textContent = mode === 'royale' ? t.startRoyale : t.start;
+    startBtn.textContent = FORMATS[mode].bouton();
     startBtn.disabled = retenus.some((id) => !id);
   }
 

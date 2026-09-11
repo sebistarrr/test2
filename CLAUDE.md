@@ -1,6 +1,7 @@
 # CLAUDE.md — mémoire du projet
 
-Duels **à deux, en 2 contre 2 ou en bataille royale**, avec huit combattants :
+Duels **à deux, en 2 contre 2, en 1 contre X ou en bataille royale**, avec huit
+combattants :
 cinq repris de la chaîne « ballthingsim » — le Pistolero, le Ronin, l’Hoplite,
 le Shinobi et le Druide — et **trois inventés**, le Golem, le Mannequin (une
 cible d'entraînement qui ne frappe pas) et le Soleil (un **boss**, fait pour
@@ -59,7 +60,7 @@ recale.
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
 | Libellés d'interface (les deux langues) | `src/ui/lang.js` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
-| **Formats de partie** (duel, 2 contre 2, bataille royale) | `src/ui/select.js` (les camps) + `src/game/match.js` (le moteur) |
+| **Formats de partie** (duel, 2 contre 2, 1 contre X, bataille royale) | `src/ui/select.js` (la table `FORMATS`) + `src/game/match.js` (le moteur) |
 
 `elements.js` et `pixelmaps.js` ne sont que des **registres** : ils n'ont
 aucune valeur de combattant. Les ouvrir pour changer une couleur est une erreur
@@ -215,7 +216,7 @@ dans l'autre : `docs/PIEGES.md`.
 
 ## Formats de partie
 
-Trois, et **un seul mécanisme** : le moteur reçoit une liste de combattants et
+Quatre, et **un seul mécanisme** : le moteur reçoit une liste de combattants et
 un camp pour chacun. Il ne sait pas ce qu'est un « 2 contre 2 » ; il sait qui
 peut blesser qui.
 
@@ -223,11 +224,24 @@ peut blesser qui.
 | --- | --- | --- |
 | Duel | 2 identifiants | omis → `[0, 1]` |
 | 2 contre 2 | 4 identifiants | `[0, 0, 1, 1]` |
+| **1 contre X** | 3 à 5 identifiants | `[0, 1, 1, …]` |
 | Bataille royale | 3 à *n* identifiants | omis → chacun le sien |
 
 `ui/select.js` porte la table des formats et fabrique les camps ; `main.js` les
 lit aussi depuis l'URL (`?f=a,b,c&teams=0,0,1`). Ajouter un format ne demande
 **qu'une entrée dans cette table** — pas une ligne de moteur.
+
+**Et c'est vérifié, pas supposé** : le 1 contre X a été joué par l'URL *avant*
+d'écrire une ligne d'interface, et il tournait déjà — HUD groupé, titre
+d'arène, jauges. Chaque entrée porte donc tout ce qui distingue son format
+(`taille`, `min`/`max` s'il est réglable, `camps`, `tag`, `bouton`) : les trois
+chaînes `mode === '…'` qui traînaient dans `select.js` sont rentrées dans la
+table à cette occasion. **C'est `min` qui décide l'affichage du compteur**,
+plus un nom de format.
+
+**Le 1 contre X et la bataille royale se ressemblent et ne diffèrent que par
+`camps`** : `[0, 1, 1, 1]` contre `[0, 1, 2, 3]`. Même compteur, même nombre
+d'emplacements, deux parties qui n'ont rien à voir.
 
 **L'écran de sélection plafonne la bataille royale à 5** (`Math.min(5,
 ROSTER.length)`), pas au roster entier : c'est un choix de lisibilité — le HUD
@@ -686,6 +700,10 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   mais le prix est la dérive et non la réutilisation. Le Soleil porte donc
   `look.palette`, cinq teintes relevées sur sa maquette, et son module n'a plus
   **aucun littéral de couleur**.
+- **Un format dont un seul camp est nombreux casse une mise en page qui tenait
+  pour tous les autres** : mesurer le débordement contre la **fenêtre**, pas
+  contre le parent — les emplacements tenaient dans leur bloc, c'est le bloc qui
+  sortait de la page.
 - **La vignette de sélection doit lire le sprite, pas la carte texte** : elle
   compilait `PIXEL_MAPS` et ignorait donc les overrides PNG. Invisible tant que
   les replis étaient de fidèles transcriptions, criant dès qu'un repli est

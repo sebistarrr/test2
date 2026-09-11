@@ -23,13 +23,13 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 366 |
 | &nbsp;&nbsp;· Éditer les données | 405 |
 | &nbsp;&nbsp;· Interface et rendu | 511 |
-| &nbsp;&nbsp;· Le son | 597 |
-| &nbsp;&nbsp;· Refactoriser | 1033 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 1074 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1076 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1119 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1162 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1181 |
+| &nbsp;&nbsp;· Le son | 607 |
+| &nbsp;&nbsp;· Refactoriser | 1043 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1084 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1086 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1129 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1172 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1191 |
 
 ---
 
@@ -593,6 +593,16 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   classement a un sens est lu **à la fin du duel**, clones compris — un duel à
   deux qui a vu naître un clone n'est donc plus « à deux » pour ce test, et
   c'est ce qui rendait le doublon visible jusqu'en 1 contre 1.
+
+- **Un format dont un seul camp est nombreux casse une mise en page qui tenait
+  pour tous les autres.** Le 1 contre X est le premier où un camp porte quatre
+  emplacements : `.slot-team` était une rangée sans retour, et à cinq elle
+  sortait de la page (440 px de large pour 405) — sans que rien ne le signale,
+  parce que les emplacements ne débordaient pas *leur conteneur*, c'est le
+  conteneur qui débordait *la page*. Mesurer le débordement contre la **fenêtre**,
+  pas contre le parent. Correction : le bloc de camp passe à la ligne comme la
+  rangée de camps le faisait déjà, et les emplacements se resserrent à cinq. La
+  bataille royale à cinq y gagne au passage — elle débordait aussi.
 
 ### Le son
 

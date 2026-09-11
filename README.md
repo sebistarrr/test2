@@ -1,7 +1,7 @@
-# Elemental Duel — huit combattants, trois formats
+# Elemental Duel — huit combattants, quatre formats
 
-Duels **à deux, en 2 contre 2 ou en bataille royale** (jusqu'à huit, chacun pour
-soi), avec cinq combattants repris de la chaîne **« ballthingsim »** et trois
+Duels **à deux, en 2 contre 2, en 1 contre X ou en bataille royale** (jusqu'à
+huit, chacun pour soi), avec cinq combattants repris de la chaîne **« ballthingsim »** et trois
 inventés, en **HTML + CSS + JavaScript** avec un rendu **Canvas 2D**.
 Aucune dépendance, aucun build : le dépôt se publie tel quel sur GitHub Pages.
 
@@ -32,12 +32,15 @@ boss). L'équilibrage se lit sur les six autres.
 | --- | --- |
 | **Duel** | un contre un, le format d'origine — c'est lui, et lui seul, dont l'équilibrage est relevé |
 | **2 contre 2** | deux équipes de deux. Les armes ne touchent que le camp adverse, mais les **corps se bousculent entre tous** : un coéquipier reste un obstacle |
+| **1 contre X** | un combattant **seul contre tous les autres**, de **1 contre 2 à 1 contre 4**. Les X forment un seul camp : ils s'épaulent, se bousculent entre eux, et ne visent que le solitaire |
 | **Bataille royale** | **3 à 5** combattants à l'écran de sélection, chacun pour soi, dernier debout. Le moteur, lui, en accepte autant qu'il y a de combattants — le plafond est un choix de lisibilité, pas une limite technique |
 
-Le moteur ne connaît aucun de ces trois noms : il reçoit une liste de
-combattants et **un camp pour chacun**. « 2 contre 2 » et « chacun pour soi »
-sont deux façons de remplir la même liste de camps. Ajouter un format ne demande
-donc pas une ligne de moteur.
+Le moteur ne connaît aucun de ces quatre noms : il reçoit une liste de
+combattants et **un camp pour chacun**. « 2 contre 2 », « 1 contre X » et
+« chacun pour soi » sont trois façons de remplir la même liste de camps —
+`[0,0,1,1]`, `[0,1,1,1]` et `[0,1,2,3]`. Ajouter un format ne demande donc pas
+une ligne de moteur : le 1 contre X a été **joué par l'URL avant d'avoir une
+seule ligne d'interface**, et il tournait déjà.
 
 Au-delà de deux combattants, chacun vise l'**ennemi vivant le plus proche** et
 peut changer de cible d'un pas à l'autre, un **mort quitte le terrain
@@ -79,7 +82,7 @@ voir [`docs/FICHES.md`](docs/FICHES.md).
 
 ![L’Hoplite contre le Ronin](docs/capture-duel.png)
 
-<sup>Les nouveaux formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [une bataille royale à cinq](docs/capture-royale.png) · [la parade à deux vainqueurs](docs/capture-fin-2v2.png).</sup>
+<sup>Les autres formats : [un 2 contre 2](docs/capture-2v2.png) (les camps groupés dans le titre et dans le HUD) · [**un 1 contre 4**](docs/capture-1vx.png), le Soleil seul contre quatre — il gagne 1 duel sur 3 dans cette configuration, là où il en gagne 20 sur 21 en 1 contre 1 · [une bataille royale à cinq](docs/capture-royale.png) · [la parade à deux vainqueurs](docs/capture-fin-2v2.png).</sup>
 
 <sup>L’Hoplite (charge, Dôme de drain) contre le Ronin (surchauffe, Aura de braise). Voir aussi [l'écran de sélection](docs/capture-selection.png), [le Pistolero sous DEAD MAN’S HAND](docs/capture-horsloi.png), [la ruée du Ronin](docs/capture-bretteur.png), [la Foudre tombante de l’Hoplite](docs/capture-lancer.png), [sa charge de lance](docs/capture-lancer-charge.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png). Le boss : [le Rayon solaire du Soleil](docs/capture-soleil.png), huit rayons en couronne et un faisceau qui traverse l'arène — et [ses deux secondes de chargement](docs/capture-soleil-charge.png), la seule fenêtre pour en sortir.</sup>
 
@@ -110,7 +113,7 @@ empêche Jekyll d'ignorer les dossiers.
 | ------------ | ----------------------------------------------------------------- |
 | `?a=&b=`     | lance directement un duel sans écran de sélection — `outlaw`, `bladesman`, `lancer`, `wind` (le Shinobi), `mage` |
 | `?f=`        | une liste de combattants, pour une partie à plusieurs : `?f=outlaw,mage,lancer,wind` |
-| `?teams=`    | les camps, dans le même ordre que `?f=` : `0,0,1,1` fait un 2 contre 2. Omis, chacun pour soi |
+| `?teams=`    | les camps, dans le même ordre que `?f=` : `0,0,1,1` fait un 2 contre 2, `0,1,1,1` un 1 contre 3. Omis, chacun pour soi |
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
 | `?lang=fr`   | **toute l'interface** en français — HUD, titre d'arène et écrans DOM (par défaut : l'anglais de la vidéo) |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |
