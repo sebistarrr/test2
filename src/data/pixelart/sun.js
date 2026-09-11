@@ -25,36 +25,35 @@
 import { deepFreeze } from '../freeze.js';
 
 /**
- * **Une langue de flamme** — repli texte du vrai PNG, et le combattant en porte
- * huit (`weapon.spokes`).
+ * **Un huitième de couronne** — repli texte du vrai PNG, et le combattant en
+ * porte huit (`weapon.spokes`), donc les huit copies **pavent l'anneau**.
  *
- * Le rayon est servi par `assets/sprites/sun-ray.png`, **découpé dans la
- * maquette d'astre** : la balle en prend la sphère, l'arme prend une des
- * langues qui l'entourent (voir `weapon.head` dans la fiche pour la découpe, et
- * `pixelmaps.js` pour l'écart assumé à « aucun binaire »). Cette carte-ci ne se
- * dessine donc **que** si le PNG ne charge pas — mais elle n'est pas décorative
- * pour autant, et de deux façons :
+ * Ce n'est plus *une* langue : c'est le **secteur de 45°** de la couronne de la
+ * maquette, celui de 225° à 270°, qui en contient deux (une longue, une courte)
+ * — voir `weapon.head` dans la fiche pour la découpe et pourquoi elle tombe là,
+ * et `pixelmaps.js` pour l'écart assumé à « aucun binaire ». Cette carte-ci ne
+ * se dessine donc **que** si le PNG ne charge pas — mais elle n'est pas
+ * décorative pour autant, et de deux façons :
  *
  *  • **`h` sert au calcul de la taille dessinée même avec l'override** :
- *    `drawSpriteLeft` prend la hauteur ici (13) et le rapport d'aspect sur
+ *    `drawSpriteLeft` prend la hauteur ici (17) et le rapport d'aspect sur
  *    l'image. En changer la valeur déplacerait la pointe de l'arme, donc
  *    `weapon.head.scale` avec ;
  *  • **`w` fixe le rapport du repli**, et il est calé sur celui du PNG
- *    (15 / 13 = 1,153846, contre 143 / 124 = 1,153226, soit **0,05 %** d'écart)
+ *    (15 / 17 = 0,882353, contre 112 / 127 = 0,881890, soit **0,05 %** d'écart)
  *    : si le PNG manque, la couronne garde son envergure au lieu de se
- *    déformer. C'est ce qui a décidé de la taille de la carte — 15 × 13 est la
- *    première paire qui tombe aussi juste, là où l'ancienne (4 × 9) laissait
- *    2,5 % de dérive.
+ *    déformer. C'est ce qui décide de la taille de la carte — on cherche la
+ *    plus petite paire d'entiers qui tombe à moins de 0,1 % du rapport du PNG.
  *
  * Le dessin est une **réduction mécanique du PNG**, pas une copie à la main :
- * la flamme est la plus claire là où elle sort du corps et il ne lui reste que
- * son contour à l'extrémité, parce que c'est ce que fait la maquette — et le
- * talon est sans contour parce que la découpe part **à l'intérieur** de la
- * sphère, où la flamme n'a pas d'encre.
+ * on y lit l'éventail, sa longue langue vers la droite et sa courte en bas,
+ * avec le bord intérieur concave qui vient épouser la bille. Le talon est sans
+ * contour parce que la découpe part **à l'intérieur** de la sphère, où la
+ * flamme n'a pas d'encre.
  */
 export const SUN_RAY = deepFreeze({
   w: 15,
-  h: 13,
+  h: 17,
   /** Les cinq teintes de `look.palette`, relevées sur la maquette : c'est ce
    *  qui garantit que le repli, le sprite et le reste du personnage ne
    *  divergent pas. */
@@ -66,25 +65,29 @@ export const SUN_RAY = deepFreeze({
     w: '#fdf17f', // cœur
   },
   /**
-   * **Large au talon (à gauche) et effilée vers la droite**, avec une pointe
-   * qui file plus loin que le reste sur une seule rangée : c'est la langue
-   * telle qu'elle est dessinée, pas une lame symétrique. L'irrégularité est
-   * conservée exprès — c'est elle qui fait lire une flamme.
+   * **Un éventail, pas une lame** : le bord gauche est l'arc intérieur qui se
+   * pose sur la bille, la longue langue file vers la droite en haut, la courte
+   * redescend en bas. L'asymétrie est conservée exprès — c'est elle qui fait
+   * lire une couronne quand les huit copies se referment.
    */
   rows: [
-    'od..KK.........',
-    'yodddK.........',
-    'wwyooodKK......',
-    'wwooooodK......',
-    '.oddoododK.....',
-    '.odooyoddddKKKK',
-    '.doooyyddddK...',
-    'odoooyoddK.....',
-    'oooooodddK.....',
-    'ooddododdK.....',
-    'oyyoodKKK......',
-    '.wodddK........',
-    '....KdKK.......',
+    'dK.............',
+    'oddKKKdKK......',
+    'oodddddddKKKKKK',
+    '.yooooodddddKK.',
+    '.yyyoddKKdKK...',
+    '.wyodK.........',
+    '.oodK..........',
+    '.ddK...........',
+    '.KK............',
+    '.K.............',
+    '.KK............',
+    '.dK............',
+    '.odK...........',
+    '.yodK..........',
+    '.ooddK.........',
+    'ddKK...........',
+    'K..............',
   ],
 });
 

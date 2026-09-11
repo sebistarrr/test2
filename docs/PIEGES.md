@@ -20,16 +20,16 @@ relevé, puis les pièges eux-mêmes.
 | **Pièges déjà rencontrés** | 139 |
 | &nbsp;&nbsp;· Mesurer | 141 |
 | &nbsp;&nbsp;· Équilibrer | 176 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 352 |
-| &nbsp;&nbsp;· Éditer les données | 391 |
-| &nbsp;&nbsp;· Interface et rendu | 467 |
-| &nbsp;&nbsp;· Le son | 553 |
-| &nbsp;&nbsp;· Refactoriser | 989 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 1030 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1032 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1075 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1118 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1137 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 366 |
+| &nbsp;&nbsp;· Éditer les données | 405 |
+| &nbsp;&nbsp;· Interface et rendu | 511 |
+| &nbsp;&nbsp;· Le son | 597 |
+| &nbsp;&nbsp;· Refactoriser | 1033 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1074 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1076 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1119 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1162 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1181 |
 
 ---
 
@@ -270,6 +270,20 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   dit qu'il n'équilibre pas. Un commentaire qui attribue un résultat au mauvais
   paramètre coûte plus cher que pas de commentaire du tout : le suivant le
   tournera dans le vide.
+
+  **Repayé sur le Soleil, et cette fois pour refuser un correctif.** Raccourcir
+  la couronne à la mesure du dessin lui coûte sa première défaite : `lancer vs
+  sun` passe à 2/3, la matrice à 20/21. Le banc dit pourtant que ce n'est pas un
+  affaiblissement — **139/140** contre 140/140, 10 seeds × les deux camps — et
+  les balayages disent pourquoi : `hitbox.radius` rend 39 · 36 · **40** · 36 sur
+  40 duels (15 · 20 · 25 · 29), `melee.cooldown` rend 39 · 35 · **40** · 40
+  (0,8 · 0,7 · 0,6 · 0,5). Deux valeurs sortent 40/40 — et leur **voisine
+  immédiate** fait pire que le point de départ. Les retenir aurait été caler sur
+  les graines du banc, avec un chiffre qui aurait ensuite été lu comme un
+  réglage d'équilibrage. **Rien n'a été touché**, et c'est écrit dans la fiche :
+  ce duel-là a une queue fragile vers 80 s que la couronne ne pilote pas. Le
+  levier qui la piloterait est l'horloge de l'ultime — 79 % de ses dégâts, effet
+  monotone et déjà documenté —, et ce serait un rééquilibrage à part entière.
 - **Seuil d'arrondi.** `Math.round(stat/18)` → `stat/15` a doublé des dégâts
   (round(1,33)=1 vs round(1,6)=2) et fait passer le Vent de 5 à 19 victoires.
   Toujours repasser la matrice après un changement de formule.
@@ -463,6 +477,36 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   gratuit : c'est aussi la taille de carte qui s'est décidée là — 15 × 13 tombe
   à **0,05 %** du rapport d'aspect du PNG, là où l'ancienne 4 × 9 laissait 2,5 %
   de dérive sur l'envergure du repli.
+
+- **Une arme répétée *N* fois ne doit pas être le motif visé, mais un *N*-ième de
+  la forme visée.** La couronne du Soleil a été faite deux fois. La première :
+  découper *une* langue de la maquette et laisser `spokes: 8` la répéter — huit
+  flammes détachées, séparées par huit fentes d'arène blanche, là où le dessin
+  montre une couronne continue. La seconde : découper le **secteur de 45°** de la
+  couronne, parce que 8 × 45° = 360° — les huit copies **pavent l'anneau**, et le
+  jeu n'imite plus le dessin, il le remonte.
+
+  Deux corollaires qui ne se devinent pas :
+  - **la densité vient avec.** Le secteur contient deux langues, donc la couronne
+    en porte seize ; la maquette en compte treize. En répétant un motif, on
+    n'avait que huit et aucun réglage ne pouvait corriger ça ;
+  - **la coupe se balaie, elle ne se choisit pas.** Une frontière de secteur au
+    milieu d'une langue la coupe en deux et la couture se voit tourner. On balaie
+    l'angle de départ au demi-degré en minimisant la matière traversant les deux
+    rayons frontières ; plusieurs coupes sortent à zéro (les deux bords dans des
+    creux). Ensuite seulement on choisit, sur le contenu.
+
+  Et une conséquence sur la lecture de `reach` : pour un **éventail**, il n'est
+  plus le rayon de la silhouette mais l'extension **le long de l'axe**, les
+  langues en biais allant plus loin. La discipline « `handle.length` + largeur
+  dessinée = `reach` » tient toujours ; ce qu'elle garantit, non.
+
+- **Prendre le plus bel exemplaire d'un motif et le répéter fabrique une forme
+  que le dessin ne contient pas.** La couronne d'avant plantait la **plus longue**
+  langue de la maquette sur les huit axes : elle sortait à **1,773 × le rayon de
+  la sphère** quand la plus longue langue du dessin est à 1,629 et la médiane à
+  1,292. Personne ne l'a vu, parce que chaque langue *était* fidèle — c'est leur
+  assemblée qui ne l'était pas. Un secteur, lui, porte ce qu'il porte.
 
 ### Interface et rendu
 

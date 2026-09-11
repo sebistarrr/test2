@@ -307,19 +307,22 @@ export const SUN = fiche({
     name: 'Couronne de rayons',
     nameRef: 'Ray Crown',
     /**
-     * **145,41 px — et pas un chiffre choisi : c'est la maquette, à l'échelle.**
+     * **123,15 px — l'extension *sur l'axe* d'un huitième de couronne.**
      *
-     * Déduite du sprite comme partout : `handle.length` 77,23 + largeur dessinée
-     * 68,17 = 145,41. La largeur dessinée vaut `map.h × head.scale ×
+     * Déduite du sprite comme partout : `handle.length` 71,55 + largeur dessinée
+     * 51,60 = 123,15. La largeur dessinée vaut `map.h × head.scale ×
      * (img.w / img.h)` (voir `head` plus bas), **jamais** `map.w × scale`.
      *
-     * Son corps faisant 82 px de rayon, **chaque langue ne dépasse que de 63,4 px
-     * du bord** — soit 77 % du rayon du corps, ce que donne le relevé de la
-     * maquette (pics à 262 contre sphère à 172). C'est plus court que les 160 px
-     * de la couronne d'avant : le dessin est moins hérissé qu'on ne l'avait
-     * dessiné de mémoire, et c'est lui qui tranche.
+     * **Attention à ce que `reach` mesure ici, et c'est nouveau** : depuis que
+     * l'arme est un *secteur* et non une pointe, son point le plus éloigné du
+     * centre n'est plus sur son axe. `reach` est l'extension **le long de
+     * l'axe** — c'est ce que le moteur dessine et ce sur quoi il pose la
+     * hitbox — et les langues qui tombent en biais dans le secteur vont un peu
+     * plus loin en diagonale. Le chiffre n'est donc plus le rayon de la
+     * silhouette ; la silhouette, elle, atteint 267 px sur la maquette,
+     * soit 123 en jeu.
      */
-    reach: 145.41,
+    reach: 123.15,
     /**
      * **SPIN × 0,55**, soit 3,17 rad/s : entre le Golem (0,45) et le reste du
      * roster (1,0). Calé, et calé bas pour la raison documentée sur la lance de
@@ -347,59 +350,77 @@ export const SUN = fiche({
     spokes: 8,
     /**
      * `width: 0` : le rayon est tout entier dans le sprite, il n'y a pas de
-     * manche à tracer. `length: 77,23` — **un peu en deçà du rayon du corps**
-     * (82), et c'est voulu : la découpe part de 162 px sur la maquette quand la
-     * sphère en fait 172, donc la base de la langue **chevauche** la bille de
-     * 4,77 px en jeu. Sans ce recouvrement, huit coutures se verraient tourner.
+     * manche à tracer. `length: 71,55` — **en deçà du rayon du corps** (82), et
+     * c'est voulu : le secteur est découpé à partir de 168 px sur la maquette
+     * quand la sphère en fait 178, donc sa base **chevauche** la bille. Sans ce
+     * recouvrement, huit coutures se verraient tourner.
      */
-    handle: { length: 77.23, width: 0, color: '#f9993c', dark: '#c00803', outline: '#5d0100', gem: null },
+    handle: { length: 71.55, width: 0, color: '#f9993c', dark: '#c00803', outline: '#5d0100', gem: null },
     /**
-     * **Le rayon est une pointe découpée dans la maquette de la balle —
-     * demandé** (`assets/sprites/sun-ray.png`). C'est la même image que le
-     * corps : la balle en prend le disque, l'arme prend « ce qu'il y a
-     * autour ». Les huit rayons **reconstituent donc la silhouette du dessin**,
-     * à ceci près qu'ils tournent.
+     * **L'arme n'est plus une pointe : c'est un huitième de la couronne —
+     * demandé** (« modifie l'arme pour que le rendu final soit comme le png »).
      *
-     * Découpe : le secteur de ±18° autour de la plus longue langue (313,6° sur
-     * la maquette, celle qui va le plus loin et la mieux formée), pris **depuis
-     * 162 px** — soit 10 px en deçà de la sphère, pour que sa base chevauche la
-     * balle et qu'aucune couture ne se voie — puis tourné pointe vers la droite
-     * (l'axe des armes dans ce moteur), au plus proche voisin : c'est du
+     * Le raisonnement tient en une ligne d'arithmétique. `spokes: 8` répète la
+     * même carte tous les **45°**, et 8 × 45° = 360° : si la carte est le
+     * secteur de 45° de la couronne de la maquette, alors les huit copies
+     * **pavent exactement l'anneau**, sans trou et sans recouvrement. La
+     * couronne du jeu n'imite plus le dessin, elle en est le remontage.
+     *
+     * **Ce que ça change à l'œil, et c'était toute la demande.** L'arme était
+     * jusqu'ici *une* langue, répétée : huit flammes détachées, séparées par
+     * huit fentes d'arène blanche, là où la maquette montre une couronne
+     * continue. Le secteur retenu contient **deux** langues (une longue, une
+     * courte), donc la couronne en porte **seize** — la maquette en compte
+     * treize, et c'est infiniment plus proche que huit. L'alternance
+     * longue/courte vient avec, puisqu'elle est dans le morceau découpé.
+     *
+     * **Où couper, et c'est mesuré, pas choisi.** Une frontière de secteur qui
+     * tombe au milieu d'une langue la coupe en deux, et la couture se voit
+     * tourner. On balaie donc l'angle de départ au demi-degré et on retient
+     * ceux qui minimisent la matière traversant les **deux** rayons frontières.
+     * Plusieurs coupes sortent à **zéro** — les deux frontières dans des creux,
+     * aucune langue sectionnée : **225° → 270°** est celle-là, et c'est parmi
+     * elles celle dont le contenu ressemble le plus au reste du dessin.
+     *
+     * Le secteur est pris **depuis 168 px** (10 px en deçà de la sphère, pour
+     * que sa base chevauche la bille), puis tourné bissectrice vers la droite
+     * — l'axe des armes dans ce moteur — au plus proche voisin : c'est du
      * pixel-art, il ne doit pas flouter.
      *
      * **Toute la géométrie découle de la maquette**, à l'échelle
-     * `82 / 172 = 0,476744` (rayon du corps / rayon de la sphère source) :
+     * `82 / 178 = 0,460674` (rayon du corps / rayon de la sphère source) :
      *
      * | source | jeu |
      * | --- | --- |
-     * | base de la langue, 162 px | `handle.length` 77,23 |
-     * | bout de la langue, 305 px | `reach` 145,41 |
+     * | base du secteur, 168 px | `handle.length` 71,55 |
+     * | bout du secteur sur l'axe, 267 px | `reach` 123,15 |
+     * | boîte du secteur, 112 × 127 | hauteur dessinée 58,51 |
      *
-     * **`reach` remonte donc de 104 à 145,41**, après être tombé de 160 à 104 au
-     * découpage précédent — et les trois chiffres viennent du **même** relevé
-     * refait sur un masque différent. C'est l'histoire à retenir : le premier
-     * masque gardait le halo pêche, qui remplissait les baies entre les langues
-     * et enflait le « disque » à 245 px, ne laissant dépasser que 14 % de
-     * pointe. Sur le masque propre (voir `look.sprite`), la sphère est à 172 et
-     * les pointes à 262 : **52 %**. Un masque faux ne rend pas une mesure
-     * fausse — il rend une mesure *juste sur la mauvaise forme*.
+     * **La maquette de travail n'est pas le PNG de la balle** : celui-ci est
+     * coupé à sa sphère, il n'a donc plus de couronne à découper. Le dessin
+     * entier a été **repris dans l'historique** (`assets/sprites/sun-core.png`
+     * au commit qui l'a introduit), et le masque refait comme dans
+     * `look.sprite` — remplissage depuis le bord, l'encre brûlée faisant mur.
+     * Sa sphère y vaut 178 px là où le PNG de la balle est coupé à 172 : deux
+     * rendus de la même illustration à deux échelles. Aucune importance tant
+     * que **chacun est ramené par son propre rayon de sphère**, ce que fait
+     * l'échelle ci-dessus — et l'aperçu superposé le confirme.
      *
-     * **Et ça se paie sur le jeu, contrairement à ce qui était écrit ici** :
-     * `melee.damage` vaut 0, mais `resolveMelee` pose le verrou de mêlée,
-     * applique `selfRecoil` et **décolle les deux corps** *hors* de
-     * `Match.damage`. La portée de la couronne reste donc de la géométrie de
-     * jeu, et la matrice bouge à chaque fois qu'on y touche (les durées ; pas
-     * les vainqueurs).
+     * **Ça se paie sur le jeu, `melee.damage: 0` ou pas** : `resolveMelee` pose
+     * le verrou de mêlée, applique `selfRecoil` et **décolle les deux corps**
+     * *hors* de `Match.damage`. La géométrie de la couronne reste donc du
+     * gameplay, et la matrice bouge à chaque fois qu'on y touche (les durées ;
+     * pas les vainqueurs).
      *
      * **L'échelle ne se lit pas sur la carte texte, et c'est le piège déjà payé
      * sur la lance de l'Hoplite puis sur l'arme du Golem** : `drawSpriteLeft`
      * dimensionne par la **hauteur** (`map.h × scale`, prise sur la carte
-     * texte, donc 13) puis applique le **rapport d'aspect du PNG** (143 × 124,
-     * soit 1,153226). La largeur dessinée vaut donc `13 × scale × 1,153226`, et
-     * **non** `map.w × scale` — d'où `scale = 68,17 / (13 × 1,153226) =
-     * 4,547406`.
+     * texte, donc 17) puis applique le **rapport d'aspect du PNG** (112 × 127,
+     * soit 0,881890). La largeur dessinée vaut donc `17 × scale × 0,881890`, et
+     * **non** `map.w × scale` — d'où `scale = 51,60 / (17 × 0,881890) =
+     * 3,441507`.
      */
-    head: { sprite: 'sunRay', scale: 4.547406 },
+    head: { sprite: 'sunRay', scale: 3.441507 },
     /** Les rayons passent **par-dessus** la bille — ils en sortent, ils ne s'y
      *  cachent pas. Purement visuel : `bladeSegment()` ne lit pas ce drapeau. */
     overBody: true,
@@ -407,16 +428,21 @@ export const SUN = fiche({
      *  barré par les deux rayons horizontaux à chaque demi-tour. */
     hpOverWeapon: true,
     /**
-     * **Le tranchant commence à la base de la langue** : 0,5311 × 145,41 =
-     * 77,23, soit `handle.length`. Déduit, pas choisi — les deux doivent bouger
-     * ensemble. Il démarre donc 4,77 px *à l'intérieur* de la bille, exactement
-     * comme le dessin (voir `handle`).
+     * **Le tranchant commence à la base du secteur** : 0,5810 × 123,15 = 71,55,
+     * soit `handle.length`. Déduit, pas choisi — les deux doivent bouger
+     * ensemble. Il démarre donc *à l'intérieur* de la bille, exactement comme
+     * le dessin (voir `handle`).
      *
-     * Rayon 15 : plus fin que le bloc du Golem (24), parce qu'un rayon est
-     * effilé et qu'il y en a huit. L'épaissir multiplierait la surface
-     * couverte par huit, pas par un.
+     * **Rayon 15, et il ne suit plus la largeur du dessin — c'est assumé.**
+     * Depuis que l'arme est un secteur de 45°, elle est large de 58,5 px là où
+     * la capsule n'en fait que 30 : huit capsules sur les huit axes
+     * **échantillonnent** l'anneau au lieu de l'épouser. Ce serait un mensonge
+     * du dessin sur la géométrie — le piège que le dépôt surveille — si le
+     * dessin blessait ; il ne blesse pas (`melee.damage: 0`), et tout ce que
+     * cette capsule décide est le décollement des corps. L'élargir alourdirait
+     * cette poussée **par huit**, sans rien rendre de plus lisible.
      */
-    hitbox: { from: 0.5311, radius: 15 },
+    hitbox: { from: 0.5810, radius: 15 },
     melee: {
       /**
        * **Zéro — la couronne ne blesse plus, demandé.**

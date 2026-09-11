@@ -38,15 +38,15 @@ les recale en une commande.
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2432 |
 | 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2646 |
 | ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2732 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 2980 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 3035 |
-| Les dégâts de tous les combattants, divisés par deux | 3103 |
-| Rééquilibrage confiné au Golem et au Ronin | 3213 |
-| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3300 |
-| Le son de chacun | 3350 |
-| Équilibrage du roster | 3468 |
-| Règles communes (moteur) | 3566 |
-| Comment les mesures ont été prises | 3590 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 3065 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 3120 |
+| Les dégâts de tous les combattants, divisés par deux | 3188 |
+| Rééquilibrage confiné au Golem et au Ronin | 3298 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3385 |
+| Le son de chacun | 3435 |
+| Équilibrage du roster | 3553 |
+| Règles communes (moteur) | 3651 |
+| Comment les mesures ont été prises | 3675 |
 
 ## Comment lire une valeur
 
@@ -2759,11 +2759,11 @@ deux bouts : le Mannequin ne peut pas gagner, le Soleil ne peut pas perdre.
 | Palette | `look.palette` — les cinq teintes de la maquette d'astre, relevées par bandes de luminance : `edge` `#5d0100` · `shadow` `#c00803` · `body` `#f9993c` · `light` `#fbcf55` · `core` `#fdf17f`. **Source unique de tout ce qui est orange chez lui** : le bloc `look`, mais aussi le module, qui codait ses propres orange en dur — d'où la dérive du Rayon solaire. Il a été jaune vif (`#fbbf24`), puis orange plat (`#de7f3a`, échantillonné sur les rayons) avant d'être un dessin | relevé sur la maquette |
 | Faisceau | **Fait de la même matière que l'astre — demandé.** `ultimate.beam.bands` : cinq bandes concentriques qui reprennent `look.palette` **dans l'ordre du dessin**, donc la structure de la maquette étirée le long d'un axe. Ce qui manquait et change tout, c'est le **liseré d'encre brûlée** : le faisceau allait d'orange à blanc, sans bord — or c'est ce trait qui signe le dessin, et sans lui le rayon se dissolvait en plus sur l'arène blanche | calé (demandé) |
 | Déplacement | **230 px/s, le plus lent du roster et de très loin** (420 Golem, 430 Hoplite, 655 Pistolero) et `turnRate` 1, le plus bas aussi. Il va **moitié moins vite que la moyenne**. C'est **la** contrepartie de tout le reste : il ne rattrape personne — et n'aurait rien à en faire s'il y arrivait | calé (demandé) |
-| **Arme** | *Couronne de rayons* — **une langue découpée dans la maquette de la balle, demandé** : la balle en prend la sphère, l'arme prend « ce qu'il y a autour ». Les huit langues reconstituent donc la silhouette du dessin, à ceci près qu'ils tournent | calé (demandé) |
-| Découpe du rayon | Le secteur de ±18° autour de la plus longue langue (313,6° sur la maquette), pris **depuis 162 px** — 10 px en deçà de la sphère, pour que sa base chevauche la balle et qu'aucune couture ne se voie — puis tourné pointe vers la droite au plus proche voisin (c'est du pixel-art, il ne doit pas flouter) | relevé sur la maquette |
-| Portée | **160 → 104,42 → 145,41**, et les trois chiffres sortent du **même** relevé de contour, refait sur un masque différent. Le masque pollué par le halo pêche donnait creux 245 / pics 278, soit 14 % de pointe ; le masque propre (détouré par remplissage depuis le bord) donne **sphère 172 / pics 262**, soit **52 %**. Toute la géométrie découle de l'échelle `82 / 172 = 0,476744` : base 162 px → `handle.length` **77,23** ; bout 305 px → `reach` **145,41**. Chaque langue dépasse donc de 63,4 px du corps | déduit |
-| Échelle du sprite | `scale = 68,17 / (13 × 1,153226) = 4,547406` : sous override PNG la largeur vient du **rapport d'aspect de l'image** (143 × 124), pas de `map.w` — piège déjà payé sur la lance de l'Hoplite puis sur l'arme du Golem. La carte texte est passée à 15 × 13 pour tomber à 0,05 % de ce rapport | déduit |
-| ⚠ Ce que ça a coûté | **Changer la portée a déplacé la matrice**, alors que l'arme ne fait aucun dégât. `resolveMelee` applique le **recul propre** et le **décollement des corps** hors de `damage` : la géométrie d'une arme sans dégâts reste du gameplay. Vainqueurs inchangés (21/21, les six autres au chiffre près), seules les **durées** de ses affrontements ont bougé — et **zéro ligne hors du Soleil**, les deux fois | mesuré |
+| **Arme** | *Couronne de rayons* — **un huitième de la couronne du dessin, demandé** : `spokes: 8` répète la carte tous les 45°, et 8 × 45° = 360°, donc les huit copies **pavent l'anneau**. La couronne du jeu n'imite plus la maquette, elle en est le remontage | calé (demandé) |
+| Découpe du rayon | Le secteur **225° → 270°**, pris **depuis 168 px** — 10 px en deçà de la sphère, pour que sa base chevauche la balle — puis tourné bissectrice vers la droite au plus proche voisin (c'est du pixel-art, il ne doit pas flouter). L'angle de coupe est **balayé au demi-degré** pour minimiser la matière traversant les deux rayons frontières : plusieurs coupes sortent à zéro (les deux bords dans des creux, aucune langue sectionnée), et celle-ci est parmi elles la plus représentative du dessin. Il contient **deux** langues, une longue et une courte — donc la couronne en porte seize, contre treize à la maquette | relevé sur la maquette |
+| Portée | **160 → 104,42 → 145,41 → 123,15.** La chute finale est une correction : les 145,41 prenaient la **plus longue** langue du dessin et la plantaient sur l'axe des huit branches, ce qui donnait une couronne à **1,773 × le rayon de la sphère — plus longue que la plus longue langue de la maquette** (1,629). Le secteur, lui, porte ce qu'il porte : 1,525 ×, entre la médiane du dessin (1,292) et son maximum. Échelle `82 / 178 = 0,460674` : base 168 px → `handle.length` **71,55** ; bout sur l'axe 267 px → `reach` **123,15**. ⚠ `reach` mesure désormais l'extension **le long de l'axe**, pas le rayon de la silhouette : l'arme est un éventail, ses langues en biais vont un peu plus loin (125,3 en jeu) | déduit |
+| Échelle du sprite | `scale = 51,60 / (17 × 0,881890) = 3,441507` : sous override PNG la largeur vient du **rapport d'aspect de l'image** (112 × 127), pas de `map.w` — piège déjà payé sur la lance de l'Hoplite puis sur l'arme du Golem. La carte texte est passée à 15 × 17 pour tomber à 0,05 % de ce rapport | déduit |
+| ⚠ Ce que ça a coûté | **Changer la portée déplace la matrice**, alors que l'arme ne fait aucun dégât : `resolveMelee` applique le **recul propre** et le **décollement des corps** hors de `damage`, donc la géométrie d'une arme sans dégâts reste du gameplay. Les deux premières fois, seules les durées bougeaient. La troisième — la couronne raccourcie de 145,41 à 123,15 — **coûte un duel**, et c'est la seule ligne de vainqueur que le Soleil ait jamais perdue : `lancer vs sun` passe à 2/3. Voir la section dédiée pour la mesure : 139/140 au banc, et trois balayages non monotones qui disent que ce duel ne s'équilibre par aucun paramètre de couronne | mesuré |
 | **Huit branches** | `weapon.spokes: 8` — la même arme répétée tous les 45°, sans aucun angle mort. **Elle ne blesse plus** (voir ci-dessous) : c'est aujourd'hui sa silhouette et son bruit, plus son arme | calé (demandé) |
 | Rotation | `SPIN × 0,55` (3,17 rad/s), entre le Golem (0,45) et le reste (1,0) | calé |
 | **Corps à corps** | **0 — annulé, demandé.** La couronne portait 67,3 % de ses dégâts ; elle n'en porte plus aucun. `Match.damage` sort avant tout effet à montant nul, donc plus de son de touche ni de gerbe — le bruitage `scorch` est rebranché sur le faisceau par `opts.sound`. **Mais l'arme n'est pas inerte pour autant** : `resolveMelee` pose le verrou de mêlée, applique `melee.selfRecoil` et **décolle les deux corps** *hors* de `damage`. Ces clés sont donc bien lues, et toucher la portée déplace la matrice | calé (demandé) |
@@ -2976,6 +2976,91 @@ dégradé radial parce que la même réduction y rend du bruit : la maquette des
 un tourbillon, pas un dégradé, et à 16 px il n'en reste que du grain. L'icône de
 sélection, elle, portait encore l'échantillonnage de palette précédent
 (`#6f1e12`…) et a été ramenée sur `look.palette` avec les deux autres cartes.
+
+### L'arme devient un huitième de couronne — et coûte au Soleil son premier duel
+
+**Demandé** : « ne modifie plus la balle / modifie l'arme pour que le rendu final
+soit comme le png ».
+
+**Le raisonnement tient en une ligne d'arithmétique.** `spokes: 8` répète la même
+carte tous les **45°**, et 8 × 45° = 360°. Si la carte est *une langue*, on
+obtient huit flammes détachées séparées par huit fentes d'arène blanche — ce
+qu'on avait, et ce qui ne ressemblait pas au dessin. Si la carte est le **secteur
+de 45° de la couronne**, les huit copies **pavent exactement l'anneau** : la
+couronne du jeu n'imite plus la maquette, elle en est le remontage.
+
+Le secteur retenu contient **deux** langues (une longue, une courte), donc la
+couronne en porte **seize** là où la maquette en compte treize — infiniment plus
+proche que huit, et l'alternance longue/courte vient avec, puisqu'elle est dans
+le morceau découpé. Superposés à échelle égale (normalisés sur le rayon de la
+sphère), le jeu et la maquette se lisent comme le même objet.
+
+**Où couper est mesuré, pas choisi.** Une frontière de secteur qui tombe au
+milieu d'une langue la coupe en deux et la couture se voit tourner. On balaie
+donc l'angle de départ au demi-degré en minimisant la matière traversant les
+**deux** rayons frontières ; plusieurs coupes sortent à **zéro** — les deux bords
+dans des creux, aucune langue sectionnée — et **225° → 270°** est celle dont le
+contenu ressemble le plus au reste du dessin.
+
+**La maquette de travail vient de l'historique.** Le PNG de la balle est coupé à
+sa sphère : il n'a plus de couronne à découper. Le dessin entier a donc été repris
+au commit qui l'a introduit (`assets/sprites/sun-core.png` à `bcfb52d`), et son
+masque refait par remplissage depuis le bord. Sa sphère y vaut 178 px là où la
+balle est coupée à 172 : deux rendus de la même illustration à deux échelles, sans
+conséquence tant que **chacun est ramené par son propre rayon de sphère**.
+
+**La portée tombe de 145,41 à 123,15, et c'est une correction.** Les 145,41
+prenaient la plus longue langue du dessin et la plantaient sur l'axe des huit
+branches — une couronne à **1,773 × le rayon de la sphère, plus longue que la plus
+longue langue de la maquette** (1,629 ×). Le secteur porte 1,525 ×, entre la
+médiane du dessin (1,292) et son maximum. Aucun autre secteur ne rend les 145 :
+ceux qui contiennent la plus longue langue sont pollués à 9-11 % par le halo
+pêche, et donnent de toute façon 124.
+
+#### Ce que ça coûte, et pourquoi rien n'a été calé pour le masquer
+
+**C'est le premier duel que le Soleil perde.** La matrice passe de 21/21 à
+**20/21** : `lancer vs sun` devient 2/3, et l'Hoplite monte de 11 à 12. Confinement
+respecté — **zéro ligne déplacée hors du Soleil**.
+
+Le mécanisme est connu : `melee.damage` vaut 0, mais `resolveMelee` applique le
+**recul propre** hors de `damage`. La seule chose que fasse la couronne, c'est
+**reculer le Soleil** quand elle touche. Plus courte, elle le fait moins souvent.
+
+**Mesuré des deux côtés**, 10 seeds × les deux camps sur tout le roster :
+
+| | ancienne couronne | nouvelle |
+| --- | --- | --- |
+| tout le roster | **140/140** | **139/140** |
+| contre l'Hoplite seul, 20 seeds × 2 camps | 40/40 | 39/40 |
+
+Un duel sur 140. Et le duel perdu n'est pas une photo-finish : sur la graine 33,
+l'Hoplite gagne en 81 s avec **32/100 PV** restants.
+
+**Trois leviers ont été balayés pour le récupérer. Les trois sont non monotones**,
+sur le banc Hoplite à 40 duels :
+
+| levier | valeurs → victoires du Soleil |
+| --- | --- |
+| `hitbox.radius` | 15 → 39 · 20 → 36 · 25 → **40** · 29 → 36 |
+| `melee.cooldown` | 0,8 → 39 · 0,7 → 35 · 0,6 → **40** · 0,5 → 40 |
+
+Le dépôt a une règle pour ça : *un balayage non monotone est du bruit, le
+paramètre n'équilibre pas*. Prendre `radius: 25` ou `cooldown: 0,6` parce qu'ils
+sortent 40/40 serait **caler sur les graines du banc**, la faute que ce dépôt
+surveille — d'autant que la valeur voisine, juste à côté, fait pire que ce qu'on
+prétend corriger. **Rien n'a donc été touché** : `hitbox.radius` reste 15,
+`melee.cooldown` reste 0,8, et seules les quatre valeurs de géométrie du dessin
+ont bougé.
+
+Ce que ça dit du personnage : **le duel Soleil / Hoplite a une queue fragile vers
+80 s**, où l'Hoplite esquive assez de faisceaux pour que sa pile de dégâts fasse
+le reste. N'importe quelle perturbation de la géométrie du Soleil rejoue quelles
+graines y tombent. Si la spécification « il gagne contre tous » doit être rendue
+absolue, le levier n'est pas la couronne — c'est **l'horloge de l'ultime**, celle
+qui porte 79 % de ses dégâts et dont l'effet, lui, est monotone et documenté
+(13 s → 7 à sa création). Ce serait un changement d'équilibrage à part entière, et
+il n'a pas été fait ici.
 
 ## La norme passe à 200 PV, le Golem à 400 (historique)
 

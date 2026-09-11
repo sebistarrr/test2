@@ -76,8 +76,10 @@ le Soleil — sont inventés**, aucune de leurs valeurs ne peut donc porter
 `mesuré`, tout y est `calé` ou `déduit`.
 
 **Deux combattants sont hors barème, aux deux bouts.** Le Mannequin ne peut pas
-gagner, le Soleil ne peut pas perdre : ce sont des **spécifications**, pas des
-défauts d'équilibrage à corriger. Les six autres se jugent entre eux.
+gagner, le Soleil n'est pas censé perdre : ce sont des **spécifications**, pas
+des défauts d'équilibrage à corriger. Les six autres se jugent entre eux.
+**Le Soleil perd aujourd'hui une graine sur 21** — voir le relevé de matrice
+plus bas, et `docs/FICHES.md` pour la mesure et pourquoi rien n'a été calé.
 
 | Personnage | Signature |
 | --- | --- |
@@ -87,7 +89,7 @@ défauts d'équilibrage à corriger. Les six autres se jugent entre eux.
 | `wind` **SHINOBI** | ninja sombre, **la bille est le shuriken** — sprite centré, hitbox en **disque** de 75 px. Porte le **Clone d'ombre** (voir plus bas) |
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** quand tout le monde en a 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
-| `sun` **SOLEIL** / SUN | **inventé, et le seul boss.** Demandé pour **gagner contre tous les autres en 1 contre 1**, et il le fait (21/21 sur la matrice, 84/84 sur un banc à 6 seeds × les deux camps). **Deux fois plus grand que la norme** (rayon 82 contre 41), **500 PV**, et **le plus lent du roster de très loin** (230 px/s) — c'est là toute sa contrepartie. **Huit rayons** en couronne (`weapon.spokes: 8`, aucun angle mort) qui **ne blessent pas** (`melee.damage: 0`, demandé) : c'est sa silhouette et son bruit, plus son arme. Tout passe donc par le **Rayon solaire** (ultime, **79 %** de ses dégâts) : horloge de 7 s, **2 s de charge annoncée à l'écran** — anneaux qui se referment, éclats qui convergent, foyer qui bat — puis **2,5 s** d'un faisceau de 124 px de large, jusqu'à 96 PV. Il est cloué sur place 4,5 s à chaque tir. **Réchauffement solaire** (pouvoir) : brûle tout ennemi dans 240 px, 21 % |
+| `sun` **SOLEIL** / SUN | **inventé, et le seul boss.** Demandé pour **gagner contre tous les autres en 1 contre 1**, et il le fait à une graine près (20/21 sur la matrice, **139/140** sur un banc à 10 seeds × les deux camps — la seule perdue est un duel de 80 s contre l'Hoplite). **Deux fois plus grand que la norme** (rayon 82 contre 41), **500 PV**, et **le plus lent du roster de très loin** (230 px/s) — c'est là toute sa contrepartie. **Huit rayons** en couronne (`weapon.spokes: 8`, aucun angle mort) qui **ne blessent pas** (`melee.damage: 0`, demandé) : c'est sa silhouette et son bruit, plus son arme. Tout passe donc par le **Rayon solaire** (ultime, **79 %** de ses dégâts) : horloge de 7 s, **2 s de charge annoncée à l'écran** — anneaux qui se referment, éclats qui convergent, foyer qui bat — puis **2,5 s** d'un faisceau de 124 px de large, jusqu'à 96 PV. Il est cloué sur place 4,5 s à chaque tir. **Réchauffement solaire** (pouvoir) : brûle tout ennemi dans 240 px, 21 % |
 | `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, et les PV de la norme. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 15 PV
@@ -123,14 +125,25 @@ Aura de braise, Dôme de drain, Orage de ronces, éclat de givre dans
 **provenance**, pas d'un fichier à ouvrir.
 
 **Relevé de matrice courant** (`tools/matrix-reference.txt`), 21 duels hors
-miroir chacun : **Soleil 21** (c'est sa définition), **Pistolero 13**,
-Druide 13, Shinobi 12, Hoplite 11, Golem 10, **Ronin 4**, Mannequin 0 (c'est
-aussi la sienne).
+miroir chacun : **Soleil 20**, **Pistolero 13**, Druide 13, **Hoplite 12**,
+Shinobi 12, Golem 10, **Ronin 4**, Mannequin 0 (c'est sa définition).
+
+**Le Soleil n'est plus à 21, et c'est mesuré, pas subi.** Rendre sa couronne
+fidèle au dessin l'a raccourcie (145,41 → 123,15), et il perd une graine sur
+trois contre l'Hoplite. Le banc dit que ce n'est pas un affaiblissement —
+**139/140** contre 140/140, 10 seeds × les deux camps — et **trois balayages
+non monotones** disent qu'aucun paramètre de couronne n'équilibre ce duel :
+deux valeurs rendent 40/40 avec une voisine immédiate à 36/40. Rien n'a donc
+été calé pour masquer la ligne. Si la spécification « il gagne contre tous »
+doit redevenir absolue, le levier est **l'horloge de l'ultime** (79 % de ses
+dégâts, effet monotone), et c'est un rééquilibrage à part entière.
+`docs/FICHES.md` porte la mesure.
 
 **L'arrivée du Soleil n'a rien déplacé, et la preuve est dans le diff** : il
 est en queue de `ROSTER`, donc le diff de la matrice ne contient **que des
-ajouts** (invariant 3), et les six autres gardent leur compte **absolu** de
-victoires au chiffre près — 13, 13, 12, 11, 10, 4, exactement comme avant. Ils
+ajouts** (invariant 3), et les six autres gardaient alors leur compte **absolu** de
+victoires au chiffre près — 13, 13, 12, 11, 10, 4, exactement comme avant
+(l'Hoplite est passé à 12 depuis, en prenant une graine au Soleil). Ils
 sont simplement jugés sur 21 duels au lieu de 18, les trois nouveaux étant
 perdus par tous.
 
@@ -179,10 +192,10 @@ plus, seulement plus de temps pour se faire rattraper.
 **Les lignes `… vs dummy` sont un banc de DPS**, pas un relevé d'équilibrage —
 et il **ne suit pas simplement la division** (100 PV ÷ la durée moyenne des
 trois seeds) : Ronin 3,3, Shinobi 3,1, Hoplite 3,0, Druide 2,8, Pistolero 2,5,
-Golem 1,8 PV/s. **Le Soleil est à 2,5, au milieu — et ça ne le contredit pas** :
-il gagne quand même ses 21 duels, parce qu'il encaisse cinq fois plus qu'il ne
-frappe vite. Sa ligne est surtout **la plus dispersée du banc** (22 · 54 ·
-45,1 s) : tout ce qu'il produit passe par une horloge d'ultime de 7 s, donc sa
+Golem 1,8 PV/s. **Le Soleil est à 3,0, au milieu — et ça ne le contredit pas** :
+il gagne quand même 20 de ses 21 duels, parce qu'il encaisse cinq fois plus
+qu'il ne frappe vite. Sa ligne est surtout **la plus dispersée du banc** (23,7 · 33,2 ·
+43,8 s) : tout ce qu'il produit passe par une horloge d'ultime de 7 s, donc sa
 durée dépend de *combien de tirs* il lui a fallu, jamais d'un débit. Ces
 chiffres se recalculent sur `tools/matrix-reference.txt` à chaque régénération,
 sans quoi ils vieillissent en silence — c'est déjà arrivé. La ligne
@@ -631,6 +644,14 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Réduire mécaniquement une maquette en carte texte marche ou pas selon ce
   qu'elle dessine** : ça s'essaie et se regarde, ça ne se suppose pas (la langue
   du Soleil passe, sa sphère rend du bruit).
+- **Une arme répétée *N* fois doit être un *N*-ième de la forme visée, pas le
+  motif visé** : la couronne du Soleil est le **secteur de 45°** du dessin, pas
+  une langue — 8 × 45° = 360°, les copies pavent l'anneau. Corollaire : prendre
+  le plus bel exemplaire d'un motif et le répéter fabrique une forme que le
+  dessin ne contient pas (couronne à 1,773 × le rayon quand le dessin plafonne
+  à 1,629).
+- Pour un **éventail**, `reach` n'est plus le rayon de la silhouette mais
+  l'extension **le long de l'axe** : les branches en biais vont plus loin.
 
 **Interface et rendu**
 
