@@ -430,10 +430,17 @@ timbre qui se **transpose par combattant**.
    intuition.
 
 7. **Les compteurs génériques du `Fighter`.** `offstage`, `invulnerable`,
-   `boost`, `ghosting`, `weaponLateral` et `weaponTwirl` ont tous la même
-   forme : un module les allume, le moteur les décompte, et le moteur **ne sait
-   pas pourquoi**. C'est la forme à reprendre pour tout nouvel effet accroché à
-   un état de module.
+   `boost`, `ghosting`, `weaponLateral`, `weaponTwirl` et `sizeFactor` ont tous
+   la même forme : un module les allume, le moteur les décompte ou s'en sert, et
+   le moteur **ne sait pas pourquoi**. C'est la forme à reprendre pour tout
+   nouvel effet accroché à un état de module.
+   - **`sizeFactor` multiplie `look.radius` dans `get radius()`**, et un seul
+     getter suffit à tout : les 81 lecteurs du moteur y passent déjà — murs,
+     séparation des corps, verrou de mêlée, aura, contour, chiffre de PV, et
+     **le sprite de corps**, dimensionné sur `this.radius * 2`. Un combattant
+     qui change de taille change donc tout de lui-même. À 1, `x * 1` est exact
+     en IEEE 754 : matrice identique au caractère près, vérifiée avant que le
+     premier combattant s'en serve.
 
 8. **`alive` ≠ `onStage`.** Un combattant peut être vivant *et absent*
    (`Fighter.offstage`). **Toute boucle qui teste `f.alive` pour décider de le

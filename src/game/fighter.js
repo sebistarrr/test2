@@ -160,6 +160,31 @@ export class Fighter {
      */
     this.weaponTwirl = 0;
 
+    /**
+     * **Facteur de taille du corps**, multiplié à `look.radius`. Dernier-né des
+     * compteurs génériques (invariant 7) : un module l'écrit, le moteur s'en
+     * sert partout, et **le moteur ne sait pas pourquoi**.
+     *
+     * Il existe parce qu'un corps est jusqu'ici **figé** : `look.radius` est une
+     * valeur de fiche, et les fiches sont gelées (invariant 1). Aucun module ne
+     * pouvait donc faire grandir ou rétrécir un combattant, alors que tout le
+     * reste de son état est modulable.
+     *
+     * **Un seul `get radius()` suffit à tout**, et c'est ce qui rend la clé
+     * bon marché : les 81 lecteurs du moteur passent déjà par lui — collisions
+     * de mur, séparation des corps, portée du verrou de mêlée, aura, contour,
+     * placement du chiffre de PV, et **jusqu'au sprite de corps**, qui se
+     * dimensionne sur `this.radius * 2`. Un combattant qui change de taille
+     * change donc *tout* de lui-même, sans une ligne de plus.
+     *
+     * À **1** — la valeur par défaut, celle des huit combattants — le produit
+     * `x * 1` est exact en IEEE 754 : le chemin est celui d'avant, au bit près.
+     * C'est la preuve exigée par la leçon de `weapon.spokes` : **poser la clé,
+     * la laisser inutilisée partout, exiger la matrice identique au caractère
+     * près, et seulement ensuite ajouter le combattant qui s'en sert.**
+     */
+    this.sizeFactor = 1;
+
     this.trailTimer = 0;
     this.boost = 0; // durée restante d'un bonus de vitesse
     this.boostFactor = 1;
@@ -173,7 +198,7 @@ export class Fighter {
   }
 
   get radius() {
-    return this.el.look.radius;
+    return this.el.look.radius * this.sizeFactor;
   }
 
   get alive() {
