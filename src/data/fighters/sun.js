@@ -53,6 +53,11 @@ export const SUN = fiche({
   tagline: 'Astre-roi — huit rayons, cinq cents points de vie, et tout son temps',
   taglineRef: 'King star — eight rays, five hundred hit points, and all the time',
   icon: 'iconSun',
+  /** **Rangée de l'écran de sélection**, et rien d'autre.
+   *  Boss : il est hors barème par définition, il ne se juge pas contre les six.
+   *  `ui/select.js` lit cette clé pour le grouper à part — le moteur, lui, ne la
+   *  lit jamais. C'est de l'étiquetage, pas du gameplay. */
+  tier: 'boss',
 
   /**
    * **500 PV, cinq fois la norme et deux fois et demie le Golem.**
@@ -672,68 +677,50 @@ export const SUN = fiche({
        * plus large à la plus étroite, donc l'ordre de cette liste compte.
        */
       /**
-       * **Relevées au profil transversal de la maquette**, et non choisies :
-       * moyenne des colonnes sur la moitié droite de l'image (loin de
-       * l'émetteur), puis lecture des ruptures de teinte. Les positions sont
-       * normalisées sur le **bord extérieur de l'encre brûlée**, qui est aussi
-       * `halfWidth` — donc sur ce que le faisceau blesse.
+       * **Le faisceau est le PNG de la maquette — demandé**, « comme pour la
+       * balle et l'arme ».
        *
-       * | rayon relevé | teinte mesurée | bande |
-       * | --- | --- | --- |
-       * | 0 → 0,11 | `#fefcd4` crème | `core` |
-       * | 0,11 → 0,27 | `#fbf37d` jaune | `light` |
-       * | 0,27 → 0,62 | `#f0ad40` or | `body` |
-       * | 0,62 → 0,83 | `#db4f28` orange-rouge | `shadow` |
-       * | 0,83 → 1,00 | `#9e281b` encre brûlée | `edge` |
-       * | 1,00 → 1,31 | `#fcf66e` **jaune vif** | glow extérieur |
+       * Il était jusqu'ici **reconstruit** : sept bandes relevées au profil
+       * transversal de l'image, plus des filaments et des braises redessinés.
+       * C'était fidèle au relevé et malgré tout une transcription — or le dépôt
+       * a déjà tranché deux fois dans l'autre sens pour ce personnage, la bille
+       * puis la couronne. Le rayon rejoint la règle : **on reprend l'image.**
        *
-       * **Ce que l'ancien faisceau n'avait pas, et c'est tout le changement :
-       * un liseré clair *à l'extérieur* de l'encre.** Les cinq bandes
-       * allaient du sombre au clair de façon monotone, donc le rayon se
-       * terminait sur son trait le plus sombre et se posait comme une barre
-       * peinte. La maquette fait l'inverse : elle **rallume** au-delà du
-       * contour, et c'est ce halo qui le fait rayonner au lieu d'être posé.
+       * Ce qu'on y gagne au-delà de la fidélité : les filaments irréguliers du
+       * dessin, que ma reconstruction rendait en dents de scie régulières —
+       * l'autocorrélation de la maquette ne trouve **aucune période**, ils sont
+       * dessinés à la main et ne pouvaient donc ni se carreler ni se calculer.
        *
-       * Les deux bandes au-delà de 1 sont **du décor, pas de la géométrie** :
-       * `halfWidth` borne les dégâts, donc **l'encre brûlée marque exactement
-       * le bord de ce qui blesse**, et la lueur qui déborde ne touche
-       * personne. Le dessin ne ment pas sur la géométrie — il la souligne.
+       * Et ce qu'on y perd, assumé : le faisceau ne s'anime plus. Il dure 2,5 s,
+       * il tourne avec l'astre pendant la visée, et il porte maintenant un
+       * dessin que personne ne peut reproduire à la formule. C'est le bon
+       * échange.
        */
-      bands: [
-        { at: 1.42, tint: 'light', alpha: 0.2 },
-        { at: 1.18, tint: 'core', alpha: 0.5 },
-        { at: 1, tint: 'edge', alpha: 0.95 },
-        { at: 0.83, tint: 'shadow', alpha: 0.95 },
-        { at: 0.62, tint: 'body', alpha: 0.96 },
-        { at: 0.27, tint: 'light', alpha: 0.98 },
-        { at: 0.11, tint: 'core', alpha: 1 },
-      ],
+      sprite: 'sunBeam',
       /**
-       * **Les filaments** — les zigzags clairs qui courent dans le faisceau sur
-       * la maquette, et la seule chose qui dise qu'il *coule* plutôt qu'il
-       * n'est allumé. Sans eux, un rayon de 2,5 s est une image fixe.
+       * **Demi-hauteur dessinée, en multiples de `halfWidth`** — 1,3137, relevé
+       * sur le PNG : la demi-hauteur du sprite (134 px) divisée par la
+       * demi-largeur de son **encre brûlée** (102 px).
        *
-       * Longueurs en multiples de `halfWidth`, pour que tout suive si on
-       * élargit le faisceau. **Aucun tirage** : les sommets sont posés à
-       * intervalle régulier et l'ensemble glisse avec le temps, comme
-       * l'animation de charge — deux duels à la même graine montrent les mêmes
-       * filaments aux mêmes instants.
+       * **Pourquoi la coupe s'arrête là, et c'est un écart assumé.** La maquette
+       * porte une lueur au-delà du liseré clair, mais elle y est
+       * *semi-transparente* — et le JPEG fourni l'a déjà aplatie sur son damier
+       * de transparence. La trame est donc **cuite dans les pixels**, à une
+       * phase que ni l'autocorrélation ni une extraction de Fourier n'ont su
+       * retrouver (période annoncée 76 px, séparation mesurée 1 sur 97 : le
+       * motif n'est pas régulier au pixel). Reconstruire l'alpha en divisant par
+       * lui l'amplifiait ×50 et imprimait le damier dans les couleurs. On coupe
+       * donc le sprite là où le dessin est **franchement opaque**, et la lueur
+       * extérieure reste ce qu'elle a toujours été : un dégradé peint au moteur.
+       *
+       * C'est la même discipline que `handle.length + largeur = reach` pour une
+       * arme : le dessin ne ment pas sur la géométrie. `halfWidth` borne les
+       * dégâts, donc **l'encre brûlée marque exactement le bord de ce qui
+       * blesse**, et la lueur qui déborde jusqu'à 2,24 fois plus loin ne touche
+       * personne. Relever ce rapport est la seule chose à refaire si la maquette
+       * change.
        */
-      filaments: {
-        count: 2,
-        amplitude: 0.34, // ±34 % de la demi-largeur, relevé sur la maquette
-        wavelength: 2.4, // une dent tous les 2,4 × halfWidth
-        speed: 0.55, // longueurs d'onde par seconde
-        width: 3,
-        alpha: 0.85,
-      },
-      /**
-       * **Les braises** de la maquette, qui partent de l'émetteur et remontent
-       * le faisceau. Purement décoratives — elles ne blessent pas, elles disent
-       * le sens de l'écoulement. Déterministes elles aussi : position déduite du
-       * temps et de l'index, jamais d'un tirage.
-       */
-      embers: { count: 5, radius: 0.14, span: 0.3, speed: 0.45 },
+      spriteHalf: 1.3137,
       /**
        * **6 par tic, un tic toutes les 0,15 s** — inchangés, c'est la *durée*
        * qui a doublé. Sur 2,5 s de tir, cela fait jusqu'à **96 PV** contre 42

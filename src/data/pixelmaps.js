@@ -34,7 +34,7 @@ import { LANCER_SPEAR, ICON_LANCE } from './pixelart/lancer.js';
 import { MAGE_STAFF, MAGE_ORB, MAGE_FLOWER, ICON_STAFF } from './pixelart/mage.js';
 import { GOLEM_ROCK, GOLEM_SHARD, ICON_GOLEM } from './pixelart/golem.js';
 import { ICON_DUMMY } from './pixelart/dummy.js';
-import { SUN_RAY, SUN_CORE, ICON_SUN } from './pixelart/sun.js';
+import { SUN_RAY, SUN_CORE, SUN_BEAM, ICON_SUN } from './pixelart/sun.js';
 import { LUNAR_DARK, LUNAR_LIT, ICON_LUNAR } from './pixelart/lunar.js';
 
 export const PIXEL_MAPS = deepFreeze({
@@ -69,6 +69,7 @@ export const PIXEL_MAPS = deepFreeze({
   // qu'un cercle vectoriel (`look.sprite`)
   sunRay: SUN_RAY,
   sunCore: SUN_CORE,
+  sunBeam: SUN_BEAM,
   iconSun: ICON_SUN,
   // Lune — **deux corps**, et c'est le seul du dépôt : `lunarDark` est le
   // sprite déclaré par la fiche, `lunarLit` est peint par-dessus par le module,

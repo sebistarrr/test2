@@ -143,6 +143,48 @@ export const SUN_CORE = deepFreeze({
 });
 
 /**
+ * **Le Rayon solaire** — repli texte du vrai PNG (`assets/sprites/sun-beam.png`),
+ * qui est la maquette de faisceau fournie.
+ *
+ * **Composé, et pas réduit du PNG** — la réduction mécanique a été essayée et
+ * échoue pour la même raison que la sphère de l'astre : à neuf pixels de haut,
+ * les deux lignes d'encre brûlée ne survivent pas, et c'est précisément la
+ * structure qu'il faut lire. Le repli est donc composé **sur le profil relevé**
+ * de la maquette, bande par bande : cœur, corps, ombre, encre, puis **le liseré
+ * clair à l'extérieur de l'encre** — celui qui fait rayonner le faisceau au lieu
+ * de le poser.
+ *
+ * Les **filaments n'y sont pas**, et c'est assumé : à neuf rangées un zigzag
+ * mange la bande d'ombre au lieu de la traverser. Un repli dit la bonne chose,
+ * il ne reproduit pas.
+ *
+ * Le rapport 40/9 = 4,4444 est **exactement** celui du PNG (760/171) : si
+ * l'image manque, le faisceau garde sa largeur au pixel près.
+ */
+export const SUN_BEAM = deepFreeze({
+  w: 40,
+  h: 9,
+  palette: {
+    K: '#5d0100', // encre brûlée — elle marque le bord de ce qui blesse
+    d: '#c00803',
+    o: '#f9993c',
+    y: '#fbcf55',
+    w: '#fdf17f',
+  },
+  rows: [
+    'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK',
+    'dddddddddddddddddddddddddddddddddddddddd',
+    'oooooooooooooooooooooooooooooooooooooooo',
+    'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww',
+    'oooooooooooooooooooooooooooooooooooooooo',
+    'dddddddddddddddddddddddddddddddddddddddd',
+    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK',
+    'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww',
+  ],
+});
+
+/**
  * Icône de sélection : le disque et ses huit rayons, **dans les positions
  * exactes du personnage** — un rayon tous les 45°, quatre dans les axes et
  * quatre dans les diagonales.

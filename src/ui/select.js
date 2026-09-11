@@ -97,6 +97,41 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
   /** Les emplacements du DOM, reconstruits à chaque changement de format. */
   let slotBtns = [];
 
+  /**
+   * **Le roster est rangé en trois sections — demandé.**
+   *
+   * Les neuf cartes étaient à plat, ce qui mettait sur le même rang trois choses
+   * qui ne se choisissent pas pour les mêmes raisons : les six qui s'affrontent
+   * entre eux, les **deux boss** (hors barème par définition, ils battent les
+   * six et ne se départagent qu'entre eux) et le **Mannequin**, qui n'est pas un
+   * adversaire mais un banc d'observation.
+   *
+   * **La fiche dit à quelle rangée elle appartient** (`tier`), l'écran ne teste
+   * aucun identifiant : c'est la même discipline que l'invariant 12 côté moteur.
+   * Une fiche sans `tier` retombe sur `normal`, donc ajouter un combattant
+   * ordinaire ne demande toujours rien de plus.
+   *
+   * L'ordre des sections est celui de cette table, et **à l'intérieur d'une
+   * section c'est celui de `ROSTER`** — qui décide aussi du camp A dans la
+   * matrice (invariant 3). Regrouper à l'écran ne le réordonne donc pas.
+   */
+  const RANGEES = [
+    { tier: 'normal', titre: () => t.tierNormal },
+    { tier: 'boss', titre: () => t.tierBoss },
+    { tier: 'target', titre: () => t.tierTarget },
+  ];
+  const sections = new Map();
+  for (const r of RANGEES) {
+    if (!ROSTER.some((id) => (ELEMENTS[id].tier ?? 'normal') === r.tier)) continue;
+    const h = document.createElement('h3');
+    h.className = 'roster-tier';
+    h.textContent = r.titre();
+    const grille = document.createElement('div');
+    grille.className = 'roster-grid';
+    rosterEl.append(h, grille);
+    sections.set(r.tier, grille);
+  }
+
   // --- cartes du roster
   for (const id of ROSTER) {
     const el = ELEMENTS[id];
@@ -134,7 +169,7 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
     });
     card.addEventListener('pointerenter', () => showSheet(id));
     card.addEventListener('focus', () => showSheet(id));
-    rosterEl.append(card);
+    (sections.get(el.tier ?? 'normal') ?? rosterEl).append(card);
   }
 
   // --- barre de format
@@ -269,7 +304,7 @@ export function createSelectScreen({ root, onStart, lang = 'ref' }) {
 
   function refresh() {
     const retenus = picks.slice(0, taille);
-    for (const card of rosterEl.children) {
+    for (const card of rosterEl.querySelectorAll('.card')) {
       card.setAttribute('aria-pressed', String(retenus.includes(card.dataset.id)));
     }
     slotBtns.forEach(({ btn, orb, name }, i) => {

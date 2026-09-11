@@ -59,6 +59,7 @@ recale.
 | **Son** : synthèse des bruitages et annonceur | `src/render/audio.js` |
 | **Recettes de bruitage** (aucun fichier audio) | `src/data/sound.js` + `sound` de chaque fiche |
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
+| **Rangée d'un combattant à la sélection** (combattants / boss / entraînement) | clé `tier` de sa fiche — lue par `ui/select.js` seul, jamais par le moteur |
 | Libellés d'interface (les deux langues) | `src/ui/lang.js` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
 | **Formats de partie** (duel, 2 contre 2, 1 contre X, bataille royale) | `src/ui/select.js` (la table `FORMATS`) + `src/game/match.js` (le moteur) |
@@ -738,6 +739,12 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
 - **Une maquette fournie décide de la palette du personnage**, pas l'inverse :
   l'échantillonner par bandes de luminance donne les cinq teintes de tout son
   bloc `look`, et empêche le repli texte et l'icône d'en diverger.
+- **Un sprite fourni sur damier de transparence a sa trame *cuite* dans les
+  pixels** : la lueur semi-transparente du dessin a été aplatie sur le damier
+  avant l'export. Ni l'autocorrélation ni la fréquence exacte ne retrouvent la
+  phase, et reconstruire l'alpha en divisant par lui amplifie la trame ×50. On
+  coupe le sprite là où le dessin est **franchement opaque**, et ce qui déborde
+  se peint au moteur.
 - **Une ambiance d'arène se règle sur les bords, pas sur le centre** : la
   vignette peut aller bien plus loin que le lavis au sol sans coûter de
   lisibilité, puisque les combattants vivent au milieu (Soleil, 0,64 contre

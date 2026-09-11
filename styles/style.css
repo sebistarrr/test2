@@ -341,12 +341,43 @@ body {
 }
 
 /* --- roster d'éléments --- */
+/* Le roster est rangé en sections (combattants / boss / entraînement) : le
+   conteneur empile les titres et leurs grilles, chaque grille garde les quatre
+   colonnes d'origine. Mettre les titres *dans* la grille en aurait fait des
+   cases de grille, donc des trous d'une carte de large. */
 .roster {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.4cqw;
+  width: 92cqw;
+}
+
+.roster-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   justify-items: stretch;
   gap: 2cqw;
-  width: 92cqw;
+}
+
+/* Un titre de section, discret : il range, il ne réclame pas l'attention. Le
+   trait à droite le rattache à sa grille au lieu de flotter au-dessus. */
+.roster-tier {
+  margin: 0.6cqw 0 0;
+  font-size: 2.2cqw;
+  font-weight: 700;
+  letter-spacing: .22em;
+  color: #8b8798;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 1.6cqw;
+}
+.roster-tier::after {
+  content: '';
+  flex: 1;
+  height: 0.35cqw;
+  background: #423e51;
 }
 
 .card {

@@ -23,13 +23,13 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 387 |
 | &nbsp;&nbsp;· Éditer les données | 426 |
 | &nbsp;&nbsp;· Interface et rendu | 552 |
-| &nbsp;&nbsp;· Le son | 687 |
-| &nbsp;&nbsp;· Refactoriser | 1123 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 1164 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1166 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1209 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1252 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1271 |
+| &nbsp;&nbsp;· Le son | 717 |
+| &nbsp;&nbsp;· Refactoriser | 1153 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1194 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1196 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1239 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1282 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1301 |
 
 ---
 
@@ -683,6 +683,36 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   dans le temps (fondu, phase, charge) sera échantillonné au hasard. Le banc de
   capture de ce chantier interroge donc `__match` — `ult.active`, `firing`,
   `ability.timer` — et **attend la fenêtre voulue** avant de déclencher.
+
+- **Un sprite fourni sur un damier de transparence a sa trame *cuite* dans les
+  pixels, et elle ne s'enlève pas.** La maquette du Rayon solaire porte une lueur
+  extérieure **semi-transparente** ; le JPEG l'a aplatie sur le damier avant
+  d'arriver. Résultat : dans la zone de lueur, les pixels sont **opaques** au
+  sens du fichier mais leur couleur alterne au rythme des carreaux.
+
+  Ce qui a été essayé, et pourquoi ça échoue :
+  - *seuil sur la saturation* — le damier passe : il est gris, mais la lueur
+    aplatie l'est presque autant ;
+  - *seuil sur la luminance* — impossible, les carreaux clairs sont à 208 et les
+    sombres à 98, donc le damier occupe toute la plage ;
+  - *« démélanger »* (`art = (obs − (1−α)·gris) / α`) — exact sur le papier, mais
+    à α faible on divise par 0,02 et la trame est **amplifiée ×50** dans les
+    canaux ; c'est ce qui l'a imprimée en jeu la première fois ;
+  - *retrouver la phase du damier* — période annoncée 76 px par autocorrélation,
+    mais la meilleure séparation obtenue entre cellules claires et sombres est de
+    **1 sur 97** : le motif n'est pas régulier au pixel après redimensionnement,
+    donc ni un masque calculé ni une extraction de Fourier ne le retrouvent.
+
+  **Ce qui marche : couper.** On garde la partie **franchement opaque** du
+  dessin — ici jusqu'à 1,31 fois la demi-largeur de l'encre brûlée — et ce qui
+  déborde se peint au moteur, ce qu'une lueur est de toute façon. Le PNG reste
+  la source, comme pour la bille et la couronne ; seule la frange que le fichier
+  ne peut pas livrer proprement est rendue.
+
+  Corollaire de contrôle : **composer le sprite sur un fond uni clair *et* sur
+  un fond uni sombre** avant de le déclarer propre. Sur le damier de
+  l'éditeur d'images, une trame résiduelle est invisible — elle se confond avec
+  celui de l'aperçu.
 
 ### Le son
 

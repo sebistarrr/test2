@@ -51,6 +51,10 @@ export const LUNAR = fiche({
   tagline: 'Astre changeant — elle attire, elle écrase, et elle n’annonce rien',
   taglineRef: 'Changing star — it pulls, it crushes, and it warns of nothing',
   icon: 'iconLunar',
+  /** **Rangée de l'écran de sélection**, et rien d'autre.
+   *  Boss, comme le Soleil, et regroupé avec lui à l'écran de sélection. Clé lue
+   *  par `ui/select.js` seul : le moteur ne la connaît pas. */
+  tier: 'boss',
 
   /**
    * **480 PV**, contre 500 au Soleil et 100 à la norme — et ce chiffre est

@@ -34,6 +34,11 @@ export const DUMMY = fiche({
   tagline: 'Cible d’entraînement — ne frappe pas, encaisse, et laisse voir',
   taglineRef: 'Training target — never strikes, soaks it up, and lets you watch',
   icon: 'iconDummy',
+  /** **Rangée de l'écran de sélection**, et rien d'autre.
+   *  Cible d'entraînement : ni un adversaire, ni un boss. Elle a sa propre section
+   *  à l'écran de sélection, parce que la choisir n'est pas choisir un
+   *  combattant — c'est choisir de regarder l'autre. */
+  tier: 'target',
 
   /**
    * **Plus de `maxHp` ici : il suit la norme.**

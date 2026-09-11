@@ -37,6 +37,7 @@
 
 import { TAU, rotateToward, segmentPointDistance } from '../../core/math.js';
 import { ARENA } from '../../data/tuning.js';
+import { getSprite } from '../../render/sprites.js';
 
 /**
  * `#rrggbb` de la fiche + opacité → `rgba(...)`.
@@ -458,23 +459,32 @@ export const sunAbilities = {
   },
 
   /**
-   * **Le faisceau, fait de la même matière que l'astre — demandé.**
+   * **Le faisceau est la maquette elle-même — demandé**, « comme pour la balle
+   * et l'arme ».
    *
-   * Les bandes ne sont plus écrites ici mais dans la fiche
-   * (`ultimate.beam.bands`), et leurs teintes nomment `look.palette`, les cinq
-   * couleurs relevées sur la maquette du corps. Le rayon reprend donc la
-   * **structure du dessin** — liseré d'encre brûlée, rouge profond, orange de
-   * corps, clair, incandescent — étirée le long d'un axe.
+   * Trois états successifs, et il vaut de les connaître avant d'y revenir :
+   *  1. cinq bandes inventées, du sombre au clair de façon monotone — le rayon
+   *     se terminait sur son trait le plus sombre et se lisait comme une barre
+   *     peinte ;
+   *  2. sept bandes **relevées** au profil transversal de la maquette, plus des
+   *     filaments et des braises redessinés. Fidèle au relevé, et malgré tout
+   *     une transcription ;
+   *  3. **le PNG**, posé d'un bloc. C'est la règle que le dépôt a déjà tranchée
+   *     deux fois pour ce personnage — la bille, puis la couronne.
    *
-   * Ce qui manquait avant, et qui change tout : le **liseré sombre**. Le
-   * faisceau allait d'orange à blanc, sans bord ; c'est le trait brûlé qui
-   * signe le dessin de l'astre, et sans lui le rayon se dissolvait en plus sur
-   * l'arène blanche.
+   * Ce que l'image apporte et qu'aucune reconstruction n'atteignait : ses
+   * filaments sont **irréguliers**. L'autocorrélation du dessin ne trouve aucune
+   * période — ils sont tracés à la main, donc ils ne se carrèlent pas et ne se
+   * calculent pas. Ma version en dents de scie régulières les trahissait.
    *
-   * Le dégradé est transversal (perpendiculaire à l'axe) et non longitudinal :
-   * un rayon qui pâlirait vers la pointe se lirait comme un rayon qui *s'arrête*
-   * — or celui-ci va jusqu'au mur. Ce qui varie sur la longueur, c'est
-   * l'opacité d'ensemble, et seulement à l'extinction.
+   * Ce qu'on perd, assumé : le faisceau ne s'anime plus. Il dure 2,5 s et tourne
+   * avec l'astre pendant la visée ; c'est le bon échange.
+   *
+   * **Le seul chiffre à surveiller est `spriteHalf`** : la demi-hauteur du
+   * sprite divisée par la demi-largeur de son encre brûlée, relevée sur l'image.
+   * C'est lui qui fait tomber l'encre exactement sur `halfWidth` — donc sur le
+   * bord de ce qui blesse. Même discipline que `handle.length + largeur = reach`
+   * pour une arme : le dessin ne ment pas sur la géométrie.
    */
   drawBeam(ctx, f, ult, now) {
     const b = ult.beam;
@@ -487,15 +497,20 @@ export const sunAbilities = {
     ctx.rotate(f.state.beamAngle);
     ctx.globalAlpha = fade;
 
-    // de la plus large à la plus étroite : l'ordre de la liste de la fiche
-    for (const bande of b.bands) {
-      const demi = b.halfWidth * bande.at;
-      ctx.fillStyle = teinte(pal[bande.tint], bande.alpha);
-      ctx.fillRect(0, -demi, b.length, demi * 2);
-    }
+    /**
+     * **Le dessin de la maquette, posé d'un bloc** — plus aucune bande
+     * reconstruite. Il est étiré de l'émetteur jusqu'à `length`, et sa
+     * demi-hauteur vient de `spriteHalf`, relevé sur l'image : l'encre brûlée
+     * du dessin tombe alors exactement sur `halfWidth`, c'est-à-dire sur le
+     * bord de ce qui blesse. La lueur qui déborde est du décor.
+     *
+     * `drawImage` et pas un `pattern` : l'autocorrélation du dessin ne trouve
+     * aucune période, ses filaments sont irréguliers — il ne se carrèle donc
+     * pas, et le faire défiler montrerait une couture.
+     */
+    const demi = b.halfWidth * b.spriteHalf;
+    ctx.drawImage(getSprite(b.sprite), 0, -demi, b.length, demi * 2);
 
-    this.drawFilaments(ctx, b, pal, now);
-    this.drawEmbers(ctx, b, pal, now);
 
     // le point de départ, plus intense : le rayon sort de lui, il n'apparaît pas
     const g = ctx.createRadialGradient(0, 0, 0, 0, 0, b.halfWidth * 2);
@@ -567,78 +582,6 @@ export const sunAbilities = {
     g.addColorStop(1, teinte(pal.edge, 0.95));
     ctx.fillStyle = g;
     ctx.fillRect(i.left, i.top, w, h);
-    ctx.restore();
-  },
-
-  /**
-   * **Les filaments** — les zigzags de la maquette, et ce qui fait que le
-   * faisceau *coule* au lieu d'être allumé.
-   *
-   * **Les sommets sont posés aux pointes, pas échantillonnés.** Évaluer une
-   * onde triangulaire à pas régulier donnerait des dents dont l'amplitude
-   * *respire* au lieu de défiler — l'échantillonnage bat avec la phase. On pose
-   * donc un sommet toutes les demi-longueurs d'onde, alternativement en haut et
-   * en bas, et on **décale toute la ligne** : la dent garde sa forme exacte et
-   * remonte le faisceau.
-   *
-   * Le tracé est écrêté au faisceau : sans ça, les pointes dépasseraient à la
-   * bouche, là où le rayon est censé sortir du corps.
-   */
-  drawFilaments(ctx, b, pal, now) {
-    const fl = b.filaments;
-    if (!fl) return;
-    const onde = b.halfWidth * fl.wavelength;
-    const amp = b.halfWidth * fl.amplitude;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, -b.halfWidth, b.length, b.halfWidth * 2);
-    ctx.clip();
-    ctx.lineWidth = fl.width;
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = teinte(pal.core, fl.alpha);
-
-    for (let k = 0; k < fl.count; k++) {
-      // chaque filament part d'une phase différente et du côté opposé : deux
-      // dents en miroir, comme sur la maquette
-      const sens = k % 2 ? -1 : 1;
-      const decal = ((now * fl.speed + k / fl.count) % 1) * onde;
-      ctx.beginPath();
-      let premier = true;
-      for (let i = -1; i * (onde / 2) - decal <= b.length + onde; i++) {
-        const x = i * (onde / 2) - decal;
-        const y = sens * amp * (i % 2 ? 1 : -1);
-        if (premier) { ctx.moveTo(x, y); premier = false; } else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    }
-    ctx.restore();
-  },
-
-  /**
-   * **Les braises**, qui remontent le faisceau depuis l'émetteur et pâlissent
-   * en s'éloignant. Elles disent le **sens de l'écoulement** — sans elles, un
-   * faisceau symétrique ne dit pas d'où il part.
-   *
-   * Déterministes comme tout le reste du personnage : position et taille sont
-   * des fonctions du temps et de l'index, jamais d'un tirage. Une décoration
-   * qui puiserait dans `game.rng` déplacerait les vainqueurs (invariant 2).
-   */
-  drawEmbers(ctx, b, pal, now) {
-    const em = b.embers;
-    if (!em) return;
-    ctx.save();
-    for (let k = 0; k < em.count; k++) {
-      const u = (now * em.speed + k / em.count) % 1;
-      const x = u * b.length;
-      const y = Math.sin(k * 2.39 + now * 1.7) * b.halfWidth * em.span;
-      const r = b.halfWidth * em.radius * (1 - u * 0.6);
-      ctx.globalAlpha = (1 - u) * 0.85;
-      ctx.fillStyle = teinte(pal.core, 1);
-      ctx.beginPath();
-      ctx.arc(x, y, Math.max(0.5, r), 0, TAU);
-      ctx.fill();
-    }
     ctx.restore();
   },
 
