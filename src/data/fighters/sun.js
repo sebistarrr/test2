@@ -84,20 +84,23 @@ export const SUN = fiche({
      */
     radius: 82,
     /**
-     * **La balle porte le fond de ses propres rayons — demandé.**
+     * **Les cinq teintes de la maquette, et la source unique de tout ce qui est
+     * orange chez lui — corps, couronne, pouvoirs et icône.**
      *
-     * Toutes les teintes de ce bloc sont **échantillonnées dans
-     * `assets/sprites/sun-ray.png`**, la maquette de flamme fournie, et non
-     * choisies à côté : `#de7f3a` est la bande médiane de sa luminance, celle
-     * qui remplit le corps de la flamme. Le corps et la couronne sont donc
-     * littéralement la même matière, ce qui est le seul moyen que huit rayons
-     * plantés sur une bille se lisent comme **un** objet et non comme un objet
-     * plus huit décorations.
+     * Relevées sur `sun-core.png` par bandes de luminance (3ᵉ, 20ᵉ, 50ᵉ, 80ᵉ et
+     * 97ᵉ centile des pixels opaques), donc **prises dans le dessin**, pas
+     * choisies à côté : le corps et la couronne sont littéralement la même
+     * matière, ce qui est le seul moyen que huit flammes plantées sur une bille
+     * se lisent comme **un** objet et non comme un objet plus huit décorations.
      *
-     * Les cinq teintes relevées, du plus sombre au plus clair, servent partout
-     * ailleurs dans ce bloc :
-     * contour `#6f1e12` · ombre `#b43f22` · corps `#de7f3a` · clair `#ebbd5b` ·
-     * cœur `#fcf697`.
+     * Elles sont **nommées ici et lues par le module**, qui codait ses propres
+     * orange en dur — c'est ainsi que le Rayon solaire avait fini par ne plus
+     * avoir la même matière que l'astre qui le tire. Le dépôt documente ce
+     * piège dans l'autre sens (« un module qui code en dur une clé de sprite se
+     * ferme à sa propre réutilisation ») : ici ce sont des couleurs, et le prix
+     * n'est pas la réutilisation mais la **dérive**. Repalettiser le personnage
+     * demande maintenant de toucher ces cinq lignes, et rien d'autre — les
+     * trois cartes de `pixelart/sun.js` les recopient, icône comprise.
      *
      * **Il était jaune vif (`#fbbf24`)**, et le piège du corps clair sur arène
      * blanche demandait alors trois compensations. Cet orange est plus sombre,
@@ -105,24 +108,8 @@ export const SUN = fiche({
      * reste clair : contour épaissi, chiffre de PV en encre, aura permanente.
      *
      * Le voisinage du Ronin (`#e8621b`) a été vérifié et assumé : celui-ci est
-     * plus doré (canal vert 127 contre 98) et surtout dix fois plus gros, cerné
+     * plus doré (canal vert 153 contre 98) et surtout dix fois plus gros, cerné
      * de huit flammes. On ne les confond pas à l'écran.
-     */
-    /**
-     * **Les cinq teintes de la maquette, et la source unique de tout ce qui est
-     * orange chez lui.**
-     *
-     * Relevées sur `sun-core.png` par bandes de luminance (3ᵉ, 20ᵉ, 50ᵉ, 80ᵉ et
-     * 97ᵉ centile des pixels opaques). Elles remplissaient déjà tout le bloc
-     * `look` ; elles sont désormais **nommées ici et lues par le module**, qui
-     * codait ses propres orange en dur — c'est ainsi que le Rayon solaire avait
-     * fini par ne plus avoir la même matière que l'astre qui le tire.
-     *
-     * Le dépôt documente ce piège dans l'autre sens (« un module qui code en
-     * dur une clé de sprite se ferme à sa propre réutilisation ») : ici ce sont
-     * des couleurs, et le prix n'est pas la réutilisation mais la **dérive**.
-     * Repalettiser le personnage demande maintenant de toucher ces cinq lignes,
-     * et rien d'autre.
      */
     palette: {
       edge: '#5d0100', // contour, l'encre brûlée du dessin
@@ -139,12 +126,23 @@ export const SUN = fiche({
      * `look.aura`, qui bat, alors qu'un halo cuit dans l'image serait figé et
      * en ferait trois qui se superposent).
      *
-     * **Et coupée à son disque, demandé** : la balle prend « la balle de
-     * l'image », les pointes qui l'entourent sont devenues **l'arme**. La coupe
-     * tombe à 245 px du centre sur la maquette, relevé au contour angle par
-     * angle : c'est le rayon des **creux** entre pointes, donc le dernier
-     * cercle où la forme est encore pleine (100 % de couverture jusqu'à 243,
-     * 73 % à 249). Le sprite est donc un disque net qui remplit son cadre.
+     * **Le halo ne se détoure pas à la couleur** — il a été gardé deux fois par
+     * un seuil de saturation avant qu'on trouve pourquoi : la pêche qui touche
+     * l'astre (`#f9bf75`, saturation 132) est *aussi saturée* que la flamme
+     * pâle, aucun seuil ne les sépare. Ce qui les sépare est **topologique** :
+     * la flamme est exactement ce que son propre contour brûlé enferme. Le
+     * masque se prend donc par **remplissage depuis le bord de l'image**, les
+     * pixels sombres (luminance < 100) faisant mur — le halo, lui, n'est
+     * enfermé par rien. À refaire ainsi si la maquette change.
+     *
+     * **Et coupée à sa sphère, demandé** : la balle ne contient plus que « la
+     * sphère de l'image », tout ce qui l'entoure est devenu **l'arme**. La
+     * coupe tombe à **172 px** du centre sur ce masque propre, relevée au
+     * contour sur 720 directions : c'est la médiane des dix **creux** entre
+     * langues, donc le dernier cercle encore plein. Les onze pics sont à 262
+     * (297 au plus long) : une langue fait 90 px, soit **52 % du rayon de la
+     * sphère** — elle n'était mesurée qu'à 14 % tant que le halo polluait le
+     * masque, et c'est ce chiffre-là qui avait fait une coupe trop généreuse.
      *
      * Les huit autres combattants sont des cercles vectoriels ;
      * `assets/sprites/README.md` décrivait depuis toujours comment servir un
@@ -309,20 +307,19 @@ export const SUN = fiche({
     name: 'Couronne de rayons',
     nameRef: 'Ray Crown',
     /**
-     * **160 px, la deuxième portée du roster** derrière le sabre du Ronin
-     * (197,6) et devant la lance de l'Hoplite (164)… mais elle ne se compare
-     * pas aux leurs, parce qu'elle est répétée huit fois.
+     * **145,41 px — et pas un chiffre choisi : c'est la maquette, à l'échelle.**
      *
-     * Déduite du sprite, comme partout : `handle.length` 82 + largeur dessinée
-     * 78 = 160. La largeur dessinée vaut `map.w × head.scale` = 13 × 6 = 78 (la
-     * carte est du texte, pas un PNG : pas de rapport d'aspect à corriger,
-     * contrairement à l'arme du Golem).
+     * Déduite du sprite comme partout : `handle.length` 77,23 + largeur dessinée
+     * 68,17 = 145,41. La largeur dessinée vaut `map.h × head.scale ×
+     * (img.w / img.h)` (voir `head` plus bas), **jamais** `map.w × scale`.
      *
-     * Son corps faisant 82 px de rayon, **chaque rayon ne dépasse que de 78 px
-     * du bord** — soit à peine plus que le poing du Golem (50). Un boss à
-     * grande allonge *et* à couronne complète n'aurait laissé aucun jeu.
+     * Son corps faisant 82 px de rayon, **chaque langue ne dépasse que de 63,4 px
+     * du bord** — soit 77 % du rayon du corps, ce que donne le relevé de la
+     * maquette (pics à 262 contre sphère à 172). C'est plus court que les 160 px
+     * de la couronne d'avant : le dessin est moins hérissé qu'on ne l'avait
+     * dessiné de mémoire, et c'est lui qui tranche.
      */
-    reach: 104.42,
+    reach: 145.41,
     /**
      * **SPIN × 0,55**, soit 3,17 rad/s : entre le Golem (0,45) et le reste du
      * roster (1,0). Calé, et calé bas pour la raison documentée sur la lance de
@@ -350,11 +347,12 @@ export const SUN = fiche({
     spokes: 8,
     /**
      * `width: 0` : le rayon est tout entier dans le sprite, il n'y a pas de
-     * manche à tracer. `length: 82` — exactement le rayon du corps, donc le
-     * rayon **part du bord de la bille** et pas de son centre : sans ça, la
-     * moitié de chaque rayon serait peinte à l'intérieur du disque.
+     * manche à tracer. `length: 77,23` — **un peu en deçà du rayon du corps**
+     * (82), et c'est voulu : la découpe part de 162 px sur la maquette quand la
+     * sphère en fait 172, donc la base de la langue **chevauche** la bille de
+     * 4,77 px en jeu. Sans ce recouvrement, huit coutures se verraient tourner.
      */
-    handle: { length: 78.65, width: 0, color: '#f9993c', dark: '#c00803', outline: '#5d0100', gem: null },
+    handle: { length: 77.23, width: 0, color: '#f9993c', dark: '#c00803', outline: '#5d0100', gem: null },
     /**
      * **Le rayon est une pointe découpée dans la maquette de la balle —
      * demandé** (`assets/sprites/sun-ray.png`). C'est la même image que le
@@ -362,41 +360,46 @@ export const SUN = fiche({
      * autour ». Les huit rayons **reconstituent donc la silhouette du dessin**,
      * à ceci près qu'ils tournent.
      *
-     * Découpe : le secteur de ±20° autour de la plus longue pointe (313° sur la
-     * maquette, celle qui va le plus loin et la mieux formée), pris **depuis
-     * 235 px** — soit 10 px en deçà du disque, pour que sa base chevauche la
+     * Découpe : le secteur de ±18° autour de la plus longue langue (313,6° sur
+     * la maquette, celle qui va le plus loin et la mieux formée), pris **depuis
+     * 162 px** — soit 10 px en deçà de la sphère, pour que sa base chevauche la
      * balle et qu'aucune couture ne se voie — puis tourné pointe vers la droite
      * (l'axe des armes dans ce moteur), au plus proche voisin : c'est du
      * pixel-art, il ne doit pas flouter.
      *
      * **Toute la géométrie découle de la maquette**, à l'échelle
-     * `82 / 245 = 0,334694` (rayon du corps / rayon du disque source) :
+     * `82 / 172 = 0,476744` (rayon du corps / rayon de la sphère source) :
      *
      * | source | jeu |
      * | --- | --- |
-     * | base de la pointe, 235 px | `handle.length` 78,65 |
-     * | bout de la pointe, 312 px | `reach` 104,42 |
+     * | base de la langue, 162 px | `handle.length` 77,23 |
+     * | bout de la langue, 305 px | `reach` 145,41 |
      *
-     * **`reach` tombe donc de 160 à 104**, et c'est voulu : les pointes ne font
-     * que **14 %** du rayon du disque sur la maquette (relevé au contour, creux
-     * à 245 px et pics à 278). Les étirer jusqu'aux 160 px précédents en aurait
-     * fait des lances, pas la couronne dessinée. La couronne est plus courte
-     * qu'avant — c'est le dessin qui le dit.
+     * **`reach` remonte donc de 104 à 145,41**, après être tombé de 160 à 104 au
+     * découpage précédent — et les trois chiffres viennent du **même** relevé
+     * refait sur un masque différent. C'est l'histoire à retenir : le premier
+     * masque gardait le halo pêche, qui remplissait les baies entre les langues
+     * et enflait le « disque » à 245 px, ne laissant dépasser que 14 % de
+     * pointe. Sur le masque propre (voir `look.sprite`), la sphère est à 172 et
+     * les pointes à 262 : **52 %**. Un masque faux ne rend pas une mesure
+     * fausse — il rend une mesure *juste sur la mauvaise forme*.
      *
-     * **Sans conséquence sur le jeu** : `melee.damage` vaut 0, donc
-     * `Match.damage` sort avant tout effet et la géométrie de `bladeSegment()`
-     * n'est lue par rien qui compte. La matrice le vérifie, identique au
-     * caractère près malgré le changement de portée.
+     * **Et ça se paie sur le jeu, contrairement à ce qui était écrit ici** :
+     * `melee.damage` vaut 0, mais `resolveMelee` pose le verrou de mêlée,
+     * applique `selfRecoil` et **décolle les deux corps** *hors* de
+     * `Match.damage`. La portée de la couronne reste donc de la géométrie de
+     * jeu, et la matrice bouge à chaque fois qu'on y touche (les durées ; pas
+     * les vainqueurs).
      *
      * **L'échelle ne se lit pas sur la carte texte, et c'est le piège déjà payé
      * sur la lance de l'Hoplite puis sur l'arme du Golem** : `drawSpriteLeft`
      * dimensionne par la **hauteur** (`map.h × scale`, prise sur la carte
-     * texte, donc 9) puis applique le **rapport d'aspect du PNG** (77 × 169,
-     * soit 0,455621). La largeur dessinée vaut donc `9 × scale × 0,455621`, et
-     * **non** `map.w × scale` — d'où `scale = 25,77 / (9 × 0,455621) =
-     * 6,284807`.
+     * texte, donc 13) puis applique le **rapport d'aspect du PNG** (143 × 124,
+     * soit 1,153226). La largeur dessinée vaut donc `13 × scale × 1,153226`, et
+     * **non** `map.w × scale` — d'où `scale = 68,17 / (13 × 1,153226) =
+     * 4,547406`.
      */
-    head: { sprite: 'sunRay', scale: 6.284807 },
+    head: { sprite: 'sunRay', scale: 4.547406 },
     /** Les rayons passent **par-dessus** la bille — ils en sortent, ils ne s'y
      *  cachent pas. Purement visuel : `bladeSegment()` ne lit pas ce drapeau. */
     overBody: true,
@@ -404,15 +407,16 @@ export const SUN = fiche({
      *  barré par les deux rayons horizontaux à chaque demi-tour. */
     hpOverWeapon: true,
     /**
-     * **Le tranchant commence exactement au bord du corps** : 0,5125 × 160 = 82,
-     * le rayon de la bille. Déduit, pas choisi — c'est la même valeur que
-     * `handle.length`, et les deux doivent bouger ensemble.
+     * **Le tranchant commence à la base de la langue** : 0,5311 × 145,41 =
+     * 77,23, soit `handle.length`. Déduit, pas choisi — les deux doivent bouger
+     * ensemble. Il démarre donc 4,77 px *à l'intérieur* de la bille, exactement
+     * comme le dessin (voir `handle`).
      *
      * Rayon 15 : plus fin que le bloc du Golem (24), parce qu'un rayon est
      * effilé et qu'il y en a huit. L'épaissir multiplierait la surface
      * couverte par huit, pas par un.
      */
-    hitbox: { from: 0.7532, radius: 15 },
+    hitbox: { from: 0.5311, radius: 15 },
     melee: {
       /**
        * **Zéro — la couronne ne blesse plus, demandé.**

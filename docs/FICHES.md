@@ -28,25 +28,25 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 50 |
-| 📦 Archive — les huit éléments supprimés | 99 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 173 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 963 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1118 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1375 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1940 |
+| Comment lire une valeur | 51 |
+| 📦 Archive — les huit éléments supprimés | 100 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 174 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 964 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1119 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1376 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1941 |
 | 🗿 GOLEM — `golem` (inventé : aucune valeur `mesuré`) | 2432 |
 | 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2646 |
 | ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2732 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 2915 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 2970 |
-| Les dégâts de tous les combattants, divisés par deux | 3038 |
-| Rééquilibrage confiné au Golem et au Ronin | 3148 |
-| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3235 |
-| Le son de chacun | 3285 |
-| Équilibrage du roster | 3403 |
-| Règles communes (moteur) | 3242 |
-| Comment les mesures ont été prises | 3266 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 2980 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 3035 |
+| Les dégâts de tous les combattants, divisés par deux | 3103 |
+| Rééquilibrage confiné au Golem et au Ronin | 3213 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3300 |
+| Le son de chacun | 3350 |
+| Équilibrage du roster | 3468 |
+| Règles communes (moteur) | 3566 |
+| Comment les mesures ont été prises | 3590 |
 
 ## Comment lire une valeur
 
@@ -2754,19 +2754,19 @@ deux bouts : le Mannequin ne peut pas gagner, le Soleil ne peut pas perdre.
 | Corps | rayon **82** — exactement le double de la norme (41), et le plus gros du roster devant le Golem (50) | calé (demandé) |
 | Points de vie | **500**, cinq fois la norme et deux fois et demie le Golem. Aucune réduction de dégâts : un seul chiffre porte toute sa résistance | calé (demandé) |
 | **Corps** | **Un sprite, le seul du roster — demandé** (`assets/sprites/sun-core.png`, maquette d'astre fournie). Les huit autres sont des cercles vectoriels ; `assets/sprites/README.md` §6 décrivait le mécanisme depuis toujours sans que personne l'ait fait. Détouré de son fond blanc **et de son halo pêche** — le halo est déjà fait en jeu par `look.aura`, qui bat, alors qu'un halo cuit dans l'image serait figé et en ferait trois superposés | calé (demandé) |
-| `spriteScale` | **1,1236**, et ce n'est pas cosmétique : le dessin déborde de son disque plein, qui s'arrête à 0,89 du demi-côté. À la taille brute, l'astre paraîtrait **plus petit que son rayon de collision**. La correction remet le disque sur les 82 px, les pointes débordant à 92 — même discipline que `handle.length + largeur = reach` pour une arme | déduit |
+| `spriteScale` | **Absent, et c'est une mesure.** La clé existe (défaut 1) pour corriger un dessin qui déborde de son disque plein — l'astre en avait besoin à 1,1236 tant que ses pointes étaient dans son sprite. Depuis que le PNG est coupé à la sphère (344 × 344, soit 2 × 172), il remplit exactement son cadre : la correction vaudrait 1, et une clé qui recopie son défaut est une occasion de divergence silencieuse, pas une intention | déduit |
 | Chiffre de PV | **Crème `#fff4d0` cerné d'encre `#3a0b05`** — le premier du dépôt à porter un contour. Sous l'empreinte exacte des digits, 53 % des pixels sont clairs et 40 % sombres : aucun aplat ne tient (2,28 au mieux dans son pire cas, 1,08 pour une encre claire). Le contour isole le chiffre au lieu d'essayer de composer | mesuré sur la maquette |
 | Palette | `look.palette` — les cinq teintes de la maquette d'astre, relevées par bandes de luminance : `edge` `#5d0100` · `shadow` `#c00803` · `body` `#f9993c` · `light` `#fbcf55` · `core` `#fdf17f`. **Source unique de tout ce qui est orange chez lui** : le bloc `look`, mais aussi le module, qui codait ses propres orange en dur — d'où la dérive du Rayon solaire. Il a été jaune vif (`#fbbf24`), puis orange plat (`#de7f3a`, échantillonné sur les rayons) avant d'être un dessin | relevé sur la maquette |
 | Faisceau | **Fait de la même matière que l'astre — demandé.** `ultimate.beam.bands` : cinq bandes concentriques qui reprennent `look.palette` **dans l'ordre du dessin**, donc la structure de la maquette étirée le long d'un axe. Ce qui manquait et change tout, c'est le **liseré d'encre brûlée** : le faisceau allait d'orange à blanc, sans bord — or c'est ce trait qui signe le dessin, et sans lui le rayon se dissolvait en plus sur l'arène blanche | calé (demandé) |
 | Déplacement | **230 px/s, le plus lent du roster et de très loin** (420 Golem, 430 Hoplite, 655 Pistolero) et `turnRate` 1, le plus bas aussi. Il va **moitié moins vite que la moyenne**. C'est **la** contrepartie de tout le reste : il ne rattrape personne — et n'aurait rien à en faire s'il y arrivait | calé (demandé) |
-| **Arme** | *Couronne de rayons* — **une pointe découpée dans la maquette de la balle, demandé** : la balle en prend le disque, l'arme prend « ce qu'il y a autour ». Les huit rayons reconstituent donc la silhouette du dessin, à ceci près qu'ils tournent | calé (demandé) |
-| Découpe du rayon | Le secteur de ±20° autour de la plus longue pointe (313° sur la maquette), pris **depuis 235 px** — 10 px en deçà du disque, pour que sa base chevauche la balle et qu'aucune couture ne se voie — puis tourné pointe vers la droite au plus proche voisin (c'est du pixel-art, il ne doit pas flouter) | relevé sur la maquette |
-| Portée | **160 → 104,42**, et c'est le dessin qui le dit : les pointes ne font que **14 %** du rayon du disque (relevé au contour angle par angle, creux à 245 px et pics à 278). Les étirer jusqu'aux 160 px précédents en aurait fait des lances, pas la couronne dessinée. Toute la géométrie découle de l'échelle `82 / 245 = 0,334694` : base 235 px → `handle.length` 78,65 ; bout 312 px → `reach` 104,42 | déduit |
-| Échelle du sprite | `scale = 25,77 / (9 × 0,455621) = 6,284807` : sous override PNG la largeur vient du **rapport d'aspect de l'image** (77 × 169), pas de `map.w` — piège déjà payé sur la lance de l'Hoplite puis sur l'arme du Golem | déduit |
-| ⚠ Ce que ça a coûté | **Changer la portée a déplacé la matrice**, alors que l'arme ne fait aucun dégât. `resolveMelee` applique le **recul propre** et le **décollement des corps** hors de `damage` : la géométrie d'une arme sans dégâts reste du gameplay. Vainqueurs inchangés (21/21, les six autres au chiffre près), seules les **durées** de ses affrontements ont bougé | mesuré |
+| **Arme** | *Couronne de rayons* — **une langue découpée dans la maquette de la balle, demandé** : la balle en prend la sphère, l'arme prend « ce qu'il y a autour ». Les huit langues reconstituent donc la silhouette du dessin, à ceci près qu'ils tournent | calé (demandé) |
+| Découpe du rayon | Le secteur de ±18° autour de la plus longue langue (313,6° sur la maquette), pris **depuis 162 px** — 10 px en deçà de la sphère, pour que sa base chevauche la balle et qu'aucune couture ne se voie — puis tourné pointe vers la droite au plus proche voisin (c'est du pixel-art, il ne doit pas flouter) | relevé sur la maquette |
+| Portée | **160 → 104,42 → 145,41**, et les trois chiffres sortent du **même** relevé de contour, refait sur un masque différent. Le masque pollué par le halo pêche donnait creux 245 / pics 278, soit 14 % de pointe ; le masque propre (détouré par remplissage depuis le bord) donne **sphère 172 / pics 262**, soit **52 %**. Toute la géométrie découle de l'échelle `82 / 172 = 0,476744` : base 162 px → `handle.length` **77,23** ; bout 305 px → `reach` **145,41**. Chaque langue dépasse donc de 63,4 px du corps | déduit |
+| Échelle du sprite | `scale = 68,17 / (13 × 1,153226) = 4,547406` : sous override PNG la largeur vient du **rapport d'aspect de l'image** (143 × 124), pas de `map.w` — piège déjà payé sur la lance de l'Hoplite puis sur l'arme du Golem. La carte texte est passée à 15 × 13 pour tomber à 0,05 % de ce rapport | déduit |
+| ⚠ Ce que ça a coûté | **Changer la portée a déplacé la matrice**, alors que l'arme ne fait aucun dégât. `resolveMelee` applique le **recul propre** et le **décollement des corps** hors de `damage` : la géométrie d'une arme sans dégâts reste du gameplay. Vainqueurs inchangés (21/21, les six autres au chiffre près), seules les **durées** de ses affrontements ont bougé — et **zéro ligne hors du Soleil**, les deux fois | mesuré |
 | **Huit branches** | `weapon.spokes: 8` — la même arme répétée tous les 45°, sans aucun angle mort. **Elle ne blesse plus** (voir ci-dessous) : c'est aujourd'hui sa silhouette et son bruit, plus son arme | calé (demandé) |
 | Rotation | `SPIN × 0,55` (3,17 rad/s), entre le Golem (0,45) et le reste (1,0) | calé |
-| **Corps à corps** | **0 — annulé, demandé.** La couronne portait 67,3 % de ses dégâts ; elle n'en porte plus aucun. `Match.damage` sortant avant tout effet à montant nul, il n'y a plus non plus de recul, de son de touche ni de gerbe : `melee.knockback` et `melee.selfRecoil` ne sont plus lus par personne (invariant 9, assumé et écrit dans la fiche) | calé (demandé) |
+| **Corps à corps** | **0 — annulé, demandé.** La couronne portait 67,3 % de ses dégâts ; elle n'en porte plus aucun. `Match.damage` sort avant tout effet à montant nul, donc plus de son de touche ni de gerbe — le bruitage `scorch` est rebranché sur le faisceau par `opts.sound`. **Mais l'arme n'est pas inerte pour autant** : `resolveMelee` pose le verrou de mêlée, applique `melee.selfRecoil` et **décolle les deux corps** *hors* de `damage`. Ces clés sont donc bien lues, et toucher la portée déplace la matrice | calé (demandé) |
 | **Pouvoir** | *Réchauffement solaire* — horloge de 5 s, rayon **240 px** (plus du tiers de l'arène), 2 de dégât puis **brûlure de 2/s pendant 4 s**, rafraîchie à chaque cycle. La brûlure est le vrai contenu : le pouvoir ne tue pas, il **impose de bouger** | calé |
 | **Ultime** | *Rayon solaire* — horloge de **7 s**, **2 s de charge annoncée à l'écran** puis **2,5 s** de faisceau (900 px de long, **124 de large**), 6 dégâts toutes les 0,15 s, soit jusqu'à **96 PV** par tir. De très loin l'attaque la plus lourde du dépôt — le précédent pic était le Séisme du Golem, à 5 | calé (demandé) |
 | Animation de charge | Trois anneaux qui **se referment** sur le foyer (un anneau qui s'ouvre dirait qu'une onde part, pas qu'on ramasse de l'énergie), huit éclats qui convergent — un par rayon de la couronne, pour raccrocher l'effet au personnage — et un foyer dont le battement **accélère** avec la charge. Aucun tirage : tout est fonction du temps et de l'index | calé (demandé) |
@@ -2911,6 +2911,71 @@ ajouts** (invariant 3), et les six autres combattants gardent leur compte
   remplacer sa couleur — le remplacer effacerait le dessin à chaque coup.
   Toute la palette du personnage est relevée sur cette maquette, repli texte et
   icône compris, ce qui les empêche de diverger.
+
+### La balle ne contient que la sphère — et la couronne y gagne 40 % de portée
+
+**Demandé** : « je veux que la balle contient uniquement la sphère de l'image »,
+à la suite de « que l'arme reprenne ce qui y a autour de la balle de l'image ».
+Les deux sprites viennent donc de la **même illustration**, coupée en deux : la
+sphère est la balle, une de ses langues est l'arme, et les huit langues qui
+tournent reconstituent la silhouette du dessin.
+
+**La demande était une correction, et il a fallu comprendre de quoi.** La coupe
+précédente tombait à 245 px et gardait autour de la sphère un anneau de halo
+pêche. Deux détourages successifs l'avaient laissé passer, et **le resserrer ne
+pouvait pas marcher** : la pêche qui touche l'astre (`#f9bf75`, saturation 132)
+est aussi saturée que la flamme pâle qu'il faut garder. Le masque se prend par
+**topologie**, pas par couleur — remplissage depuis le bord de l'image, les
+pixels sombres (luminance < 100) faisant mur : la flamme est exactement ce que
+son propre contour brûlé enferme, le halo n'est enfermé par rien.
+
+**Ce que ça change à la mesure, et c'est le vrai enseignement.** Le contour
+retracé sur 720 directions donne, avant et après :
+
+| | masque pollué | masque propre |
+| --- | --- | --- |
+| creux (la sphère) | 245 px | **172 px** |
+| pics (les langues) | 278 px | **262 px** (297 au plus long) |
+| longueur d'une langue | 33 px, **14 %** du rayon | 90 px, **52 %** |
+
+Le premier relevé était rigoureux et reproductible ; il décrivait fidèlement
+« la flamme *plus* son halo ». Il avait produit une balle trop généreuse, une
+portée de 104 px, et un commentaire de fiche expliquant très bien pourquoi la
+couronne devait être courte. La leçon est dans `docs/PIEGES.md` : **un masque
+faux ne rend pas une mesure fausse, il rend une mesure juste sur la mauvaise
+forme.**
+
+**La géométrie qui en découle**, à l'échelle `82 / 172 = 0,476744` (rayon du
+corps ÷ rayon de la sphère source) :
+
+| source | jeu |
+| --- | --- |
+| sphère, 172 px (PNG 344 × 344) | `look.radius` 82, `spriteScale` absent |
+| base de la langue, 162 px | `handle.length` **77,23** |
+| bout de la langue, 305 px | `reach` **145,41** |
+| PNG de la langue, 143 × 124 | `head.scale` **4,547406**, `hitbox.from` 0,5311 |
+
+La découpe de l'arme est le secteur de ±18° autour de la plus longue langue
+(313,6°), prise **depuis 162 px** — 10 px en deçà de la sphère, pour que la base
+chevauche la balle et qu'aucune couture ne se voie — puis tournée pointe vers la
+droite au plus proche voisin.
+
+**Et ça déplace la matrice, ce qui est attendu depuis qu'on sait pourquoi.**
+`melee.damage` vaut 0, mais `resolveMelee` pose le verrou de mêlée, applique
+`selfRecoil` et **décolle les deux corps** *hors* de `Match.damage` : la portée
+de la couronne reste de la géométrie de jeu. Le diff tient en **8 lignes, les
+huit `… vs sun`** (sept adversaires plus le miroir), **durées seulement** — tous
+les vainqueurs sont inchangés, Soleil 21/21, et les six autres gardent leur
+compte absolu au chiffre près : 13, 13, 12, 11, 10, 4. Zéro ligne déplacée hors
+du Soleil : le changement est confiné, comme l'invariant 3 l'exige.
+
+**Les deux replis texte ont été refaits, et pas de la même façon** — la langue
+est une **réduction mécanique** du PNG (15 × 13, à 0,05 % du rapport d'aspect de
+l'image contre 2,5 % pour l'ancienne 4 × 9), la sphère est **composée** en
+dégradé radial parce que la même réduction y rend du bruit : la maquette dessine
+un tourbillon, pas un dégradé, et à 16 px il n'en reste que du grain. L'icône de
+sélection, elle, portait encore l'échantillonnage de palette précédent
+(`#6f1e12`…) et a été ramenée sur `look.palette` avec les deux autres cartes.
 
 ## La norme passe à 200 PV, le Golem à 400 (historique)
 

@@ -22,14 +22,14 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Équilibrer | 176 |
 | &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 352 |
 | &nbsp;&nbsp;· Éditer les données | 391 |
-| &nbsp;&nbsp;· Interface et rendu | 424 |
-| &nbsp;&nbsp;· Le son | 510 |
-| &nbsp;&nbsp;· Refactoriser | 939 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 980 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 982 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1025 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1068 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1087 |
+| &nbsp;&nbsp;· Interface et rendu | 467 |
+| &nbsp;&nbsp;· Le son | 553 |
+| &nbsp;&nbsp;· Refactoriser | 989 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1030 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1032 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1075 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1118 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1137 |
 
 ---
 
@@ -421,6 +421,49 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   **échantillonne maintenant le profil de `LANCER_SPEAR`**, donc elle ne peut
   plus mentir sur l'arme qu'elle annonce.
 
+- **Un détourage ne se fait pas toujours à la couleur — et un masque faux ne
+  rend pas une mesure fausse, il rend une mesure *juste sur la mauvaise
+  forme*.** Le halo pêche de la maquette du Soleil a survécu à **deux**
+  détourages successifs. Le premier seuil (`saturation > 45 | luminance < 200`)
+  le gardait ; le resserrer ne pouvait pas marcher, et c'est le point : la pêche
+  qui touche l'astre (`#f9bf75`, saturation **132**) est *aussi saturée* que la
+  flamme pâle qu'il fallait garder — **aucun seuil de couleur ne les sépare**.
+  Pire, `binary_fill_holes` remplissait ensuite les baies entre les langues avec
+  du halo, recollant les deux formes.
+
+  Ce qui les sépare est **topologique** : la flamme est exactement ce que son
+  propre contour brûlé enferme, le halo n'est enfermé par rien. Le masque se
+  prend donc par **remplissage depuis le bord de l'image**, les pixels sombres
+  (luminance < 100) faisant mur.
+
+  Le prix de l'erreur ne s'est pas vu comme une erreur, et c'est là qu'est la
+  leçon. Le relevé de contour sur le masque pollué donnait des **creux à 245 px
+  et des pics à 278** : une pointe de 33 px, **14 %** du rayon. Sur le masque
+  propre, les mêmes 720 directions donnent **sphère 172, pics 262** : une langue
+  de 90 px, **52 %**. Le premier relevé était rigoureux, reproductible, et
+  entièrement faux — il décrivait fidèlement « la flamme *plus* son halo ». Il a
+  produit une découpe de balle trop généreuse, une portée à 104 px au lieu de
+  145, et un commentaire de fiche expliquant très bien pourquoi la couronne
+  devait être courte. **Vérifier le masque avant de croire ce qu'on mesure
+  dessus** : un chiffre propre ne dit rien de la forme qu'on a mesurée.
+
+- **Réduire mécaniquement une maquette marche ou ne marche pas selon ce qu'elle
+  dessine — donc ça s'essaie, ça ne se suppose pas.** Les deux cartes texte du
+  Soleil sont des replis du même dessin, réduits par le même code (Lanczos vers
+  la taille de la carte, puis plus proche voisin dans les cinq teintes) :
+  - la **langue** (15 × 13) survit très bien — la silhouette réelle passe, y
+    compris son irrégularité, et c'est mieux qu'un dessin à la main ;
+  - la **sphère** (16 × 16) rend du **bruit rouge** : la maquette y dessine un
+    *tourbillon* de feu, pas un dégradé radial, et à 16 px il ne reste du
+    tourbillon que du grain. Le repli a donc été **composé** en dégradé radial
+    franc, ce qu'un repli doit faire : dire la bonne chose.
+
+  La règle du dépôt (« transcrire quand c'est possible, composer sinon ») ne se
+  tranche pas par principe mais **en regardant les deux sorties**. Corollaire
+  gratuit : c'est aussi la taille de carte qui s'est décidée là — 15 × 13 tombe
+  à **0,05 %** du rapport d'aspect du PNG, là où l'ancienne 4 × 9 laissait 2,5 %
+  de dérive sur l'envergure du repli.
+
 ### Interface et rendu
 
 - **Une moitié d'écran dans chaque langue.** `?lang=fr` ne pilotait que le HUD
@@ -771,11 +814,18 @@ qu'un dessin n'est pas un aplat :
   déborde (les pointes de l'astre) : son disque plein s'arrête à **0,89** du
   demi-côté de l'image. Dessiné à la taille brute, il paraîtrait donc **plus
   petit que son rayon de collision** — il serait bousculé « dans le vide ».
-  D'où `look.spriteScale` (1/0,89 = 1,1236), qui remet le disque sur le rayon
-  et laisse les pointes déborder. C'est la même discipline que
+  D'où `look.spriteScale` (1/0,89 = 1,1236), qui remettait le disque sur le
+  rayon et laissait les pointes déborder. C'est la même discipline que
   `handle.length + largeur = reach` pour une arme : le dessin ne ment pas sur
   la géométrie. Elle se **remesure** à chaque changement de maquette —
-  couverture par anneau, dernier rayon encore plein à 98,5 %.
+  couverture par anneau, dernier rayon encore plein.
+
+  *Depuis, la clé a disparu de la fiche, et c'est le même raisonnement qui l'a
+  retirée* : le PNG a été recoupé à la sphère seule (les pointes sont devenues
+  l'arme), il remplit donc exactement son cadre et la correction vaudrait 1.
+  Une clé qui recopie son défaut est une occasion de divergence silencieuse,
+  pas une intention — mais la mesure reste à refaire dans l'autre sens le jour
+  où un sprite débordera de nouveau.
 - **On ne le cerne pas.** Un cercle net autour d'un dessin découpé se lit comme
   un carcan, et le sprite porte déjà son bord. `look.outline` reste lu par la
   carte de sélection, ce n'est donc pas une clé morte.

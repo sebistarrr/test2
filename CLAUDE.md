@@ -177,11 +177,17 @@ fois plus souvent. Le **Ronin s'effondre de 10 à 4** — ses dégâts plafonnen
 (`Damage = Spin`, avec surchauffe), donc un duel plus long ne lui donne rien de
 plus, seulement plus de temps pour se faire rattraper.
 **Les lignes `… vs dummy` sont un banc de DPS**, pas un relevé d'équilibrage —
-et il **ne suit pas simplement la division** : Pistolero 3,3, Ronin 3,1,
-Shinobi 3,1, Hoplite 3,0, Druide 2,8, Golem 2,6 PV/s, et le **Soleil 4,6**, de
-loin le premier — ce que sa définition demande. La ligne `dummy vs dummy` finit
-en **`timeout`** : deux combattants sans dégâts ne se départagent jamais, le
-moteur n'ayant aucune limite de temps.
+et il **ne suit pas simplement la division** (100 PV ÷ la durée moyenne des
+trois seeds) : Ronin 3,3, Shinobi 3,1, Hoplite 3,0, Druide 2,8, Pistolero 2,5,
+Golem 1,8 PV/s. **Le Soleil est à 2,5, au milieu — et ça ne le contredit pas** :
+il gagne quand même ses 21 duels, parce qu'il encaisse cinq fois plus qu'il ne
+frappe vite. Sa ligne est surtout **la plus dispersée du banc** (22 · 54 ·
+45,1 s) : tout ce qu'il produit passe par une horloge d'ultime de 7 s, donc sa
+durée dépend de *combien de tirs* il lui a fallu, jamais d'un débit. Ces
+chiffres se recalculent sur `tools/matrix-reference.txt` à chaque régénération,
+sans quoi ils vieillissent en silence — c'est déjà arrivé. La ligne
+`dummy vs dummy` finit en **`timeout`** : deux combattants sans dégâts ne se
+départagent jamais, le moteur n'ayant aucune limite de temps.
 Écart **4 à 13** entre les six qui se jugent entre eux, connu et non corrigé
 (le Soleil et le Mannequin sont hors barème, voir plus haut). **La matrice ne joue chaque paire qu'une fois, et
 toujours dans le même sens : elle exagère les écarts, et peut aussi en cacher
@@ -617,6 +623,14 @@ Une ligne par piège ; **la mesure, le balayage et l'histoire sont dans
   une formule interpole ce qu'on ne lui a pas demandé.
 - Une icône redessinée à la main diverge de son arme → l'échantillonner sur le
   profil de l'arme.
+- **Un détourage ne se fait pas toujours à la couleur** (un halo peut être aussi
+  saturé que ce qu'on garde) : détourer par **topologie**, remplissage depuis le
+  bord, le contour sombre faisant mur. Et **un masque faux ne rend pas une
+  mesure fausse, il rend une mesure juste sur la mauvaise forme** — 14 % de
+  pointe relevés au lieu de 52 %, sans rien qui cloche dans le relevé.
+- **Réduire mécaniquement une maquette en carte texte marche ou pas selon ce
+  qu'elle dessine** : ça s'essaie et se regarde, ça ne se suppose pas (la langue
+  du Soleil passe, sa sphère rend du bruit).
 
 **Interface et rendu**
 

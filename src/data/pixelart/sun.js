@@ -3,12 +3,21 @@
  *
  * Chargées par `data/pixelmaps.js`, qui les recense dans `PIXEL_MAPS`.
  *
- * **Aucune de ces cartes n'est un relevé** : le Soleil est inventé, comme le
- * Golem et le Mannequin — il n'a pas de vidéo de référence. Elles sont donc
- * dessinées, et le piège du dépôt s'applique en plein : *générer un sprite par
- * une formule au lieu de transcrire une maquette interpole ce qu'on ne lui a
- * pas demandé*. Ici il n'y a **pas** de maquette à transcrire, donc la forme
- * est composée — et c'est dit, comme le veut la règle.
+ * **Aucune de ces cartes n'est un relevé vidéo** : le Soleil est inventé, comme
+ * le Golem et le Mannequin. Mais il a désormais une **maquette fournie**, et le
+ * piège du dépôt dit quoi en faire : *transcrire quand c'est possible, composer
+ * sinon, et le dire en commentaire*. Les deux cas sont ici, et le choix est
+ * **mesuré**, pas supposé :
+ *
+ *  • `SUN_RAY` est une **réduction mécanique** du PNG (Lanczos vers la taille
+ *    de la carte, puis plus proche voisin dans la palette). Ce n'est ni une
+ *    formule ni une copie à la main : la silhouette réelle survit, y compris ce
+ *    qu'elle a d'irrégulier ;
+ *  • `SUN_CORE` est **composé**, parce que la même réduction a été essayée et
+ *    **échoue** : à 16 px, la sphère de la maquette est un tourbillon de feu,
+ *    pas un dégradé radial — la réduction rend du bruit rouge sans lecture
+ *    d'astre. La leçon est dans `docs/PIEGES.md` ; la version composée dit la
+ *    bonne chose (une sphère incandescente) et c'est tout ce qu'un repli doit.
  *
  * @module data/pixelart/sun
  */
@@ -16,34 +25,36 @@
 import { deepFreeze } from '../freeze.js';
 
 /**
- * **Un rayon** — repli texte du vrai PNG, et le combattant en porte huit
- * (`weapon.spokes`).
+ * **Une langue de flamme** — repli texte du vrai PNG, et le combattant en porte
+ * huit (`weapon.spokes`).
  *
- * Le rayon est servi par `assets/sprites/sun-ray.png`, une maquette de flamme
- * fournie (voir `manifest.json` et l'écart assumé à « aucun binaire » décrit
- * dans `pixelmaps.js`). Cette carte-ci ne se dessine donc **que** si le PNG ne
- * charge pas — mais elle n'est pas décorative pour autant, et de deux façons :
+ * Le rayon est servi par `assets/sprites/sun-ray.png`, **découpé dans la
+ * maquette d'astre** : la balle en prend la sphère, l'arme prend une des
+ * langues qui l'entourent (voir `weapon.head` dans la fiche pour la découpe, et
+ * `pixelmaps.js` pour l'écart assumé à « aucun binaire »). Cette carte-ci ne se
+ * dessine donc **que** si le PNG ne charge pas — mais elle n'est pas décorative
+ * pour autant, et de deux façons :
  *
  *  • **`h` sert au calcul de la taille dessinée même avec l'override** :
- *    `drawSpriteLeft` prend la hauteur ici (9) et le rapport d'aspect sur
+ *    `drawSpriteLeft` prend la hauteur ici (13) et le rapport d'aspect sur
  *    l'image. En changer la valeur déplacerait la pointe de l'arme, donc
  *    `weapon.head.scale` avec ;
  *  • **`w` fixe le rapport du repli**, et il est calé sur celui du PNG
- *    (22 / 9 = 2,444, contre 1171 / 479 = 2,4447) : si le PNG manque, la
- *    couronne garde exactement la même envergure au lieu de se rétracter.
+ *    (15 / 13 = 1,153846, contre 143 / 124 = 1,153226, soit **0,05 %** d'écart)
+ *    : si le PNG manque, la couronne garde son envergure au lieu de se
+ *    déformer. C'est ce qui a décidé de la taille de la carte — 15 × 13 est la
+ *    première paire qui tombe aussi juste, là où l'ancienne (4 × 9) laissait
+ *    2,5 % de dérive.
  *
- * Le dessin est volontairement grossier — c'est un repli, pas une
- * transcription. Il dit la bonne chose (une flamme élancée qui se dissipe en
- * pointe) sans prétendre reproduire la maquette : la reproduire à la main
- * serait exactement le geste que le dépôt s'interdit.
- *
- * Le dégradé va du cœur vers le bord **et** du talon vers la pointe, parce que
- * c'est ce que fait la maquette : la flamme est la plus claire là où elle sort
- * du corps, et il ne lui reste que son contour à l'extrémité.
+ * Le dessin est une **réduction mécanique du PNG**, pas une copie à la main :
+ * la flamme est la plus claire là où elle sort du corps et il ne lui reste que
+ * son contour à l'extrémité, parce que c'est ce que fait la maquette — et le
+ * talon est sans contour parce que la découpe part **à l'intérieur** de la
+ * sphère, où la flamme n'a pas d'encre.
  */
 export const SUN_RAY = deepFreeze({
-  w: 4,
-  h: 9,
+  w: 15,
+  h: 13,
   /** Les cinq teintes de `look.palette`, relevées sur la maquette : c'est ce
    *  qui garantit que le repli, le sprite et le reste du personnage ne
    *  divergent pas. */
@@ -55,26 +66,25 @@ export const SUN_RAY = deepFreeze({
     w: '#fdf17f', // cœur
   },
   /**
-   * **4 × 9, et c'est le rapport qui compte, pas les chiffres.** `h` sert au
-   * calcul de la taille dessinée même sous override (donc il ne bouge pas), et
-   * `w` est calé sur le rapport du PNG : 4/9 = 0,444 contre 77/169 = 0,456.
-   * L'écart de 2,5 % est assumé — une carte plus fine ne serait plus
-   * dessinable. Si le PNG manque, la couronne garde donc son envergure à 2,5 %
-   * près au lieu de se déformer.
-   *
-   * La pointe est **large au talon et effilée vers la droite**, comme sur la
-   * maquette : c'est une flamme qui sort du disque, pas une lame.
+   * **Large au talon (à gauche) et effilée vers la droite**, avec une pointe
+   * qui file plus loin que le reste sur une seule rangée : c'est la langue
+   * telle qu'elle est dessinée, pas une lame symétrique. L'irrégularité est
+   * conservée exprès — c'est elle qui fait lire une flamme.
    */
   rows: [
-    'K...',
-    'dK..',
-    'doK.',
-    'doyK',
-    'dywK',
-    'doyK',
-    'doK.',
-    'dK..',
-    'K...',
+    'od..KK.........',
+    'yodddK.........',
+    'wwyooodKK......',
+    'wwooooodK......',
+    '.oddoododK.....',
+    '.odooyoddddKKKK',
+    '.doooyyddddK...',
+    'odoooyoddK.....',
+    'oooooodddK.....',
+    'ooddododdK.....',
+    'oyyoodKKK......',
+    '.wodddK........',
+    '....KdKK.......',
   ],
 });
 
@@ -88,12 +98,16 @@ export const SUN_RAY = deepFreeze({
  * l'ouvre, lu par `Fighter.drawSpriteBody()`.
  *
  * **Carré, et il doit le rester** : `drawSpriteCentered` impose la hauteur et
- * déduit la largeur du rapport d'aspect. Un repli rectangulaire donnerait un
- * astre ovale le jour où le PNG manque, sans que rien ne le signale.
+ * déduit la largeur du rapport d'aspect. Le PNG est carré lui aussi (344 × 344,
+ * soit deux fois le rayon de sphère relevé) ; un repli rectangulaire donnerait
+ * un astre ovale le jour où le PNG manque, sans que rien ne le signale.
  *
- * Grossier par construction — c'est un repli, pas une transcription. Il dit la
- * bonne chose (un disque incandescent hérissé de pointes) dans les teintes
- * relevées sur la maquette.
+ * **Composé, et pas réduit du PNG comme la langue l'est** — la réduction a été
+ * essayée : à 16 px elle rend du bruit rouge, parce que la sphère de la
+ * maquette est un **tourbillon** et non un dégradé radial. Ce repli-ci est donc
+ * un dégradé radial franc dans les teintes relevées : plus de pointes autour
+ * (elles sont l'arme depuis que la balle ne contient que la sphère), juste un
+ * astre plein qui remplit son cadre.
  */
 export const SUN_CORE = deepFreeze({
   w: 16,
@@ -106,22 +120,22 @@ export const SUN_CORE = deepFreeze({
     w: '#fdf17f', // cœur
   },
   rows: [
-    '.......KK.......',
-    '..K....dd....K..',
-    '...Kd.KooK.dK...',
-    '....KdoyyodK....',
-    '..KdoyywwyyodK..',
-    '.KdoywwwwwwyodK.',
-    '.KdoywwwwwwyodK.',
-    'KddoywwwwwwyoddK',
-    'KddoywwwwwwyoddK',
-    '.KdoywwwwwwyodK.',
-    '.KdoywwwwwwyodK.',
-    '..KdoyywwyyodK..',
-    '....KdoyyodK....',
-    '...Kd.KooK.dK...',
-    '..K....dd....K..',
-    '.......KK.......',
+    '.....KKKKKK.....',
+    '...KKKddddKKK...',
+    '..KKdddoodddKK..',
+    '.KKddooooooddKK.',
+    '.KddooyyyyooddK.',
+    'KKdooyyyyyyoodKK',
+    'KddoyywwwwyyoddK',
+    'KdooyywwwwyyoodK',
+    'KdooyywwwwyyoodK',
+    'KddoyywwwwyyoddK',
+    'KKdooyyyyyyoodKK',
+    '.KddooyyyyooddK.',
+    '.KKddooooooddKK.',
+    '..KKdddoodddKK..',
+    '...KKKddddKKK...',
+    '.....KKKKKK.....',
   ],
 });
 
@@ -137,11 +151,14 @@ export const SUN_CORE = deepFreeze({
 export const ICON_SUN = deepFreeze({
   w: 16,
   h: 16,
+  /** Les teintes de `look.palette`, comme les deux autres cartes : l'icône
+   *  portait encore l'échantillonnage précédent (`#6f1e12`…) et dérivait donc
+   *  du personnage depuis que sa palette a été relevée sur la maquette. */
   palette: {
-    K: '#6f1e12',
-    o: '#de7f3a',
-    y: '#ebbd5b',
-    w: '#fcf697',
+    K: '#5d0100',
+    o: '#f9993c',
+    y: '#fbcf55',
+    w: '#fdf17f',
   },
   rows: [
     '.......KK.......',
