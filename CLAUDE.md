@@ -384,6 +384,9 @@ node tools/fiche-check.mjs               # câblage, clé de sprite absente de
                                          # PIXEL_MAPS, fiche ↔ module
 node tools/lang-check.mjs                # clés des deux tables + champs `Ref`
 node tools/sound-check.mjs               # action muette, recette refusée
+node tools/layout-check.mjs              # les écrans DOM tiennent-ils dans la
+                                         # scène ? (pile réelle × formats ×
+                                         # tailles × fiches, iPhone 16 Pro)
 node tools/export-check.mjs              # la vidéo exportée sonne-t-elle ?
                                          # (redécodage PCM : octets + RMS)
 node tools/matrix.mjs                    # tous les affrontements × 3 seeds
@@ -566,6 +569,12 @@ est dans `docs/PIEGES.md`, sous le même intitulé.
 - **Un recul se règle en direction, pas en force** : l'ampleur est un levier plat.
 - **Un combattant à plusieurs corps ne se nomme qu'une fois** : dédoublonner par
   `el.id`.
+- **Un écran DOM déborde la scène 9:16 dans la même proportion partout** : le
+  mesurer (pile réelle × formats × tailles × fiches), pas le régler par média.
+- **`justify-content: center` déborde des deux côtés** — le haut est perdu, et
+  le défilement n'y mène pas.
+- **Un `gap` en pourcentage vertical se résout sur la hauteur**, pas sur la
+  largeur comme les `padding`.
 - Un pouvoir dessiné dans `drawOver` peut **recouvrir le chiffre de PV**, qui est
   repassé après la boucle (`globalAlpha` remis à 1 avant).
 

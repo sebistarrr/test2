@@ -23,16 +23,16 @@ relevé, puis les pièges eux-mêmes.
 | &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 469 |
 | &nbsp;&nbsp;· Éditer les données | 508 |
 | &nbsp;&nbsp;· Interface et rendu | 637 |
-| &nbsp;&nbsp;· Le son | 802 |
-| &nbsp;&nbsp;· Refactoriser | 1315 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 1356 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1358 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1401 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1444 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1463 |
-| &nbsp;&nbsp;· Invariant 3 — la preuve que l'arrivée d'un combattant n'a rien déplacé | 1507 |
-| &nbsp;&nbsp;· Invariant 9 — les deux régressions qui l'ont écrit | 1524 |
-| &nbsp;&nbsp;· Formats — la table, et pourquoi elle a été écrite après coup | 1540 |
+| &nbsp;&nbsp;· Le son | 840 |
+| &nbsp;&nbsp;· Refactoriser | 1353 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1394 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1396 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1439 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1482 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1501 |
+| &nbsp;&nbsp;· Invariant 3 — la preuve que l'arrivée d'un combattant n'a rien déplacé | 1545 |
+| &nbsp;&nbsp;· Invariant 9 — les deux régressions qui l'ont écrit | 1562 |
+| &nbsp;&nbsp;· Formats — la table, et pourquoi elle a été écrite après coup | 1578 |
 
 ---
 
@@ -798,6 +798,44 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   un fond uni sombre** avant de le déclarer propre. Sur le damier de
   l'éditeur d'images, une trame résiduelle est invisible — elle se confond avec
   celui de l'aperçu.
+- **Un écran DOM sur une scène 9:16 n'a pas la hauteur de l'appareil, et son
+  débordement ne dépend d'aucun appareil.** L'écran de sélection débordait sa
+  boîte **partout**, depuis toujours, et personne ne l'avait vu parce que le
+  débordement est *proportionnel* : `#app` garde le ratio 720/1280, donc sur un
+  iPhone 16 Pro (402 × 874 px CSS) la largeur borne et la boîte fait **402 × 715**
+  — les 159 px restants de l'écran sont hors scène —, et sur un 1280 × 800 elle
+  fait 450 × 800. Toutes les tailles étant en `cqw`, **la même pile déborde de
+  la même fraction sur les deux**. Mesuré : 764 px de pile pour 715 px de boîte
+  en duel, 793 en bataille royale à cinq.
+
+  Trois choses à en retenir, chacune payée une fois :
+  - **`justify-content: center` déborde des deux côtés.** Le titre « CHOOSE YOUR
+    FIGHTERS » passait **au-dessus** du bord haut : invisible *et* hors
+    d'atteinte du défilement, puisqu'on ne défile pas vers un dépassement
+    négatif. Le bouton de départ, lui, passait sous le bord bas. Un seul des
+    deux se voyait sur une capture, et c'est le second — d'où un débordement
+    lu comme « il manque le bouton » pendant que la moitié du problème était en
+    haut.
+  - **Un `gap` en pourcentage dans une colonne se résout sur la *hauteur*, pas
+    sur la largeur comme les `padding`.** `gap: 2%` valait donc 14,3 px et non
+    8 : à sept blocs, **100 px de la pile** n'étaient que de la respiration,
+    soit plus que tout le débordement. C'est le premier levier, et le seul
+    gratuit.
+  - **Ce qui coûte, c'est ce qui se répète.** Le roster fait quatre rangées de
+    cartes : chaque `cqw` retiré d'une marge de carte est payé quatre fois
+    (10 px de carte = 40 px de pile). Idem pour les huit lignes de la fiche
+    détaillée, où l'interligne 1,45 → 1,3 rend 20 px **sans toucher au corps du
+    texte**, qui est ce qui se lit. Les tailles de police n'ont donc quasiment
+    pas bougé : la compacité s'est prise dans les vides.
+
+  Résultat : 793 → 692 px dans le pire format, 764 → 652 en duel, marge de
+  23 px au plus serré. Le garde-fou est une mesure, pas un œil — hauteur réelle
+  de la pile (haut du premier bloc → bas du dernier, `padding` compris)
+  **balayée sur les quatre formats × trois tailles × les neuf fiches**, la
+  largeur de la fiche affichée variant avec le combattant survolé. Et comme le
+  débordement est proportionnel, **la corriger sur un écran la corrige sur
+  tous** : aucune requête de média n'a été nécessaire, et en ajouter une aurait
+  laissé le bug entier sur les appareils non couverts.
 
 ### Le son
 

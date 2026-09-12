@@ -284,6 +284,9 @@ tools/                     outillage de vérification (non chargé par la page)
 ├── export-check.mjs       banc de l'export : le fichier produit est relu **et
 │                          redécodé en PCM**, seul moyen de distinguer une piste
 │                          audio vivante d'une piste silencieuse
+├── layout-check.mjs       les écrans DOM tiennent-ils dans la scène ? hauteur
+│                          réelle de la pile, balayée sur les quatre formats,
+│                          leurs tailles et les neuf fiches
 ├── shot.mjs               captures d'écran, avec déclenchement de pouvoir
 ├── frames.py              extraction d'images d'une vidéo de référence
 ├── montage.py             planche-contact des images extraites
