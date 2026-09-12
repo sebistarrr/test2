@@ -35,7 +35,7 @@ import { MAGE_STAFF, MAGE_ORB, MAGE_FLOWER, ICON_STAFF } from './pixelart/mage.j
 import { GOLEM_ROCK, GOLEM_SHARD, ICON_GOLEM } from './pixelart/golem.js';
 import { ICON_DUMMY } from './pixelart/dummy.js';
 import { SUN_RAY, SUN_CORE, SUN_BEAM, ICON_SUN } from './pixelart/sun.js';
-import { LUNAR_DARK, LUNAR_LIT, ICON_LUNAR } from './pixelart/lunar.js';
+import { LUNAR_BALL, LUNAR_ROCK1, LUNAR_ROCK2, LUNAR_ROCK3, ICON_LUNAR } from './pixelart/lunar.js';
 
 export const PIXEL_MAPS = deepFreeze({
   // Hors-la-loi
@@ -71,10 +71,12 @@ export const PIXEL_MAPS = deepFreeze({
   sunCore: SUN_CORE,
   sunBeam: SUN_BEAM,
   iconSun: ICON_SUN,
-  // Lune — **deux corps**, et c'est le seul du dépôt : `lunarDark` est le
-  // sprite déclaré par la fiche, `lunarLit` est peint par-dessus par le module,
-  // découpé au terminateur. On ajoute en queue, on ne réordonne pas.
-  lunarDark: LUNAR_DARK,
-  lunarLit: LUNAR_LIT,
+  // Lune — le corps, puis **trois météores** : son seul dégât tombe du ciel,
+  // et trois silhouettes valent mieux qu'une répétée quinze fois dans la même
+  // averse. On ajoute en queue, on ne réordonne pas.
+  lunarBall: LUNAR_BALL,
+  lunarRock1: LUNAR_ROCK1,
+  lunarRock2: LUNAR_ROCK2,
+  lunarRock3: LUNAR_ROCK3,
   iconLunar: ICON_LUNAR,
 });

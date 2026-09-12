@@ -6,8 +6,10 @@
     "golemRock": "golem-rock.png",
     "sunRay": "sun-ray.png",
     "sunCore": "sun-core.png",
-    "lunarLit": "lunar-lit.png",
-    "lunarDark": "lunar-dark.png",
-    "sunBeam": "sun-beam.png"
+    "sunBeam": "sun-beam.png",
+    "lunarBall": "lunar-ball.png",
+    "lunarRock1": "lunar-rock-1.png",
+    "lunarRock2": "lunar-rock-2.png",
+    "lunarRock3": "lunar-rock-3.png"
   }
 }

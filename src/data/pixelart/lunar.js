@@ -3,19 +3,26 @@
  *
  * Chargées par `data/pixelmaps.js`, qui les recense dans `PIXEL_MAPS`.
  *
- * **Deux dessins, deux rôles — et ce n'est plus le même partage qu'avant.** Les
- * deux maquettes de lune sont conservées (demandé), mais elles ne composent plus
- * un corps unique : `lunarDark` **est** le corps, seul et en entier, et
- * `lunarLit` est devenu le **satellite** — les trois cailloux de l'anneau de
- * débris, et les météores quand ils tombent. Chacun est donc dessiné à sa vraie
- * taille au lieu d'être découpé dans l'autre.
+ * **Cinq cartes, et elles viennent toutes de la même planche** — la maquette
+ * fournie, qui montre une lune criblée et cinq astéroïdes dans le même trait.
+ * C'est ce qui règle, gratuitement, le piège que le dépôt répète : *un corps,
+ * son arme et ses pouvoirs doivent être de la même matière pour se lire comme un
+ * objet.* Ici la matière est littéralement la même feuille de dessin.
  *
- * Les deux sont des **réductions mécaniques** des PNG (Lanczos vers 16 × 16 puis
- * plus proche voisin dans la palette), comme la langue du Soleil — et
- * contrairement à sa sphère, elles passent : les deux maquettes sont organisées
- * **en anneaux concentriques**, ce qui survit à une réduction, là où le
- * tourbillon du Soleil rendait du bruit. C'est la même règle que le dépôt
- * répète : *ça s'essaie et se regarde, ça ne se suppose pas.*
+ *  • `LUNAR_BALL` — le corps, et **il a remplacé l'ancien** (demandé : « remplace
+ *    le design de la balle par celui de l'arme »). Les deux lunes précédentes,
+ *    l'éclipse violette et la pleine lune cyan, ont été **supprimées** : plus
+ *    rien ne les lit ;
+ *  • `LUNAR_ROCK1/2/3` — les météores. Trois silhouettes et non une, parce que
+ *    l'ultime en fait tomber treize : une seule, répétée treize fois, se lit
+ *    comme un motif et non comme une averse.
+ *
+ * Les quatre sont des **réductions mécaniques** des PNG (Lanczos vers 16 × 16
+ * puis plus proche voisin dans la palette). Elles passent, comme les lunes
+ * d'avant et contrairement à la sphère du Soleil : ces dessins sont faits de
+ * **cratères ronds sur des aplats**, ce qui survit à une réduction, là où un
+ * tourbillon rend du bruit. C'est la règle du dépôt : *ça s'essaie et se
+ * regarde, ça ne se suppose pas.*
  *
  * @module data/pixelart/lunar
  */
@@ -23,147 +30,191 @@
 import { deepFreeze } from '../freeze.js';
 
 /**
- * **Les cinq teintes, et elles sont maintenant relevées sur *une seule*
- * maquette** — la face d'éclipse, qui est le corps.
+ * **Les cinq bandes de luminance de la maquette**, relevées sur les pixels
+ * opaques de `lunar-ball.png` — 3ᵉ · 20ᵉ · 50ᵉ · 80ᵉ · 97ᵉ centile, la méthode du
+ * Soleil.
  *
- * Elles venaient des deux images, trois de l'éclipse et deux de la pleine lune,
- * du temps où le corps était composé des deux. Ce n'est plus vrai : la pleine
- * lune n'est plus le corps, elle est un satellite de 44 px. Laisser sa teinte
- * décider du personnage reviendrait à colorier la lune d'après ses cailloux.
- *
- * Même méthode que le Soleil : bandes de luminance sur les pixels opaques,
- * 3ᵉ · 20ᵉ · 50ᵉ · 80ᵉ · 97ᵉ centile de `assets/sprites/lunar-dark.png`. Le
- * déplacement est petit mais il va dans le bon sens — `light` passe du cyan
- * `#b5d5e4` (qui venait de l'autre image) au gris-lavande `#bfc0de` qui est
- * réellement dans le corps.
+ * La lune est **grise** : c'est ce que dit la mesure et c'est ce que dit le
+ * dessin. Sa couleur à elle n'est pas dans le sprite, elle est autour — le halo
+ * de glace, `#9df6fb`, relevé séparément sur la planche et porté par
+ * `look.palette.glow` dans la fiche. Il a été **coupé du sprite exprès** (comme
+ * le halo pêche du Soleil) pour que le jeu le fasse battre au lieu de le figer.
  */
 const PALETTE = {
-  K: '#0d0a21', // encre, le noir bleuté du disque éteint
-  d: '#1d1738', // ombre
-  v: '#604ea1', // violet — la couronne d'éclipse, et la signature
-  b: '#bfc0de', // gris-lavande des poussières éclairées
-  w: '#f9fdfd', // blanc froid du limbe
+  K: '#1a2632', // encre du contour
+  d: '#2f3c48', // ombre
+  s: '#5f6d77', // la pierre — la teinte médiane du corps
+  b: '#98aab3', // arêtes éclairées
+  w: '#d8f8fc', // blanc de glace des crêtes
 };
 
 /**
- * **Le corps, et il est seul** — repli de `assets/sprites/lunar-dark.png`.
+ * **Le corps** — repli de `assets/sprites/lunar-ball.png`.
  *
- * Il était déjà `look.sprite`, mais le module peignait la face claire par-dessus
- * au terminateur, selon la phase. **Ce n'est plus le cas**, et c'est le premier
- * geste du redessin : le terminateur recouvrait précisément ce que la maquette a
- * de meilleur — l'anneau de lumière rasante, violet puis blanc, qui cerne le
- * disque éteint. À pleine lune il n'en restait rien, et le personnage passait
- * douze secondes sur deux à n'être qu'un disque pâle sur une arène blanche
- * (contraste médian relevé : **1,54**, contre **6,5** pour ce dessin-ci).
+ * **Carré, et il doit le rester** : `drawSpriteCentered` impose la hauteur et
+ * déduit la largeur du rapport d'aspect. Le PNG est carré (262 × 262, découpé au
+ * **disque** ajusté sur la maquette) ; un repli rectangulaire donnerait un astre
+ * ovale le jour où le PNG manque, sans que rien ne le signale.
  *
- * On y lit donc en permanence ce qui fait sa silhouette : un corps presque noir,
- * un limbe qui brûle, et le champ de grains de glace autour.
+ * **Il tient sur l'arène blanche**, et c'était la question à trancher avant de
+ * l'adopter : contraste médian relevé **5,32**, avec **9 %** de pixels sous le
+ * seuil de visibilité. À comparer aux deux dessins qu'il remplace — 6,51 pour
+ * l'éclipse, et **1,54** (48 % de pixels invisibles) pour la pleine lune cyan,
+ * qui était justement le design de l'arme. Le remplacement demandé n'a donc pas
+ * coûté de lisibilité : cette lune-ci a de vrais cratères sombres.
  */
-export const LUNAR_DARK = deepFreeze({
+export const LUNAR_BALL = deepFreeze({
   w: 16,
   h: 16,
   palette: PALETTE,
   rows: [
-    '.....bbbbbb.....',
-    '...wbvvvvvvbw...',
-    '..bbvvbbbbvvbw..',
-    '.bbvbwbvddvvvbb.',
-    '.bvbwvddddddvvb.',
-    'bvvbbddddKddKvbb',
-    'bvbwvKddddKKKdvb',
-    'bvbwvKdddvddKdvb',
-    'bvbwvKKddvvdKdvb',
-    'bvbwvKKKddddKdvb',
-    'bvvbwdKddddKdvvb',
-    '.bvvbbdKKKKdvvb.',
-    '.bbvvbbvvvvbvbb.',
-    '..bbvvbbbbbvbw..',
-    '...wbvvvvvvbb...',
-    '.....bbbbbb.....',
+    '.....bwwwbs.....',
+    '...wwwwbbbsss...',
+    '..wwssbbbbssss..',
+    '.wwddsssbbbssds.',
+    '.wsdsssbbbbsbdd.',
+    'wwsssssbbsdssddd',
+    'bbbsssbbbbssdKdd',
+    'bbbbsbsbbbsssddd',
+    'bbbbbbbssssssdKs',
+    'bbbbsbssssssdddb',
+    'sssssssssssddKdb',
+    '.ssssssssddddds.',
+    '.dddsssssddKdsb.',
+    '..KdddddddKdds..',
+    '...ddddKKdddb...',
+    '.....ddddds.....',
   ],
 });
 
 /**
- * **Le satellite** — repli de `assets/sprites/lunar-lit.png`, et c'est son
- * nouveau métier.
+ * **Météore n° 1** — le plus gros et le plus anguleux de la planche, une masse
+ * de biais avec une arête claire sur le dessus.
  *
- * La pleine lune n'est plus un corps de 176 px qu'on découpe : c'est un caillou
- * de **44 px**, dessiné trois fois sur l'anneau de débris (`weapon.head.sprite`)
- * et une fois par météore qui tombe. Le dessin y gagne — à 44 px on lit une
- * petite lune criblée, là où à 176 px sur fond blanc on ne lisait rien.
- *
- * **Carrée, et elle doit le rester** : `drawSpriteLeft` impose la hauteur et
- * déduit la largeur du rapport d'aspect, et la fiche fait retomber
- * `handle.length + largeur dessinée` sur `reach`. Un repli rectangulaire
- * déplacerait la pointe de l'arme le jour où le PNG manque — 472 × 472 pour
- * l'image, 16 × 16 ici, les deux à 1,0.
+ * Les trois cartes gardent chacune le **rapport d'aspect de leur PNG** à moins
+ * de 1 % près, comme le repli de couronne du Soleil : le module dimensionne le
+ * météore par sa **hauteur** et laisse l'image donner la largeur, donc un repli
+ * carré sur une image rectangulaire ferait grossir ou maigrir la pierre le jour
+ * où le PNG manque. 192 × 195 pour celui-ci, soit 0,985 : 16 × 16 suffit.
  */
-export const LUNAR_LIT = deepFreeze({
+export const LUNAR_ROCK1 = deepFreeze({
   w: 16,
   h: 16,
   palette: PALETTE,
   rows: [
-    '.....wwwwww.....',
-    '...wwwwbbwwbw...',
-    '..wwbbbbbbbbww..',
-    '.wwbbbbbbbbwbww.',
-    '.wbbbbbbbbbwbbw.',
-    'wbbbbbbbbbbbbbbw',
-    'wbbbbbbbbbbbbbbw',
-    'wbbbbbbbbbbbbvbw',
-    'wbvbbbbbwwbbbbbw',
-    'wbvvbbbbbwwbbbbw',
-    'wwbbbbbbbbbbbbbw',
-    '.wbbvbbbwbbbbbw.',
-    '.wwbbbbwwbbbbww.',
-    '..wwbbbbbbbbww..',
-    '...wwbbbbbbww...',
-    '.....wwwwww.....',
+    '........bsbbbb..',
+    '....bssbbbwbwbs.',
+    '...bwbbbbsbbsdd.',
+    '...wwwwwwsbbsddd',
+    '.bwwbssbbbbsddd.',
+    '.bbbKdsssbsdsdK.',
+    '.bwsdssbsssssddd',
+    'bwbsssbbssssKddd',
+    'bssbsbbssbsbsddd',
+    'sssbwbsssbbsddds',
+    '.sssssdsssdKdKd.',
+    '.ssdssdsdddddds.',
+    '.dssssddddddKd..',
+    '..dddKdddddddd..',
+    '...dddddddss....',
+    '......ddd.......',
+  ],
+});
+
+/** **Météore n° 2** — plus trapu, un grand cratère au centre. 142 × 137, soit
+ *  1,036 : la carte carrée reste à 3,5 % du rapport, sous le seuil où l'écart se
+ *  voit à 46 px de haut. */
+export const LUNAR_ROCK2 = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: PALETTE,
+  rows: [
+    '.....bbbbss.....',
+    '....bwbbwbbss...',
+    '..bwwwbwwbbbss..',
+    '..wwwwwwbKdsssd.',
+    '.bbbwbbwbKssssd.',
+    '.wwwbbwbwsdssdd.',
+    'bbbbwbsbbbbbsdd.',
+    'bbsbbdsbssssdKdd',
+    'bbssssbssbssdddd',
+    'sbssbsssssssdddd',
+    'ssbssssbsdsdddd.',
+    '.dbssssssdKdsdd.',
+    '.sdddKddddKdds..',
+    '..sddddssdddd...',
+    '...sddddddds....',
+    '.....sdKds......',
+  ],
+});
+
+/** **Météore n° 3** — le petit, presque rond : c'est lui qui tombe le plus
+ *  souvent dans l'averse, et sa silhouette compacte évite que treize pierres
+ *  anguleuses fassent une bouillie. 94 × 92, soit 1,022. */
+export const LUNAR_ROCK3 = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: PALETTE,
+  rows: [
+    '.........bbbbb..',
+    '......sbbbbbsbs.',
+    '....bbbbbbbsdsss',
+    '..bwwbssbbsbssdd',
+    '..bbbdssbbbssdsd',
+    '.bwwbsbbssssdKdd',
+    '.bwwbbbbbbddddds',
+    'bbsbbbsbwbdddddd',
+    'bssbbsbbbsssKddd',
+    'ssssdsbbsssdddd.',
+    'sssssssdssdKddd.',
+    '.ssssdsddddddd..',
+    '.sbsddsddKddd...',
+    '.sdKdddddKdd....',
+    '..dKddddddds....',
+    '....dddd........',
   ],
 });
 
 /**
- * Icône de sélection : **le disque éteint et ses trois satellites**.
+ * Icône de sélection : **la lune, et ce qui lui tombe dessus**.
  *
- * Elle montrait un croissant, ce qui disait « lune » mais ne disait pas *ce
- * combattant-là* : le croissant était l'état intermédiaire d'un cycle de phases
- * qui n'existe plus. Ce qui le distingue maintenant à l'écran est sa
- * **silhouette** — un corps presque noir, un limbe qui brûle à l'ouest, et trois
- * cailloux en orbite. C'est exactement ce qu'on voit en jeu, à 16 px près.
+ * Elle montrait un disque éteint et trois satellites en orbite ; les satellites
+ * étaient l'arme, et l'arme a été supprimée. Ce qui distingue le personnage à
+ * l'écran est maintenant **une lune grise et des pierres qui tombent** — c'est
+ * ce que dit l'icône, avec deux météores traînant vers le haut-droite pour
+ * donner le sens de la chute.
  *
  * **Composée, pas réduite**, et le dire est la règle : une réduction de la
- * maquette rendrait le corps seul, sans l'anneau, qui est pourtant l'arme. Elle
- * est en revanche **échantillonnée sur la palette du personnage**, comme les
- * deux autres cartes — une icône coloriée à part finit par diverger de ce
- * qu'elle annonce, piège déjà payé sur la lance de l'Hoplite.
+ * maquette rendrait le corps seul, sans l'averse, qui est pourtant tout son jeu.
+ * Elle est en revanche **échantillonnée sur la palette du personnage**, comme
+ * les quatre autres cartes.
  *
- * **Elle doit remplir son cadre, et ça se voit à la carte de sélection.** La
- * vignette dimensionne le sprite sur la **hauteur de sa carte** (16), pas sur sa
- * matière : une composition qui n'occupe que dix pixels sur seize paraît deux
- * fois plus petite que celle du Soleil, dont les rayons touchent les quatre
- * bords. Première version mesurée à 57 % de son voisin ; les satellites ont été
- * poussés jusqu'au bord pour la rattraper.
+ * **Elle remplit son cadre** — la vignette dimensionne le sprite sur la hauteur
+ * de sa carte, pas sur sa matière, et une composition centrée sur dix pixels de
+ * seize rend à 57 % de la taille apparente de son voisin. Piège mesuré la fois
+ * précédente, appliqué d'emblée ici : la lune touche le bord gauche et le bas,
+ * les météores le bord droit et le haut.
  */
 export const ICON_LUNAR = deepFreeze({
   w: 16,
   h: 16,
   palette: PALETTE,
   rows: [
-    '.......bb.......',
-    '......bwwb......',
-    '......bwwb......',
-    '.......bb.......',
-    '.......wv.......',
-    '.....wwvdvv.....',
-    '....wvvKKKdv....',
-    '....wvKKKKKv....',
-    '....wKKKKKKv....',
-    '....wKKKKKKv....',
-    '....wvKKKKdv....',
-    '.wwbwwvKKdvvbww.',
-    'bwwb.wwwvvv.bwwb',
-    '.bb..........bb.',
     '................',
-    '................',
+    '..............b.',
+    '.............w..',
+    '...........bs...',
+    '...........sd...',
+    '....bbbb........',
+    '..bbbbbss.......',
+    '.bbbbbdsss.....w',
+    '.bbbssssssd..bs.',
+    'bbbbsssssdd..sd.',
+    'bbssssssddd.....',
+    'bbsssssdddd.....',
+    'bsssssdKddK.....',
+    '.ssdsddddKK.....',
+    '..ssddddKK......',
+    '...ddddKK.......',
   ],
 });

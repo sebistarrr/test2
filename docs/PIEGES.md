@@ -20,16 +20,16 @@ relevé, puis les pièges eux-mêmes.
 | **Pièges déjà rencontrés** | 139 |
 | &nbsp;&nbsp;· Mesurer | 141 |
 | &nbsp;&nbsp;· Équilibrer | 176 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 426 |
-| &nbsp;&nbsp;· Éditer les données | 465 |
-| &nbsp;&nbsp;· Interface et rendu | 594 |
-| &nbsp;&nbsp;· Le son | 759 |
-| &nbsp;&nbsp;· Refactoriser | 1234 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 1275 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1277 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1320 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1363 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1382 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 466 |
+| &nbsp;&nbsp;· Éditer les données | 505 |
+| &nbsp;&nbsp;· Interface et rendu | 634 |
+| &nbsp;&nbsp;· Le son | 799 |
+| &nbsp;&nbsp;· Refactoriser | 1312 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1353 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1355 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1398 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1441 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1460 |
 
 ---
 
@@ -365,10 +365,11 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
 
 - **Deux boss ne se tuent pas en temps normal : leur duel se joue dans la rampe
   de mort subite.** `MATCH.suddenDeath` vaut `{ after: 55, ramp: 18, max: 4 }` —
-  passé 55 s, `damageScale()` multiplie **tous** les dégâts, jusqu'à ×4. Un duel
-  Soleil / LUNE dure **55 à 71 s** aujourd'hui (92 à 104 avant le redessin de
-  LUNE) : il *finit* dans la rampe, et à l'époque il y passait **la moitié de son
-  temps**.
+  passé 55 s, `damageScale()` multiplie **tous** les dégâts, jusqu'à ×4. Le duel
+  Soleil / LUNE a duré 92 à 104 s (il y passait alors **la moitié de son temps**),
+  puis 55 à 71 s, et **33 à 54 s** depuis que LUNE tire tout son dégât du ciel :
+  il ne touche plus la rampe du tout. La leçon reste vraie de tout duel long ;
+  elle ne décrit simplement plus celui-là.
 
   Ce que ça change, et ce n'était pas prévisible depuis la fiche :
   - **l'esquive cesse de défendre.** Une géométrie qui rend petit et rapide vaut
@@ -422,6 +423,45 @@ dans `docs/FICHES.md`. Ce qui suit vaut pour tout le dépôt.
   La vérification tient en une ligne : **la capsule porte de
   `orbite − r_capsule − r_ennemi` à `orbite + r_capsule + r_ennemi`, et la
   séparation minimale doit tomber dedans**, à la taille *enflée*.
+
+  (LUNE n'a plus ni orbite ni arme depuis ; la règle reste, elle vaut pour toute
+  arme portée par un corps qui change de taille.)
+
+- **Un pouvoir de zone annoncée a un taux de touche gouverné par la *cible*, pas
+  par ses propres chiffres** — et c'est ce qui rend son équilibrage
+  contre-intuitif.
+
+  LUNE ne produit que par des pierres qui tombent sur un cercle annoncé. Relevé
+  par adversaire : **2,1 à 4,3 PV/s** contre les six (8 à 18 touches par duel) et
+  **13,0 PV/s contre le Soleil** (44 touches). Il est le plus **lent** du roster
+  (230 px/s, il ne sort pas du cercle) *et* le plus **gros** après elle (rayon 82,
+  il en déborde). Elle écrasait donc le seul adversaire qu'elle devait partager,
+  et se faisait battre par le plus rapide des six.
+
+  **Aucun levier global ne corrige ça**, et les trois balayages le disent : les
+  dégâts par pierre (6/7 → 28 victoires sur 30, 11/12 → 30) et le rayon
+  d'explosion (40/46 → 29, 70/76 → 30) **plafonnent**, la vitesse est **plate**
+  (260 → 30, 430 → 30). Il faut deux corrections **asymétriques** :
+
+  - mesurer la zone **de centre à centre** (voir « Interface et rendu »), ce qui
+    retire au gros corps la surface de capture qu'il gagnait gratuitement :
+    13,0 → 7,4 PV/s ;
+  - **raccourcir le temps de chute** (0,75 → 0,45 s), ce qui retire au rapide sa
+    fenêtre : 1,3–3,0 → 3,0–5,6 PV/s contre les six, et presque rien contre le
+    lent, qui ne l'esquivait déjà pas.
+
+  Seulement *ensuite* la barre de vie redevient le levier monotone habituel
+  (250 → 13, 285 → 16, 320 → 21, 380 → 26 sur 30). Avant de balayer un pouvoir de
+  zone, **relever les touches par duel adversaire par adversaire** : le problème
+  s'y lit, le total le cache.
+
+- **Supprimer une arme peut rendre un combattant *plus* fort.** Retirer l'anneau
+  de LUNE lui a ôté **60,5 %** de sa production et l'a fait passer de 26/50 à
+  **50/50** contre le Soleil : elle n'avait plus aucune raison d'approcher, donc
+  plus aucun risque à prendre. Corollaire de « retirer la source principale
+  retourne le personnage » — et raison pour laquelle sa barre de vie est passée
+  de 460 à **280** : *on ne porte pas la barre d'une forteresse quand on ne
+  s'expose jamais.*
 
 ### Déterminisme et ordre d'exécution
 
@@ -1170,6 +1210,44 @@ des rayons du Soleil au PNG :
   vignette montre `look.sprite` + `weapon.head.sprite`, **pas** `el.icon` —
   l'icône ne sert qu'au bandeau de titre. Changer l'une sans l'autre ne se voit
   qu'en regardant les deux écrans.
+
+- **Une zone dessinée au sol se mesure de *centre à centre*, pas de bord à
+  bord** — et c'est le seul écart du dépôt, assumé pour deux raisons qui se
+  rejoignent.
+
+  Toutes les autres zones se mesurent en `rayon + g.radius`, ce qui est juste
+  pour une onde ou un faisceau : ils balaient un volume, et une bille posée juste
+  au bord en fait partie. Un **cratère annoncé par un cercle**, non :
+
+  - **le dessin mentirait.** En bord à bord, un combattant debout à 100 px d'un
+    cercle de 78 prend quand même le coup — exactement ce que le dépôt s'interdit
+    partout ailleurs (`handle.length + largeur = reach`) ;
+  - **un gros corps est puni deux fois.** La surface de capture vaut
+    `(blast + rayon)²` : 160² pour le Soleil (rayon 82) contre 119² pour la norme
+    (41), soit **1,8 fois plus de surface**, sans qu'il ait rien fait. Relevé
+    avant correction : **44 touches par duel** contre lui pour 9 contre tous les
+    autres.
+
+  Règle pratique : **si la zone est dessinée avec un bord net, elle se mesure au
+  centre ; si elle est dessinée comme une onde, elle se mesure au bord.**
+
+- **Une hauteur de chute simulée doit tenir dans le clip de l'arène.** Un objet
+  « en l'air » se fabrique avec deux dessins au même `x` — l'ombre au sol et
+  l'objet `height` pixels plus haut. Mais `drawOver` est **clippé au cadre de
+  l'arène** : à `height: 400` sur une arène de 628 px, le météore passait les
+  trois quarts de sa chute **hors du cadre**, donc invisible. On ne voyait qu'un
+  cercle au sol et un caillou qui apparaît. À 210–250, toute la chute est dans
+  l'image. Le chiffre est **purement visuel** — il ne touche aucune ligne de
+  matrice, ce qui est justement pourquoi personne ne le vérifie.
+
+- **La densité fait l'impression, pas la puissance.** L'averse de LUNE tombait
+  d'abord par **treize pierres, une toutes les 0,26 s, à 15 de dégâts** : avec
+  0,42 s de chute, **une seule pierre en l'air à la fois**, et ça se lisait comme
+  un pouvoir un peu plus rapide. Doublées en nombre et divisées par deux en
+  dégâts (**0,13 s / 8**), la production est **la même au banc** (27/50 contre le
+  Soleil dans les deux cas) et l'image n'a rien à voir : trois ou quatre pierres
+  en vol en permanence. Le nombre d'objets simultanés se calcule —
+  `durée_utile / intervalle` et `intervalle / chute` — il ne s'estime pas.
 
 - **Une ambiance de plein cadre découvre un liseré d'arène nue quand ça
   tremble.** Le décor ne bouge jamais (invariant 4, voulu) mais tout son contenu
