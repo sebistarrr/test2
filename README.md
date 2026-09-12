@@ -427,15 +427,22 @@ pilotés par les données.
 
 ## Documentation
 
-- [`CLAUDE.md`](CLAUDE.md) — mémoire du projet : carte des fichiers,
+La documentation est **découpée par ce qu'elle coûte à lire**, pas par thème :
+`CLAUDE.md` est relu en entier à chaque reprise de travail, les trois autres
+s'ouvrent à la demande et seulement sur la bonne section.
+
+- [`CLAUDE.md`](CLAUDE.md) — mémoire du projet : carte des fichiers, roster,
   invariants (déterminisme, fiches gelées, matrice d'équilibrage), outils et
-  index des pièges. C'est le point d'entrée pour reprendre le travail, et il
-  reste court pour cette raison.
+  index des pièges. **Les règles seules, une ligne chacune** — c'est le point
+  d'entrée pour reprendre le travail, et il reste court pour cette raison.
 - [`docs/PIEGES.md`](docs/PIEGES.md) — le détail long : la mesure, le balayage
-  et l'histoire derrière chaque règle de `CLAUDE.md`, la méthode de relevé
-  vidéo et les écarts volontaires au relevé.
+  et l'histoire derrière chaque règle de `CLAUDE.md`, sous le même intitulé,
+  plus la méthode de relevé vidéo et les écarts volontaires au relevé.
 - [`docs/FICHES.md`](docs/FICHES.md) — fiches complètes des combattants
-  (apparence, vitesse, pouvoirs, projectiles) et méthode de mesure.
+  (apparence, vitesse, pouvoirs, projectiles), méthode de mesure, et **tous les
+  chiffres d'équilibrage** : relevé courant, bancs, balayages, historique.
+- [`docs/AJOUTER-UN-COMBATTANT.md`](docs/AJOUTER-UN-COMBATTANT.md) — la marche
+  à suivre pour ajouter ou modifier un personnage.
 - [`assets/sprites/README.md`](assets/sprites/README.md) — remplacer les
   sprites par les tiens.
 - [`assets/fonts/LICENSE.md`](assets/fonts/LICENSE.md) — polices embarquées.

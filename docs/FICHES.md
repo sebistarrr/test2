@@ -1,18 +1,19 @@
 # Fiches des combattants
 
-**Huit combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
+**Neuf combattants.** Cinq repris de la chaîne « ballthingsim » — **Pistolero**
 et **Ronin** du duel *Outlaw vs Bladesman*, **Hoplite** de *Dragoon vs Outlaw*,
 **Druide** construit sur la mécanique de Magia dans *Dragoon vs Magia*, et
-**Shinobi**, reskin du Vent des vidéos *Elemental Armory League*. Les trois
+**Shinobi**, reskin du Vent des vidéos *Elemental Armory League*. Les quatre
 autres sont **inventés** : pas de vidéo, donc pas un seul `mesuré`. Le
 **Golem** encaisse là où personne n'encaissait ; le **Mannequin** est une
 **cible d'entraînement** sans arme ni dégâts, faite pour qu'on regarde les
-mécaniques des autres ; le **Soleil** est un **boss**, demandé pour gagner
-contre tous les autres en 1 contre 1.
+mécaniques des autres ; le **Soleil** et la **Lune** sont les deux **boss**,
+demandés pour gagner contre tous les autres en 1 contre 1 et ne se départager
+qu'entre eux.
 
-**Deux d'entre eux sont hors barème, aux deux bouts** : le Mannequin ne peut pas
-gagner, le Soleil ne peut pas perdre. Les écarts d'équilibrage se lisent sur les
-six autres.
+**Trois d'entre eux sont hors barème, aux deux bouts** : le Mannequin ne peut
+pas gagner, les deux boss ne peuvent pas perdre contre les six. Les écarts
+d'équilibrage se lisent sur les six autres.
 
 Ces fiches sont la **transcription lisible** de `src/data/fighters/`. Le code
 est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
@@ -28,26 +29,30 @@ les recale en une commande.
 
 | Section | Ligne |
 | --- | --- |
-| Comment lire une valeur | 52 |
-| 📦 Archive — les huit éléments supprimés | 101 |
-| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 175 |
-| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 965 |
-| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1120 |
-| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1377 |
-| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1942 |
-| 🗿 GOLEM — `golem` (affiché « GOLEM » dans les deux langues) | 2433 |
-| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2647 |
-| ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2733 |
-| 🌙 LUNE — `lunar` (le second boss : il est fait pour matcher le Soleil) | 3067 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 3268 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 3323 |
-| Les dégâts de tous les combattants, divisés par deux | 3391 |
-| Rééquilibrage confiné au Golem et au Ronin | 3501 |
-| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3588 |
-| Le son de chacun | 3638 |
-| Équilibrage du roster | 3756 |
-| Règles communes (moteur) | 3854 |
-| Comment les mesures ont été prises | 3878 |
+| Comment lire une valeur | 57 |
+| 📦 Archive — les huit éléments supprimés | 106 |
+| 🥷 SHINOBI — `wind` (affiché « SHINOBI » ; c'est l'ancien Vent reskiné) | 180 |
+| 🤠 PISTOLERO — `outlaw` (affiché « PISTOLERO ») | 970 |
+| ⚔ RONIN — `bladesman` (affiché « RONIN ») | 1125 |
+| 🐲 HOPLITE — `lancer` (affiché « HOPLITE ») | 1382 |
+| 🌿 DRUIDE — `mage` (affiché « DRUIDE » en français, « DRUID » en anglais) | 1947 |
+| 🗿 GOLEM — `golem` (affiché « GOLEM » dans les deux langues) | 2438 |
+| 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2652 |
+| ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2738 |
+| 🌙 LUNE — `lunar` (le second boss : il est fait pour matcher le Soleil) | 3072 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 3273 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 3328 |
+| Les dégâts de tous les combattants, divisés par deux | 3396 |
+| Rééquilibrage confiné au Golem et au Ronin | 3506 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3593 |
+| Le son de chacun | 3643 |
+| **Équilibrage du roster** — c'est ici que vivent les chiffres | 3761 |
+| &nbsp;&nbsp;· Relevé courant (les neuf, 24 duels chacun) | 3771 |
+| &nbsp;&nbsp;· Le sommet n'est plus partagé | 3796 |
+| &nbsp;&nbsp;· Le banc de DPS contre le Mannequin | 3825 |
+| &nbsp;&nbsp;· Deux conventions avant de juger un écart | 3860 |
+| Règles communes (moteur) | 3954 |
+| Comment les mesures ont été prises | 3978 |
 
 ## Comment lire une valeur
 
@@ -282,7 +287,8 @@ n'est pas touché, non demandé. Purement visuel.
 **Nouveau pouvoir demandé : un clone de lui-même, 20 PV.** Troisième
 créneau greffé (même patron que le Champ de givre/l’Aura de braise/le Dôme de
 drain), mais **conçu** pour le Shinobi plutôt que repris d'un autre
-combattant — voir `CLAUDE.md` pour le détail technique (pourquoi il est
+combattant — voir `docs/PIEGES.md`, « Invariant 13 », pour le détail technique
+(pourquoi il est
 stationnaire et incorporel, comment il réutilise `Fighter.prototype` et
 `weaponHit()`).
 
@@ -3755,11 +3761,131 @@ ne lit que de l'état déjà calculé.
 
 ## Équilibrage du roster
 
-Vérifié par simulation sans rendu sur les **15 affrontements** du roster
-(5 × 5 avec miroirs), 3 seeds chacun — c'est `tools/matrix.mjs`, et sa sortie
+Vérifié par simulation sans rendu sur les **45 affrontements** du roster
+(9 × 9 avec miroirs), 3 seeds chacun — c'est `tools/matrix.mjs`, et sa sortie
 est figée dans `tools/matrix-reference.txt`.
 
-**Relevé courant**, sur les 12 duels hors miroir de chacun :
+**C'est ici que vivent les chiffres.** `CLAUDE.md` n'en garde que le relevé
+courant et les leviers, parce qu'il est relu à chaque session ; tout ce qui
+suit ne se paie qu'à l'ouverture de ce fichier.
+
+### Relevé courant
+
+Sur les **24 duels hors miroir** de chacun (`tools/matrix-reference.txt`) :
+
+| | victoires | |
+| --- | --- | --- |
+| **Lune** | 24/24 | boss — hors barème |
+| **Soleil** | 20/24 | boss — hors barème |
+| Druide | 13/24 | |
+| Pistolero | 13/24 | |
+| Hoplite | 12/24 | |
+| Shinobi | 12/24 | |
+| Golem | 10/24 | |
+| Ronin | 4/24 | |
+| Mannequin | 0/24 | c'est sa définition |
+
+Écart **4 à 13** entre les six qui se jugent entre eux, connu et non corrigé.
+Les deux boss et le Mannequin sont hors barème : leur ligne est une
+**spécification**, pas un défaut.
+
+**Le compte absolu des six est le garde-fou de l'invariant 3.** Il vaut
+**13, 13, 12, 12, 10, 4** et il n'a pas bougé d'un chiffre à travers les trois
+refontes de LUNE : un changement confiné à un combattant ne doit déplacer que
+ses propres lignes, et c'est là qu'on le vérifie.
+
+### Le sommet n'est plus partagé
+
+La spécification dit que les deux boss battent les six autres et **ne se
+départagent qu'entre eux**. La première moitié tient toujours ; la seconde non,
+et c'est assumé.
+
+| | contre les six | duel des boss |
+| --- | --- | --- |
+| **Lune** | 140/140 (sept autres) | **50/50** |
+| **Soleil** | 139/140 | 0/50 |
+
+Bancs à 25 graines × les deux camps pour le duel des boss, 10 × les deux camps
+pour le reste. Le Soleil **n'a pas bougé** — c'est elle qui est passée devant,
+et c'est le prix de deux demandes : **500 PV** (la barre du Soleil, alors
+qu'elle ne s'expose jamais) et une **zone de météore portée de 78 à 115 px**.
+Le duel des boss était mesuré à **27/50** juste avant, à 280 PV.
+
+**Le retour à un partage tient en un chiffre, et le balayage est monotone :**
+`LUNAR.maxHp`, 280 → 27/50, 500 → 50/50. Rien d'autre n'est à toucher — les
+dégâts par pierre et le rayon d'explosion **plafonnent** au banc, voir
+`docs/PIEGES.md`.
+
+**La seule ligne que le Soleil ait jamais perdue est `lancer vs sun`**, à une
+graine sur trois, et rien n'a été calé pour la masquer : **trois balayages de
+couronne sont non monotones** — deux valeurs rendent 40/40 avec une voisine
+immédiate à 36/40. Aucun paramètre de couronne n'équilibre ce duel. Si la
+spécification doit redevenir absolue, le levier est **l'horloge de son ultime**
+(79 % de ses dégâts, effet monotone), et c'est un rééquilibrage à part entière.
+
+### Le banc de DPS contre le Mannequin
+
+Les lignes `… vs dummy` de la matrice **ne sont pas un relevé d'équilibrage** :
+le Mannequin ne rend pas les coups, donc sa durée mesure la **production
+réelle** de l'adversaire. 100 PV ÷ la durée moyenne des trois graines :
+
+| | PV/s | durées des trois graines |
+| --- | --- | --- |
+| **Lune** | **8,4** | 11,9 · 11,9 · 11,9 |
+| Ronin | 3,3 | 28,2 · 28,0 · 33,6 |
+| Shinobi | 3,1 | 34,9 · 28,8 · 32,8 |
+| Hoplite | 3,0 | 31,0 · 37,6 · 31,7 |
+| Soleil | 3,0 | 23,7 · 33,2 · 43,8 |
+| Druide | 2,8 | 35,8 · 37,7 · 35,3 |
+| Pistolero | 2,5 | 37,3 · 39,2 · 43,3 |
+| Golem | 1,8 | 62,0 · 46,5 · 55,0 |
+
+Trois choses à en lire, et une seule est une conclusion d'équilibrage :
+
+- **La Lune est à elle seule deux fois et demie le deuxième du banc**, depuis que
+  sa zone de météore est passée à 115 px. Un banc de DPS ne dit pas qui gagne ;
+  celui-ci, exceptionnellement, le dit — c'est aussi pourquoi elle est passée
+  au-dessus du Soleil. Ses trois durées sont **identiques au dixième** : sans
+  arme, elle ne dépend pas de la trajectoire, seulement de son horloge.
+- **Le Soleil est au milieu et gagne quand même 20 duels sur 24** : il encaisse
+  cinq fois plus qu'il ne frappe vite. Sa ligne est la **plus dispersée du
+  banc** (23,7 · 33,2 · 43,8) parce que tout ce qu'il produit passe par une
+  horloge d'ultime de 7 s : sa durée dépend de *combien de tirs* il lui a fallu,
+  jamais d'un débit.
+- **`dummy vs dummy` finit en `timeout`** : deux combattants sans dégâts ne se
+  départagent jamais, le moteur n'ayant aucune limite de temps.
+
+Ces chiffres se recalculent sur `tools/matrix-reference.txt` à chaque
+régénération, sans quoi ils vieillissent en silence — c'est déjà arrivé.
+
+### Deux conventions à garder en tête avant de juger un écart
+
+1. **La matrice ne joue chaque paire qu'une fois**, donc chacun y reste toujours
+   du même côté et le camp A pèse lourd (`ROSTER` décide). Elle **exagère les
+   écarts** : le Pistolero et le Ronin y étaient à 3/12 quand le banc des deux
+   camps les donnait à 10/24 et 9/24, presque la moyenne. Le Golem le montre en
+   grand — 5/15 à un relevé, mais **54/100** sur un banc à 10 graines × les deux
+   camps, parce qu'il est en queue de `ROSTER` donc toujours camp B. **Et elle
+   peut aussi *cacher* un écart** : voir `docs/PIEGES.md`. C'est un garde-fou de
+   **non-régression**, pas une mesure de force — avant de conclure qu'un
+   « dernier » doit remonter, le remesurer **sur les deux camps**.
+2. **Le levier d'un combattant faible est parfois chez un autre.** Les leviers
+   propres du Pistolero (rayon de balle) et du Ronin (palier de surchauffe) sont
+   plats ; c'est baisser les dégâts de mêlée du Shinobi qui les a remontés tous
+   les deux. Le relevé complet de ces balayages est dans la section du Shinobi.
+
+Deux garde-fous de fond, indépendants du relevé :
+
+- **mort subite** : au-delà de 55 s, tous les dégâts sont multipliés par
+  `1 + (t − 55) / 18` (plafond ×4). Aucun duel ne peut s'éterniser ;
+- **fidélité du Pistolero** : `tools/probe.mjs outlaw` mesure ~0,60 coup/s contre
+  les 0,65 relevés sur la vidéo, et sa stat `Damage` finit autour de 5,0 contre
+  5,50 mesurés.
+
+Le banc est reproductible : chaque duel se rejoue à l'identique avec
+`index.html?a=…&b=…&seed=…`.
+
+### Relevé à cinq combattants (historique)
 
 | | victoires |
 | --- | --- |
@@ -3769,37 +3895,12 @@ est figée dans `tools/matrix-reference.txt`.
 | Pistolero | 4/12 |
 | Shinobi | 4/12 |
 
-Écart **4 à 11**, et il s'est **creusé** : il était de 4 à 9 au relevé
-précédent.
-
-**Ce n'est pas un réglage qui l'a déplacé, c'est le gel de l'attente
-d'avant-combat.** Les combattants se déplaçaient pendant la seconde
-d'ouverture ; les figer était demandé, et c'est aussi plus juste au regard du
-relevé — mais partir vraiment des deux points de départ mesurés profite à
-Hoplite, dont la charge aime les longues lignes de vue, et coûte au Shinobi.
-Déséquilibre connu et non corrigé : le corriger est un autre chantier.
-
-- **mort subite** : au-delà de 55 s, tous les dégâts sont multipliés par
-  `1 + (t − 55) / 18` (plafond ×4). Aucun duel ne peut s'éterniser ;
-- garde-fou du Pistolero : `tools/probe.mjs outlaw` mesure ~0,60 coup/s
-  contre les 0,65 relevés sur la vidéo, et sa stat `Damage` finit autour de 5,0
-  contre 5,50 mesurés.
-
-**Deux conventions à garder en tête avant de juger un écart :**
-
-1. **La matrice ne joue chaque paire qu'une fois**, donc chacun y reste
-   toujours du même côté et le camp A pèse lourd. Elle **exagère les écarts** :
-   Pistolero et le Ronin y étaient à 3/12 quand le banc des deux camps
-   les donnait à 10/24 et 9/24, presque la moyenne. C'est un garde-fou de
-   **non-régression**, pas une mesure de force.
-2. **Le levier d'un combattant faible est parfois chez un autre.** Les leviers
-   propres du Pistolero (rayon de balle) et du Ronin (palier de surchauffe)
-   sont plats ; c'est baisser les dégâts de mêlée du Shinobi qui les a remontés
-   tous les deux. Le relevé complet de ces balayages est dans la section du
-   Shinobi.
-
-Le banc est reproductible : chaque duel se rejoue à l'identique avec
-`index.html?a=…&b=…&seed=…`.
+Écart **4 à 11**, creusé depuis un 4 à 9. **Ce n'est pas un réglage qui l'a
+déplacé, c'est le gel de l'attente d'avant-combat.** Les combattants se
+déplaçaient pendant la seconde d'ouverture ; les figer était demandé, et c'est
+aussi plus juste au regard du relevé — mais partir vraiment des deux points de
+départ mesurés profite à l'Hoplite, dont la charge aime les longues lignes de
+vue, et coûte au Shinobi. Déséquilibre connu et non corrigé.
 
 ### Dernier relevé à onze combattants (historique)
 

@@ -14,22 +14,25 @@ relevé, puis les pièges eux-mêmes.
 
 | Section | Ligne |
 | --- | --- |
-| **Méthode de relevé vidéo** | 36 |
-| &nbsp;&nbsp;· Le repère de mesure n'est pas le même partout | 48 |
-| **Écarts volontaires au relevé** | 65 |
-| **Pièges déjà rencontrés** | 139 |
-| &nbsp;&nbsp;· Mesurer | 141 |
-| &nbsp;&nbsp;· Équilibrer | 176 |
-| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 466 |
-| &nbsp;&nbsp;· Éditer les données | 505 |
-| &nbsp;&nbsp;· Interface et rendu | 634 |
-| &nbsp;&nbsp;· Le son | 799 |
-| &nbsp;&nbsp;· Refactoriser | 1312 |
-| **Le détail des sections condensées de `CLAUDE.md`** | 1353 |
-| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1355 |
-| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1398 |
-| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1441 |
-| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1460 |
+| **Méthode de relevé vidéo** | 39 |
+| &nbsp;&nbsp;· Le repère de mesure n'est pas le même partout | 51 |
+| **Écarts volontaires au relevé** | 68 |
+| **Pièges déjà rencontrés** | 142 |
+| &nbsp;&nbsp;· Mesurer | 144 |
+| &nbsp;&nbsp;· Équilibrer | 179 |
+| &nbsp;&nbsp;· Déterminisme et ordre d'exécution | 469 |
+| &nbsp;&nbsp;· Éditer les données | 508 |
+| &nbsp;&nbsp;· Interface et rendu | 637 |
+| &nbsp;&nbsp;· Le son | 802 |
+| &nbsp;&nbsp;· Refactoriser | 1315 |
+| **Le détail des sections condensées de `CLAUDE.md`** | 1356 |
+| &nbsp;&nbsp;· L'écart du roster, et ce que la matrice cache | 1358 |
+| &nbsp;&nbsp;· Formats — ce qui change à l'écran au-delà de deux | 1401 |
+| &nbsp;&nbsp;· Invariant 12 — corollaire pour les modules de pouvoirs | 1444 |
+| &nbsp;&nbsp;· Invariant 13 — comment le moteur a cessé de compter jusqu'à deux | 1463 |
+| &nbsp;&nbsp;· Invariant 3 — la preuve que l'arrivée d'un combattant n'a rien déplacé | 1507 |
+| &nbsp;&nbsp;· Invariant 9 — les deux régressions qui l'ont écrit | 1524 |
+| &nbsp;&nbsp;· Formats — la table, et pourquoi elle a été écrite après coup | 1540 |
 
 ---
 
@@ -1500,3 +1503,56 @@ quelles, puis celui-ci qui n'a plus rien de propre du tout. À chaque étape
 la question utile a été « qu'est-ce que le moteur sait déjà faire ? », et à
 chaque fois la réponse était « plus que je ne croyais ».
 
+
+### Invariant 3 — la preuve que l'arrivée d'un combattant n'a rien déplacé
+
+`ROSTER` décide qui est le camp A : les paires sont formées en
+`[liste[i], liste[j]]`, et le camp A pèse lourd. Un nouveau venu s'ajoute donc
+**en queue**, et la preuve à exiger est mécanique : **le diff de la matrice ne
+contient que des ajouts**.
+
+C'est ce qui s'est vérifié à l'arrivée du Soleil — les six autres ont gardé leur
+compte **absolu** de victoires au chiffre près (13, 13, 12, 11, 10, 4), et ils
+étaient simplement jugés sur 21 duels au lieu de 18, les trois nouveaux étant
+perdus par tous. L'Hoplite est passé à 12 depuis, en prenant une graine au
+Soleil. Même vérification aux trois refontes de LUNE : neuf lignes déplacées,
+toutes les siennes.
+
+Le corollaire vaut aussi dans l'autre sens : **Neon Shadow a pu être supprimé
+sans déplacer personne**, précisément parce qu'il était en queue de `ROSTER`.
+
+### Invariant 9 — les deux régressions qui l'ont écrit
+
+Une clé de fiche que plus personne ne lit ne crie pas, et ça s'est payé deux
+fois, dans les deux sens :
+
+- `lunge.recoil` et `lunge.hitRing` ont été **supprimés de la fiche** alors que
+  le module les lisait encore → `NaN` dès la première touche. Celui-là plante,
+  donc il se voit ;
+- l'**écriture** de `weaponLateral` a été perdue, `lunge.lateral` restant dans
+  la fiche sans lecteur. Celui-là ne plante **jamais** : l'arme cesse simplement
+  de se poser sur le flanc, et rien ne le dit.
+
+D'où `tools/fiche-check.mjs`, qui recoupe les **deux sens** — mais seulement sur
+`weapon.lunge` et `special`. L'étendre à `ability` a été essayé : il criait à
+tort **dix-neuf fois**, et un garde-fou qui crie à tort n'est plus lu.
+
+### Formats — la table, et pourquoi elle a été écrite après coup
+
+Ajouter un format ne demande **qu'une entrée dans la table `FORMATS`** de
+`ui/select.js`, pas une ligne de moteur — et ce n'est pas une intention, c'est
+un constat : **le 1 contre X a été joué par l'URL avant qu'une seule ligne
+d'interface soit écrite**, et il tournait déjà, HUD groupé, titre d'arène et
+jauges compris.
+
+C'est à cette occasion que la table a pris sa forme actuelle. Chaque entrée
+porte tout ce qui distingue son format (`taille`, `min`/`max` s'il est réglable,
+`camps`, `tag`, `bouton`), et les trois chaînes `mode === '…'` qui traînaient
+encore dans `select.js` y sont rentrées. Conséquence à retenir : **c'est `min`
+qui décide l'affichage du compteur**, pas un nom de format — un format à taille
+fixe n'en affiche pas, et il n'y a rien à brancher pour ça.
+
+**Le plafond de 5 de la bataille royale** (`Math.min(5, ROSTER.length)`) est un
+choix de lisibilité — le HUD n'a que deux bandeaux —, pas une limite du moteur,
+qui accepte *n* combattants. Agrandir le roster ne le déplace donc pas, et le
+relever demande de regarder le HUD, pas le moteur.
