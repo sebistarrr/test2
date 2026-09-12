@@ -95,7 +95,7 @@ calé pour la masquer.
 | `mage` **DRUIDE** / DRUID | tireur, **sceptre braqué posé sur le flanc et dessiné par-dessus la bille** (`weapon.spin = 0` + `weaponLateral` + `weapon.overBody`), **orbes guidées** (`projectiles.orb.homing`), cadence qui monte seule (+0,05 par orbe). Porte l’**Orage de ronces** et le **Tir enraciné** |
 | `golem` **GOLEM** | **inventé, pas relevé.** Le plus lent (370 px/s), la portée la plus courte (100 px), le plus gros corps (**rayon 50** contre 41) et **200 PV** quand tout le monde en a 100 — sa seule défense, sans aucune réduction de dégâts. Onde sismique sur horloge, Éclats de roche, **Séisme** |
 | `sun` **SOLEIL** / SUN | **inventé, et le seul boss.** Demandé pour **gagner contre tous les autres en 1 contre 1**, et il le fait à une graine près (20/21 sur la matrice, **139/140** sur un banc à 10 seeds × les deux camps — la seule perdue est un duel de 80 s contre l'Hoplite). **Deux fois plus grand que la norme** (rayon 82 contre 41), **500 PV**, et **le plus lent du roster de très loin** (230 px/s) — c'est là toute sa contrepartie. **Huit rayons** en couronne (`weapon.spokes: 8`, aucun angle mort) qui **ne blessent pas** (`melee.damage: 0`, demandé) : c'est sa silhouette et son bruit, plus son arme. Tout passe donc par le **Rayon solaire** (ultime, **79 %** de ses dégâts) : horloge de 7 s, **2 s de charge annoncée à l'écran** — anneaux qui se referment, éclats qui convergent, foyer qui bat — puis **2,5 s** d'un faisceau de 124 px de large, jusqu'à 96 PV. Il est cloué sur place 4,5 s à chaque tir. **Réchauffement solaire** (pouvoir) : brûle tout ennemi dans 240 px, 21 % |
-| `lunar` **LUNE** / MOON | **inventée, second boss, et le seul combattant sans arme qui gagne.** Trois demandes l'ont faite : la revoir en entier, puis « remplace le design de la balle par celui de l'arme / **supprime l'arme** / revois l'ultime météorite pour le rendre plus impressionnant, effet chute de météorites », avec une planche de lune et d'astéroïdes. **Elle n'a donc plus d'arme du tout** (`reach: 0`, `hitbox.radius: 0`, pas de `head.sprite` — le cas du Mannequin, qui est une cible d'entraînement) et **100 % de sa production tombe du ciel**. Corps de **rayon 88, fixe**, la lune criblée de la planche découpée à son disque ; **280 PV** et **430 px/s**. **Météores** (pouvoir, 2,6 s) : trois pierres tombent sur la cible, annoncées 0,45 s au sol par une ombre qui grossit et un cercle qui se resserre sur le rayon d'explosion — 49 %. **Pluie de météores** (ultime, horloge 9 s) : 1,1 s pendant lesquelles la nuit tombe, le corps gonfle et des pierres se détachent de lui, puis **3,2 s d'averse — vingt-cinq pierres, une toutes les 0,13 s**, trois ou quatre en l'air en permanence — 51 %. Elle bat les sept autres **167 fois sur 168** et partage avec le Soleil (**27/50**) |
+| `lunar` **LUNE** / MOON | **inventée, second boss, et le seul combattant sans arme qui gagne.** Trois demandes l'ont faite : la revoir en entier, puis « remplace le design de la balle par celui de l'arme / **supprime l'arme** / revois l'ultime météorite pour le rendre plus impressionnant, effet chute de météorites », avec une planche de lune et d'astéroïdes. **Elle n'a donc plus d'arme du tout** (`reach: 0`, `hitbox.radius: 0`, pas de `head.sprite` — le cas du Mannequin, qui est une cible d'entraînement) et **100 % de sa production tombe du ciel**. Corps de **rayon 88, fixe**, la lune criblée de la planche découpée à son disque ; **500 PV** (demandé) et **430 px/s**. **Météores** (pouvoir, 2,6 s) : trois pierres tombent sur la cible dans une zone de 115 px (demandée, 78 avant : une pierre sur dix touchait), annoncées 0,45 s au sol par une ombre qui grossit et un cercle qui se resserre sur le rayon d'explosion — **67 % de ses dégâts**. **Pluie de météores** (ultime, horloge 9 s) : 1,1 s pendant lesquelles la nuit tombe, le corps gonfle et des pierres se détachent de lui, puis **3,2 s d'averse — vingt-cinq pierres, une toutes les 0,13 s**, trois ou quatre en l'air en permanence — 33 %. Elle bat les sept autres **140 fois sur 140** et, depuis les 500 PV, **le Soleil aussi, 50 fois sur 50** : leur duel n'est plus un partage. Le levier du retour est connu et monotone, c'est `maxHp` (280 rendait 27/50) |
 | `dummy` **MANNEQUIN** / DUMMY | **cible d'entraînement, pas un adversaire.** Aucune arme (pas de `head.sprite`, portée 0, hitbox de rayon 0), **aucun dégât**, aucun pouvoir, blanc, et les PV de la norme. Il existe pour qu'on **regarde l'autre** : sa ligne de HUD affiche les dégâts qu'il a **subis**, donc la production réelle de l'adversaire |
 
 **Le Clone d'ombre**, parce qu'il touche le moteur : des doubles de 15 PV
@@ -135,18 +135,20 @@ miroir chacun : **Lune 24 et Soleil 20** — les deux boss au sommet —, puis
 Druide 13, **Pistolero 13**, Hoplite 12, Shinobi 12, Golem 10, **Ronin 4**,
 Mannequin 0 (c'est sa définition).
 
-**Les deux boss se partagent leur duel, et chacun lâche une graine à un des
-six** — c'est le partage le plus symétrique que le dépôt ait eu, et c'est la
-spécification demandée. Sur 25 graines × les deux camps, le duel des boss est à
-**27/50** pour LUNE ; elle bat les sept autres **167 fois sur 168** (une graine
-au Shinobi), le Soleil est à **139/140** (une graine à l'Hoplite).
+**Le sommet n'est plus partagé, et c'est assumé : LUNE est au-dessus.** Sur
+25 graines × les deux camps, elle gagne le duel des boss **50 fois sur 50**, et
+elle bat les sept autres **140 fois sur 140**. Le Soleil, lui, reste à
+**139/140** contre les six — il n'a pas bougé, c'est elle qui est passée devant.
 
-**Mais la matrice officielle, elle, affiche 24 contre 20**, parce qu'elle ne
-joue chaque paire que trois fois : les trois graines de `sun vs lunar` tombent
-toutes du même côté d'un partage qui est en réalité à 54/46. C'est exactement ce
-que la limite documentée plus bas annonce — *elle exagère les écarts* — et **rien
-n'a été calé pour rattraper la ligne** : le chiffre choisi est celui qui tombe le
-plus près de l'égalité sur **50 duels**, pas celui qui embellit trois.
+C'est le prix de deux demandes explicites : **500 PV** (la barre du Soleil, alors
+qu'elle ne s'expose jamais) et une **zone de météore portée de 78 à 115 px**
+(à 78, une pierre sur dix touchait — le relevé donnait raison à la demande). Le
+duel des boss était mesuré à **27/50** juste avant, à 280 PV.
+
+**Le retour à un partage tient en un chiffre**, et le balayage est monotone :
+`LUNAR.maxHp`, 280 → 27/50, 500 → 50/50. Rien d'autre n'est à toucher — les
+dégâts par pierre et le rayon d'explosion **plafonnent** au banc, voir
+`docs/PIEGES.md`.
 
 **Les changements de LUNE ne déplacent qu'elle**, et ça s'est vérifié à chaque
 fois : le diff de la matrice contient **neuf lignes, toutes les siennes**, les
@@ -220,11 +222,12 @@ fois plus souvent. Le **Ronin s'effondre de 10 à 4** — ses dégâts plafonnen
 plus, seulement plus de temps pour se faire rattraper.
 **Les lignes `… vs dummy` sont un banc de DPS**, pas un relevé d'équilibrage —
 et il **ne suit pas simplement la division** (100 PV ÷ la durée moyenne des
-trois seeds) : **Lune 4,7**, Ronin 3,3, Shinobi 3,1, Hoplite 3,0, Druide 2,8,
-Pistolero 2,5, Golem 1,8 PV/s. **La Lune est loin en tête du banc et le Soleil au
-milieu, et les deux sont cohérents avec ce qu'ils sont** : elle frappe vite et
-n'a que 280 PV, il frappe lentement et en a 500. Un banc de DPS ne dit rien de
-qui gagne.
+trois seeds) : **Lune 8,4**, Ronin 3,3, Shinobi 3,1, Hoplite 3,0, Druide 2,8,
+Pistolero 2,5, Golem 1,8 PV/s. **La Lune est à elle seule deux fois et demie le
+deuxième du banc** depuis que sa zone de météore est passée à 115 px — c'est la
+mesure de ce que la demande a changé, et c'est aussi pourquoi elle est
+aujourd'hui au-dessus du Soleil. Un banc de DPS ne dit pas qui gagne ; celui-ci,
+exceptionnellement, le dit.
 **Le Soleil est à 3,0, au milieu — et ça ne le contredit pas** :
 il gagne quand même 20 de ses 21 duels, parce qu'il encaisse cinq fois plus
 qu'il ne frappe vite. Sa ligne est surtout **la plus dispersée du banc** (23,7 · 33,2 ·

@@ -39,15 +39,15 @@ les recale en une commande.
 | 🎯 MANNEQUIN — `dummy` (cible d'entraînement : sans arme, sans dégâts) | 2647 |
 | ☀ SOLEIL — `sun` (le boss : il est fait pour gagner contre tous) | 2733 |
 | 🌙 LUNE — `lunar` (le second boss : il est fait pour matcher le Soleil) | 3067 |
-| La norme passe à 200 PV, le Golem à 400 (historique) | 3231 |
-| Neon Shadow supprimé, la norme redescend à 100 PV | 3286 |
-| Les dégâts de tous les combattants, divisés par deux | 3354 |
-| Rééquilibrage confiné au Golem et au Ronin | 3464 |
-| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3551 |
-| Le son de chacun | 3601 |
-| Équilibrage du roster | 3719 |
-| Règles communes (moteur) | 3817 |
-| Comment les mesures ont été prises | 3841 |
+| La norme passe à 200 PV, le Golem à 400 (historique) | 3268 |
+| Neon Shadow supprimé, la norme redescend à 100 PV | 3323 |
+| Les dégâts de tous les combattants, divisés par deux | 3391 |
+| Rééquilibrage confiné au Golem et au Ronin | 3501 |
+| Nerf confiné au Shinobi et au Pistolero, les deux qui dominaient | 3588 |
+| Le son de chacun | 3638 |
+| Équilibrage du roster | 3756 |
+| Règles communes (moteur) | 3854 |
+| Comment les mesures ont été prises | 3878 |
 
 ## Comment lire une valeur
 
@@ -3094,8 +3094,8 @@ jamais, et **100 % de sa production tombe du ciel**.
 | d'où vient le dégât | le faisceau, 79 % | **le ciel, 100 %** (49 % pouvoir, 51 % ultime) |
 | ce qui s'annonce | *une ligne*, 2 s | *des zones au sol*, 0,45 s chacune |
 | déplacement | 230 px/s, le plus lent | 430 px/s |
-| points de vie | **500** — une forteresse | **280** — un bombardier |
-| face au Mannequin | 3,0 PV/s | **4,7 PV/s**, le plus haut du roster |
+| points de vie | **500** — une forteresse | **500** aussi, demandé — et elle ne s'expose jamais |
+| face au Mannequin | 3,0 PV/s | **8,4 PV/s**, deux fois et demie le deuxième du roster |
 
 **Météores** (pouvoir, 2,6 s) : trois pierres quittent l'orbite et tombent sur la
 cible, annoncées 0,45 s au sol par une ombre qui grossit et un cercle qui se
@@ -3108,12 +3108,12 @@ toutes les 0,13 s**, trois ou quatre en l'air en permanence.
 
 | Valeur | Détail | Source |
 | --- | --- | --- |
-| Points de vie | **280** — 480 → 460 → 280 en trois versions, voir plus bas | calé |
+| Points de vie | **500** — demandé (« hp à 500 »). 480 → 460 → 280 → 500 ; 280 était le point d'équilibre mesuré, voir plus bas | demandé |
 | Corps | `lunar-ball.png`, la lune de la planche fournie, découpée à son **disque** (262 × 262). Contraste médian sur l'arène blanche **5,32**, 9 % de pixels sous le seuil — contre 6,51 pour l'éclipse qu'elle remplace et **1,54 / 48 %** pour la pleine lune cyan, qui était le dessin de l'arme et n'aurait donc *pas* pu servir de corps telle quelle | relevé sur la maquette |
 | Taille | `look.radius` **88, fixe**. Sans arme, son corps ne sert plus qu'à occuper l'espace : il bouscule, il bloque, il encaisse. `f.sizeFactor` reste écrit par l'ultime (× 1,12) — de la mise en scène, plus du gameplay | déduit |
 | Palette | Cinq bandes de luminance sur `lunar-ball.png` (`edge #1a2632` · `shadow #2f3c48` · `body #5f6d77` · `light #98aab3` · `core #d8f8fc`) **plus une sixième** : le halo de glace `#9df6fb`, relevé à part parce qu'il a été coupé du sprite exprès. La lune est grise ; sa couleur est autour d'elle | relevé sur la maquette |
 | **Arme** | **aucune** — demandé. Géométrie vide (`reach`/`hitbox` à 0), ce qui est plus sûr que des dégâts à zéro : la condition de touche devient structurellement impossible, `resolveBodies` maintenant les corps séparés | déduit |
-| **Pouvoir** | *Météores* — 2,6 s, trois pierres, 14 par pierre, explosion de 78 px, chute de 0,45 s | calé |
+| **Pouvoir** | *Météores* — 2,6 s, trois pierres, 14 par pierre, **explosion de 115 px** (demandée, 78 avant) sur un semis de 150, chute de 0,45 s. **67 % de ses dégâts** | demandé + calé |
 | **Ultime** | *Pluie de météores* — 1,1 s d'annonce + 3,2 s d'averse, une pierre toutes les 0,13 s à 8 par pierre, explosion de 86 px, sur une arène passée à la nuit | calé |
 | Anticipation | `lead: 0,5` — la pierre vise là où la cible **sera**, sur son cap et sa vitesse courante (`currentSpeed`) | calé |
 | Semis | **Aucun tirage** (invariant 2) : chaque pierre est tournée de l'angle d'or par rapport à la précédente | déduit |
@@ -3167,6 +3167,43 @@ la barre du Soleil.
 deux camps, chaque adversaire), une seule graine perdue au Shinobi. Le Soleil est
 à 139/140 et en perd une à l'Hoplite : **chaque boss lâche exactement une graine
 à un des six**, ce qui est le partage le plus symétrique que le dépôt ait eu.
+
+### Le réglage demandé après coup : 500 PV et une zone de 115
+
+**Deux demandes, et la seconde était une observation juste** : « hp à 500 /
+augmente la zone de météorite pour les attaques de base, ça ne touche quasiment
+jamais ». Le relevé du taux de touche **par pierre** le confirmait au chiffre
+près — 8 graines × les deux camps :
+
+| cible | `blast: 78` | **`blast: 115`** |
+| --- | --- | --- |
+| Pistolero · Druide | 10–12 % | **22 %** |
+| Ronin · Shinobi · Hoplite | 11–14 % | **22–27 %** |
+| Golem | 15 % | **40 %** |
+| Mannequin (immobile ou presque) | 19 % | **44 %** |
+| Soleil | 45 % | **56 %** |
+
+Une pierre sur dix, c'était en effet « quasiment jamais ». C'était le prix de la
+mesure **de centre à centre**, adoptée pour que le cercle dessiné ne mente pas :
+elle avait retiré d'un coup toute la marge que le rayon de la cible offrait
+gratuitement. Le cercle grandit, il continue de dire la vérité. `spread` suit de
+92 à **150**, sinon les trois cercles se recouvrent presque entièrement et on lit
+une tache au lieu de trois cratères.
+
+**Ce que les deux ensemble ont coûté, et c'est à savoir.** Le duel des boss
+passe de **27/50 à 50/50** : LUNE ne le perd plus jamais, et la spécification
+« les deux boss ne se départagent qu'entre eux » n'est plus vraie — il y a
+désormais un vainqueur. Elle reste par ailleurs à **140/140** contre les sept
+autres, et le Soleil n'a pas bougé (139/140 contre les six) : ce n'est pas lui
+qui a baissé, c'est elle qui est passée devant.
+
+La répartition de ses dégâts bascule avec : **Météores 67 % / Pluie 33 %**, là
+où c'était 49/51. Le pouvoir est devenu sa source principale, ce qui est
+exactement ce que la demande visait.
+
+**Le retour à un partage tient en un chiffre**, et le balayage est monotone :
+`maxHp` 280 → 27/50, 500 → 50/50. Rien d'autre n'est à toucher — les deux autres
+leviers plafonnent, c'est mesuré juste au-dessus.
 
 ### L'image : la densité fait l'impression, pas la puissance
 

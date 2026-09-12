@@ -55,28 +55,32 @@ export const LUNAR = fiche({
   tier: 'boss',
 
   /**
-   * **280 PV** — et c'est **480 → 460 → 280** en trois versions, le chiffre le
-   * plus instable de la fiche parce qu'il est le seul levier du duel des boss.
+   * **500 PV, demandé** (« hp à 500 ») — la barre du Soleil, à égalité pile.
    *
-   * La chute tient en une phrase : **elle ne prend plus aucun risque.** L'arme
-   * supprimée, elle n'a plus jamais besoin d'être quelque part — tout son dégât
-   * tombe du ciel sur un point qu'elle choisit à distance. Une barre de boss
-   * *en plus* de ça rendait le duel imperdable (50/50 au banc avant calage).
-   * 280 reste 2,8 fois la norme et se lit comme sa contrepartie : **le Soleil
-   * est une forteresse (500 PV, il encaisse), elle est un bombardier.**
+   * C'est **480 → 460 → 280 → 500** en quatre versions, le chiffre le plus
+   * remué de la fiche, parce qu'il est le seul levier du duel des boss. 280
+   * était le point d'équilibre **mesuré** : à ce chiffre, le duel se partageait
+   * à 27/50 sur 25 graines × les deux camps.
    *
-   * Balayage **monotone**, 25 graines × les deux camps (elle gagne, sur 50) :
-   * 250 → 13, 285 → 16, 320 → 21 avant le calage final des pierres ; à la
-   * cadence définitive, **280 → 27/50**. Et c'est bien le seul levier qui
-   * fonctionne : les dégâts par pierre et le rayon d'explosion ont tous deux
-   * été balayés et **plafonnent** (à moitié moins de dégâts, elle gagnait
-   * encore 28 fois sur 30), parce qu'ils déplacent sa production contre *tout
-   * le monde* en même temps.
+   * **Ce que 500 change, et il faut le savoir avant d'y toucher** : LUNE ne
+   * prend aucun risque (l'arme supprimée, elle n'a plus jamais besoin d'être
+   * quelque part) et porte désormais **aussi** la barre du Soleil. Le duel des
+   * boss passe donc de **27/50 à 50/50** — elle ne le perd plus jamais, et la
+   * spécification « les deux boss ne se départagent qu'entre eux » n'est plus
+   * vraie : il n'y a plus de partage, il y a un vainqueur.
+   *
+   * Le balayage reste **monotone**, donc le chemin du retour est connu et tient
+   * en un chiffre (25 graines × les deux camps, elle gagne, sur 50) :
+   * 250 → 13, 280 → 27, 285 → 16 · 320 → 21 · 380 → 26 aux réglages d'alors,
+   * **500 → 50**. Et c'est bien le seul levier qui fonctionne : les dégâts par
+   * pierre et le rayon d'explosion ont tous deux été balayés et **plafonnent**
+   * (à moitié moins de dégâts, elle gagnait encore 28 fois sur 30), parce
+   * qu'ils déplacent sa production contre *tout le monde* en même temps.
    *
    * Aucune réduction de dégâts, comme tous les autres : un seul chiffre porte
    * sa résistance, donc le banc n'a qu'un levier à tourner.
    */
-  maxHp: 280,
+  maxHp: 500,
 
   look: {
     /**
@@ -289,10 +293,17 @@ export const LUNAR = fiche({
      *  plus que ça entre deux averses. */
     cooldown: 2.6,
     count: 3,
-    /** Rayon du semis autour de la cible. Le premier caillou tombe **sur** elle,
-     *  les deux autres à 92 px — assez pour que reculer droit devant n'en évite
-     *  pas deux d'un coup. */
-    spread: 92,
+    /**
+     * **Rayon du semis autour de la cible — 92 → 150, et il suit `blast`.**
+     *
+     * Le premier caillou tombe **sur** la cible, les deux autres à `spread` de
+     * là. Tant que l'explosion faisait 78, 92 px de semis laissait les trois
+     * cercles se recouvrir presque entièrement : on lisait une tache, pas trois
+     * cratères. À 115 d'explosion il fallait écarter d'autant — 150 met les
+     * trois cercles **jointifs**, ce qui est exactement ce qu'on veut voir : une
+     * zone continue, mais dont on lit les trois morceaux.
+     */
+    spread: 150,
     /**
      * **Temps de chute, donc temps d'esquive — et le second levier asymétrique
      * de la fiche.**
@@ -356,8 +367,25 @@ export const LUNAR = fiche({
      *    touches par duel contre lui** pour 9 contre tous les autres.
      *
      * Voir le détail dans `game/abilities/lunar.js`, à `impact()`.
+     *
+     * **78 → 115, demandé** (« augmente la zone de météorite pour les attaques
+     * de base, ça ne touche quasiment jamais ») — et le relevé lui donnait
+     * raison au chiffre près. Taux de touche **par pierre**, huit graines × les
+     * deux camps, avant → après :
+     *
+     * | cible | 78 | **115** |
+     * | --- | --- | --- |
+     * | Pistolero · Druide | 10–12 % | **22 %** |
+     * | Ronin · Shinobi · Hoplite | 11–14 % | **22–27 %** |
+     * | Golem | 15 % | **40 %** |
+     * | Mannequin | 19 % | **44 %** |
+     * | Soleil | 45 % | **56 %** |
+     *
+     * Une pierre sur dix, c'était en effet « quasiment jamais » — et c'était le
+     * prix de la mesure de centre à centre, adoptée pour que le cercle dessiné
+     * ne mente pas. Le cercle grandit, il continue de dire la vérité.
      */
-    blast: 78,
+    blast: 115,
     knockback: 170,
     /**
      * **Secousse d'impact, volontairement petite.** Trois pierres décalées de
